@@ -20,6 +20,8 @@ services:
       - /tmp
     security_opt:
       - no-new-privileges:true
+    networks:
+      - dokploy-network
 
   db:
     image: postgres:16-alpine
@@ -40,6 +42,8 @@ services:
       -c shared_buffers=128MB
       -c effective_cache_size=256MB
       -c max_connections=50
+    networks:
+      - dokploy-network
 
   backup:
     image: prodrigestivill/postgres-backup-local
@@ -57,7 +61,13 @@ services:
       BACKUP_KEEP_MONTHS: 3
     depends_on:
       - db
+    networks:
+      - dokploy-network
 
 volumes:
   pg_data:
   file_storage:
+
+networks:
+  dokploy-network:
+    external: true
