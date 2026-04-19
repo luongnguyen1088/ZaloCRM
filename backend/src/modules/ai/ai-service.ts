@@ -58,7 +58,14 @@ export async function getAiConfig(orgId: string) {
   return { ...aiConfig, hasAnthropicKey, hasGeminiKey, availableProviders };
 }
 
-export async function updateAiConfig(orgId: string, input: { provider?: string; model?: string; maxDaily?: number; enabled?: boolean }) {
+export async function updateAiConfig(orgId: string, input: { provider?: string; model?: string; maxDaily?: number; enabled?: boolean; apiKey?: string }) {
+  if (input.apiKey && input.provider) {
+    await prisma.appSetting.upsert({
+      where: { orgId_settingKey: { orgId, settingKey: `ai_${input.provider}_api_key` } },
+      create: { orgId, settingKey: `ai_${input.provider}_api_key`, valuePlain: input.apiKey },
+      update: { valuePlain: input.apiKey },
+    });
+  }
   return prisma.aiConfig.upsert({
     where: { orgId },
     create: {

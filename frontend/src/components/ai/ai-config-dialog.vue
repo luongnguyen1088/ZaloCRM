@@ -6,6 +6,17 @@
         <v-progress-linear v-if="loadingProviders" indeterminate class="mb-4" />
         <v-select v-model="local.provider" :items="providerItems" label="Provider" class="mb-3" :disabled="loadingProviders" @update:model-value="onProviderChange" />
         <v-select v-model="local.model" :items="modelOptions" label="Model" class="mb-3" :disabled="loadingProviders" />
+        
+        <v-text-field 
+          v-model="local.apiKey" 
+          label="API Key" 
+          type="password" 
+          hint="Dán API Key từ nhà cung cấp vào đây. Nếu bỏ trống sẽ dùng cấu hình mặc định của hệ thống."
+          persistent-hint
+          variant="outlined" 
+          class="mb-3" 
+        />
+
         <v-text-field v-model.number="local.maxDaily" type="number" label="Quota mỗi ngày" :min="1" :rules="[v => v >= 1 || 'Tối thiểu 1']" class="mb-3" />
         <v-switch v-model="local.enabled" label="Bật AI" inset color="primary" />
       </v-card-text>
@@ -33,7 +44,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [value: boolean];
-  save: [value: { provider: string; model: string; maxDaily: number; enabled: boolean }];
+  save: [value: { provider: string; model: string; maxDaily: number; enabled: boolean; apiKey?: string }];
 }>();
 
 const providers = ref<ProviderInfo[]>([]);
@@ -46,7 +57,7 @@ const modelOptions = computed(() => {
   return found?.models ?? [];
 });
 
-const local = reactive({ provider: 'anthropic', model: '', maxDaily: 500, enabled: true });
+const local = reactive({ provider: 'anthropic', model: '', maxDaily: 500, enabled: true, apiKey: '' });
 
 /* When provider changes, auto-select first model if current is invalid */
 function onProviderChange() {
