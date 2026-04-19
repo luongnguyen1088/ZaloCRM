@@ -449,14 +449,6 @@ const newAccountName = ref('');
 const deleteTarget = ref<ZaloAccount | null>(null);
 const accessTarget = ref<ZaloAccount | null>(null);
 
-const headers = [
-  { title: 'Tên', key: 'displayName', sortable: true },
-  { title: 'Zalo UID', key: 'zaloUid' },
-  { title: 'SĐT', key: 'phone' },
-  { title: 'Trạng thái', key: 'status', sortable: true },
-  { title: 'Hành động', key: 'actions', sortable: false, align: 'end' as const },
-];
-
 async function syncContacts(accountId: string) {
   syncing.value = accountId;
   try {
