@@ -167,7 +167,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { api } from '@/api';
-import dayjs from 'dayjs';
 
 const loading = ref(true);
 const saving = ref(false);
@@ -272,7 +271,14 @@ async function doDelete() {
 }
 
 function formatDate(date: string) {
-  return dayjs(date).format('DD/MM/YYYY HH:mm');
+  if (!date) return '';
+  return new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(date));
 }
 
 onMounted(loadData);
