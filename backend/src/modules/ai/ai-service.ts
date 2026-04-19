@@ -130,18 +130,25 @@ async function loadConversation(conversationId: string, orgId: string) {
 
 async function generateText(provider: string, apiKey: string, model: string, system: string, prompt: string) {
   const providerDef = getProviderConfig(provider);
-  const baseUrl = providerDef?.baseUrl || '';
+  const baseUrl = providerDef?.baseUrl?.replace(/\/$/, '') || '';
 
-  if (provider === 'anthropic') return generateWithAnthropic(baseUrl, apiKey, model, system, prompt);
-  if (provider === 'gemini') return generateWithGemini(baseUrl, apiKey, model, system, prompt);
+  console.log(`[AI] Generating text with ${provider} using model ${model}`);
+  
+  try {
+    if (provider === 'anthropic') return await generateWithAnthropic(baseUrl, apiKey, model, system, prompt);
+    if (provider === 'gemini') return await generateWithGemini(baseUrl, apiKey, model, system, prompt);
 
-  /* OpenAI, Qwen, Kimi all use OpenAI-compatible chat/completions API */
-  if (provider === 'openai') return generateWithOpenaiCompat(`${baseUrl}/v1/chat/completions`, apiKey, model, system, prompt);
-  if (provider === 'qwen') return generateWithOpenaiCompat(`${baseUrl}/compatible-mode/v1/chat/completions`, apiKey, model, system, prompt);
-  if (provider === 'kimi') return generateWithOpenaiCompat(`${baseUrl}/v1/chat/completions`, apiKey, model, system, prompt);
-  if (provider === 'openrouter') return generateWithOpenaiCompat(`${baseUrl}/chat/completions`, apiKey, model, system, prompt);
-
-  throw new Error(`Unsupported AI provider: ${provider}`);
+    /* OpenAI-compatible providers */
+    let endpoint = '/v1/chat/completions';
+    if (provider === 'qwen') endpoint = '/compatible-mode/v1/chat/completions';
+    if (provider === 'openrouter' || provider === 'kimi') endpoint = '/chat/completions';
+    
+    const fullUrl = `${baseUrl}${endpoint}`;
+    return await generateWithOpenaiCompat(fullUrl, apiKey, model, system, prompt);
+  } catch (err: any) {
+    console.error(`[AI ERROR] Provider ${provider} failed:`, err?.response?.data || err.message || err);
+    throw err;
+  }
 }
 
 async function saveSuggestion(input: { orgId: string; conversationId: string; messageId?: string; type: AiTaskType; content: string; confidence: number }) {

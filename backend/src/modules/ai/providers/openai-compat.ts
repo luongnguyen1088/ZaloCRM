@@ -32,8 +32,8 @@ export async function generateWithOpenaiCompat(
     });
 
     if (!response.ok) {
-      const status = response.status;
-      throw new Error(`OpenAI-compat request failed with status ${status}`);
+      const errorData = await response.text();
+      throw new Error(`OpenAI-compat request failed (${response.status}): ${errorData}`);
     }
 
     const data = (await response.json()) as {
