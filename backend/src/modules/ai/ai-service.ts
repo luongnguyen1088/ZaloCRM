@@ -72,36 +72,56 @@ export async function getAiConfig(orgId: string) {
 }
 
 export async function updateAiConfig(orgId: string, input: { provider?: string; model?: string; maxDaily?: number; enabled?: boolean; apiKey?: string }) {
-  if (input.apiKey && input.provider) {
-    const pLower = input.provider.toLowerCase();
-    await prisma.appSetting.upsert({
-      where: { orgId_settingKey: { orgId, settingKey: `ai_${pLower}_api_key` } },
-      create: { orgId, settingKey: `ai_${pLower}_api_key`, valuePlain: input.apiKey },
-      update: { valuePlain: input.apiKey },
-    });
+  console.log(`[AI Settings] Updating config for org ${orgId}:`, JSON.stringify(input));
+
+  try {
+    if (input.apiKey && input.provider) {
+      const pLower = input.provider.toLowerCase();
+      console.log(`[AI Settings] Saving API Key for ${pLower}`);
+      await prisma.appSetting.upsert({
+        where: { orgId_settingKey: { orgId, settingKey: `ai_${pLower}_api_key` } },
+        create: { orgId, settingKey: `ai_${pLower}_api_key`, valuePlain: input.apiKey },
+        update: { valuePlain: input.apiKey },
+      });
+    }
+
+    const enabledValue = input.enabled !== undefined ? Boolean(input.enabled) : undefined;
+    const maxDaily = input.maxDaily !== undefined ? Number(input.maxDaily) : undefined;
+
+    // Use explicit check to ensure we know if record exists
+    const existing = await prisma.aiConfig.findUnique({ where: { orgId } });
+    
+    if (existing) {
+      console.log(`[AI Settings] Updating existing config...`);
+      await prisma.aiConfig.update({
+        where: { orgId },
+        data: {
+          provider: input.provider || undefined,
+          model: input.model || undefined,
+          maxDaily: maxDaily,
+          enabled: enabledValue,
+        }
+      });
+    } else {
+      console.log(`[AI Settings] Creating new config...`);
+      await prisma.aiConfig.create({
+        data: {
+          orgId,
+          provider: input.provider || config.aiDefaultProvider,
+          model: input.model || config.aiDefaultModel,
+          maxDaily: maxDaily || 500,
+          enabled: enabledValue ?? true,
+        }
+      });
+    }
+
+    const finalConfig = await getAiConfig(orgId);
+    console.log(`[AI Settings] Success! Final state:`, JSON.stringify(finalConfig));
+    return finalConfig;
+  } catch (err: any) {
+    console.error(`[AI Settings ERROR] Failed to update config:`, err);
+    throw new Error(`Database error: ${err.message}`);
   }
-
-  const enabledValue = input.enabled !== undefined ? Boolean(input.enabled) : undefined;
-  
-  await prisma.aiConfig.upsert({
-    where: { orgId },
-    create: {
-      orgId,
-      provider: input.provider || config.aiDefaultProvider,
-      model: input.model || config.aiDefaultModel,
-      maxDaily: Number(input.maxDaily) || 500,
-      enabled: enabledValue ?? true,
-    },
-    update: {
-      provider: input.provider,
-      model: input.model,
-      maxDaily: input.maxDaily !== undefined ? Number(input.maxDaily) : undefined,
-      enabled: enabledValue,
-    },
-  });
-
-  // Always return the full config including hasKey flags
-  return getAiConfig(orgId);
 }
 
 export async function getAiUsage(orgId: string) {
