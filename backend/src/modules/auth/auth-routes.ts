@@ -8,6 +8,7 @@ import {
   checkSetupStatus,
   register,
   login,
+  loginWithGoogle,
   getProfile,
 } from './auth-service.js';
 
@@ -56,5 +57,16 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   app.get('/api/v1/profile', { preHandler: authMiddleware }, async (request) => {
     const user = request.user as { id: string; email: string; role: string; orgId: string };
     return getProfile(user.id);
+  });
+
+  // POST /api/v1/auth/google — verify Google token and return JWT
+  app.post<{ Body: { idToken: string } }>('/api/v1/auth/google', async (request, reply) => {
+    const { idToken } = request.body;
+    if (!idToken) {
+      return reply.status(400).send({ error: 'Missing idToken' });
+    }
+    const payload = await loginWithGoogle(idToken);
+    const token = app.jwt.sign(payload, { expiresIn: '7d' });
+    return { token, user: payload };
   });
 }

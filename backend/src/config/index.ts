@@ -13,6 +13,7 @@ export const config = {
   appUrl: process.env.APP_URL || 'http://localhost:3000',
   aiDefaultProvider: process.env.AI_DEFAULT_PROVIDER || 'anthropic',
   aiDefaultModel: process.env.AI_DEFAULT_MODEL || 'claude-sonnet-4-6',
+  googleClientId: process.env.GOOGLE_CLIENT_ID || '',
 
   /* Legacy keys (kept for backward compat) */
   anthropicApiKey: process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN || '',

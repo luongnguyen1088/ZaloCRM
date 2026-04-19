@@ -3,8 +3,10 @@
  * Uses bcryptjs for password hashing and Fastify JWT for token signing.
  */
 import bcrypt from 'bcryptjs';
+import { OAuth2Client } from 'google-auth-library';
 import { prisma } from '../../shared/database/prisma-client.js';
 import { logger } from '../../shared/utils/logger.js';
+import { config } from '../../config/index.js';
 
 export interface JwtPayload {
   id: string;
@@ -141,4 +143,38 @@ export async function getProfile(userId: string) {
   }
 
   return user;
+}
+
+const googleClient = new OAuth2Client(config.googleClientId);
+
+export async function loginWithGoogle(idToken: string): Promise<JwtPayload> {
+  if (!config.googleClientId) {
+    throw new Error('Google Login is not configured on this server');
+  }
+
+  const ticket = await googleClient.verifyIdToken({
+    idToken,
+    audience: config.googleClientId,
+  });
+  const payload = ticket.getPayload();
+  if (!payload || !payload.email) {
+    throw new Error('Invalid Google token');
+  }
+
+  const email = payload.email.toLowerCase().trim();
+  let user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!user) {
+    // Automatic registration with Google
+    return await register(
+      `${payload.name || 'My Org'}'s Workspace`,
+      payload.name || 'New User',
+      email,
+      Math.random().toString(36).slice(-12) // Random password for social login
+    );
+  }
+
+  return { id: user.id, email: user.email, role: user.role, orgId: user.orgId };
 }
