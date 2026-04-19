@@ -34,13 +34,14 @@ function buildConversationContext(messages: MessageContext[]) {
 }
 
 async function getProviderApiKey(orgId: string, provider: string) {
+  const pLower = provider.toLowerCase();
   /* 1. Check registry (env-based) */
-  const providerDef = getProviderConfig(provider);
+  const providerDef = getProviderConfig(pLower);
   if (providerDef?.authToken) return providerDef.authToken;
 
   /* 2. Fallback: per-org DB setting */
   const setting = await prisma.appSetting.findFirst({
-    where: { orgId, settingKey: `ai_${provider}_api_key` },
+    where: { orgId, settingKey: `ai_${pLower}_api_key` },
   });
   return setting?.valuePlain || '';
 }
@@ -53,11 +54,11 @@ export async function getAiConfig(orgId: string) {
     });
   }
   const availableProviders = getAvailableProviders();
-  const hasKey = async (p: string) => {
-    const def = getProviderConfig(p);
+    const pLower = p.toLowerCase();
+    const def = getProviderConfig(pLower);
     if (def?.authToken) return true;
     const setting = await prisma.appSetting.findFirst({
-      where: { orgId, settingKey: `ai_${p}_api_key` }
+      where: { orgId, settingKey: `ai_${pLower}_api_key` }
     });
     return !!setting?.valuePlain;
   };
@@ -71,9 +72,10 @@ export async function getAiConfig(orgId: string) {
 
 export async function updateAiConfig(orgId: string, input: { provider?: string; model?: string; maxDaily?: number; enabled?: boolean; apiKey?: string }) {
   if (input.apiKey && input.provider) {
+    const pLower = input.provider.toLowerCase();
     await prisma.appSetting.upsert({
-      where: { orgId_settingKey: { orgId, settingKey: `ai_${input.provider}_api_key` } },
-      create: { orgId, settingKey: `ai_${input.provider}_api_key`, valuePlain: input.apiKey },
+      where: { orgId_settingKey: { orgId, settingKey: `ai_${pLower}_api_key` } },
+      create: { orgId, settingKey: `ai_${pLower}_api_key`, valuePlain: input.apiKey },
       update: { valuePlain: input.apiKey },
     });
   }
