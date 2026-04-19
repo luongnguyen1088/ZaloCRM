@@ -113,7 +113,15 @@ const saving = ref(false);
 const testing = ref(false);
 const showAiConfig = ref(false);
 const aiSaving = ref(false);
-const aiConfig = ref({ provider: 'anthropic', model: 'claude-sonnet-4-6', maxDaily: 500, enabled: true });
+const aiConfig = ref({ 
+  provider: 'anthropic', 
+  model: 'claude-sonnet-4-6', 
+  maxDaily: 500, 
+  enabled: true,
+  hasAnthropicKey: false,
+  hasGeminiKey: false,
+  hasOpenRouterKey: false,
+});
 
 const snack = ref({ show: false, text: '', color: 'success' });
 
