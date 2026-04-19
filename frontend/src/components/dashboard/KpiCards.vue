@@ -7,7 +7,7 @@
             <div class="kpi-icon-box" :style="{ background: item.bg, border: `1px solid ${item.borderColor}` }">
               <v-icon :color="item.color">{{ item.icon }}</v-icon>
             </div>
-            <div class="trend-indicator" :class="item.trend > 0 ? 'up' : 'down'">
+            <div v-if="item.trend !== undefined" class="trend-indicator" :class="item.trend > 0 ? 'up' : 'down'">
               <v-icon size="14">{{ item.trend > 0 ? 'mdi-trending-up' : 'mdi-trending-down' }}</v-icon>
               <span class="ml-1">{{ Math.abs(item.trend) }}%</span>
             </div>
@@ -25,54 +25,59 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import type { KpiData } from '@/composables/use-dashboard';
 
 const props = defineProps<{
-  kpi: {
-    totalContacts: number;
-    activeChats: number;
-    zaloAccounts: number;
-    appointments: number;
-  };
+  kpi: KpiData | null;
 }>();
 
-const stats = computed(() => [
-  {
-    label: 'Khách hàng',
-    value: props.kpi.totalContacts.toLocaleString(),
-    icon: 'mdi-account-group-outline',
-    color: '#00F2FF',
-    bg: 'rgba(0, 242, 255, 0.1)',
-    borderColor: 'rgba(0, 242, 255, 0.2)',
-    trend: 12,
-  },
-  {
-    label: 'Hội thoại mới',
-    value: props.kpi.activeChats.toLocaleString(),
-    icon: 'mdi-chat-processing-outline',
-    color: '#A855F7',
-    bg: 'rgba(168, 85, 247, 0.1)',
-    borderColor: 'rgba(168, 85, 247, 0.2)',
-    trend: 24,
-  },
-  {
-    label: 'Tài khoản Zalo',
-    value: props.kpi.zaloAccounts.toLocaleString(),
-    icon: 'mdi-cellphone-link',
-    color: '#10B981',
-    bg: 'rgba(16, 185, 129, 0.1)',
-    borderColor: 'rgba(16, 185, 129, 0.2)',
-    trend: 5,
-  },
-  {
-    label: 'Lịch hẹn',
-    value: props.kpi.appointments.toLocaleString(),
-    icon: 'mdi-calendar-check-outline',
-    color: '#F59E0B',
-    bg: 'rgba(245, 158, 11, 0.1)',
-    borderColor: 'rgba(245, 158, 11, 0.2)',
-    trend: -2,
-  },
-]);
+const stats = computed(() => {
+  const d = props.kpi || {
+    totalContacts: 0,
+    messagesToday: 0,
+    messagesUnreplied: 0,
+    appointmentsToday: 0,
+  };
+
+  return [
+    {
+      label: 'Tổng khách hàng',
+      value: d.totalContacts.toLocaleString(),
+      icon: 'mdi-account-group-outline',
+      color: '#00F2FF',
+      bg: 'rgba(0, 242, 255, 0.1)',
+      borderColor: 'rgba(0, 242, 255, 0.2)',
+      trend: 12,
+    },
+    {
+      label: 'Tin nhắn hôm nay',
+      value: d.messagesToday.toLocaleString(),
+      icon: 'mdi-chat-processing-outline',
+      color: '#A855F7',
+      bg: 'rgba(168, 85, 247, 0.1)',
+      borderColor: 'rgba(168, 85, 247, 0.2)',
+      trend: 24,
+    },
+    {
+      label: 'Chưa phản hồi',
+      value: d.messagesUnreplied.toLocaleString(),
+      icon: 'mdi-message-alert-outline',
+      color: '#f87171',
+      bg: 'rgba(248, 113, 113, 0.1)',
+      borderColor: 'rgba(248, 113, 113, 0.2)',
+      trend: -5,
+    },
+    {
+      label: 'Lịch hẹn hôm nay',
+      value: d.appointmentsToday.toLocaleString(),
+      icon: 'mdi-calendar-check-outline',
+      color: '#F59E0B',
+      bg: 'rgba(245, 158, 11, 0.1)',
+      borderColor: 'rgba(245, 158, 11, 0.2)',
+      trend: 2,
+    },
+  ];
+});
 </script>
 
 <style scoped>
