@@ -197,6 +197,18 @@ export async function generateAiOutput(input: { orgId: string; conversationId: s
   }
 
   const text = raw.trim();
+
+  // Persist summary to conversation if type is summary
+  if (input.type === 'summary') {
+    await prisma.conversation.update({
+      where: { id: input.conversationId },
+      data: {
+        summary: text,
+        summaryUpdatedAt: new Date(),
+      },
+    });
+  }
+
   await saveSuggestion({
     orgId: input.orgId,
     conversationId: input.conversationId,

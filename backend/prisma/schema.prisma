@@ -165,6 +165,8 @@ model Conversation {
   contact       Contact?      @relation(fields: [contactId], references: [id])
   messages      Message[]
   aiSuggestions AiSuggestion[]
+  summary          String?   @db.Text
+  summaryUpdatedAt DateTime? @map("summary_updated_at")
 
   @@unique([zaloAccountId, externalThreadId])
   @@map("conversations")
