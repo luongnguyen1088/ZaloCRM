@@ -69,8 +69,8 @@ const {
   aiSuggestion, aiSuggestionLoading, aiSuggestionError,
   aiSummary, aiSummaryLoading, aiSentiment, aiSentimentLoading,
   fetchConversations, fetchAiConfig, selectConversation, sendMessage,
-  generateAiSuggestion, generateAiSummary, generateAiSentiment,
-  initSocket, destroySocket,
+  generateAiSuggestion, refineAiSuggestion, generateAiSummary, generateAiSentiment,
+  clearAiState, initSocket, destroySocket,
 } = useChat();
 
 function onFilterAccount(id: string | null) {

@@ -310,6 +310,7 @@ export function useChat() {
     sendMessage,
     sendMessageTo,
     generateAiSuggestion,
+    refineAiSuggestion,
     generateAiSummary,
     generateAiSentiment,
     clearAiState,
