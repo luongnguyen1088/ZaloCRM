@@ -6,7 +6,7 @@ import type { FastifyInstance } from 'fastify';
 import { authMiddleware } from './auth-middleware.js';
 import {
   checkSetupStatus,
-  setup,
+  register,
   login,
   getProfile,
 } from './auth-service.js';
@@ -17,17 +17,26 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     return checkSetupStatus();
   });
 
-  // POST /api/v1/setup — create org + owner user, return JWT
+  // POST /api/v1/auth/register — create org + owner user, return JWT
   app.post<{
     Body: { orgName: string; fullName: string; email: string; password: string };
-  }>('/api/v1/setup', async (request, reply) => {
+  }>('/api/v1/auth/register', async (request, reply) => {
     const { orgName, fullName, email, password } = request.body;
     if (!orgName || !fullName || !email || !password) {
       return reply.status(400).send({ error: 'Missing required fields' });
     }
-    const payload = await setup(orgName, fullName, email, password);
+    const payload = await register(orgName, fullName, email, password);
     const token = app.jwt.sign(payload, { expiresIn: '7d' });
     return { token, user: payload };
+  });
+
+  // Alias /setup for backward compatibility or first run
+  app.post('/api/v1/setup', async (request, reply) => {
+    return app.inject({
+      method: 'POST',
+      url: '/api/v1/auth/register',
+      payload: request.body,
+    });
   });
 
   // POST /api/v1/auth/login — verify credentials, return JWT

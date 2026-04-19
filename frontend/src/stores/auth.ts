@@ -26,11 +26,15 @@ export const useAuthStore = defineStore('auth', () => {
     return res.data.needsSetup;
   }
 
-  async function setup(data: { orgName: string; fullName: string; email: string; password: string }) {
-    const res = await api.post('/setup', data);
+  async function register(data: { orgName: string; fullName: string; email: string; password: string }) {
+    const res = await api.post('/auth/register', data);
     token.value = res.data.token;
     user.value = res.data.user;
     localStorage.setItem('token', res.data.token);
+  }
+
+  async function setup(data: { orgName: string; fullName: string; email: string; password: string }) {
+    return register(data);
   }
 
   async function login(email: string, password: string) {
@@ -61,5 +65,5 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return { user, token, needsSetup, isAuthenticated, isOwner, isAdmin, checkSetup, setup, login, fetchProfile, logout, init };
+  return { user, token, needsSetup, isAuthenticated, isOwner, isAdmin, checkSetup, setup, register, login, fetchProfile, logout, init };
 });

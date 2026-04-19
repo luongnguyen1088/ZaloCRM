@@ -81,6 +81,12 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/pricing',
+    name: 'Pricing',
+    component: () => import('@/views/billing/PricingPage.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/views/NotFoundView.vue'),

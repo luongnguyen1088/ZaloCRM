@@ -29,6 +29,7 @@ model Organization {
   messageTemplates MessageTemplate[]
   aiConfig      AiConfig?
   aiSuggestions AiSuggestion[]
+  subscription  Subscription?
 
   @@map("organizations")
 }
@@ -399,4 +400,32 @@ model AiSuggestion {
   @@index([conversationId, createdAt])
   @@index([orgId, type, createdAt])
   @@map("ai_suggestions")
+}
+
+model SubscriptionPlan {
+  id          String   @id @default(uuid())
+  name        String   // Free, Pro, Enterprise
+  priceMonth  Float    @map("price_month")
+  maxZaloAcc  Int      @default(1) @map("max_zalo_acc")
+  maxAiTokens Int      @default(1000) @map("max_ai_tokens")
+  features    Json     @default("[]")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  subscriptions Subscription[]
+  @@map("subscription_plans")
+}
+
+model Subscription {
+  id              String   @id @default(uuid())
+  orgId           String   @unique @map("org_id")
+  planId          String   @map("plan_id")
+  status          String   @default("active") // active, expired, cancelled
+  currentPeriodStart DateTime @map("current_period_start")
+  currentPeriodEnd   DateTime @map("current_period_end")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  org  Organization     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  plan SubscriptionPlan @relation(fields: [planId], references: [id])
+  @@map("subscriptions")
 }

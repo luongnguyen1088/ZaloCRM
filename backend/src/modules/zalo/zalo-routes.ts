@@ -4,6 +4,7 @@
  */
 import type { FastifyInstance } from 'fastify';
 import { authMiddleware } from '../auth/auth-middleware.js';
+import { checkZaloAccountLimit } from '../billing/subscription-middleware.js';
 import { zaloPool } from './zalo-pool.js';
 import { prisma } from '../../shared/database/prisma-client.js';
 
@@ -40,6 +41,7 @@ export async function zaloRoutes(app: FastifyInstance): Promise<void> {
   // POST /api/v1/zalo-accounts — create a new account record
   app.post<{ Body: { displayName?: string } }>(
     '/api/v1/zalo-accounts',
+    { preHandler: [checkZaloAccountLimit] },
     async (request, reply) => {
       const user = request.user!;
       const { displayName } = request.body ?? {};

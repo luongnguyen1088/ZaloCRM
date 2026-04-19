@@ -113,6 +113,7 @@ const menuItems = [
   { title: 'API & Webhook', icon: 'mdi-api', path: '/api-settings' },
   { title: 'Tích hợp', icon: 'mdi-connection', path: '/integrations' },
   { title: 'Automation', icon: 'mdi-robot-outline', path: '/automation' },
+  { title: 'Gói cước', icon: 'mdi-crown-outline', path: '/pricing' },
 ];
 
 function toggleTheme() {

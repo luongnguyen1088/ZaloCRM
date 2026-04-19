@@ -19,16 +19,16 @@ export async function checkSetupStatus(): Promise<{ needsSetup: boolean }> {
   return { needsSetup: count === 0 };
 }
 
-// Create the initial organization + owner user, return JWT payload
-export async function setup(
+// Create a new organization + owner user + default subscription, return JWT payload
+export async function register(
   orgName: string,
   fullName: string,
   email: string,
   password: string,
 ): Promise<JwtPayload> {
-  const existing = await prisma.user.count();
-  if (existing > 0) {
-    const err = new Error('Setup already completed') as Error & { statusCode: number };
+  const existing = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
+  if (existing) {
+    const err = new Error('Email already in use') as Error & { statusCode: number };
     err.statusCode = 400;
     throw err;
   }
@@ -36,7 +36,10 @@ export async function setup(
   const passwordHash = await bcrypt.hash(password, 12);
 
   const result = await prisma.$transaction(async (tx) => {
+    // 1. Create Org
     const org = await tx.organization.create({ data: { name: orgName } });
+    
+    // 2. Create User as Owner
     const user = await tx.user.create({
       data: {
         orgId: org.id,
@@ -46,10 +49,43 @@ export async function setup(
         role: 'owner',
       },
     });
+
+    // 3. Find Free Plan (fallback to standard values if seed hasn't run)
+    let freePlan = await tx.subscriptionPlan.findFirst({
+      where: { name: 'Free' }
+    });
+
+    if (!freePlan) {
+      freePlan = await tx.subscriptionPlan.create({
+        data: {
+          name: 'Free',
+          priceMonth: 0,
+          maxZaloAcc: 1,
+          maxAiTokens: 500,
+          features: JSON.stringify(['CRM cơ bản', '1 tài khoản Zalo']),
+        }
+      });
+    }
+
+    // 4. Create Subscription
+    const now = new Date();
+    const end = new Date();
+    end.setFullYear(now.getFullYear() + 10); // Free plan effectively never expires
+
+    await tx.subscription.create({
+      data: {
+        orgId: org.id,
+        planId: freePlan.id,
+        status: 'active',
+        currentPeriodStart: now,
+        currentPeriodEnd: end,
+      }
+    });
+
     return { org, user };
   });
 
-  logger.info(`Setup complete — org=${result.org.id}, user=${result.user.id}`);
+  logger.info(`Registration complete — org=${result.org.id}, user=${result.user.id}`);
 
   return {
     id: result.user.id,
