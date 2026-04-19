@@ -434,8 +434,8 @@ onMounted(async () => {
   height: 40px;
   border-radius: 10px;
   display: flex;
-  align-center;
-  justify-center;
+  align-items: center;
+  justify-content: center;
 }
 
 .icon-circle.primary {
