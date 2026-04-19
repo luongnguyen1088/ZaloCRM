@@ -95,7 +95,6 @@ import axios from 'axios';
 
 const plans = ref<any[]>([]);
 const currentPlanId = ref<string | null>(null);
-const loading = ref(false);
 const paymentDialog = ref(false);
 const selectedPlan = ref<any>(null);
 
