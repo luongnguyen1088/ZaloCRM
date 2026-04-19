@@ -75,6 +75,12 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/ai-training',
+    name: 'AiTraining',
+    component: () => import('@/views/AiKnowledgeView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/integrations',
     name: 'Integrations',
     component: () => import('@/views/IntegrationsView.vue'),

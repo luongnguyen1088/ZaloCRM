@@ -7,6 +7,7 @@ import { generateWithOpenaiCompat } from './providers/openai-compat.js';
 import { buildReplyDraftPrompt } from './prompts/reply-draft.js';
 import { buildSummaryPrompt } from './prompts/summary.js';
 import { buildSentimentPrompt } from './prompts/sentiment.js';
+import { getRelevantKnowledge } from './knowledge/knowledge-service.js';
 
 export type AiTaskType = 'reply_draft' | 'summary' | 'sentiment';
 
@@ -251,11 +252,26 @@ export async function generateAiOutput(input: { orgId: string; conversationId: s
     `</conversation_context>`,
   ].join('\n');
 
-  const system = input.type === 'reply_draft'
+  // Fetch relevant knowledge if this is a reply draft
+  let knowledgeCtx = '';
+  if (input.type === 'reply_draft') {
+    const knowledgeItems = await getRelevantKnowledge(input.orgId, contextText);
+    if (knowledgeItems.length > 0) {
+      knowledgeCtx = [
+        '\n<business_knowledge>',
+        ...knowledgeItems.map(k => `[${k.title}]: ${k.content}`),
+        '</business_knowledge>',
+      ].join('\n');
+    }
+  }
+
+  const systemBase = input.type === 'reply_draft'
     ? buildReplyDraftPrompt(language)
     : input.type === 'summary'
       ? buildSummaryPrompt(language)
       : buildSentimentPrompt(language);
+
+  const system = knowledgeCtx ? `${systemBase}\nUse the following business knowledge to answer accurately:\n${knowledgeCtx}` : systemBase;
 
   const model = currentConfig.model || 'claude-3-5-sonnet';
   const raw = await generateText(provider, apiKey, model, system, userPrompt);

@@ -6,6 +6,7 @@ import { getAiConfig, getAiUsage, updateAiConfig, generateAiOutput } from './ai-
 import { getAvailableProviders } from './provider-registry.js';
 import { logger } from '../../shared/utils/logger.js';
 import { prisma } from '../../shared/database/prisma-client.js';
+import { knowledgeRoutes } from './knowledge/knowledge-routes.js';
 
 async function assertConversationReadAccess(request: FastifyRequest, reply: FastifyReply, conversationId: string) {
   const user = request.user!;
@@ -112,4 +113,7 @@ export async function aiRoutes(app: FastifyInstance) {
       return sendHandledError(reply, err, 'Failed to analyze sentiment');
     }
   });
+
+  // Knowledge Management
+  await app.register(knowledgeRoutes, { prefix: '/api/v1/ai/knowledge' });
 }

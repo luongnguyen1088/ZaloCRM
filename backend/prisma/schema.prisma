@@ -29,6 +29,7 @@ model Organization {
   messageTemplates MessageTemplate[]
   aiConfig      AiConfig?
   aiSuggestions AiSuggestion[]
+  aiKnowledge   AiKnowledge[]
   subscription  Subscription?
 
   @@map("organizations")
@@ -430,4 +431,20 @@ model Subscription {
   org  Organization     @relation(fields: [orgId], references: [id], onDelete: Cascade)
   plan SubscriptionPlan @relation(fields: [planId], references: [id])
   @@map("subscriptions")
+}
+
+model AiKnowledge {
+  id        String   @id @default(uuid())
+  orgId     String   @map("org_id")
+  title     String
+  content   String   @db.Text
+  category  String?  @default("general")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, isActive])
+  @@map("ai_knowledge")
 }
