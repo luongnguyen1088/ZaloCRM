@@ -116,7 +116,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { api } from '@/api/index';
 
 const plans = ref<any[]>([]);
 const currentPlanId = ref<string | null>(null);
@@ -125,7 +125,7 @@ const selectedPlan = ref<any>(null);
 
 const fetchPlans = async () => {
   try {
-    const res = await axios.get('/api/v1/billing/plans');
+    const res = await api.get('/billing/plans');
     plans.value = res.data;
   } catch (err) {
     console.error('Failed to fetch plans', err);
@@ -134,7 +134,7 @@ const fetchPlans = async () => {
 
 const fetchSubscription = async () => {
   try {
-    const res = await axios.get('/api/v1/billing/subscription');
+    const res = await api.get('/billing/subscription');
     if (res.data) {
       currentPlanId.value = res.data.planId;
     }
