@@ -250,26 +250,22 @@ async function loadWebhook() {
 
 async function loadAiConfig() {
   try {
-    const res = await api.get('/ai/config');
-    aiConfig.value = {
-      provider: res.data.provider,
-      model: res.data.model,
-      maxDaily: res.data.maxDaily,
-      enabled: res.data.enabled,
-      hasAnthropicKey: res.data.hasAnthropicKey,
-      hasGeminiKey: res.data.hasGeminiKey,
-      hasOpenRouterKey: res.data.hasOpenRouterKey,
-    };
-  } catch {
-    aiConfig.value = { 
-      provider: 'anthropic', 
-      model: 'claude-sonnet-4-6', 
-      maxDaily: 500, 
-      enabled: true,
-      hasAnthropicKey: false,
-      hasGeminiKey: false,
-      hasOpenRouterKey: false,
-    };
+    // Add timestamp to bypass any caching layers
+    const res = await api.get(`/ai/config?t=${Date.now()}`);
+    const data = res.data;
+    
+    // Explicitly update each field to ensure Vue reactivity
+    aiConfig.value.provider = data.provider || 'anthropic';
+    aiConfig.value.model = data.model || '';
+    aiConfig.value.maxDaily = data.maxDaily || 500;
+    aiConfig.value.enabled = Boolean(data.enabled);
+    aiConfig.value.hasAnthropicKey = Boolean(data.hasAnthropicKey);
+    aiConfig.value.hasGeminiKey = Boolean(data.hasGeminiKey);
+    aiConfig.value.hasOpenRouterKey = Boolean(data.hasOpenRouterKey);
+    
+    console.log('[AI Settings] UI Updated:', JSON.stringify(aiConfig.value));
+  } catch (err) {
+    console.error('[AI Settings] Failed to load config:', err);
   }
 }
 

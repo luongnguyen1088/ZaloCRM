@@ -35,15 +35,16 @@ function buildConversationContext(messages: MessageContext[]) {
 
 async function getProviderApiKey(orgId: string, provider: string) {
   const pLower = provider.toLowerCase();
-  /* 1. Check registry (env-based) */
-  const providerDef = getProviderConfig(pLower);
-  if (providerDef?.authToken) return providerDef.authToken;
 
-  /* 2. Fallback: per-org DB setting */
+  /* 1. Primary: per-org DB setting (user provided via UI) */
   const setting = await prisma.appSetting.findFirst({
     where: { orgId, settingKey: `ai_${pLower}_api_key` },
   });
-  return setting?.valuePlain || '';
+  if (setting?.valuePlain) return setting.valuePlain;
+
+  /* 2. Fallback: registry (system env-based) */
+  const providerDef = getProviderConfig(pLower);
+  return providerDef?.authToken || '';
 }
 
 export async function getAiConfig(orgId: string) {
