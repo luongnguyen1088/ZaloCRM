@@ -36,6 +36,9 @@
 
       <span class="text-body-2 mr-3" v-if="authStore.user">{{ authStore.user.fullName }}</span>
       <NotificationBell />
+      <v-btn icon variant="text" to="/api-settings" class="mr-1">
+        <v-icon>mdi-cog-outline</v-icon>
+      </v-btn>
       <v-btn icon variant="text" @click="toggleTheme">
         <v-icon>{{ isDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
       </v-btn>
@@ -109,8 +112,8 @@ const menuItems = [
   { title: 'Lịch hẹn', icon: 'mdi-calendar-clock-outline', path: '/appointments' },
   { title: 'Báo cáo', icon: 'mdi-chart-arc', path: '/reports' },
   { title: 'Phân tích', icon: 'mdi-chart-timeline-variant-shimmer', path: '/analytics' },
-  { title: 'Nhân viên', icon: 'mdi-account-cog-outline', path: '/settings' },
-  { title: 'API & Webhook', icon: 'mdi-api', path: '/api-settings' },
+  { title: 'Nhân sự & Phân quyền', icon: 'mdi-account-cog-outline', path: '/settings' },
+  { title: 'Kết nối & AI', icon: 'mdi-robot-shimmer', path: '/api-settings' },
   { title: 'Tích hợp', icon: 'mdi-connection', path: '/integrations' },
   { title: 'Automation', icon: 'mdi-robot-outline', path: '/automation' },
   { title: 'Gói cước', icon: 'mdi-crown-outline', path: '/pricing' },
