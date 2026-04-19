@@ -162,7 +162,15 @@ async function loadAiConfig() {
       hasOpenRouterKey: res.data.hasOpenRouterKey,
     };
   } catch {
-    aiConfig.value = { provider: 'anthropic', model: 'claude-sonnet-4-6', maxDaily: 500, enabled: true };
+    aiConfig.value = { 
+      provider: 'anthropic', 
+      model: 'claude-sonnet-4-6', 
+      maxDaily: 500, 
+      enabled: true,
+      hasAnthropicKey: false,
+      hasGeminiKey: false,
+      hasOpenRouterKey: false,
+    };
   }
 }
 
