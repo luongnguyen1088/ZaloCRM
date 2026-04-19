@@ -80,20 +80,23 @@ export async function updateAiConfig(orgId: string, input: { provider?: string; 
       update: { valuePlain: input.apiKey },
     });
   }
+
+  const enabledValue = input.enabled !== undefined ? Boolean(input.enabled) : undefined;
+  
   return prisma.aiConfig.upsert({
     where: { orgId },
     create: {
       orgId,
       provider: input.provider || config.aiDefaultProvider,
       model: input.model || config.aiDefaultModel,
-      maxDaily: input.maxDaily ?? 500,
-      enabled: input.enabled ?? true,
+      maxDaily: Number(input.maxDaily) || 500,
+      enabled: enabledValue ?? true,
     },
     update: {
       provider: input.provider,
       model: input.model,
-      maxDaily: input.maxDaily,
-      enabled: input.enabled,
+      maxDaily: input.maxDaily !== undefined ? Number(input.maxDaily) : undefined,
+      enabled: enabledValue,
     },
   });
 }

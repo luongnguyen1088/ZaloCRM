@@ -94,16 +94,15 @@ async function fetchProviders() {
   }
 }
 
-/* Fetch providers when dialog opens */
-watch(() => props.modelValue, (open) => {
-  if (open) fetchProviders();
+/* Sync config prop → local state ONLY when dialog is newly opened */
+watch(() => props.modelValue, (isOpen) => {
+  if (isOpen) {
+    local.provider = props.config.provider;
+    local.model = props.config.model;
+    local.maxDaily = props.config.maxDaily;
+    local.enabled = props.config.enabled;
+    local.apiKey = ''; // Always reset password field on open
+    fetchProviders();
+  }
 });
-
-/* Sync config prop → local state */
-watch(() => props.config, (value) => {
-  local.provider = value.provider;
-  local.model = value.model;
-  local.maxDaily = value.maxDaily;
-  local.enabled = value.enabled;
-}, { immediate: true, deep: true });
 </script>
