@@ -44,6 +44,13 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('token', res.data.token);
   }
 
+  async function googleLogin(idToken: string) {
+    const res = await api.post('/auth/google', { idToken });
+    token.value = res.data.token;
+    user.value = res.data.user;
+    localStorage.setItem('token', res.data.token);
+  }
+
   async function fetchProfile() {
     try {
       const res = await api.get('/profile');
@@ -65,5 +72,5 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return { user, token, needsSetup, isAuthenticated, isOwner, isAdmin, checkSetup, setup, register, login, fetchProfile, logout, init };
+  return { user, token, needsSetup, isAuthenticated, isOwner, isAdmin, checkSetup, setup, register, login, googleLogin, fetchProfile, logout, init };
 });

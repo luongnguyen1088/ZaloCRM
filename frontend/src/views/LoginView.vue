@@ -81,8 +81,27 @@ onMounted(async () => {
   try {
     const needs = await authStore.checkSetup();
     if (needs) router.replace('/setup');
+
+    // Initialize Google Auth
+    // @ts-ignore
+    google.accounts.id.initialize({
+      client_id: '926202174216-4v1fml75f5403k79bvoeuau2go3oe1jq.apps.googleusercontent.com',
+      callback: handleGoogleCallback,
+    });
   } catch {}
 });
+
+async function handleGoogleCallback(response: any) {
+  loading.value = true;
+  try {
+    await authStore.googleLogin(response.credential);
+    router.push('/');
+  } catch (err) {
+    error.value = 'Đăng nhập Google thất bại';
+  } finally {
+    loading.value = false;
+  }
+}
 
 async function handleLogin() {
   loading.value = true;
@@ -98,6 +117,7 @@ async function handleLogin() {
 }
 
 function loginWithGoogle() {
-  window.location.href = `${import.meta.env.VITE_API_URL || ''}/api/v1/auth/google`;
+  // @ts-ignore
+  google.accounts.id.prompt();
 }
 </script>

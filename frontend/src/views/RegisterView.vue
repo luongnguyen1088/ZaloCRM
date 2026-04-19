@@ -52,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
@@ -63,6 +63,26 @@ const password = ref('');
 const loading = ref(false);
 const router = useRouter();
 const authStore = useAuthStore();
+
+onMounted(() => {
+  // @ts-ignore
+  google.accounts.id.initialize({
+    client_id: '926202174216-4v1fml75f5403k79bvoeuau2go3oe1jq.apps.googleusercontent.com',
+    callback: handleGoogleCallback,
+  });
+});
+
+async function handleGoogleCallback(response: any) {
+  loading.value = true;
+  try {
+    await authStore.googleLogin(response.credential);
+    router.push('/');
+  } catch (err) {
+    console.error('Registration failed', err);
+  } finally {
+    loading.value = false;
+  }
+}
 
 async function handleRegister() {
   loading.value = true;
@@ -82,8 +102,8 @@ async function handleRegister() {
 }
 
 function loginWithGoogle() {
-  // Direct to backend Google Auth endpoint
-  window.location.href = `${import.meta.env.VITE_API_URL || ''}/api/v1/auth/google`;
+  // @ts-ignore
+  google.accounts.id.prompt();
 }
 </script>
 
