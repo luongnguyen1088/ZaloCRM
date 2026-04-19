@@ -404,7 +404,7 @@ model AiSuggestion {
 
 model SubscriptionPlan {
   id          String   @id @default(uuid())
-  name        String   // Free, Pro, Enterprise
+  name        String   @unique // Free, Pro, Enterprise
   priceMonth  Float    @map("price_month")
   maxZaloAcc  Int      @default(1) @map("max_zalo_acc")
   maxAiTokens Int      @default(1000) @map("max_ai_tokens")

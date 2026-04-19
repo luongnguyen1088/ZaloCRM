@@ -1,6 +1,15 @@
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error('DATABASE_URL environment variable is not set');
+}
+
+const pool = new pg.Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log('Seeding subscription plans...');
@@ -31,34 +40,15 @@ async function main() {
 
   for (const plan of plans) {
     await prisma.subscriptionPlan.upsert({
-      where: { id: plan.name }, // This is a bit hacky since id is UUID, normally use name as unique or find first
-      // Better way for seeding:
+      where: { name: plan.name },
       update: {
         priceMonth: plan.priceMonth,
         maxZaloAcc: plan.maxZaloAcc,
         maxAiTokens: plan.maxAiTokens,
         features: plan.features,
       },
-      create: plan as any,
+      create: plan,
     });
-  }
-
-  // Refined seeding to avoid ID issues
-  for (const planData of plans) {
-    const existing = await prisma.subscriptionPlan.findFirst({
-      where: { name: planData.name }
-    });
-
-    if (existing) {
-      await prisma.subscriptionPlan.update({
-        where: { id: existing.id },
-        data: planData
-      });
-    } else {
-      await prisma.subscriptionPlan.create({
-        data: planData
-      });
-    }
   }
 
   console.log('Seeding complete.');
@@ -71,4 +61,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
+    await pool.end();
   });
