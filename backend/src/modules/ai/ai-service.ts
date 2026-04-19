@@ -53,9 +53,20 @@ export async function getAiConfig(orgId: string) {
     });
   }
   const availableProviders = getAvailableProviders();
-  const hasKey = async (p: string) => !!(await getProviderApiKey(orgId, p));
-  const [hasAnthropicKey, hasGeminiKey] = await Promise.all([hasKey('anthropic'), hasKey('gemini')]);
-  return { ...aiConfig, hasAnthropicKey, hasGeminiKey, availableProviders };
+  const hasKey = async (p: string) => {
+    const def = getProviderConfig(p);
+    if (def?.authToken) return true;
+    const setting = await prisma.appSetting.findFirst({
+      where: { orgId, settingKey: `ai_${p}_api_key` }
+    });
+    return !!setting?.valuePlain;
+  };
+  const [hasAnthropicKey, hasGeminiKey, hasOpenRouterKey] = await Promise.all([
+    hasKey('anthropic'),
+    hasKey('gemini'),
+    hasKey('openrouter')
+  ]);
+  return { ...aiConfig, hasAnthropicKey, hasGeminiKey, hasOpenRouterKey, availableProviders };
 }
 
 export async function updateAiConfig(orgId: string, input: { provider?: string; model?: string; maxDaily?: number; enabled?: boolean; apiKey?: string }) {

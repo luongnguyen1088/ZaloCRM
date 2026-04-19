@@ -16,7 +16,9 @@ export async function generateWithOpenaiCompat(
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        authorization: `Bearer ${apiKey}`,
+        'authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': 'https://zalocrm.com',
+        'X-Title': 'ZaloCRM',
       },
       body: JSON.stringify({
         model,

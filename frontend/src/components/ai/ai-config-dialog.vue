@@ -11,7 +11,8 @@
           v-model="local.apiKey" 
           label="API Key" 
           type="password" 
-          hint="Dán API Key từ nhà cung cấp vào đây. Nếu bỏ trống sẽ dùng cấu hình mặc định của hệ thống."
+          :placeholder="hasCurrentKey ? '••••••••••••' : 'Nhập API Key mới'"
+          hint="Dán API Key từ nhà cung cấp vào đây. Nếu bỏ trống sẽ dùng cấu hình hiện tại."
           persistent-hint
           variant="outlined" 
           class="mb-3" 
@@ -39,7 +40,15 @@ type ProviderInfo = { id: string; name: string; models: ProviderModel[] };
 const props = defineProps<{
   modelValue: boolean;
   loading: boolean;
-  config: { provider: string; model: string; maxDaily: number; enabled: boolean };
+  config: { 
+    provider: string; 
+    model: string; 
+    maxDaily: number; 
+    enabled: boolean;
+    hasAnthropicKey?: boolean;
+    hasGeminiKey?: boolean;
+    hasOpenRouterKey?: boolean;
+  };
 }>();
 
 const emit = defineEmits<{
@@ -49,6 +58,13 @@ const emit = defineEmits<{
 
 const providers = ref<ProviderInfo[]>([]);
 const loadingProviders = ref(false);
+
+const hasCurrentKey = computed(() => {
+  if (local.provider === 'anthropic') return props.config.hasAnthropicKey;
+  if (local.provider === 'gemini') return props.config.hasGeminiKey;
+  if (local.provider === 'openrouter') return props.config.hasOpenRouterKey;
+  return false;
+});
 
 /* Dropdown items derived from API data */
 const providerItems = computed(() => providers.value.map((p) => ({ title: p.name, value: p.id })));

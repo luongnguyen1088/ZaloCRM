@@ -149,6 +149,9 @@ async function loadAiConfig() {
       model: res.data.model,
       maxDaily: res.data.maxDaily,
       enabled: res.data.enabled,
+      hasAnthropicKey: res.data.hasAnthropicKey,
+      hasGeminiKey: res.data.hasGeminiKey,
+      hasOpenRouterKey: res.data.hasOpenRouterKey,
     };
   } catch {
     aiConfig.value = { provider: 'anthropic', model: 'claude-sonnet-4-6', maxDaily: 500, enabled: true };
@@ -201,7 +204,7 @@ async function testWebhook() {
   }
 }
 
-async function saveAiConfig(value: { provider: string; model: string; maxDaily: number; enabled: boolean }) {
+async function saveAiConfig(value: { provider: string; model: string; maxDaily: number; enabled: boolean; apiKey?: string }) {
   aiSaving.value = true;
   try {
     const res = await api.put('/ai/config', value);
@@ -210,6 +213,9 @@ async function saveAiConfig(value: { provider: string; model: string; maxDaily: 
       model: res.data.model,
       maxDaily: res.data.maxDaily,
       enabled: res.data.enabled,
+      hasAnthropicKey: res.data.hasAnthropicKey,
+      hasGeminiKey: res.data.hasGeminiKey,
+      hasOpenRouterKey: res.data.hasOpenRouterKey,
     };
     showAiConfig.value = false;
     showSnack('Đã lưu cấu hình AI');
