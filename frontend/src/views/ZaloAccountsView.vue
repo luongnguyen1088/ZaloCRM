@@ -402,28 +402,6 @@
 }
 </style>
 
-    <!-- Delete confirm dialog -->
-    <v-dialog v-model="showDeleteDialog" max-width="400">
-      <v-card>
-        <v-card-title>Xác nhận xóa</v-card-title>
-        <v-card-text>Bạn có chắc muốn xóa tài khoản "{{ deleteTarget?.displayName || deleteTarget?.id }}"?</v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn @click="showDeleteDialog = false">Hủy</v-btn>
-          <v-btn color="error" :loading="deleting" @click="handleDeleteAccount">Xóa</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Access control dialog -->
-    <ZaloAccessDialog
-      v-model="showAccessDialog"
-      :account-id="accessTarget?.id ?? ''"
-      :account-name="accessTarget?.displayName ?? accessTarget?.id ?? ''"
-    />
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useZaloAccounts, type ZaloAccount } from '@/composables/use-zalo-accounts';
