@@ -47,13 +47,24 @@ async function getProviderApiKey(orgId: string, provider: string) {
 }
 
 export async function getAiConfig(orgId: string) {
+  console.log(`[AI Settings] FETCHING config for orgId: "${orgId}"`);
+  
   let aiConfig = await prisma.aiConfig.findUnique({ where: { orgId } });
+  
   if (!aiConfig) {
-    aiConfig = await prisma.aiConfig.create({
-      data: { orgId, provider: config.aiDefaultProvider, model: config.aiDefaultModel, maxDaily: 500, enabled: true },
-    });
+    console.log(`[AI Settings] WARNING: No config found in DB for org "${orgId}". Returning in-memory defaults.`);
+    // Return defaults but DO NOT save to DB here. Let the user Save from UI.
+    aiConfig = {
+      orgId,
+      provider: config.aiDefaultProvider,
+      model: config.aiDefaultModel,
+      maxDaily: 500,
+      enabled: false,
+    } as any;
+  } else {
+    console.log(`[AI Settings] Found config in DB:`, JSON.stringify(aiConfig));
   }
-  const availableProviders = getAvailableProviders();
+
   const hasKey = async (p: string) => {
     const pLower = p.toLowerCase();
     const def = getProviderConfig(pLower);
@@ -63,12 +74,20 @@ export async function getAiConfig(orgId: string) {
     });
     return !!setting?.valuePlain;
   };
+
   const [hasAnthropicKey, hasGeminiKey, hasOpenRouterKey] = await Promise.all([
     hasKey('anthropic'),
     hasKey('gemini'),
     hasKey('openrouter')
   ]);
-  return { ...aiConfig, hasAnthropicKey, hasGeminiKey, hasOpenRouterKey, availableProviders };
+
+  return { 
+    ...aiConfig, 
+    hasAnthropicKey, 
+    hasGeminiKey, 
+    hasOpenRouterKey,
+    availableProviders: getAvailableProviders()
+  };
 }
 
 export async function updateAiConfig(orgId: string, input: { provider?: string; model?: string; maxDaily?: number; enabled?: boolean; apiKey?: string }) {
