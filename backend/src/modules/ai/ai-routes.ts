@@ -83,11 +83,18 @@ export async function aiRoutes(app: FastifyInstance) {
 
   app.post('/api/v1/ai/suggest', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const body = request.body as { conversationId?: string; messageId?: string };
+      const body = request.body as { conversationId?: string; messageId?: string; customPrompt?: string; originalContent?: string };
       if (!body.conversationId) return reply.status(400).send({ error: 'conversationId is required' });
       const access = await assertConversationReadAccess(request, reply, body.conversationId);
       if (!access) return;
-      return await generateAiOutput({ orgId: request.user!.orgId, conversationId: body.conversationId, messageId: body.messageId, type: 'reply_draft' });
+      return await generateAiOutput({ 
+        orgId: request.user!.orgId, 
+        conversationId: body.conversationId, 
+        messageId: body.messageId, 
+        type: 'reply_draft',
+        customPrompt: body.customPrompt,
+        originalContent: body.originalContent
+      });
     } catch (err) {
       logger.error('[ai] Suggest error:', err);
       return sendHandledError(reply, err, 'Failed to generate AI suggestion');

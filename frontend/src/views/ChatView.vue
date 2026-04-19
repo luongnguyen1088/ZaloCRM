@@ -26,6 +26,8 @@
       :ai-suggestion-error="aiSuggestionError"
       @send="sendMessage"
       @ask-ai="generateAiSuggestion"
+      @refine-ai="(data) => refineAiSuggestion(data.content, data.instruction)"
+      @clear-ai="clearAiState"
       @toggle-contact-panel="showContactPanel = !showContactPanel"
       :show-contact-panel="showContactPanel"
       style="flex: 1; min-width: 300px;"

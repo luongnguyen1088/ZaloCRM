@@ -98,10 +98,39 @@
           :error="aiSuggestionError"
           @generate="$emit('ask-ai')"
           @apply="applySuggestion"
+          @refine="handleRefine"
+          @close="$emit('clear-ai')"
         />
         <div class="d-flex align-end">
-          <v-textarea v-model="inputText" placeholder="Nhập tin nhắn..." variant="solo-filled" density="compact" hide-details auto-grow rows="1" max-rows="3" @keydown.enter.exact.prevent="handleSend" class="flex-grow-1 mr-2" />
-          <v-btn icon color="primary" :loading="sending" :disabled="!inputText.trim()" @click="handleSend"><v-icon>mdi-send</v-icon></v-btn>
+          <v-textarea
+            v-model="inputText"
+            placeholder="Nhập tin nhắn..."
+            variant="solo-filled"
+            density="compact"
+            hide-details
+            auto-grow
+            rows="1"
+            max-rows="5"
+            @keydown.enter.exact.prevent="handleSend"
+            class="flex-grow-1 mr-2 futuristic-input"
+          >
+            <template #append-inner>
+              <v-btn
+                icon
+                size="x-small"
+                variant="text"
+                class="magic-wand-btn mr-1"
+                :loading="aiSuggestionLoading"
+                @click="handleMagicCompose"
+                title="AI Soạn văn bản ma thuật"
+              >
+                <v-icon color="primary">mdi-auto-fix</v-icon>
+              </v-btn>
+            </template>
+          </v-textarea>
+          <v-btn icon color="primary" :loading="sending" :disabled="!inputText.trim()" @click="handleSend" class="send-btn">
+            <v-icon>mdi-send</v-icon>
+          </v-btn>
         </div>
       </div>
     </template>
@@ -136,7 +165,13 @@ const props = defineProps<{
   aiSuggestionError: string;
 }>();
 
-const emit = defineEmits<{ send: [content: string]; 'toggle-contact-panel': []; 'ask-ai': [] }>();
+const emit = defineEmits<{ 
+  send: [content: string]; 
+  'toggle-contact-panel': []; 
+  'ask-ai': [];
+  'clear-ai': [];
+  'refine-ai': [data: { content: string; instruction: string }];
+}>();
 
 const inputText = ref('');
 const messagesContainer = ref<HTMLElement | null>(null);
@@ -146,6 +181,18 @@ const syncSnack = ref({ show: false, text: '', color: 'success' });
 
 function handleSend() { if (!inputText.value.trim()) return; emit('send', inputText.value); inputText.value = ''; }
 function applySuggestion() { if (!props.aiSuggestion) return; inputText.value = props.aiSuggestion; }
+
+function handleMagicCompose() {
+  if (inputText.value.trim()) {
+    handleRefine('Hoàn thiện và trau chuốt nội dung này cho tôi');
+  } else {
+    emit('ask-ai');
+  }
+}
+
+function handleRefine(instruction: string) {
+  emit('refine-ai', { content: inputText.value, instruction });
+}
 function formatMessageTime(d: string) { return new Date(d).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }); }
 function openFile(url: string) { window.open(url, '_blank'); }
 
@@ -246,4 +293,40 @@ watch(() => props.messages.length, async () => { await nextTick(); if (messagesC
 .file-card { display: flex; align-items: center; padding: 8px 12px; border-radius: 8px; background: rgba(0, 242, 255, 0.05); border: 1px solid rgba(0, 242, 255, 0.1); }
 .chat-image { max-width: 100%; max-height: 300px; border-radius: 12px; cursor: pointer; transition: transform 0.2s; }
 .chat-image:hover { transform: scale(1.02); }
+
+/* Futuristic UI Enhancements */
+.futuristic-input :deep(.v-field) {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease;
+}
+
+.futuristic-input :deep(.v-field--focused) {
+  border-color: rgba(0, 242, 255, 0.4) !important;
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.1) !important;
+}
+
+.magic-wand-btn {
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.magic-wand-btn:hover {
+  opacity: 1;
+  transform: rotate(15deg) scale(1.1);
+  filter: drop-shadow(0 0 5px rgba(0, 242, 255, 0.5));
+}
+
+.send-btn {
+  height: 44px !important;
+  width: 44px !important;
+  margin-bottom: 2px;
+  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.2) !important;
+}
+
+.chat-input-area {
+  background: rgba(0, 0, 0, 0.15);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
 </style>

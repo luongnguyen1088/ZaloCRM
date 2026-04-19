@@ -149,16 +149,38 @@ export function useChat() {
     }
   }
 
-  async function generateAiSuggestion() {
+  async function generateAiSuggestion(customPrompt?: string) {
     if (!selectedConvId.value) return;
     aiSuggestionLoading.value = true;
     aiSuggestionError.value = '';
     try {
-      const res = await api.post('/ai/suggest', { conversationId: selectedConvId.value });
+      const res = await api.post('/ai/suggest', { 
+        conversationId: selectedConvId.value,
+        customPrompt: customPrompt
+      });
       aiSuggestion.value = res.data.content || '';
       await fetchAiUsage();
     } catch (err: any) {
       aiSuggestionError.value = err.response?.data?.error || 'Không thể tạo gợi ý AI';
+    } finally {
+      aiSuggestionLoading.value = false;
+    }
+  }
+
+  async function refineAiSuggestion(content: string, instruction: string) {
+    if (!selectedConvId.value) return;
+    aiSuggestionLoading.value = true;
+    aiSuggestionError.value = '';
+    try {
+      const res = await api.post('/ai/suggest', {
+        conversationId: selectedConvId.value,
+        originalContent: content,
+        customPrompt: instruction
+      });
+      aiSuggestion.value = res.data.content || '';
+      await fetchAiUsage();
+    } catch (err: any) {
+      aiSuggestionError.value = err.response?.data?.error || 'Không thể tinh chỉnh nội dung';
     } finally {
       aiSuggestionLoading.value = false;
     }

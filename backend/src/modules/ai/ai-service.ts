@@ -220,7 +220,14 @@ async function saveSuggestion(input: { orgId: string; conversationId: string; me
   });
 }
 
-export async function generateAiOutput(input: { orgId: string; conversationId: string; type: AiTaskType; messageId?: string }) {
+export async function generateAiOutput(input: { 
+  orgId: string; 
+  conversationId: string; 
+  type: AiTaskType; 
+  messageId?: string;
+  customPrompt?: string;
+  originalContent?: string;
+}) {
   const [currentConfig, conversation] = await Promise.all([
     getAiConfig(input.orgId),
     loadConversation(input.conversationId, input.orgId),
@@ -245,12 +252,21 @@ export async function generateAiOutput(input: { orgId: string; conversationId: s
   const contextText = buildConversationContext(conversation.messages);
   const language = detectLanguage(contextText);
   const customerName = conversation.contact?.fullName || 'customer';
-  const userPrompt = [
+  
+  let userPrompt = [
     `<conversation_context>`,
     `Customer: ${customerName}`,
     contextText,
     `</conversation_context>`,
   ].join('\n');
+
+  if (input.originalContent) {
+    userPrompt += `\n\n<current_draft>\n${input.originalContent}\n</current_draft>\nRefine the above draft based on the instruction.`;
+  }
+
+  if (input.customPrompt) {
+    userPrompt += `\n\n<instruction>\n${input.customPrompt}\n</instruction>`;
+  }
 
   // Fetch relevant knowledge if this is a reply draft
   let knowledgeCtx = '';
