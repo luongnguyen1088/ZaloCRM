@@ -1,53 +1,52 @@
 <template>
   <div class="login-shell">
     <div class="login-container">
+      <!-- Left side: Value Proposition -->
       <section class="login-showcase">
         <div class="entrance-animation-delay-1">
-          <div class="login-badge ai-core-orb">
-            <v-icon size="18" color="cyan-electric">mdi-sparkles</v-icon>
-            <span>ZaloCRM cho đội sale và CSKH</span>
+          <div class="login-badge glow-border">
+            <v-icon size="18" color="#00F2FF">mdi-auto-fix</v-icon>
+            <span class="ml-2">Next-Gen Zalo Automation</span>
           </div>
         </div>
 
         <div class="login-copy entrance-animation-delay-2">
-          <p class="login-overline">Hệ sinh thái vận hành tập trung</p>
-          <h1 class="login-title">Quản lý Zalo OA & CRM <br/><span class="text-gradient">Thông minh hơn</span></h1>
+          <p class="login-overline">The OS for Social Commerce</p>
+          <h1 class="login-title">Vận hành Zalo <br/><span class="text-gradient">Đẳng cấp AI</span></h1>
           <p class="login-description">
-            Hợp nhất hội thoại, tối ưu lead và tự động hóa quy trình chăm sóc khách hàng 
-            ngay trên nền tảng Zalo với sức mạnh của AI.
+            Tối ưu hóa phễu bán hàng, quản lý đội ngũ sale và kích hoạt 
+            AI Chatbot tóm tắt nhu cầu khách hàng tự động 24/7.
           </p>
         </div>
 
         <div class="login-stat-grid entrance-animation-delay-3">
-          <article v-for="stat in quickStats" :key="stat.label" class="login-stat-card glass-card">
+          <article v-for="stat in quickStats" :key="stat.label" class="login-stat-card glass-dark">
             <div class="login-stat-value text-gradient">{{ stat.value }}</div>
             <div class="login-stat-label">{{ stat.label }}</div>
           </article>
         </div>
 
         <div class="login-preview entrance-animation-delay-4">
-          <div class="login-preview__surface glass-card">
-            <div class="login-preview__top">
+          <div class="login-preview__surface glass-dark">
+            <div class="login-preview__top mb-6">
               <div>
-                <p class="login-preview__eyebrow">Bảng điều phối AI</p>
-                <h2 class="login-preview__title">Vận hành theo thời gian thực</h2>
+                <p class="login-preview__eyebrow">Real-time Dashboard</p>
+                <h2 class="login-preview__title">Dữ liệu hội thoại tập trung</h2>
               </div>
-              <v-chip size="small" color="cyan-electric" variant="tonal" class="pulse-animation">
-                <v-icon start size="14">mdi-broadcast</v-icon>
-                AI Live Sync
-              </v-chip>
+              <div class="live-indicator">
+                <div class="pulse-dot"></div>
+                <span>Hệ thống sẵn sàng</span>
+              </div>
             </div>
 
             <div class="login-preview__illustration">
-              <v-img :src="heroIllustration" alt="ZaloCRM illustration" cover class="rounded-xl" />
-              <div class="illustration-overlay"></div>
+              <v-img :src="heroIllustration" alt="ZaloCRM illustration" cover class="rounded-xl border-glass" />
+              <div class="glow-layer"></div>
             </div>
 
-            <div class="login-feature-list">
+            <div class="login-feature-list mt-6">
               <div v-for="item in highlights" :key="item.title" class="login-feature">
-                <div class="login-feature__icon">
-                  <v-icon size="20">{{ item.icon }}</v-icon>
-                </div>
+                <v-icon size="24" class="feature-icon">{{ item.icon }}</v-icon>
                 <div>
                   <div class="login-feature__title">{{ item.title }}</div>
                   <div class="login-feature__text">{{ item.description }}</div>
@@ -58,114 +57,118 @@
         </div>
       </section>
 
+      <!-- Right side: Auth Form -->
       <div class="login-form-side entrance-animation-delay-2">
-        <v-card class="login-card glass-card-heavy" elevation="24">
-          <div class="login-card__header">
-            <div class="login-brand">
-              <div class="login-brand__icon ai-core-orb">
-                <v-icon size="32" color="white">mdi-robot-outline</v-icon>
+        <v-card class="login-card glass-premium" elevation="0">
+          <div class="login-card__content">
+            <header class="mb-10 text-center">
+              <div class="brand-logo-container mb-6">
+                <div class="logo-orb">
+                  <v-icon size="36" color="white">mdi-lightning-bolt</v-icon>
+                </div>
               </div>
-              <div>
-                <p class="login-brand__name">ZaloCRM <span class="v-badge-pro">PRO</span></p>
-                <p class="login-brand__sub">Giải pháp SaaS cho doanh nghiệp</p>
-              </div>
-            </div>
-
-            <div class="mt-4">
               <h2 class="login-card__title">Chào mừng trở lại</h2>
-              <p class="login-card__description">
-                Đăng nhập để bắt đầu tăng trưởng doanh thu từ Zalo.
-              </p>
-            </div>
-          </div>
+              <p class="login-card__subtitle">Chào mừng bạn gia nhập kỷ nguyên CRM mới</p>
+            </header>
 
-          <v-alert
-            v-if="error"
-            type="error"
-            density="comfortable"
-            variant="tonal"
-            border="start"
-            class="mb-6 rounded-lg"
-          >
-            {{ error }}
-          </v-alert>
+            <v-alert
+              v-if="error"
+              type="error"
+              variant="tonal"
+              density="compact"
+              class="mb-6 rounded-lg text-caption"
+            >
+              {{ error }}
+            </v-alert>
 
-          <v-form @submit.prevent="handleLogin" class="mt-4">
-            <v-text-field
-              v-model="email"
-              label="Email công việc"
-              type="email"
-              variant="outlined"
-              prepend-inner-icon="mdi-email-outline"
-              autocomplete="email"
-              required
-              hide-details="auto"
-              class="mb-5 custom-input"
-            />
+            <v-form @submit.prevent="handleLogin">
+              <div class="input-group mb-4">
+                <v-text-field
+                  v-model="email"
+                  label="Email công việc"
+                  type="email"
+                  variant="plain"
+                  autocomplete="email"
+                  required
+                  hide-details
+                  class="premium-input"
+                >
+                  <template #prepend-inner>
+                    <v-icon color="#94a3b8" class="mr-2">mdi-email-outline</v-icon>
+                  </template>
+                </v-text-field>
+              </div>
 
-            <v-text-field
-              v-model="password"
-              :type="showPassword ? 'text' : 'password'"
-              label="Mật khẩu"
-              variant="outlined"
-              prepend-inner-icon="mdi-lock-outline"
-              :append-inner-icon="showPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
-              autocomplete="current-password"
-              required
-              hide-details="auto"
-              class="mb-3 custom-input"
-              @click:append-inner="showPassword = !showPassword"
-            />
+              <div class="input-group mb-4">
+                <v-text-field
+                  v-model="password"
+                  :type="showPassword ? 'text' : 'password'"
+                  label="Mật khẩu"
+                  variant="plain"
+                  autocomplete="current-password"
+                  required
+                  hide-details
+                  class="premium-input"
+                >
+                  <template #prepend-inner>
+                    <v-icon color="#94a3b8" class="mr-2">mdi-lock-outline</v-icon>
+                  </template>
+                  <template #append-inner>
+                    <v-btn icon size="small" variant="text" @click="showPassword = !showPassword">
+                      <v-icon color="#94a3b8">{{ showPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline' }}</v-icon>
+                    </v-btn>
+                  </template>
+                </v-text-field>
+              </div>
 
-            <div class="login-meta mb-8">
-              <v-checkbox
-                label="Ghi nhớ"
-                hide-details
-                density="compact"
-                color="cyan-electric"
-              ></v-checkbox>
-              <router-link to="/register" class="login-meta__link">Quên mật khẩu?</router-link>
+              <div class="login-options mb-8">
+                <v-checkbox
+                  label="Ghi nhớ tôi"
+                  hide-details
+                  density="compact"
+                  color="#00F2FF"
+                  class="text-caption custom-cb"
+                ></v-checkbox>
+                <router-link to="/register" class="forgot-link">Quên mật khẩu?</router-link>
+              </div>
+
+              <v-btn
+                type="submit"
+                height="60"
+                block
+                class="btn-primary-gradient mb-8"
+                :loading="loading"
+                :disabled="!canSubmit"
+              >
+                <span>Vào hệ thống</span>
+                <v-icon end>mdi-chevron-right</v-icon>
+              </v-btn>
+            </v-form>
+
+            <div class="divider-text">
+              <span class="line"></span>
+              <span class="text">Hoặc tiếp tục với</span>
+              <span class="line"></span>
             </div>
 
             <v-btn
-              type="submit"
-              color="primary"
               block
-              size="x-large"
-              :loading="loading"
-              :disabled="!canSubmit"
-              class="login-submit btn-glow"
+              height="54"
+              variant="outlined"
+              class="btn-google-glass mt-6"
+              :disabled="loading || !googleReady"
+              @click="loginWithGoogle"
             >
-              <span>Đăng nhập hệ thống</span>
-              <v-icon end>mdi-arrow-right</v-icon>
+              <v-img width="20" height="20" src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" class="mr-3" />
+              <span>Google Account</span>
             </v-btn>
-          </v-form>
 
-          <div class="login-divider">
-            <span>Hoặc đăng nhanh bằng</span>
-          </div>
-
-          <v-btn
-            block
-            variant="outlined"
-            size="large"
-            class="login-google"
-            :disabled="loading || !googleReady"
-            @click="loginWithGoogle"
-          >
-            <template v-if="googleReady">
-              <v-icon start color="red">mdi-google</v-icon>
-              <span>Tiếp tục với Google</span>
-            </template>
-            <template v-else>
-              <v-progress-circular indeterminate size="20" width="2" class="mr-2" />
-              <span>Đang khởi tạo...</span>
-            </template>
-          </v-btn>
-
-          <div class="login-footer">
-            <span>Chưa có doanh nghiệp trên ZaloCRM?</span>
-            <router-link to="/register" class="login-footer__link">Đăng ký tự động</router-link>
+            <footer class="mt-12 text-center">
+              <p class="text-caption footer-text">
+                Dành cho doanh nghiệp Zalo?
+                <router-link to="/register" class="signup-link">Đăng ký tự động</router-link>
+              </p>
+            </footer>
           </div>
         </v-card>
       </div>
@@ -202,21 +205,21 @@ const router = useRouter();
 const authStore = useAuthStore();
 
 const quickStats = [
-  { value: '100+', label: 'Zalo OA kết nối' },
-  { value: 'Real-time', label: 'Tương tác khách hàng' },
-  { value: 'GenAI', label: 'Hỗ trợ hội thoại' },
+  { value: '70%', label: 'Giảm thời gian phản hồi' },
+  { value: '3x', label: 'Tỉ suất chuyển đổi lead' },
+  { value: '∞', label: 'Tự động hóa 24/7' },
 ];
 
 const highlights = [
   {
-    icon: 'mdi-message-text-clock-outline',
-    title: 'Phản hồi siêu tốc',
-    description: 'Tự động phân phối chat cho sale ngay khi có inbox mới.',
+    icon: 'mdi-auto-fix',
+    title: 'AI Smart Summary',
+    description: 'Tự động tóm tắt nội dung hội thoại quan trọng.',
   },
   {
-    icon: 'mdi-chart-pepper-hot',
-    title: 'Pipeline chuyên sâu',
-    description: 'Quản lý trạng thái khách hàng từ lạnh sang nóng chuyên nghiệp.',
+    icon: 'mdi-account-group-outline',
+    title: 'Multi-Tenant Unified',
+    description: 'Quản lý hàng trăm Zalo OA trong một giao diện.',
   },
 ];
 
@@ -247,7 +250,6 @@ onMounted(async () => {
 
   const googleIdentity = getGoogleIdentity();
   if (!googleIdentity?.accounts?.id) {
-    // Retry finding google identity in a more robust way
     let attempts = 0;
     const interval = setInterval(() => {
       const identity = getGoogleIdentity();
@@ -328,89 +330,81 @@ function getGoogleIdentity() {
 </script>
 
 <style scoped>
-/* Keyframes */
-@keyframes fadeInSlideUp {
-  from { opacity: 0; transform: translateY(30px); filter: blur(10px); }
-  to { opacity: 1; transform: translateY(0); filter: blur(0); }
-}
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
-@keyframes pulse-soft {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.4); }
-  50% { box-shadow: 0 0 0 10px rgba(0, 242, 255, 0); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
-}
-
-/* Base Layout */
 .login-shell {
+  font-family: 'Outfit', sans-serif;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
 }
 
 .login-container {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 60px;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 80px;
   width: 100%;
-  max-width: 1400px;
-  position: relative;
-  z-index: 2;
+  max-width: 1300px;
 }
 
-
-
-/* Entrance Animations */
-.entrance-animation-delay-1 { animation: fadeInSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-.entrance-animation-delay-2 { animation: fadeInSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards; opacity: 0; }
-.entrance-animation-delay-3 { animation: fadeInSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; opacity: 0; }
-.entrance-animation-delay-4 { animation: fadeInSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards; opacity: 0; }
-
-/* Showcase Section */
-.login-showcase {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+/* Animations */
+@keyframes fadeInSlide {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
+.entrance-animation-delay-1 { animation: fadeInSlide 0.8s ease-out forwards; }
+.entrance-animation-delay-2 { animation: fadeInSlide 0.8s ease-out 0.1s forwards; opacity: 0; }
+.entrance-animation-delay-3 { animation: fadeInSlide 0.8s ease-out 0.2s forwards; opacity: 0; }
+.entrance-animation-delay-4 { animation: fadeInSlide 0.8s ease-out 0.3s forwards; opacity: 0; }
+
+/* Left Side UI */
 .login-badge {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 20px;
-  border-radius: 999px;
+  padding: 8px 16px;
+  border-radius: 99px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(5px);
   color: #fff;
-  font-weight: 600;
-  font-size: 0.95rem;
-  margin-bottom: 30px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 32px;
+}
+
+.glow-border {
+  border: 1px solid rgba(0, 242, 255, 0.3);
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
 }
 
 .login-title {
-  font-size: clamp(2.5rem, 5vw, 4.2rem);
-  line-height: 1.1;
+  font-size: clamp(3rem, 6vw, 4.8rem);
   font-weight: 800;
+  line-height: 1.1;
   color: #fff;
-  letter-spacing: -0.03em;
+  letter-spacing: -2px;
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #00f2ff, #00d2ff, #7ae7ff);
+  background: linear-gradient(135deg, #00f2ff, #a855f7);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.login-overline {
+  color: #a855f7;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 2px;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
 }
 
 .login-description {
   margin-top: 24px;
   font-size: 1.25rem;
-  color: rgba(230, 241, 255, 0.7);
-  max-width: 600px;
+  color: #94a3b8;
+  max-width: 580px;
   line-height: 1.6;
 }
 
@@ -418,288 +412,244 @@ function getGoogleIdentity() {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  margin-top: 40px;
+  margin-top: 48px;
 }
 
-.login-stat-card {
+.glass-dark {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
   padding: 24px;
-  text-align: left;
 }
 
 .login-stat-value {
-  font-size: 1.6rem;
-  font-weight: 800;
+  font-size: 1.8rem;
+  font-weight: 700;
 }
 
 .login-stat-label {
+  color: #64748b;
+  font-size: 0.85rem;
   margin-top: 8px;
-  color: rgba(230, 241, 255, 0.6);
-  font-size: 0.9rem;
 }
 
 .login-preview {
-  margin-top: 50px;
-  max-width: 800px;
-}
-
-.login-preview__surface {
-  padding: 30px;
-  position: relative;
-  overflow: hidden;
-}
-
-.login-preview__top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 24px;
+  margin-top: 60px;
 }
 
 .login-preview__eyebrow {
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
   color: #00f2ff;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
 }
 
 .login-preview__title {
+  color: #fff;
   font-size: 1.4rem;
   font-weight: 700;
-  color: #fff;
-  margin-top: 4px;
+}
+
+.live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(34, 197, 94, 0.1);
+  border-radius: 8px;
+  color: #4ade80;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .login-preview__illustration {
   position: relative;
-  height: 250px;
-  margin-bottom: 24px;
+  height: 240px;
 }
 
-.illustration-overlay {
+.border-glass {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glow-layer {
   position: absolute;
   inset: 0;
-  background: linear-gradient(0deg, rgba(10, 25, 47, 0.8) 0%, transparent 50%);
-  border-radius: 12px;
+  background: radial-gradient(circle at 100% 0%, rgba(0, 242, 255, 0.15), transparent 70%);
+  pointer-events: none;
 }
 
-.login-feature-list {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
+.feature-icon {
+  color: #00f2ff;
+  margin-right: 16px;
+  margin-top: 2px;
 }
 
 .login-feature {
   display: flex;
-  gap: 16px;
-}
-
-.login-feature__icon {
-  width: 44px;
-  height: 44px;
-  background: rgba(0, 242, 255, 0.1);
-  border: 1px solid rgba(0, 242, 255, 0.2);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #00f2ff;
-  flex-shrink: 0;
+  align-items: flex-start;
 }
 
 .login-feature__title {
   color: #fff;
-  font-weight: 700;
-  font-size: 1rem;
+  font-weight: 600;
 }
 
 .login-feature__text {
-  color: rgba(230, 241, 255, 0.6);
+  color: #64748b;
   font-size: 0.85rem;
-  line-height: 1.5;
   margin-top: 4px;
 }
 
-/* Form Section */
-.login-form-side {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.login-card {
-  width: 100%;
-  max-width: 480px;
-  padding: 40px !important;
+/* Right Side Form */
+.glass-premium {
+  background: rgba(2, 6, 23, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: blur(24px) saturate(180%);
   border-radius: 32px !important;
+  padding: 4px;
 }
 
-.login-brand {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+.login-card__content {
+  padding: 48px;
 }
 
-.login-brand__icon {
-  width: 64px;
-  height: 64px;
-  background: linear-gradient(135deg, #0077b6, #00b4d8);
+.logo-orb {
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(135deg, #00f2ff, #7c3aed);
   border-radius: 20px;
   display: flex;
-  align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 20px rgba(0, 119, 182, 0.3);
-}
-
-.login-brand__name {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #fff;
-  display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.v-badge-pro {
-  background: #00f2ff;
-  color: #0a192f;
-  font-size: 0.7rem;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.login-brand__sub {
-  color: rgba(230, 241, 255, 0.5);
-  font-size: 0.9rem;
+  margin: 0 auto;
+  box-shadow: 0 0 30px rgba(0, 242, 255, 0.2);
 }
 
 .login-card__title {
   font-size: 2rem;
-  font-weight: 800;
+  font-weight: 700;
   color: #fff;
 }
 
-.login-card__description {
-  color: rgba(230, 241, 255, 0.6);
+.login-card__subtitle {
+  color: #94a3b8;
   margin-top: 8px;
 }
 
-.login-meta {
+/* Form Inputs */
+.input-group {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 8px 16px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.input-group:focus-within {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #00f2ff;
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.1);
+}
+
+.premium-input {
+  width: 100%;
+}
+
+:deep(.v-field__input) {
+  color: #fff !important;
+  font-size: 1rem;
+}
+
+:deep(.v-label) {
+  color: #64748b !important;
+}
+
+.login-options {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.login-meta__link {
-  color: #00f2ff;
+.forgot-link {
+  color: #a855f7;
   text-decoration: none;
-  font-size: 0.9rem;
   font-weight: 600;
+  font-size: 0.85rem;
 }
 
-.login-submit {
-  height: 60px !important;
+.btn-primary-gradient {
+  background: linear-gradient(135deg, #00f2ff, #7c3aed) !important;
+  color: #fff !important;
   border-radius: 16px !important;
   font-size: 1.1rem !important;
   font-weight: 700 !important;
-  letter-spacing: 0.02em !important;
   text-transform: none !important;
+  letter-spacing: -0.5px;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
-.btn-glow:hover {
-  box-shadow: 0 0 20px rgba(0, 242, 255, 0.4) !important;
+.btn-primary-gradient:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 242, 255, 0.2) !important;
 }
 
-.login-divider {
-  margin: 30px 0;
-  position: relative;
-  text-align: center;
+.divider-text {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
-.login-divider::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
+.line {
+  flex: 1;
   height: 1px;
   background: rgba(255, 255, 255, 0.1);
-  z-index: 1;
 }
 
-.login-divider span {
-  position: relative;
-  z-index: 2;
-  background: #112240; /* Match card background approximation */
-  padding: 0 15px;
-  color: rgba(230, 241, 255, 0.4);
-  font-size: 0.85rem;
+.text {
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 1px;
 }
 
-.login-google {
-  height: 54px !important;
-  border-radius: 16px !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+.btn-google-glass {
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.02) !important;
   color: #fff !important;
+  border-radius: 16px !important;
   text-transform: none !important;
   font-weight: 600 !important;
 }
 
-.login-google:hover {
+.btn-google-glass:hover {
   background: rgba(255, 255, 255, 0.05) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
-.login-footer {
-  margin-top: 30px;
-  text-align: center;
-  font-size: 0.95rem;
-  color: rgba(230, 241, 255, 0.5);
-}
-
-.login-footer__link {
+.signup-link {
   color: #00f2ff;
   text-decoration: none;
   font-weight: 700;
-  margin-left: 5px;
 }
 
-/* Glassmorphism helpers */
-.glass-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  border-radius: 24px;
-}
-
-.glass-card-heavy {
-  background: rgba(17, 34, 64, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(25px);
-}
-
-.pulse-animation {
-  animation: pulse-soft 2s infinite;
-}
-
-/* Custom Input Styling */
-:deep(.v-field__outline) {
-  --v-field-border-opacity: 0.1;
-}
-
-:deep(.v-field--focused .v-field__outline) {
-  --v-field-border-opacity: 1;
-  color: #00f2ff !important;
-}
-
-:deep(.v-label) {
-  color: rgba(230, 241, 255, 0.4) !important;
-}
-
-:deep(.v-field__input) {
-  color: #fff !important;
+.footer-text {
+  color: #64748b;
 }
 
 /* Responsive */
@@ -707,34 +657,23 @@ function getGoogleIdentity() {
   .login-container {
     grid-template-columns: 1fr;
     gap: 40px;
+    padding: 20px;
   }
-  
   .login-showcase {
     text-align: center;
     align-items: center;
   }
-  
-  .login-stat-grid {
-    width: 100%;
-    max-width: 600px;
-  }
-  
   .login-preview {
-    display: none; /* Hide preview on tablet to focus on login */
+    display: none;
   }
 }
 
 @media (max-width: 600px) {
+  .login-card__content {
+    padding: 32px 24px;
+  }
   .login-title {
-    font-size: 2rem;
-  }
-  
-  .login-card {
-    padding: 24px !important;
-  }
-  
-  .login-stat-grid {
-    grid-template-columns: 1fr;
+    font-size: 2.8rem;
   }
 }
 </style>

@@ -1,11 +1,12 @@
 <template>
-  <v-app class="liquid-bg auth-app">
-    <!-- Animated background elements -->
-    <div class="auth-bg-decor">
-      <div class="decor-orb decor-orb--1"></div>
-      <div class="decor-orb decor-orb--2"></div>
-      <div class="decor-orb decor-orb--3"></div>
-      <div class="auth-grid-overlay"></div>
+  <v-app class="auth-app-root">
+    <!-- Premium Galactic Background -->
+    <div class="space-bg">
+      <div class="noise-overlay"></div>
+      <div class="glow-orb orb-1"></div>
+      <div class="glow-orb orb-2"></div>
+      <div class="glow-orb orb-3"></div>
+      <div class="grid-lines"></div>
     </div>
 
     <v-main class="auth-main">
@@ -17,67 +18,77 @@
 </template>
 
 <style scoped>
-.auth-app {
-  position: relative;
+.auth-app-root {
+  background: #020617 !important; /* Deepest black-blue */
   min-height: 100vh;
-  overflow-x: hidden;
-  background-attachment: fixed;
+  position: relative;
+  overflow: hidden;
 }
 
-.auth-bg-decor {
+.space-bg {
   position: fixed;
   inset: 0;
-  pointer-events: none;
   z-index: 0;
+  background: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
 }
 
-.decor-orb {
+.noise-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.15;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.glow-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.15;
+  filter: blur(120px);
+  opacity: 0.25;
+  mix-blend-mode: screen;
 }
 
-.decor-orb--1 {
+.orb-1 {
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, #0ea5e9 0%, transparent 70%);
+  top: -200px;
+  left: -200px;
+  animation: float-slow 20s infinite ease-in-out;
+}
+
+.orb-2 {
   width: 600px;
   height: 600px;
-  background: var(--cyan-electric, #00f2ff);
-  top: -200px;
-  left: -100px;
-  animation: float-slow 15s infinite ease-in-out;
+  background: radial-gradient(circle, #7c3aed 0%, transparent 70%);
+  bottom: -100px;
+  right: -100px;
+  animation: float-slow 25s infinite ease-in-out reverse;
 }
 
-.decor-orb--2 {
+.orb-3 {
   width: 500px;
   height: 500px;
-  background: #aa3bff;
-  bottom: -150px;
-  right: -100px;
-  animation: float-slow 18s infinite ease-in-out reverse;
-}
-
-.decor-orb--3 {
-  width: 400px;
-  height: 400px;
-  background: #0077b6;
+  background: radial-gradient(circle, #10b981 0%, transparent 70%);
   top: 40%;
-  left: 60%;
+  left: 30%;
   opacity: 0.1;
-  animation: float-slow 20s infinite ease-in-out 2s;
 }
 
-.auth-grid-overlay {
+.grid-lines {
   position: absolute;
   inset: 0;
   background-image: 
-    radial-gradient(rgba(0, 242, 255, 0.05) 1px, transparent 1px);
-  background-size: 40px 40px;
-  mask-image: radial-gradient(circle at center, black, transparent 80%);
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(circle at center, black, transparent 90%);
 }
 
 .auth-main {
   position: relative;
-  z-index: 1;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -92,19 +103,12 @@
 
 @keyframes float-slow {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -50px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.9); }
+  50% { transform: translate(40px, -60px) scale(1.1); }
 }
 
 @media (max-width: 960px) {
   .auth-content-wrapper {
     padding: 20px 16px;
-  }
-  
-  .decor-orb {
-    filter: blur(60px);
-    width: 300px;
-    height: 300px;
   }
 }
 </style>
