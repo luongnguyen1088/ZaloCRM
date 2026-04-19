@@ -54,6 +54,7 @@ export async function getAiConfig(orgId: string) {
     });
   }
   const availableProviders = getAvailableProviders();
+  const hasKey = async (p: string) => {
     const pLower = p.toLowerCase();
     const def = getProviderConfig(pLower);
     if (def?.authToken) return true;
