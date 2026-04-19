@@ -83,7 +83,7 @@ export async function updateAiConfig(orgId: string, input: { provider?: string; 
 
   const enabledValue = input.enabled !== undefined ? Boolean(input.enabled) : undefined;
   
-  return prisma.aiConfig.upsert({
+  await prisma.aiConfig.upsert({
     where: { orgId },
     create: {
       orgId,
@@ -99,6 +99,9 @@ export async function updateAiConfig(orgId: string, input: { provider?: string; 
       enabled: enabledValue,
     },
   });
+
+  // Always return the full config including hasKey flags
+  return getAiConfig(orgId);
 }
 
 export async function getAiUsage(orgId: string) {
