@@ -31,11 +31,11 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   });
 
   // Alias /setup for backward compatibility or first run
-  app.post('/api/v1/setup', async (request, reply) => {
+  app.post('/api/v1/setup', async (request) => {
     return app.inject({
       method: 'POST',
       url: '/api/v1/auth/register',
-      payload: request.body,
+      payload: request.body as any,
     });
   });
 
