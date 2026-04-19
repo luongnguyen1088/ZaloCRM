@@ -74,6 +74,18 @@ function buildProviders(): ProviderDef[] {
         m('Moonshot V1', config.kimiDefaultMoonshotV1Model),
       ].filter(Boolean) as ProviderModel[],
     },
+    {
+      id: 'openrouter',
+      name: 'OpenRouter',
+      baseUrl: config.openrouterBaseUrl,
+      authToken: config.openrouterAuthToken,
+      models: [
+        m('Claude 3.5 Sonnet', config.openrouterDefaultModel),
+        m('GPT-4o', 'openai/gpt-4o'),
+        m('Claude 3 Opus', 'anthropic/claude-3-opus'),
+        m('Gemini Pro 1.5', 'google/gemini-pro-1.5'),
+      ].filter(Boolean) as ProviderModel[],
+    },
   ];
 }
 

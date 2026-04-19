@@ -118,6 +118,7 @@ async function generateText(provider: string, apiKey: string, model: string, sys
   if (provider === 'openai') return generateWithOpenaiCompat(`${baseUrl}/v1/chat/completions`, apiKey, model, system, prompt);
   if (provider === 'qwen') return generateWithOpenaiCompat(`${baseUrl}/compatible-mode/v1/chat/completions`, apiKey, model, system, prompt);
   if (provider === 'kimi') return generateWithOpenaiCompat(`${baseUrl}/v1/chat/completions`, apiKey, model, system, prompt);
+  if (provider === 'openrouter') return generateWithOpenaiCompat(`${baseUrl}/chat/completions`, apiKey, model, system, prompt);
 
   throw new Error(`Unsupported AI provider: ${provider}`);
 }
