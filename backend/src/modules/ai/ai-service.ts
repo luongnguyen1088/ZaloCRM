@@ -148,11 +148,12 @@ export async function getAiUsage(orgId: string) {
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
   const usedToday = await prisma.aiSuggestion.count({ where: { orgId, createdAt: { gte: startOfDay } } });
+  const configMaxDaily = Number(currentConfig.maxDaily) || 500;
   return {
     usedToday,
-    maxDaily: currentConfig.maxDaily,
-    remaining: Math.max(0, currentConfig.maxDaily - usedToday),
-    enabled: currentConfig.enabled,
+    maxDaily: configMaxDaily,
+    remaining: Math.max(0, configMaxDaily - usedToday),
+    enabled: Boolean(currentConfig.enabled),
   };
 }
 
@@ -228,13 +229,15 @@ export async function generateAiOutput(input: { orgId: string; conversationId: s
   // Atomic quota check — count inside transaction to prevent TOCTOU race
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
+  const configMaxDaily = Number(currentConfig.maxDaily) || 500;
   const withinQuota = await prisma.$transaction(async (tx) => {
     const usedToday = await tx.aiSuggestion.count({ where: { orgId: input.orgId, createdAt: { gte: startOfDay } } });
-    return usedToday < currentConfig.maxDaily;
+    return usedToday < configMaxDaily;
   });
   if (!withinQuota) throw new Error('AI daily quota exceeded');
 
-  const apiKey = await getProviderApiKey(input.orgId, currentConfig.provider);
+  const provider = currentConfig.provider || 'anthropic';
+  const apiKey = await getProviderApiKey(input.orgId, provider);
   if (!apiKey) throw new Error('AI provider key is not configured');
 
   const contextText = buildConversationContext(conversation.messages);
@@ -253,7 +256,8 @@ export async function generateAiOutput(input: { orgId: string; conversationId: s
       ? buildSummaryPrompt(language)
       : buildSentimentPrompt(language);
 
-  const raw = await generateText(currentConfig.provider, apiKey, currentConfig.model, system, userPrompt);
+  const model = currentConfig.model || 'claude-3-5-sonnet';
+  const raw = await generateText(provider, apiKey, model, system, userPrompt);
 
   if (input.type === 'sentiment') {
     let parsed: SentimentResult;
