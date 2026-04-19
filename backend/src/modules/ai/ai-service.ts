@@ -131,12 +131,18 @@ async function loadConversation(conversationId: string, orgId: string) {
 async function generateText(provider: string, apiKey: string, model: string, system: string, prompt: string) {
   const providerDef = getProviderConfig(provider);
   const baseUrl = providerDef?.baseUrl?.replace(/\/$/, '') || '';
+  
+  // OpenRouter requires model names in provider/model-name format
+  let targetModel = model;
+  if (provider === 'openrouter' && !targetModel.includes('/')) {
+    targetModel = `anthropic/${targetModel}`.replace('claude-sonnet-4-6', 'claude-3.5-sonnet');
+  }
 
-  console.log(`[AI] Generating text with ${provider} using model ${model}`);
+  console.log(`[AI] Generating text with ${provider} using model ${targetModel}`);
   
   try {
-    if (provider === 'anthropic') return await generateWithAnthropic(baseUrl, apiKey, model, system, prompt);
-    if (provider === 'gemini') return await generateWithGemini(baseUrl, apiKey, model, system, prompt);
+    if (provider === 'anthropic') return await generateWithAnthropic(baseUrl, apiKey, targetModel, system, prompt);
+    if (provider === 'gemini') return await generateWithGemini(baseUrl, apiKey, targetModel, system, prompt);
 
     /* OpenAI-compatible providers */
     let endpoint = '/v1/chat/completions';
@@ -144,10 +150,12 @@ async function generateText(provider: string, apiKey: string, model: string, sys
     if (provider === 'openrouter' || provider === 'kimi') endpoint = '/chat/completions';
     
     const fullUrl = `${baseUrl}${endpoint}`;
-    return await generateWithOpenaiCompat(fullUrl, apiKey, model, system, prompt);
+    return await generateWithOpenaiCompat(fullUrl, apiKey, targetModel, system, prompt);
   } catch (err: any) {
-    console.error(`[AI ERROR] Provider ${provider} failed:`, err?.response?.data || err.message || err);
-    throw err;
+    const errorDetail = err?.response?.data || err.message || err;
+    console.error(`[AI ERROR] Provider ${provider} failed:`, JSON.stringify(errorDetail));
+    // Re-throw with more context to help the API response
+    throw new Error(`AI Provider Error: ${JSON.stringify(errorDetail)}`);
   }
 }
 
