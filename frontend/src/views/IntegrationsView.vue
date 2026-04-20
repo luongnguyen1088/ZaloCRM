@@ -231,8 +231,44 @@
           <v-fade-transition mode="out-in">
             <!-- Google Sheets Config -->
             <div v-if="form.type === 'google_sheets'" :key="'gs'">
+              <div v-if="!isGoogleLinked" class="pa-6 border rounded-lg text-center mb-6 bg-surface-muted border-dashed">
+                <v-icon size="48" color="primary" class="mb-3">mdi-google</v-icon>
+                <h4 class="text-subtitle-1 font-weight-bold mb-1">Chưa kết nối tài khoản Google</h4>
+                <p class="text-caption text-medium-emphasis mb-4">Kết nối để chọn Spreadsheet trực tiếp và đồng bộ không cần API Key.</p>
+                <v-btn
+                  color="primary"
+                  variant="flat"
+                  rounded="lg"
+                  prepend-icon="mdi-link-variant"
+                  :loading="linkingGoogle"
+                  @click="linkGoogleAccount"
+                >
+                  Kết nối ngay
+                </v-btn>
+              </div>
+              <div v-else class="pa-4 border rounded-lg mb-6 bg-success-soft d-flex align-center">
+                <v-avatar color="white" size="32" class="mr-3">
+                  <v-icon color="success" size="20">mdi-google</v-icon>
+                </v-avatar>
+                <div class="flex-grow-1">
+                  <div class="text-caption font-weight-bold">Đã kết nối tài khoản Google</div>
+                  <div class="text-x-small text-medium-emphasis">Hệ thống sẽ dùng quyền OAuth để truy cập Sheets</div>
+                </div>
+                <v-btn size="x-small" color="error" variant="text" @click="unlinkGoogle">Hủy kết nối</v-btn>
+              </div>
+
               <v-text-field v-model="form.config.spreadsheetId" label="Spreadsheet ID *" variant="outlined" rounded="lg" class="mb-4" />
-              <v-text-field v-model="form.config.apiKey" label="API Key *" type="password" variant="outlined" rounded="lg" class="mb-4" />
+              <v-text-field
+                v-if="!isGoogleLinked"
+                v-model="form.config.apiKey"
+                label="API Key *"
+                type="password"
+                variant="outlined"
+                rounded="lg"
+                class="mb-4"
+                hint="Không cần thiết nếu đã kết nối tài khoản Google"
+                persistent-hint
+              />
               <v-text-field v-model="form.config.sheetName" label="Tên Sheet (VD: Sheet1)" variant="outlined" rounded="lg" />
             </div>
 
@@ -300,7 +336,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { api } from '@/api';
 
 interface SyncLog {
@@ -326,6 +362,10 @@ const error = ref('');
 const saving = ref(false);
 const syncing = ref<string | null>(null);
 const dialogError = ref('');
+const connections = ref<any[]>([]);
+const linkingGoogle = ref(false);
+
+const isGoogleLinked = computed(() => connections.value.some(c => c.type === 'google'));
 
 const showDialog = ref(false);
 const showDelete = ref(false);
@@ -387,12 +427,50 @@ async function fetchIntegrations() {
   loading.value = true;
   try {
     const { data } = await api.get('/integrations');
-    integrations.value = data;
+    integrations.value = data.integrations;
+    connections.value = data.connections;
   } catch (err: any) {
     error.value = err.response?.data?.error || 'Lỗi tải danh sách tích hợp';
   } finally {
     loading.value = false;
   }
+}
+
+async function linkGoogleAccount() {
+  const google = (window as any).google;
+  if (!google?.accounts?.oauth2) {
+    dialogError.value = 'Google OAuth library chưa tải xong. Vui lòng thử lại sau vài giây.';
+    return;
+  }
+
+  const client = google.accounts.oauth2.initCodeClient({
+    client_id: '926202174216-4v1fml75f5403k79bvoeuau2go3oe1jq.apps.googleusercontent.com',
+    scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.email',
+    ux_mode: 'popup',
+    callback: async (response: any) => {
+      if (response.code) {
+        linkingGoogle.value = true;
+        try {
+          await api.post('/integrations/google/callback', { code: response.code });
+          await fetchIntegrations(); // Refresh status
+        } catch (err: any) {
+          dialogError.value = 'Lỗi kết nối tài khoản Google: ' + (err.response?.data?.error || err.message);
+        } finally {
+          linkingGoogle.value = false;
+        }
+      }
+    },
+  });
+
+  client.requestCode();
+}
+
+async function unlinkGoogle() {
+  if (!confirm('Bạn có chắc chắn muốn hủy kết nối tài khoản Google? Các tích hợp liên quan sẽ không thể hoạt động.')) return;
+  try {
+    // We could add an endpoint to delete the connection
+    alert('Vui lòng liên hệ quản trị viên để gỡ bỏ kết nối thủ công (Tính năng này đang được cập nhật)');
+  } catch {}
 }
 
 function openCreate() {

@@ -8,26 +8,105 @@ import { authMiddleware } from '../auth/auth-middleware.js';
 import { logger } from '../../shared/utils/logger.js';
 import { requireRole } from '../auth/role-middleware.js';
 import { runSync } from './sync-engine.js';
+import { OAuth2Client } from 'google-auth-library';
+import { config as appConfig } from '../../config/index.js';
 
 const VALID_TYPES = ['google_sheets', 'telegram', 'facebook', 'zapier', 'n8n'] as const;
+const GOOGLE_SCOPES = [
+  'https://www.googleapis.com/auth/userinfo.email',
+  'https://www.googleapis.com/auth/spreadsheets',
+  'https://www.googleapis.com/auth/drive.metadata.readonly'
+];
 
 export async function integrationRoutes(app: FastifyInstance): Promise<void> {
   app.addHook('preHandler', authMiddleware);
+
+  const googleClient = new OAuth2Client(
+    appConfig.googleClientId,
+    'ClientSecretPlaceholder', // This should be in config/env
+    'postmessage' // Special value for GSI code flow
+  );
+
+  // GET /api/v1/integrations/google/auth-url — get OAuth URL
+  app.get('/api/v1/integrations/google/auth-url', async (request: FastifyRequest) => {
+    // Note: In a production app, the redirect_uri should be configurable
+    // For GSI code flow, we might handle it differently but let's provide a standard one
+    return { url: 'https://accounts.google.com/o/oauth2/v2/auth' }; 
+  });
+
+  // POST /api/v1/integrations/google/callback — exchange code for tokens
+  app.post('/api/v1/integrations/google/callback', { preHandler: requireRole('owner', 'admin') }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { orgId } = request.user!;
+      const { code, redirectUri } = request.body as { code: string; redirectUri?: string };
+
+      if (!code) return reply.status(400).send({ error: 'Code is required' });
+      if (!appConfig.googleClientId) return reply.status(500).send({ error: 'Google Client ID not configured' });
+
+      // We need the client secret to exchange the code
+      // I'll assume it's in config.googleClientSecret
+      const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+      if (!clientSecret) return reply.status(500).send({ error: 'Google Client Secret not configured on server' });
+
+      const oauth2Client = new OAuth2Client(
+        appConfig.googleClientId,
+        clientSecret,
+        redirectUri || 'postmessage'
+      );
+
+      const { tokens } = await oauth2Client.getToken(code);
+      
+      await prisma.organizationConnection.upsert({
+        where: { orgId_type: { orgId, type: 'google' } },
+        update: {
+          accessToken: tokens.access_token,
+          refreshToken: tokens.refresh_token,
+          expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
+          metadata: { 
+            scopes: tokens.scope,
+            updatedBy: request.user!.id
+          }
+        },
+        create: {
+          orgId,
+          type: 'google',
+          accessToken: tokens.access_token,
+          refreshToken: tokens.refresh_token,
+          expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
+          metadata: { 
+            scopes: tokens.scope,
+            updatedBy: request.user!.id
+          }
+        }
+      });
+
+      return { success: true };
+    } catch (err: any) {
+      logger.error('[integrations] Google callback error:', err);
+      return reply.status(400).send({ error: 'Failed to link Google account: ' + err.message });
+    }
+  });
 
   // GET /api/v1/integrations — list all integrations for org
   app.get('/api/v1/integrations', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const { orgId } = request.user!;
-      const integrations = await prisma.integration.findMany({
-        where: { orgId },
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true, orgId: true, type: true, name: true,
-          enabled: true, lastSyncAt: true, createdAt: true, updatedAt: true,
-          syncLogs: { take: 5, orderBy: { createdAt: 'desc' } },
-        },
-      });
-      return integrations;
+      const [integrations, connections] = await Promise.all([
+        prisma.integration.findMany({
+          where: { orgId },
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true, orgId: true, type: true, name: true,
+            enabled: true, lastSyncAt: true, createdAt: true, updatedAt: true,
+            syncLogs: { take: 5, orderBy: { createdAt: 'desc' } },
+          },
+        }),
+        prisma.organizationConnection.findMany({
+          where: { orgId },
+          select: { type: true, metadata: true, updatedAt: true }
+        })
+      ]);
+      return { integrations, connections };
     } catch (err) {
       logger.error('[integrations] GET list error:', err);
       return reply.status(500).send({ error: 'Failed to fetch integrations' });

@@ -18,8 +18,25 @@ export async function syncGoogleSheets(
 ): Promise<{ direction: 'export'; recordCount: number; status: 'success' | 'partial' | 'failed'; errorMessage?: string }> {
   const { spreadsheetId, apiKey, sheetName = 'Contacts' } = config;
 
-  if (!spreadsheetId || !apiKey) {
-    return { direction: 'export', recordCount: 0, status: 'failed', errorMessage: 'Missing spreadsheetId or apiKey' };
+  if (!spreadsheetId) {
+    return { direction: 'export', recordCount: 0, status: 'failed', errorMessage: 'Missing spreadsheetId' };
+  }
+
+  // Check for OAuth connection first
+  const connection = await prisma.organizationConnection.findUnique({
+    where: { orgId_type: { orgId, type: 'google' } }
+  });
+
+  let authHeader = '';
+  let finalUrl = '';
+
+  if (connection?.accessToken) {
+    authHeader = `Bearer ${connection.accessToken}`;
+    finalUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(sheetName + '!A1')}?valueInputOption=RAW`;
+  } else if (apiKey) {
+    finalUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(sheetName + '!A1')}?valueInputOption=RAW&key=${apiKey}`;
+  } else {
+    return { direction: 'export', recordCount: 0, status: 'failed', errorMessage: 'Vui lòng kết nối tài khoản Google hoặc cung cấp API Key' };
   }
 
   // Fetch org contacts
@@ -50,11 +67,13 @@ export async function syncGoogleSheets(
 
   try {
     const range = `${sheetName}!A1`;
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}?valueInputOption=RAW&key=${apiKey}`;
+    
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (authHeader) headers['Authorization'] = authHeader;
 
-    const response = await fetch(url, {
+    const response = await fetch(finalUrl, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ range, majorDimension: 'ROWS', values }),
       signal: AbortSignal.timeout(15_000),
     });
