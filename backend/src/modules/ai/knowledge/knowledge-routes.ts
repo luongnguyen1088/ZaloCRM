@@ -41,7 +41,7 @@ export async function knowledgeRoutes(fastify: FastifyInstance) {
     // We'll use a temporary mock ID or find a recent one to anchor the LLM
     const recentConv = await prisma.conversation.findFirst({
       where: { orgId },
-      orderBy: { updatedAt: 'desc' },
+      orderBy: { createdAt: 'desc' },
       select: { id: true }
     });
 
