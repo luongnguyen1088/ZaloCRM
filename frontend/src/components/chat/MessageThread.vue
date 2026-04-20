@@ -1,183 +1,150 @@
 <template>
-  <div class="message-thread d-flex flex-column flex-grow-1 h-100 position-relative">
+  <div class="message-thread d-flex flex-column flex-grow-1" style="height: 100%;">
     <!-- Empty state -->
-    <div v-if="!conversation" class="d-flex align-center justify-center flex-grow-1 empty-state">
-      <div class="text-center">
-        <div class="icon-orb mb-6">
-          <v-icon icon="mdi-chat-processing-outline" size="48" color="primary" />
-        </div>
-        <p class="text-h6 font-weight-bold opacity-60">Chọn một hội thoại để bắt đầu</p>
-        <p class="text-body-2 opacity-40">Tư vấn khách hàng nhanh hơn với trợ lý AI</p>
+    <div v-if="!conversation" class="d-flex align-center justify-center flex-grow-1">
+      <div class="text-center text-grey">
+        <v-icon icon="mdi-chat-outline" size="96" color="grey-lighten-2" />
+        <p class="text-h6 mt-4">Chọn cuộc trò chuyện</p>
       </div>
     </div>
 
     <template v-else>
       <!-- Header -->
-      <div class="chat-header d-flex align-center pa-4">
-        <v-avatar size="44" class="mr-3 border-glass">
-          <v-img v-if="conversation.contact?.avatarUrl" :src="conversation.contact.avatarUrl" />
-          <v-icon v-else :icon="conversation.threadType === 'group' ? 'mdi-account-group' : 'mdi-account'" />
+      <div class="pa-3 d-flex align-center" style="border-bottom: 1px solid var(--border-glow, rgba(0,242,255,0.1));">
+        <v-avatar size="36" color="grey-lighten-2" class="mr-3">
+          <v-icon v-if="conversation.threadType === 'group'" icon="mdi-account-group" />
+          <v-img v-else-if="conversation.contact?.avatarUrl" :src="conversation.contact.avatarUrl" />
+          <v-icon v-else icon="mdi-account" />
         </v-avatar>
-        
-        <div class="flex-grow-1 overflow-hidden">
-          <div class="font-weight-bold text-subtitle-1 text-truncate">{{ conversation.contact?.fullName || 'Unknown' }}</div>
-          <div class="d-flex align-center">
-            <span class="status-dot mr-2"></span>
-            <span class="text-caption opacity-60 text-truncate">Gắn với: {{ conversation.zaloAccount?.displayName || 'Zalo' }}</span>
-          </div>
+        <div class="flex-grow-1">
+          <div class="font-weight-medium">{{ conversation.contact?.fullName || 'Unknown' }}</div>
+          <div class="text-caption text-grey">{{ conversation.zaloAccount?.displayName || 'Zalo' }}</div>
         </div>
-
-        <div class="d-flex ga-2">
-          <v-btn variant="tonal" border color="primary" rounded="lg" size="small" :loading="aiSuggestionLoading" prepend-icon="mdi-sparkles" @click="$emit('ask-ai')">
-            Gợi ý AI
-          </v-btn>
-          <v-btn
-            icon="mdi-information-outline"
-            size="small" variant="text"
-            :color="showContactPanel ? 'primary' : undefined"
-            @click="$emit('toggle-contact-panel')"
-            class="rounded-lg"
-          />
-        </div>
+        <v-btn size="small" variant="tonal" color="primary" class="mr-2" :loading="aiSuggestionLoading" @click="$emit('ask-ai')">
+          Ask AI
+        </v-btn>
+        <v-btn
+          :icon="showContactPanel ? 'mdi-account-details' : 'mdi-account-details-outline'"
+          size="small" variant="text"
+          :color="showContactPanel ? 'primary' : undefined"
+          @click="$emit('toggle-contact-panel')"
+        />
       </div>
 
-      <!-- Messages Area -->
-      <div ref="messagesContainer" class="flex-grow-1 overflow-y-auto pa-4 custom-scrollbar bg-chat-active">
-        <v-progress-linear v-if="loading" indeterminate color="primary" height="2" class="mb-4" />
-        
-        <div v-for="(msg, index) in messages" :key="msg.id">
-          <!-- Date Separator -->
-          <div v-if="shouldShowDate(msg, index)" class="d-flex align-center my-6 opacity-30">
-            <v-divider />
-            <span class="text-caption px-4 font-weight-bold text-uppercase">{{ formatDateLabel(msg.sentAt) }}</span>
-            <v-divider />
-          </div>
-
-          <div class="message-row d-flex mb-3" :class="msg.senderType === 'self' ? 'justify-end' : 'justify-start'">
-            <div class="message-wrapper" style="max-width: 75%;">
-              <!-- Group Member Name -->
-              <div v-if="conversation.threadType === 'group' && msg.senderType !== 'self'" class="text-caption mb-1 ml-2 primary--text opacity-80 font-weight-bold">
-                {{ msg.senderName || 'Thành viên' }}
+      <!-- Messages -->
+      <div ref="messagesContainer" class="flex-grow-1 overflow-y-auto pa-3 chat-messages-area">
+        <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-2" />
+        <div v-for="msg in messages" :key="msg.id" class="mb-2 d-flex" :class="msg.senderType === 'self' ? 'justify-end' : 'justify-start'">
+          <div style="max-width: 70%;">
+            <div v-if="conversation.threadType === 'group' && msg.senderType !== 'self'" class="text-caption mb-1" style="color: #00F2FF; font-weight: 500;">
+              {{ msg.senderName || 'Unknown' }}
+            </div>
+            <div class="message-bubble pa-2 px-3 rounded-lg" :class="msg.senderType === 'self' ? 'bg-primary text-white' : 'bg-white'" style="word-wrap: break-word;">
+              <!-- Deleted -->
+              <div v-if="msg.isDeleted" class="text-decoration-line-through font-italic" style="opacity: 0.6;">
+                {{ msg.content || '(tin nhắn)' }}<span class="text-caption"> (đã thu hồi)</span>
               </div>
-
-              <div class="message-bubble" :class="msg.senderType === 'self' ? 'bubble-self' : 'bubble-contact'">
-                <!-- Deleted Content -->
-                <div v-if="msg.isDeleted" class="deleted-msg">
-                  <v-icon size="14" class="mr-1">mdi-cancel</v-icon> Tin nhắn đã được thu hồi
+              <!-- Image -->
+              <div v-else-if="getImageUrl(msg)">
+                <img :src="getImageUrl(msg)!" alt="Hình ảnh" class="chat-image" @click="previewImageUrl = getImageUrl(msg)!" />
+              </div>
+              <!-- File/PDF -->
+              <div v-else-if="getFileInfo(msg)" class="file-card">
+                <v-icon size="20" class="mr-2" color="info">mdi-file-document-outline</v-icon>
+                <div class="flex-grow-1">
+                  <div class="text-body-2 font-weight-medium">{{ getFileInfo(msg)!.name }}</div>
+                  <div class="text-caption" style="opacity: 0.6;">{{ getFileInfo(msg)!.size }}</div>
                 </div>
-
-                <!-- Media Content -->
-                <div v-else-if="getImageUrl(msg)" class="media-container mt-1">
-                  <v-img :src="getImageUrl(msg)!" cover class="chat-img rounded-lg" @click="previewImageUrl = getImageUrl(msg)!" height="180" width="240">
-                    <template v-slot:placeholder><v-skeleton-loader type="image" /></template>
-                  </v-img>
+                <v-btn v-if="getFileInfo(msg)!.href" icon size="x-small" variant="text" @click="openFile(getFileInfo(msg)!.href)">
+                  <v-icon size="16">mdi-download</v-icon>
+                </v-btn>
+              </div>
+              <!-- Sticker/Video/Voice/GIF -->
+              <div v-else-if="msg.contentType === 'sticker'">🏷️ Sticker</div>
+              <div v-else-if="msg.contentType === 'video'">🎥 Video</div>
+              <div v-else-if="msg.contentType === 'voice'">🎤 Tin nhắn thoại</div>
+              <div v-else-if="msg.contentType === 'gif'">GIF</div>
+              <!-- Reminder/Calendar -->
+              <div v-else-if="isReminderMessage(msg)" class="reminder-card">
+                <div class="d-flex align-center mb-1">
+                  <v-icon size="16" color="warning" class="mr-1">mdi-calendar-clock</v-icon>
+                  <span class="text-caption font-weight-bold" style="color: #FFB74D;">Nhắc hẹn</span>
                 </div>
-
-                <!-- File Content -->
-                <div v-else-if="getFileInfo(msg)" class="file-card-v2 d-flex align-center pa-2">
-                  <div class="file-icon mr-3">
-                    <v-icon size="24" color="white" icon="mdi-file-document" />
-                  </div>
-                  <div class="flex-grow-1 overflow-hidden mr-2">
-                    <div class="text-body-2 font-weight-bold text-truncate">{{ getFileInfo(msg)!.name }}</div>
-                    <div class="text-caption opacity-60">{{ getFileInfo(msg)!.size }}</div>
-                  </div>
-                  <v-btn v-if="getFileInfo(msg)!.href" icon="mdi-download" size="x-small" variant="tonal" @click="openFile(getFileInfo(msg)!.href)" />
+                <div class="text-body-2">{{ getReminderTitle(msg) }}</div>
+                <div v-if="getReminderTime(msg)" class="text-caption mt-1" style="opacity: 0.7;">
+                  <v-icon size="12" class="mr-1">mdi-clock-outline</v-icon>{{ getReminderTime(msg) }}
                 </div>
-
-                <!-- Reminder Card -->
-                <div v-else-if="isReminderMessage(msg)" class="reminder-card-v2 pa-3">
-                   <div class="d-flex align-center mb-2">
-                    <v-icon size="18" color="warning" class="mr-2">mdi-calendar-check</v-icon>
-                    <span class="text-subtitle-2 font-weight-bold text-warning">Lịch nhắc khách</span>
-                  </div>
-                  <div class="text-body-2 mb-2 font-weight-medium">{{ getReminderTitle(msg) }}</div>
-                  <div v-if="getReminderTime(msg)" class="reminder-time-box mb-3 pa-2 rounded">
-                    <v-icon size="14" class="mr-2">mdi-clock-outline</v-icon>
-                    <span class="text-caption">{{ getReminderTime(msg) }}</span>
-                  </div>
-                  <v-btn size="small" variant="flat" color="warning" rounded="pill" block prepend-icon="mdi-sync" @click="syncAppointment(msg)">
-                    Đồng bộ CRM
-                  </v-btn>
-                </div>
-
-                <!-- Regular Text -->
-                <div v-else class="text-body-2 message-text">{{ parseDisplayContent(msg.content) }}</div>
-
-                <!-- Timestamp -->
-                <div class="d-flex align-center justify-end mt-1 opacity-50" style="font-size: 0.65rem;">
-                  <span>{{ formatMessageTime(msg.sentAt) }}</span>
-                  <v-icon v-if="msg.senderType === 'self'" size="10" class="ml-1" color="primary">mdi-check-all</v-icon>
-                </div>
+                <v-btn size="x-small" variant="tonal" color="warning" class="mt-2" prepend-icon="mdi-calendar-sync" @click="syncAppointment(msg)">
+                  Đồng bộ lịch
+                </v-btn>
+              </div>
+              <!-- Default text -->
+              <div v-else>{{ parseDisplayContent(msg.content) }}</div>
+              <!-- Timestamp -->
+              <div class="text-caption mt-1 msg-time" :class="msg.senderType === 'self' ? 'msg-time-self' : 'msg-time-contact'" style="font-size: 0.7rem;">
+                {{ formatMessageTime(msg.sentAt) }}
               </div>
             </div>
           </div>
         </div>
+        <div v-if="!loading && messages.length === 0" class="text-center pa-8 text-grey">Chưa có tin nhắn</div>
       </div>
 
-      <!-- Action Area (Inputs) -->
-      <div class="chat-footer pa-4">
-        <!-- AI Suggestion floating above -->
-        <div class="suggestion-wrapper mb-3">
-          <AiSuggestionPanel
-            :suggestion="aiSuggestion"
-            :loading="aiSuggestionLoading"
-            :error="aiSuggestionError"
-            @generate="$emit('ask-ai')"
-            @apply="applySuggestion"
-            @refine="handleRefine"
-            @close="$emit('clear-ai')"
-          />
-        </div>
-
-        <div class="d-flex align-end futuristic-input-container pa-1">
-          <v-btn icon="mdi-plus" variant="text" size="small" color="primary" class="mb-1 rounded-lg" />
-          
+      <!-- Input -->
+      <div class="pa-2 chat-input-area">
+        <AiSuggestionPanel
+          :suggestion="aiSuggestion"
+          :loading="aiSuggestionLoading"
+          :error="aiSuggestionError"
+          @generate="$emit('ask-ai')"
+          @apply="applySuggestion"
+          @refine="handleRefine"
+          @close="$emit('clear-ai')"
+        />
+        <div class="d-flex align-end">
           <v-textarea
             v-model="inputText"
-            placeholder="Nhập câu trả lời hoặc sử dụng trợ lý..."
-            variant="plain"
+            placeholder="Nhập tin nhắn..."
+            variant="solo-filled"
             density="compact"
             hide-details
             auto-grow
             rows="1"
-            max-rows="6"
+            max-rows="5"
             @keydown.enter.exact.prevent="handleSend"
-            class="mx-2 custom-textarea"
-          />
-
-          <div class="d-flex align-center mb-1">
-            <v-tooltip text="AI tối ưu lời thoại" location="top">
-              <template v-slot:activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  icon="mdi-auto-fix"
-                  size="small"
-                  variant="text"
-                  color="primary"
-                  class="magic-btn mr-1"
-                  :loading="aiSuggestionLoading"
-                  @click="handleMagicCompose"
-                />
-              </template>
-            </v-tooltip>
-
-            <v-btn color="primary" flat rounded="lg" size="small" :disabled="!inputText.trim()" @click="handleSend" height="36">
-              <v-icon class="mr-1">mdi-send</v-icon> Gửi
-            </v-btn>
-          </div>
+            class="flex-grow-1 mr-2 futuristic-input"
+          >
+            <template #append-inner>
+              <v-btn
+                icon
+                size="x-small"
+                variant="text"
+                class="magic-wand-btn mr-1"
+                :loading="aiSuggestionLoading"
+                @click="handleMagicCompose"
+                title="AI Soạn văn bản ma thuật"
+              >
+                <v-icon color="primary">mdi-auto-fix</v-icon>
+              </v-btn>
+            </template>
+          </v-textarea>
+          <v-btn icon color="primary" :loading="sending" :disabled="!inputText.trim()" @click="handleSend" class="send-btn">
+            <v-icon>mdi-send</v-icon>
+          </v-btn>
         </div>
       </div>
     </template>
 
-    <!-- Dialogs & Snacks -->
-    <v-dialog v-model="showImagePreview" max-width="900">
-      <v-card flat class="bg-black text-center pa-2" @click="showImagePreview = false">
-        <v-img :src="previewImageUrl" max-height="85vh" contain rounded="lg" />
-        <div class="text-caption mt-2 text-grey">Bấm bất kỳ đâu để đóng</div>
-      </v-card>
+    <!-- Image preview dialog -->
+    <v-dialog v-model="showImagePreview" max-width="900" content-class="elevation-0">
+      <div class="text-center" @click="showImagePreview = false" style="cursor: pointer;">
+        <img :src="previewImageUrl" alt="Preview" style="max-width: 100%; max-height: 85vh; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);" />
+        <div class="text-caption mt-2" style="color: #aaa;">Nhấn để đóng</div>
+      </div>
     </v-dialog>
-    <v-snackbar v-model="syncSnack.show" :color="syncSnack.color" rounded="pill" location="top">{{ syncSnack.text }}</v-snackbar>
+
+    <!-- Sync snackbar -->
+    <v-snackbar v-model="syncSnack.show" :color="syncSnack.color" timeout="3000">{{ syncSnack.text }}</v-snackbar>
   </div>
 </template>
 
@@ -217,33 +184,19 @@ function applySuggestion() { if (!props.aiSuggestion) return; inputText.value = 
 
 function handleMagicCompose() {
   if (inputText.value.trim()) {
-    emit('refine-ai', { content: inputText.value, instruction: 'Hoàn thiện và trau chuốt nội dung này cho tôi trực tiếp và thân thiện' });
+    handleRefine('Hoàn thiện và trau chuốt nội dung này cho tôi');
   } else {
     emit('ask-ai');
   }
 }
 
-function handleRefine(instruction: string) { emit('refine-ai', { content: inputText.value, instruction }); }
+function handleRefine(instruction: string) {
+  emit('refine-ai', { content: inputText.value, instruction });
+}
 function formatMessageTime(d: string) { return new Date(d).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }); }
-
-function shouldShowDate(msg: Message, index: number) {
-  if (index === 0) return true;
-  const prevDate = new Date(props.messages[index-1].sentAt).toDateString();
-  const currDate = new Date(msg.sentAt).toDateString();
-  return prevDate !== currDate;
-}
-
-function formatDateLabel(d: string) {
-  const date = new Date(d);
-  const today = new Date();
-  if (date.toDateString() === today.toDateString()) return 'Hôm nay';
-  today.setDate(today.getDate() - 1);
-  if (date.toDateString() === today.toDateString()) return 'Hôm qua';
-  return date.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit' });
-}
-
 function openFile(url: string) { window.open(url, '_blank'); }
 
+/** Extract image URL from JSON content */
 function getImageUrl(msg: Message): string | null {
   if (msg.contentType === 'image' && msg.content) {
     if (msg.content.startsWith('http')) return msg.content;
@@ -254,11 +207,13 @@ function getImageUrl(msg: Message): string | null {
       const p = JSON.parse(msg.content);
       const href = p.href || p.thumb || '';
       if (href && /\.(jpg|jpeg|png|webp|gif)/i.test(href)) return href;
+      if (href && href.includes('zdn.vn') && !p.params?.includes('fileExt')) return href;
     } catch {}
   }
   return null;
 }
 
+/** Extract file info from JSON content (PDF, docs, etc.) */
 function getFileInfo(msg: Message): { name: string; size: string; href: string } | null {
   if (!msg.content?.startsWith('{')) return null;
   try {
@@ -278,7 +233,10 @@ function parseDisplayContent(content: string | null): string {
   if (!content.startsWith('{')) return content;
   try {
     const p = JSON.parse(content);
-    return p.title || p.href || content;
+    if (p.title && p.href) return `🔗 ${p.title}`;
+    if (p.title) return p.title;
+    if (p.href) return `🔗 ${p.description || p.href}`;
+    return content;
   } catch { return content; }
 }
 
@@ -296,161 +254,79 @@ function getReminderTime(msg: Message): string | null {
     const p = JSON.parse(msg.content!);
     const params = typeof p.params === 'string' ? JSON.parse(p.params) : p.params;
     for (const h of (params?.highLightsV2 || [])) {
-      if (h.ts > 1e12) return new Date(h.ts).toLocaleString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+      if (h.ts > 1e12) return new Date(h.ts).toLocaleString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     }
   } catch {}
   return null;
 }
 
+/** Sync Zalo reminder to CRM appointments via API */
 async function syncAppointment(msg: Message) {
-  if (!props.conversation?.contact?.id) { syncSnack.value = { show: true, text: 'Không có thông tin khách', color: 'error' }; return; }
+  if (!props.conversation?.contact?.id) { syncSnack.value = { show: true, text: 'Không có thông tin khách hàng', color: 'error' }; return; }
   try {
     const p = JSON.parse(msg.content!);
     const params = typeof p.params === 'string' ? JSON.parse(p.params) : p.params;
-    let ts = 0;
-    for (const h of (params?.highLightsV2 || [])) if (h.ts > ts) ts = h.ts;
-    if (!ts) { syncSnack.value = { show: true, text: 'Không tìm thấy giờ hẹn', color: 'warning' }; return; }
-    const date = new Date(ts);
+    let appointmentDate: string | null = null;
+    for (const h of (params?.highLightsV2 || [])) {
+      if (h.ts > 1e12) { appointmentDate = new Date(h.ts).toISOString(); break; }
+    }
+    if (!appointmentDate) { syncSnack.value = { show: true, text: 'Không tìm thấy thời gian hẹn', color: 'warning' }; return; }
     await api.post('/appointments', {
       contactId: props.conversation.contact.id,
-      appointmentDate: date.toISOString(),
-      appointmentTime: date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+      appointmentDate,
+      appointmentTime: new Date(appointmentDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+      type: 'tai_kham',
       notes: `[Zalo] ${p.title || ''}`,
     });
-    syncSnack.value = { show: true, text: 'Đồng bộ lịch thành công!', color: 'success' };
+    syncSnack.value = { show: true, text: 'Đã đồng bộ lịch hẹn thành công!', color: 'success' };
   } catch (err: any) {
-    syncSnack.value = { show: true, text: 'Đồng bộ thất bại', color: 'error' };
+    syncSnack.value = { show: true, text: err.response?.data?.error || 'Đồng bộ thất bại', color: 'error' };
   }
 }
 
 watch(() => props.messages.length, async () => { await nextTick(); if (messagesContainer.value) messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight; });
-watch(() => props.conversation?.id, () => { clearAiState(); });
-function clearAiState() { emit('clear-ai'); }
 </script>
 
 <style scoped>
-.chat-header {
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  z-index: 10;
-}
+.message-bubble { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); }
+.reminder-card { padding: 8px 12px; border-left: 3px solid #FFB74D; border-radius: 8px; background: rgba(255, 183, 77, 0.08); }
+.file-card { display: flex; align-items: center; padding: 8px 12px; border-radius: 8px; background: rgba(0, 242, 255, 0.05); border: 1px solid rgba(0, 242, 255, 0.1); }
+.chat-image { max-width: 100%; max-height: 300px; border-radius: 12px; cursor: pointer; transition: transform 0.2s; }
+.chat-image:hover { transform: scale(1.02); }
 
-.bg-chat-active {
-  background-color: #ffffff;
-  background-image: 
-    radial-gradient(circle at 50% -20%, rgba(37, 99, 235, 0.02), transparent 60%);
-}
-
-.status-dot {
-  width: 7px;
-  height: 7px;
-  background: #10b981;
-  border-radius: 50%;
-}
-
-.message-bubble {
-  padding: 10px 14px;
-  border-radius: 14px;
-  position: relative;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.bubble-self {
-  background: #2563eb;
-  color: white;
-  border-bottom-right-radius: 4px;
-}
-
-.bubble-contact {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  color: #1e293b;
-  border-bottom-left-radius: 4px;
-}
-
-.message-text {
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.deleted-msg {
-  font-style: italic;
-  opacity: 0.5;
-  font-size: 0.8rem;
-}
-
-.file-card-v2 {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  min-width: 200px;
-}
-.file-icon {
-  background: #f1f5f9;
-  padding: 8px;
-  border-radius: 8px;
-}
-
-.reminder-card-v2 {
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  border-radius: 16px;
-  min-width: 250px;
-}
-.reminder-time-box {
-  background: #fef3c7;
-  color: #d97706;
-}
-
-.chat-footer {
-  background: #ffffff;
-  border-top: 1px solid #e2e8f0;
-}
-
-.futuristic-input-container {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
+/* Futuristic UI Enhancements */
+.futuristic-input :deep(.v-field) {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
   transition: all 0.3s ease;
 }
-.futuristic-input-container:focus-within {
-  background: #ffffff;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+
+.futuristic-input :deep(.v-field--focused) {
+  border-color: rgba(0, 242, 255, 0.4) !important;
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.1) !important;
 }
 
-.custom-textarea {
-  font-size: 14.5px;
-  color: #1e293b;
+.magic-wand-btn {
+  opacity: 0.7;
+  transition: all 0.3s ease;
 }
 
-.magic-btn {
-  transition: transform 0.3s ease;
-}
-.magic-btn:hover {
-  transform: rotate(15deg) scale(1.15);
-  color: #2563eb !important;
+.magic-wand-btn:hover {
+  opacity: 1;
+  transform: rotate(15deg) scale(1.1);
+  filter: drop-shadow(0 0 5px rgba(0, 242, 255, 0.5));
 }
 
-.icon-orb {
-  width: 100px;
-  height: 100px;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.05) 0%, transparent 70%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-  border-radius: 50%;
+.send-btn {
+  height: 44px !important;
+  width: 44px !important;
+  margin-bottom: 2px;
+  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.2) !important;
 }
 
-.chat-img {
-  cursor: zoom-in;
-  transition: opacity 0.2s;
-  border: 1px solid #e2e8f0;
+.chat-input-area {
+  background: rgba(0, 0, 0, 0.15);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
-.chat-img:hover { opacity: 0.9; }
-
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 </style>
