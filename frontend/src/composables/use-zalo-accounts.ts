@@ -12,10 +12,12 @@ export interface ZaloAccount {
   displayName: string | null;
   avatarUrl: string | null;
   zaloUid: string | null;
+  type: 'zalo_personal' | 'facebook_page' | 'zalo_oa';
   status: string;
   liveStatus?: string;
   phone: string | null;
   sessionData: any;
+  platformConfig?: any;
   ownerUserId: string;
   createdAt: string;
 }
@@ -46,7 +48,7 @@ export function useZaloAccounts() {
 
   function statusText(status: string) {
     switch (status) {
-      case 'connected': return '�� k?t n?i';
+      case 'connected': return 'Đã kết nối';
       case 'qr_pending': return 'Chờ QR';
       case 'connecting': return 'Đang kết nối...';
       default: return 'Ngắt kết nối';
@@ -152,7 +154,7 @@ export function useZaloAccounts() {
     socket.on('zalo:qr-expired', (data: { accountId: string }) => {
       if (data.accountId === currentLoginAccountId.value) {
         qrImage.value = '';
-        qrError.value = 'QR d� h?t h?n, dang t?o l?i...';
+        qrError.value = 'QR đã hết hạn, đang tạo lại...';
       }
     });
 
