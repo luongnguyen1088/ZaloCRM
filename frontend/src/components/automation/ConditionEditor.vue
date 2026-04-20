@@ -21,7 +21,19 @@
         style="min-width: 160px"
         @update:model-value="updateCondition(index, 'op', $event)"
       />
+      <v-select
+        v-if="condition.field === 'conversation.zaloAccountId'"
+        :model-value="condition.value"
+        :items="zaloAccountItems"
+        item-title="title"
+        item-value="value"
+        label="Chọn tài khoản"
+        density="comfortable"
+        style="min-width: 220px"
+        @update:model-value="updateCondition(index, 'value', $event)"
+      />
       <v-text-field
+        v-else
         :model-value="displayValue(condition.value)"
         label="Giá trị"
         density="comfortable"
@@ -40,10 +52,13 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { AutomationCondition } from '@/composables/use-automation-rules';
+import type { ZaloAccount } from '@/composables/use-zalo-accounts';
 
 const props = defineProps<{
   modelValue: AutomationCondition[];
+  zaloAccounts: ZaloAccount[];
 }>();
 
 const emit = defineEmits<{
@@ -57,8 +72,13 @@ const fieldOptions = [
   { title: 'Nội dung tin nhắn', value: 'message.content' },
   { title: 'Loại tin nhắn', value: 'message.contentType' },
   { title: 'Số tin chưa đọc', value: 'conversation.unreadCount' },
-  { title: 'Tài khoản Zalo (ID)', value: 'conversation.zaloAccountId' },
+  { title: 'Tài khoản Zalo', value: 'conversation.zaloAccountId' },
 ];
+
+const zaloAccountItems = computed(() => props.zaloAccounts.map(acc => ({
+  title: acc.displayName || acc.id,
+  value: acc.id
+})));
 
 const operatorOptions = [
   { title: 'Bằng', value: 'eq' },

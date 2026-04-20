@@ -51,6 +51,7 @@
       v-model="showRuleDialog"
       :rule="selectedRule"
       :templates="templates"
+      :zalo-accounts="accounts"
       :saving="ruleSaving"
       @save="saveRule"
     />
@@ -63,6 +64,7 @@ import RuleBuilder from '@/components/automation/RuleBuilder.vue';
 import TemplateManager from '@/components/automation/TemplateManager.vue';
 import { useAutomationRules, type AutomationRule } from '@/composables/use-automation-rules';
 import { useMessageTemplates } from '@/composables/use-message-templates';
+import { useZaloAccounts } from '@/composables/use-zalo-accounts';
 import { useAuthStore } from '@/stores/auth';
 
 const authStore = useAuthStore();
@@ -90,6 +92,8 @@ const {
   updateTemplate,
   deleteTemplate,
 } = useMessageTemplates();
+
+const { accounts, fetchAccounts } = useZaloAccounts();
 
 const ruleHeaders = [
   { title: 'Tên rule', key: 'name' },
@@ -142,6 +146,6 @@ async function deleteRule(id: string) {
 }
 
 onMounted(async () => {
-  await Promise.all([fetchRules(), fetchTemplates()]);
+  await Promise.all([fetchRules(), fetchTemplates(), fetchAccounts()]);
 });
 </script>

@@ -13,7 +13,7 @@
 
         <div>
           <div class="text-subtitle-1 mb-2">Conditions</div>
-          <ConditionEditor v-model="ruleConditions" />
+          <ConditionEditor v-model="ruleConditions" :zalo-accounts="zaloAccounts" />
         </div>
 
         <div>
@@ -36,11 +36,13 @@ import ConditionEditor from './ConditionEditor.vue';
 import ActionEditor from './ActionEditor.vue';
 import type { AutomationAction, AutomationCondition, AutomationRule } from '@/composables/use-automation-rules';
 import type { MessageTemplate } from '@/composables/use-message-templates';
+import type { ZaloAccount } from '@/composables/use-zalo-accounts';
 
 const props = defineProps<{
   modelValue: boolean;
   rule: AutomationRule | null;
   templates: MessageTemplate[];
+  zaloAccounts: ZaloAccount[];
   saving: boolean;
 }>();
 
