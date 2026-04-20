@@ -1,22 +1,21 @@
 <template>
-  <div>
-    <h1 class="text-h4 mb-4">
-      <v-icon class="mr-2" style="color: #00F2FF;">mdi-cog-outline</v-icon>
-      Cài đặt
+  <div class="settings-shell">
+    <h1 class="text-h4 mb-4 settings-title">
+      <v-icon class="mr-2 settings-title-icon">mdi-cog-outline</v-icon>
+      CÃ i Ä‘áº·t
     </h1>
 
     <v-tabs v-model="tab" class="mb-4">
-      <v-tab value="users">Nhân viên</v-tab>
-      <v-tab value="teams">Đội nhóm</v-tab>
-      <v-tab value="org">Tổ chức</v-tab>
+      <v-tab value="users">NhÃ¢n viÃªn</v-tab>
+      <v-tab value="teams">Äá»™i nhÃ³m</v-tab>
+      <v-tab value="org">Tá»• chá»©c</v-tab>
     </v-tabs>
 
     <v-window v-model="tab">
-      <!-- Tab 1: User management -->
       <v-window-item value="users">
         <div class="d-flex align-center mb-4">
           <v-btn v-if="authStore.isAdmin" color="primary" prepend-icon="mdi-plus" @click="openCreate">
-            Thêm nhân viên
+            ThÃªm nhÃ¢n viÃªn
           </v-btn>
         </div>
 
@@ -25,102 +24,96 @@
         </v-alert>
 
         <v-card>
-          <v-data-table :headers="headers" :items="users" :loading="loading" no-data-text="Chưa có nhân viên nào">
+          <v-data-table :headers="headers" :items="users" :loading="loading" no-data-text="ChÆ°a cÃ³ nhÃ¢n viÃªn nÃ o">
             <template #item.role="{ item }">
               <v-chip :color="roleColor(item.role)" size="small" variant="flat">{{ roleLabel(item.role) }}</v-chip>
             </template>
             <template #item.isActive="{ item }">
               <v-chip :color="item.isActive ? 'success' : 'default'" size="small" variant="flat">
-                {{ item.isActive ? 'Hoạt động' : 'Vô hiệu' }}
+                {{ item.isActive ? 'Hoáº¡t Ä‘á»™ng' : 'VÃ´ hiá»‡u' }}
               </v-chip>
             </template>
             <template #item.actions="{ item }">
-              <v-btn v-if="authStore.isAdmin" icon size="small" title="Chỉnh sửa" @click="openEdit(item)">
+              <v-btn v-if="authStore.isAdmin" icon size="small" title="Chá»‰nh sá»­a" @click="openEdit(item)">
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
-              <v-btn v-if="authStore.isAdmin" icon size="small" title="Đặt lại mật khẩu" @click="openPassword(item)">
+              <v-btn v-if="authStore.isAdmin" icon size="small" title="Äáº·t láº¡i máº­t kháº©u" @click="openPassword(item)">
                 <v-icon>mdi-lock-reset</v-icon>
               </v-btn>
-              <v-btn v-if="authStore.isOwner && item.id !== authStore.user?.id" icon size="small" color="error" title="Vô hiệu hóa" @click="confirmDelete(item)">
+              <v-btn v-if="authStore.isOwner && item.id !== authStore.user?.id" icon size="small" color="error" title="VÃ´ hiá»‡u hÃ³a" @click="confirmDelete(item)">
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
             </template>
           </v-data-table>
         </v-card>
 
-        <!-- Create dialog -->
         <v-dialog v-model="showCreate" max-width="440">
           <v-card>
-            <v-card-title>Thêm nhân viên</v-card-title>
+            <v-card-title>ThÃªm nhÃ¢n viÃªn</v-card-title>
             <v-card-text>
-              <v-text-field v-model="form.fullName" label="Họ tên *" class="mb-2" />
+              <v-text-field v-model="form.fullName" label="Há» tÃªn *" class="mb-2" />
               <v-text-field v-model="form.email" label="Email *" type="email" class="mb-2" />
-              <v-text-field v-model="form.password" label="Mật khẩu *" type="password" class="mb-2" />
-              <v-select v-model="form.role" :items="roleOptions" item-title="label" item-value="value" label="Vai trò" />
+              <v-text-field v-model="form.password" label="Máº­t kháº©u *" type="password" class="mb-2" />
+              <v-select v-model="form.role" :items="roleOptions" item-title="label" item-value="value" label="Vai trÃ²" />
               <v-alert v-if="dialogError" type="error" density="compact" class="mt-2">{{ dialogError }}</v-alert>
             </v-card-text>
             <v-card-actions>
               <v-spacer />
-              <v-btn @click="showCreate = false">Hủy</v-btn>
-              <v-btn color="primary" :loading="saving" @click="handleCreate">Tạo</v-btn>
+              <v-btn @click="showCreate = false">Há»§y</v-btn>
+              <v-btn color="primary" :loading="saving" @click="handleCreate">Táº¡o</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
 
-        <!-- Edit dialog -->
         <v-dialog v-model="showEdit" max-width="440">
           <v-card>
-            <v-card-title>Chỉnh sửa nhân viên</v-card-title>
+            <v-card-title>Chá»‰nh sá»­a nhÃ¢n viÃªn</v-card-title>
             <v-card-text>
-              <v-text-field v-model="form.fullName" label="Họ tên" class="mb-2" />
+              <v-text-field v-model="form.fullName" label="Há» tÃªn" class="mb-2" />
               <v-text-field v-model="form.email" label="Email" type="email" class="mb-2" />
-              <v-select v-if="authStore.isOwner" v-model="form.role" :items="roleOptions" item-title="label" item-value="value" label="Vai trò" />
+              <v-select v-if="authStore.isOwner" v-model="form.role" :items="roleOptions" item-title="label" item-value="value" label="Vai trÃ²" />
               <v-alert v-if="dialogError" type="error" density="compact" class="mt-2">{{ dialogError }}</v-alert>
             </v-card-text>
             <v-card-actions>
               <v-spacer />
-              <v-btn @click="showEdit = false">Hủy</v-btn>
-              <v-btn color="primary" :loading="saving" @click="handleUpdate">Lưu</v-btn>
+              <v-btn @click="showEdit = false">Há»§y</v-btn>
+              <v-btn color="primary" :loading="saving" @click="handleUpdate">LÆ°u</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
 
-        <!-- Reset password dialog -->
         <v-dialog v-model="showPassword" max-width="400">
           <v-card>
-            <v-card-title>Đặt lại mật khẩu</v-card-title>
+            <v-card-title>Äáº·t láº¡i máº­t kháº©u</v-card-title>
             <v-card-text>
-              <v-text-field v-model="newPassword" label="Mật khẩu mới *" type="password" />
+              <v-text-field v-model="newPassword" label="Máº­t kháº©u má»›i *" type="password" />
               <v-alert v-if="dialogError" type="error" density="compact" class="mt-2">{{ dialogError }}</v-alert>
             </v-card-text>
             <v-card-actions>
               <v-spacer />
-              <v-btn @click="showPassword = false">Hủy</v-btn>
-              <v-btn color="primary" :loading="saving" @click="handlePassword">Đặt lại</v-btn>
+              <v-btn @click="showPassword = false">Há»§y</v-btn>
+              <v-btn color="primary" :loading="saving" @click="handlePassword">Äáº·t láº¡i</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
 
-        <!-- Delete confirm dialog -->
         <v-dialog v-model="showDelete" max-width="400">
           <v-card>
-            <v-card-title>Xác nhận vô hiệu hóa</v-card-title>
-            <v-card-text>Bạn có chắc muốn vô hiệu hóa nhân viên "{{ selectedUser?.fullName }}"?</v-card-text>
+            <v-card-title>XÃ¡c nháº­n vÃ´ hiá»‡u hÃ³a</v-card-title>
+            <v-card-text>Báº¡n cÃ³ cháº¯c muá»‘n vÃ´ hiá»‡u hÃ³a nhÃ¢n viÃªn "{{ selectedUser?.fullName }}"?</v-card-text>
             <v-card-actions>
               <v-spacer />
-              <v-btn @click="showDelete = false">Hủy</v-btn>
-              <v-btn color="error" :loading="saving" @click="handleDelete">Vô hiệu hóa</v-btn>
+              <v-btn @click="showDelete = false">Há»§y</v-btn>
+              <v-btn color="error" :loading="saving" @click="handleDelete">VÃ´ hiá»‡u hÃ³a</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
       </v-window-item>
 
-      <!-- Tab 2: Team management -->
       <v-window-item value="teams">
         <TeamManagement />
       </v-window-item>
 
-      <!-- Tab 3: Organization settings -->
       <v-window-item value="org">
         <OrgSettings />
       </v-window-item>
@@ -151,16 +144,16 @@ const selectedUser = ref<OrgUser | null>(null);
 const form = ref({ fullName: '', email: '', password: '', role: 'member' });
 
 const roleOptions = [
-  { label: 'Nhân viên', value: 'member' },
-  { label: 'Quản trị viên', value: 'admin' },
+  { label: 'NhÃ¢n viÃªn', value: 'member' },
+  { label: 'Quáº£n trá»‹ viÃªn', value: 'admin' },
 ];
 
 const headers = [
-  { title: 'Họ tên', key: 'fullName', sortable: true },
+  { title: 'Há» tÃªn', key: 'fullName', sortable: true },
   { title: 'Email', key: 'email' },
-  { title: 'Vai trò', key: 'role', sortable: true },
-  { title: 'Trạng thái', key: 'isActive', sortable: true },
-  { title: 'Hành động', key: 'actions', sortable: false, align: 'end' as const },
+  { title: 'Vai trÃ²', key: 'role', sortable: true },
+  { title: 'Tráº¡ng thÃ¡i', key: 'isActive', sortable: true },
+  { title: 'HÃ nh Ä‘á»™ng', key: 'actions', sortable: false, align: 'end' as const },
 ];
 
 function roleColor(role: string) {
@@ -170,9 +163,9 @@ function roleColor(role: string) {
 }
 
 function roleLabel(role: string) {
-  if (role === 'owner') return 'Chủ sở hữu';
-  if (role === 'admin') return 'Quản trị viên';
-  return 'Nhân viên';
+  if (role === 'owner') return 'Chá»§ sá»Ÿ há»¯u';
+  if (role === 'admin') return 'Quáº£n trá»‹ viÃªn';
+  return 'NhÃ¢n viÃªn';
 }
 
 function openCreate() {
@@ -236,3 +229,17 @@ async function handleDelete() {
 
 onMounted(fetchUsers);
 </script>
+
+<style scoped>
+.settings-shell {
+  color: var(--color-text);
+}
+
+.settings-title {
+  color: var(--color-text);
+}
+
+.settings-title-icon {
+  color: var(--color-primary);
+}
+</style>

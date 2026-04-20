@@ -1,15 +1,14 @@
 <template>
-  <div>
-    <!-- Header -->
+  <div class="analytics-shell">
     <div class="d-flex align-center mb-4 flex-wrap gap-2">
-      <h1 class="text-h4">
-        <v-icon class="mr-2" style="color: #00F2FF;">mdi-chart-timeline-variant-shimmer</v-icon>
-        Phân tích nâng cao
+      <h1 class="text-h4 analytics-title">
+        <v-icon class="mr-2 analytics-title-icon">mdi-chart-timeline-variant-shimmer</v-icon>
+        PhÃ¢n tÃ­ch nÃ¢ng cao
       </h1>
       <v-spacer />
       <v-text-field
         v-model="dateFrom"
-        label="Từ ngày"
+        label="Tá»« ngÃ y"
         type="date"
         density="compact"
         variant="outlined"
@@ -19,7 +18,7 @@
       />
       <v-text-field
         v-model="dateTo"
-        label="Đến ngày"
+        label="Äáº¿n ngÃ y"
         type="date"
         density="compact"
         variant="outlined"
@@ -30,19 +29,17 @@
       <v-btn color="primary" prepend-icon="mdi-refresh" :loading="loading" @click="fetchAll">Xem</v-btn>
     </div>
 
-    <!-- Tabs -->
     <v-tabs v-model="tab" class="mb-4">
-      <v-tab value="overview">Tổng quan</v-tab>
-      <v-tab value="funnel">Phễu khách hàng</v-tab>
-      <v-tab value="team">Đội nhóm</v-tab>
-      <v-tab value="response">Thời gian trả lời</v-tab>
-      <v-tab value="builder">Báo cáo tùy chỉnh</v-tab>
+      <v-tab value="overview">Tá»•ng quan</v-tab>
+      <v-tab value="funnel">Phá»…u khÃ¡ch hÃ ng</v-tab>
+      <v-tab value="team">Äá»™i nhÃ³m</v-tab>
+      <v-tab value="response">Thá»i gian tráº£ lá»i</v-tab>
+      <v-tab value="builder">BÃ¡o cÃ¡o tÃ¹y chá»‰nh</v-tab>
     </v-tabs>
 
     <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4" />
 
     <v-window v-model="tab">
-      <!-- Overview -->
       <v-window-item value="overview">
         <v-row>
           <v-col cols="12" md="6">
@@ -57,17 +54,14 @@
         </v-row>
       </v-window-item>
 
-      <!-- Funnel -->
       <v-window-item value="funnel">
         <ConversionFunnelChart :data="funnel" />
       </v-window-item>
 
-      <!-- Team -->
       <v-window-item value="team">
         <TeamLeaderboard :data="teamPerformance" />
       </v-window-item>
 
-      <!-- Response Time -->
       <v-window-item value="response">
         <v-row>
           <v-col cols="12">
@@ -75,13 +69,13 @@
           </v-col>
           <v-col cols="12" v-if="responseTime?.byUser?.length">
             <v-card>
-              <v-card-title class="text-body-1">Thời gian trả lời theo nhân viên</v-card-title>
+              <v-card-title class="text-body-1">Thá»i gian tráº£ lá»i theo nhÃ¢n viÃªn</v-card-title>
               <v-card-text>
                 <v-data-table
                   :headers="rtUserHeaders"
                   :items="responseTime.byUser"
                   density="compact"
-                  no-data-text="Không có dữ liệu"
+                  no-data-text="KhÃ´ng cÃ³ dá»¯ liá»‡u"
                 >
                   <template #item.avgSeconds="{ item }">
                     {{ formatTime(item.avgSeconds) }}
@@ -93,7 +87,6 @@
         </v-row>
       </v-window-item>
 
-      <!-- Custom Report Builder -->
       <v-window-item value="builder">
         <ReportBuilder
           :result="customResult"
@@ -112,14 +105,13 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useAnalytics } from '@/composables/use-analytics';
 import type { ReportConfig, SavedReport } from '@/composables/use-analytics';
 import ConversionFunnelChart from '@/components/analytics/ConversionFunnelChart.vue';
 import TeamLeaderboard from '@/components/analytics/TeamLeaderboard.vue';
 import ResponseTimeChart from '@/components/analytics/ResponseTimeChart.vue';
 import ReportBuilder from '@/components/analytics/ReportBuilder.vue';
-import { ref } from 'vue';
 
 const {
   funnel, teamPerformance, responseTime, customResult, savedReports,
@@ -130,16 +122,16 @@ const {
 const tab = ref('overview');
 
 const rtUserHeaders = [
-  { title: 'Họ tên', key: 'fullName' },
-  { title: 'TG trả lời TB', key: 'avgSeconds', align: 'end' as const },
+  { title: 'Há» tÃªn', key: 'fullName' },
+  { title: 'TG tráº£ lá»i TB', key: 'avgSeconds', align: 'end' as const },
 ];
 
 function formatTime(seconds: number | null): string {
-  if (seconds == null) return '—';
+  if (seconds == null) return 'â€”';
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
-  if (m === 0) return `${s} giây`;
-  return `${m} phút ${s} giây`;
+  if (m === 0) return `${s} giÃ¢y`;
+  return `${m} phÃºt ${s} giÃ¢y`;
 }
 
 async function onSaveReport(data: { name: string; type: string; config: ReportConfig }) {
@@ -157,3 +149,17 @@ onMounted(() => {
   fetchSavedReports();
 });
 </script>
+
+<style scoped>
+.analytics-shell {
+  color: var(--color-text);
+}
+
+.analytics-title {
+  color: var(--color-text);
+}
+
+.analytics-title-icon {
+  color: var(--color-primary);
+}
+</style>

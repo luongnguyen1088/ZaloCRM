@@ -1,13 +1,12 @@
 <template>
-  <div class="conversation-list d-flex flex-column" style="width: 100%; border-right: 1px solid var(--border-glow, rgba(0,242,255,0.1)); height: 100%;">
-    <!-- Account filter + Search -->
+  <div class="conversation-list d-flex flex-column">
     <div class="pa-2">
       <v-select
         v-model="selectedAccountId"
         :items="accountOptions"
         item-title="text"
         item-value="value"
-        label="Tất cả Zalo"
+        label="Táº¥t cáº£ Zalo"
         density="compact"
         variant="solo-filled"
         hide-details
@@ -18,7 +17,7 @@
       <v-text-field
         :model-value="search"
         @update:model-value="$emit('update:search', $event)"
-        placeholder="Tìm kiếm..."
+        placeholder="TÃ¬m kiáº¿m..."
         prepend-inner-icon="mdi-magnify"
         variant="solo-filled"
         density="compact"
@@ -27,7 +26,6 @@
       />
     </div>
 
-    <!-- List -->
     <v-list class="flex-grow-1 overflow-y-auto pa-0" density="compact">
       <v-progress-linear v-if="loading" indeterminate color="primary" />
 
@@ -37,7 +35,7 @@
         :active="conv.id === selectedId"
         @click="$emit('select', conv.id)"
         class="py-2"
-        :class="{ 'conversation-active': conv.id === selectedId, 'bg-blue-lighten-5': conv.unreadCount > 0 && conv.id !== selectedId }"
+        :class="{ 'conversation-active': conv.id === selectedId, 'conversation-unread': conv.unreadCount > 0 && conv.id !== selectedId }"
       >
         <template #prepend>
           <v-avatar size="40" color="grey-lighten-2">
@@ -49,15 +47,15 @@
 
         <v-list-item-title class="d-flex align-center">
           <span class="text-truncate" :class="{ 'font-weight-bold': conv.unreadCount > 0 }">
-            {{ conv.threadType === 'group' ? (conv.contact?.fullName || 'Nhóm') : (conv.contact?.fullName || 'Unknown') }}
+            {{ conv.threadType === 'group' ? (conv.contact?.fullName || 'NhÃ³m') : (conv.contact?.fullName || 'Unknown') }}
           </span>
-          <v-chip v-if="conv.threadType === 'group'" size="x-small" color="info" variant="tonal" class="ml-1">Nhóm</v-chip>
+          <v-chip v-if="conv.threadType === 'group'" size="x-small" color="info" variant="tonal" class="ml-1">NhÃ³m</v-chip>
           <v-spacer />
           <span class="text-caption text-grey ml-1">{{ formatTime(conv.lastMessageAt) }}</span>
         </v-list-item-title>
 
         <v-list-item-subtitle class="d-flex align-center">
-          <span class="text-truncate" style="max-width: 200px;" :class="{ 'font-weight-medium': conv.unreadCount > 0 }">
+          <span class="text-truncate conversation-preview" :class="{ 'font-weight-medium': conv.unreadCount > 0 }">
             {{ lastMessagePreview(conv) }}
           </span>
           <v-spacer />
@@ -70,16 +68,15 @@
           />
         </v-list-item-subtitle>
 
-        <!-- Zalo account indicator -->
         <template #append>
-          <span v-if="conv.zaloAccount?.displayName" class="text-caption text-grey-darken-1 ml-1" style="font-size: 0.65rem; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          <span v-if="conv.zaloAccount?.displayName" class="text-caption text-grey-darken-1 ml-1 conversation-account-name">
             {{ conv.zaloAccount.displayName }}
           </span>
         </template>
       </v-list-item>
 
       <div v-if="!loading && conversations.length === 0" class="text-center pa-8 text-grey">
-        Chưa có cuộc trò chuyện nào
+        ChÆ°a cÃ³ cuá»™c trÃ² chuyá»‡n nÃ o
       </div>
     </v-list>
   </div>
@@ -116,34 +113,33 @@ onMounted(async () => {
       value: a.id,
     }));
   } catch {
-    // Non-critical — filter just won't show accounts
+    // Non-critical
   }
 });
 
 function lastMessagePreview(conv: Conversation): string {
   const msg = conv.messages?.[0];
   if (!msg) return '';
-  if (msg.isDeleted) return '(đã thu hồi)';
-  const prefix = msg.senderType === 'self' ? 'Bạn: ' : '';
+  if (msg.isDeleted) return '(Ä‘Ã£ thu há»“i)';
+  const prefix = msg.senderType === 'self' ? 'Báº¡n: ' : '';
 
   switch (msg.contentType) {
-    case 'image': return prefix + '📷 Hình ảnh';
-    case 'sticker': return prefix + '🏷️ Sticker';
-    case 'video': return prefix + '🎥 Video';
-    case 'voice': return prefix + '🎤 Tin nhắn thoại';
+    case 'image': return prefix + 'ðŸ“· HÃ¬nh áº£nh';
+    case 'sticker': return prefix + 'ðŸ·ï¸ Sticker';
+    case 'video': return prefix + 'ðŸŽ¥ Video';
+    case 'voice': return prefix + 'ðŸŽ¤ Tin nháº¯n thoáº¡i';
     case 'gif': return prefix + 'GIF';
-    case 'file': return prefix + '📎 Tệp đính kèm';
-    case 'link': return prefix + '🔗 Liên kết';
+    case 'file': return prefix + 'ðŸ“Ž Tá»‡p Ä‘Ã­nh kÃ¨m';
+    case 'link': return prefix + 'ðŸ”— LiÃªn káº¿t';
   }
 
-  // Reminder/calendar messages
   if (msg.content) {
     try {
       const p = JSON.parse(msg.content);
       if (p.action === 'msginfo.actionlist' && p.title) {
-        return prefix + '📅 ' + p.title.slice(0, 50);
+        return prefix + 'ðŸ“… ' + p.title.slice(0, 50);
       }
-    } catch { /* not JSON */ }
+    } catch {}
   }
 
   const text = msg.content || '';
@@ -167,16 +163,42 @@ function formatTime(dateStr: string | null): string {
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
 
-  if (diffMins < 1) return 'Vừa xong';
-  if (diffMins < 60) return `${diffMins} phút`;
+  if (diffMins < 1) return 'Vá»«a xong';
+  if (diffMins < 60) return `${diffMins} phÃºt`;
 
   const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours} giờ`;
+  if (diffHours < 24) return `${diffHours} giá»`;
 
   const diffDays = Math.floor(diffHours / 24);
-  if (diffDays === 1) return 'Hôm qua';
-  if (diffDays < 7) return `${diffDays} ngày`;
+  if (diffDays === 1) return 'HÃ´m qua';
+  if (diffDays < 7) return `${diffDays} ngÃ y`;
 
   return date.toLocaleDateString('vi-VN');
 }
 </script>
+
+<style scoped>
+.conversation-list {
+  width: 100%;
+  height: 100%;
+  border-right: 1px solid var(--color-border);
+  background: var(--color-surface-glass);
+  backdrop-filter: blur(14px);
+}
+
+.conversation-unread {
+  background: var(--color-primary-soft);
+}
+
+.conversation-preview {
+  max-width: 200px;
+}
+
+.conversation-account-name {
+  font-size: 0.65rem;
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

@@ -3,22 +3,17 @@
     <v-divider class="my-3" />
     <div class="d-flex align-center mb-2">
       <v-icon size="16" color="warning" class="mr-1">mdi-calendar-clock</v-icon>
-      <span class="text-caption font-weight-bold">Lịch hẹn ({{ appointments.length }})</span>
+      <span class="text-caption font-weight-bold">Lá»‹ch háº¹n ({{ appointments.length }})</span>
       <v-spacer />
       <v-btn size="x-small" variant="text" color="primary" @click="showForm = !showForm">
         <v-icon size="14">mdi-plus</v-icon>
       </v-btn>
     </div>
 
-    <!-- Quick create form -->
-    <div
-      v-if="showForm"
-      class="mb-2 pa-2"
-      style="background: rgba(255,183,77,0.05); border-radius: 8px;"
-    >
+    <div v-if="showForm" class="mb-2 pa-2 appointment-form-card">
       <v-text-field
         v-model="createForm.date"
-        label="Ngày"
+        label="NgÃ y"
         type="date"
         density="compact"
         variant="outlined"
@@ -27,7 +22,7 @@
       />
       <v-text-field
         v-model="createForm.time"
-        label="Giờ"
+        label="Giá»"
         type="time"
         density="compact"
         variant="outlined"
@@ -36,7 +31,7 @@
       />
       <v-text-field
         v-model="createForm.notes"
-        label="Ghi chú"
+        label="Ghi chÃº"
         density="compact"
         variant="outlined"
         hide-details
@@ -49,24 +44,21 @@
         :loading="creating"
         @click="submitCreate"
       >
-        Tạo lịch hẹn
+        Táº¡o lá»‹ch háº¹n
       </v-btn>
     </div>
 
-    <!-- Appointment list -->
     <div
       v-for="apt in appointments"
       :key="apt.id"
-      class="mb-1 pa-2"
-      style="background: rgba(255,183,77,0.05); border-radius: 8px; border: 1px solid rgba(255,183,77,0.1);"
+      class="mb-1 pa-2 appointment-item-card"
     >
-      <!-- View mode -->
       <div v-if="editingId !== apt.id" class="d-flex align-center">
         <div class="flex-grow-1">
           <div class="text-body-2">
             {{ formatAptDate(apt.appointmentDate) }} {{ apt.appointmentTime || '' }}
           </div>
-          <div v-if="apt.notes" class="text-caption" style="opacity: 0.6;">{{ apt.notes }}</div>
+          <div v-if="apt.notes" class="text-caption appointment-notes">{{ apt.notes }}</div>
         </div>
         <v-chip
           size="x-small"
@@ -81,11 +73,10 @@
         </v-btn>
       </div>
 
-      <!-- Edit mode -->
       <div v-else>
         <v-text-field
           v-model="editForm.date"
-          label="Ngày"
+          label="NgÃ y"
           type="date"
           density="compact"
           variant="outlined"
@@ -94,7 +85,7 @@
         />
         <v-text-field
           v-model="editForm.time"
-          label="Giờ"
+          label="Giá»"
           type="time"
           density="compact"
           variant="outlined"
@@ -103,7 +94,7 @@
         />
         <v-text-field
           v-model="editForm.notes"
-          label="Ghi chú"
+          label="Ghi chÃº"
           density="compact"
           variant="outlined"
           hide-details
@@ -114,21 +105,21 @@
           :items="statusOptions"
           item-title="title"
           item-value="value"
-          label="Trạng thái"
+          label="Tráº¡ng thÃ¡i"
           density="compact"
           variant="outlined"
           hide-details
           class="mb-1"
         />
         <div class="d-flex gap-1">
-          <v-btn size="small" color="warning" :loading="saving" @click="submitEdit(apt.id)">Lưu</v-btn>
-          <v-btn size="small" variant="text" @click="editingId = null">Hủy</v-btn>
+          <v-btn size="small" color="warning" :loading="saving" @click="submitEdit(apt.id)">LÆ°u</v-btn>
+          <v-btn size="small" variant="text" @click="editingId = null">Há»§y</v-btn>
         </div>
       </div>
     </div>
 
-    <div v-if="appointments.length === 0" class="text-caption" style="opacity: 0.5;">
-      Chưa có lịch hẹn
+    <div v-if="appointments.length === 0" class="text-caption appointment-empty">
+      ChÆ°a cÃ³ lá»‹ch háº¹n
     </div>
   </div>
 </template>
@@ -164,10 +155,10 @@ const createForm = reactive({ date: '', time: '', notes: '' });
 const editForm = reactive({ date: '', time: '', notes: '', status: '' });
 
 const statusOptions = [
-  { title: 'Sắp tới', value: 'scheduled' },
-  { title: 'Hoàn thành', value: 'completed' },
-  { title: 'Hủy', value: 'cancelled' },
-  { title: 'Không đến', value: 'no_show' },
+  { title: 'Sáº¯p tá»›i', value: 'scheduled' },
+  { title: 'HoÃ n thÃ nh', value: 'completed' },
+  { title: 'Há»§y', value: 'cancelled' },
+  { title: 'KhÃ´ng Ä‘áº¿n', value: 'no_show' },
 ];
 
 function statusColor(s: string): string {
@@ -246,3 +237,25 @@ async function submitEdit(appointmentId: string) {
   }
 }
 </script>
+
+<style scoped>
+.appointment-form-card {
+  background: var(--color-warning-soft);
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--color-warning) 18%, transparent);
+}
+
+.appointment-item-card {
+  background: var(--color-warning-soft);
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--color-warning) 16%, transparent);
+}
+
+.appointment-notes {
+  opacity: 0.6;
+}
+
+.appointment-empty {
+  opacity: 0.5;
+}
+</style>

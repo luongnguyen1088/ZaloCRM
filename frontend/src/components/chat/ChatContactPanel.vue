@@ -1,11 +1,8 @@
 <template>
-  <div
-    class="chat-contact-panel d-flex flex-column"
-    style="width: 320px; border-left: 1px solid rgba(0,0,0,0.12); height: 100%; overflow-y: auto; flex-shrink: 0;"
-  >
-    <div class="pa-3 d-flex align-center" style="border-bottom: 1px solid rgba(0,0,0,0.12);">
+  <div class="chat-contact-panel d-flex flex-column">
+    <div class="pa-3 d-flex align-center chat-contact-panel__header">
       <v-icon icon="mdi-account-details" class="mr-2" />
-      <span class="font-weight-medium">Thông tin khách hàng</span>
+      <span class="font-weight-medium">ThÃ´ng tin khÃ¡ch hÃ ng</span>
       <v-spacer />
       <v-btn icon size="small" variant="text" @click="$emit('close')">
         <v-icon>mdi-close</v-icon>
@@ -13,7 +10,6 @@
     </div>
 
     <div class="pa-3">
-      <!-- Lead score + last activity display -->
       <div v-if="props.contact" class="d-flex align-center mb-3 ga-2">
         <v-chip
           :color="scoreColor(props.contact.leadScore)"
@@ -21,42 +17,42 @@
           variant="tonal"
           prepend-icon="mdi-star"
         >
-          {{ props.contact.leadScore ?? 0 }} điểm
+          {{ props.contact.leadScore ?? 0 }} Ä‘iá»ƒm
         </v-chip>
         <span v-if="props.contact.lastActivity" class="text-caption text-grey">
           {{ relativeTime(props.contact.lastActivity) }}
         </span>
       </div>
 
-      <v-text-field v-model="form.fullName" label="Họ tên" density="compact" variant="outlined" class="mb-2" hide-details />
-      <v-text-field v-model="form.phone" label="Số điện thoại" density="compact" variant="outlined" class="mb-2" hide-details />
+      <v-text-field v-model="form.fullName" label="Há» tÃªn" density="compact" variant="outlined" class="mb-2" hide-details />
+      <v-text-field v-model="form.phone" label="Sá»‘ Ä‘iá»‡n thoáº¡i" density="compact" variant="outlined" class="mb-2" hide-details />
       <v-text-field v-model="form.email" label="Email" type="email" density="compact" variant="outlined" class="mb-2" hide-details />
 
-      <v-select v-model="form.source" label="Nguồn" :items="SOURCE_OPTIONS" item-title="text" item-value="value"
+      <v-select v-model="form.source" label="Nguá»“n" :items="SOURCE_OPTIONS" item-title="text" item-value="value"
         density="compact" variant="outlined" clearable class="mb-2" hide-details />
 
-      <v-select v-model="form.status" label="Trạng thái" :items="STATUS_OPTIONS" item-title="text" item-value="value"
+      <v-select v-model="form.status" label="Tráº¡ng thÃ¡i" :items="STATUS_OPTIONS" item-title="text" item-value="value"
         density="compact" variant="outlined" clearable class="mb-2" hide-details />
 
-      <v-text-field v-model="form.firstContactDate" label="Ngày tiếp nhận" type="date"
+      <v-text-field v-model="form.firstContactDate" label="NgÃ y tiáº¿p nháº­n" type="date"
         density="compact" variant="outlined" class="mb-2" hide-details />
 
-      <v-text-field v-model="form.nextAppointmentDate" label="Hẹn tái khám" type="date"
+      <v-text-field v-model="form.nextAppointmentDate" label="Háº¹n tÃ¡i khÃ¡m" type="date"
         density="compact" variant="outlined" class="mb-2" hide-details />
 
       <v-combobox v-model="form.tags" label="Tags" multiple chips closable-chips
         density="compact" variant="outlined" class="mb-2" hide-details />
 
-      <v-textarea v-model="form.notes" label="Ghi chú" rows="2" auto-grow
+      <v-textarea v-model="form.notes" label="Ghi chÃº" rows="2" auto-grow
         density="compact" variant="outlined" class="mb-3" hide-details />
 
-      <v-btn color="primary" block :loading="saving" @click="saveContact">Lưu thông tin</v-btn>
+      <v-btn color="primary" block :loading="saving" @click="saveContact">LÆ°u thÃ´ng tin</v-btn>
 
       <v-alert v-if="saveSuccess" type="success" density="compact" class="mt-2" closable @click:close="saveSuccess = false">
-        Đã lưu thành công!
+        ÄÃ£ lÆ°u thÃ nh cÃ´ng!
       </v-alert>
       <v-alert v-if="saveError" type="error" density="compact" class="mt-2" closable @click:close="saveError = false">
-        Lưu thất bại, thử lại!
+        LÆ°u tháº¥t báº¡i, thá»­ láº¡i!
       </v-alert>
 
       <AiSummaryCard :summary="aiSummary" :loading="aiSummaryLoading" @refresh="$emit('refresh-ai-summary')" />
@@ -64,9 +60,9 @@
       <v-card variant="outlined" class="mb-3">
         <v-card-title class="d-flex align-center text-body-1">
           <v-icon class="mr-2">mdi-chart-bell-curve-cumulative</v-icon>
-          Cảm xúc khách hàng
+          Cáº£m xÃºc khÃ¡ch hÃ ng
           <v-spacer />
-          <v-btn size="small" variant="text" :loading="aiSentimentLoading" @click="$emit('refresh-ai-sentiment')">Làm mới</v-btn>
+          <v-btn size="small" variant="text" :loading="aiSentimentLoading" @click="$emit('refresh-ai-sentiment')">LÃ m má»›i</v-btn>
         </v-card-title>
         <v-card-text>
           <AiSentimentBadge :sentiment="aiSentiment" />
@@ -123,8 +119,24 @@ function scoreColor(score: number) {
 function relativeTime(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  if (days === 0) return 'Hôm nay';
-  if (days === 1) return 'Hôm qua';
-  return `${days} ngày trước`;
+  if (days === 0) return 'HÃ´m nay';
+  if (days === 1) return 'HÃ´m qua';
+  return `${days} ngÃ y trÆ°á»›c`;
 }
 </script>
+
+<style scoped>
+.chat-contact-panel {
+  width: 320px;
+  height: 100%;
+  overflow-y: auto;
+  flex-shrink: 0;
+  border-left: 1px solid var(--color-border);
+  background: var(--color-surface-glass);
+  backdrop-filter: blur(14px);
+}
+
+.chat-contact-panel__header {
+  border-bottom: 1px solid var(--color-border);
+}
+</style>
