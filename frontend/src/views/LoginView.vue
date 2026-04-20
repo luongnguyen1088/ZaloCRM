@@ -5,7 +5,7 @@
       <section class="login-showcase">
         <div class="entrance-animation-delay-1">
           <div class="login-badge glow-border">
-            <v-icon size="18" color="#00F2FF">mdi-auto-fix</v-icon>
+            <v-icon size="18" color="primary">mdi-auto-fix</v-icon>
             <span class="ml-2">Next-Gen Zalo Automation</span>
           </div>
         </div>
@@ -94,7 +94,7 @@
                   class="premium-input"
                 >
                   <template #prepend-inner>
-                    <v-icon color="#94a3b8" class="mr-2">mdi-email-outline</v-icon>
+                    <v-icon color="secondary" class="mr-2">mdi-email-outline</v-icon>
                   </template>
                 </v-text-field>
               </div>
@@ -111,11 +111,11 @@
                   class="premium-input"
                 >
                   <template #prepend-inner>
-                    <v-icon color="#94a3b8" class="mr-2">mdi-lock-outline</v-icon>
+                    <v-icon color="secondary" class="mr-2">mdi-lock-outline</v-icon>
                   </template>
                   <template #append-inner>
                     <v-btn icon size="small" variant="text" @click="showPassword = !showPassword">
-                      <v-icon color="#94a3b8">{{ showPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline' }}</v-icon>
+                      <v-icon color="secondary">{{ showPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline' }}</v-icon>
                     </v-btn>
                   </template>
                 </v-text-field>
@@ -126,7 +126,7 @@
                   label="Ghi nhớ tôi"
                   hide-details
                   density="compact"
-                  color="#00F2FF"
+                  color="primary"
                   class="text-caption custom-cb"
                 ></v-checkbox>
                 <router-link to="/register" class="forgot-link">Quên mật khẩu?</router-link>
@@ -348,10 +348,15 @@ function getGoogleIdentity() {
   max-width: 1300px;
 }
 
-/* Animations */
 @keyframes fadeInSlide {
   from { opacity: 0; transform: translateY(40px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .entrance-animation-delay-1 { animation: fadeInSlide 0.8s ease-out forwards; }
@@ -359,40 +364,40 @@ function getGoogleIdentity() {
 .entrance-animation-delay-3 { animation: fadeInSlide 0.8s ease-out 0.2s forwards; opacity: 0; }
 .entrance-animation-delay-4 { animation: fadeInSlide 0.8s ease-out 0.3s forwards; opacity: 0; }
 
-/* Left Side UI */
 .login-badge {
   display: inline-flex;
   align-items: center;
-  padding: 8px 16px;
-  border-radius: 99px;
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--color-text-secondary);
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 32px;
+  backdrop-filter: blur(12px);
 }
 
 .glow-border {
-  border: 1px solid rgba(0, 242, 255, 0.3);
-  box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
+  border: 1px solid var(--color-primary-soft-strong);
+  box-shadow: var(--glow-brand);
 }
 
 .login-title {
   font-size: clamp(3rem, 6vw, 4.8rem);
   font-weight: 800;
-  line-height: 1.1;
-  color: #fff;
+  line-height: 1.05;
+  color: var(--color-text);
   letter-spacing: -2px;
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #00f2ff, #a855f7);
+  background: var(--gradient-accent);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .login-overline {
-  color: #a855f7;
+  color: var(--color-accent);
   text-transform: uppercase;
   font-weight: 700;
   letter-spacing: 2px;
@@ -403,7 +408,7 @@ function getGoogleIdentity() {
 .login-description {
   margin-top: 24px;
   font-size: 1.25rem;
-  color: #94a3b8;
+  color: var(--color-text-secondary);
   max-width: 580px;
   line-height: 1.6;
 }
@@ -416,11 +421,12 @@ function getGoogleIdentity() {
 }
 
 .glass-dark {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  border-radius: 20px;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  backdrop-filter: blur(14px);
+  border-radius: 24px;
   padding: 24px;
+  box-shadow: var(--shadow-sm);
 }
 
 .login-stat-value {
@@ -429,7 +435,7 @@ function getGoogleIdentity() {
 }
 
 .login-stat-label {
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-size: 0.85rem;
   margin-top: 8px;
 }
@@ -439,17 +445,22 @@ function getGoogleIdentity() {
 }
 
 .login-preview__eyebrow {
-  color: #00f2ff;
+  color: var(--color-primary);
   text-transform: uppercase;
   font-weight: 600;
   font-size: 0.75rem;
   letter-spacing: 1px;
 }
 
-.login-preview__title {
-  color: #fff;
-  font-size: 1.4rem;
+.login-preview__title,
+.login-feature__title,
+.login-card__title {
+  color: var(--color-text);
   font-weight: 700;
+}
+
+.login-preview__title {
+  font-size: 1.4rem;
 }
 
 .live-indicator {
@@ -457,9 +468,10 @@ function getGoogleIdentity() {
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
-  background: rgba(34, 197, 94, 0.1);
+  background: var(--color-success-soft);
+  border: 1px solid var(--color-success-border);
   border-radius: 8px;
-  color: #4ade80;
+  color: var(--color-success);
   font-size: 0.75rem;
   font-weight: 600;
 }
@@ -467,15 +479,9 @@ function getGoogleIdentity() {
 .pulse-dot {
   width: 8px;
   height: 8px;
-  background: #22c55e;
+  background: var(--color-success);
   border-radius: 50%;
   animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.5); opacity: 0.5; }
-  100% { transform: scale(1); opacity: 1; }
 }
 
 .login-preview__illustration {
@@ -484,18 +490,19 @@ function getGoogleIdentity() {
 }
 
 .border-glass {
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
 }
 
 .glow-layer {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 100% 0%, rgba(0, 242, 255, 0.15), transparent 70%);
+  background: radial-gradient(circle at 100% 0%, rgba(37, 99, 235, 0.14), transparent 70%);
   pointer-events: none;
 }
 
 .feature-icon {
-  color: #00f2ff;
+  color: var(--color-primary);
   margin-right: 16px;
   margin-top: 2px;
 }
@@ -505,23 +512,23 @@ function getGoogleIdentity() {
   align-items: flex-start;
 }
 
-.login-feature__title {
-  color: #fff;
-  font-weight: 600;
+.login-feature__text,
+.login-card__subtitle,
+.footer-text {
+  color: var(--color-text-secondary);
 }
 
 .login-feature__text {
-  color: #64748b;
   font-size: 0.85rem;
   margin-top: 4px;
 }
 
-/* Right Side Form */
 .glass-premium {
-  background: rgba(2, 6, 23, 0.7) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.76) !important;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
   backdrop-filter: blur(24px) saturate(180%);
   border-radius: 32px !important;
+  box-shadow: var(--shadow-lg);
   padding: 4px;
 }
 
@@ -532,52 +539,53 @@ function getGoogleIdentity() {
 .logo-orb {
   width: 72px;
   height: 72px;
-  background: linear-gradient(135deg, #00f2ff, #7c3aed);
+  background: var(--gradient-accent);
   border-radius: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
   margin: 0 auto;
-  box-shadow: 0 0 30px rgba(0, 242, 255, 0.2);
+  box-shadow: var(--glow-brand);
 }
 
 .login-card__title {
   font-size: 2rem;
-  font-weight: 700;
-  color: #fff;
 }
 
 .login-card__subtitle {
-  color: #94a3b8;
   margin-top: 8px;
 }
 
-/* Form Inputs */
 .input-group {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--color-border);
   border-radius: 16px;
   padding: 8px 16px;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .input-group:focus-within {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: #00f2ff;
-  box-shadow: 0 0 20px rgba(0, 242, 255, 0.1);
+  background: rgba(255, 255, 255, 0.9);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px var(--color-primary-soft);
 }
 
 .premium-input {
   width: 100%;
 }
 
+:deep(.v-field__overlay),
+:deep(.v-field__outline) {
+  display: none;
+}
+
 :deep(.v-field__input) {
-  color: #fff !important;
+  color: var(--color-text) !important;
   font-size: 1rem;
 }
 
 :deep(.v-label) {
-  color: #64748b !important;
+  color: var(--color-text-secondary) !important;
 }
 
 .login-options {
@@ -586,16 +594,20 @@ function getGoogleIdentity() {
   align-items: center;
 }
 
-.forgot-link {
-  color: #a855f7;
+.forgot-link,
+.signup-link {
+  color: var(--color-accent);
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 700;
+}
+
+.forgot-link {
   font-size: 0.85rem;
 }
 
 .btn-primary-gradient {
-  background: linear-gradient(135deg, #00f2ff, #7c3aed) !important;
-  color: #fff !important;
+  background: var(--gradient-brand) !important;
+  color: var(--color-text-inverse) !important;
   border-radius: 16px !important;
   font-size: 1.1rem !important;
   font-weight: 700 !important;
@@ -606,7 +618,7 @@ function getGoogleIdentity() {
 
 .btn-primary-gradient:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(0, 242, 255, 0.2) !important;
+  box-shadow: var(--glow-brand) !important;
 }
 
 .divider-text {
@@ -618,11 +630,11 @@ function getGoogleIdentity() {
 .line {
   flex: 1;
   height: 1px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-border);
 }
 
 .text {
-  color: #475569;
+  color: var(--color-text-secondary);
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -630,39 +642,30 @@ function getGoogleIdentity() {
 }
 
 .btn-google-glass {
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  background: rgba(255, 255, 255, 0.02) !important;
-  color: #fff !important;
+  border: 1px solid var(--color-border) !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+  color: var(--color-text) !important;
   border-radius: 16px !important;
   text-transform: none !important;
   font-weight: 600 !important;
 }
 
 .btn-google-glass:hover {
-  background: rgba(255, 255, 255, 0.05) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
 }
 
-.signup-link {
-  color: #00f2ff;
-  text-decoration: none;
-  font-weight: 700;
-}
-
-.footer-text {
-  color: #64748b;
-}
-
-/* Responsive */
 @media (max-width: 1200px) {
   .login-container {
     grid-template-columns: 1fr;
     gap: 40px;
     padding: 20px;
   }
+
   .login-showcase {
     text-align: center;
     align-items: center;
   }
+
   .login-preview {
     display: none;
   }
@@ -672,6 +675,7 @@ function getGoogleIdentity() {
   .login-card__content {
     padding: 32px 24px;
   }
+
   .login-title {
     font-size: 2.8rem;
   }

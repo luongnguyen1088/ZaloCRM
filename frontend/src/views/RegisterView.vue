@@ -24,7 +24,7 @@
                 class="premium-input"
               >
                 <template #prepend-inner>
-                  <v-icon color="#94a3b8" class="mr-2">mdi-domain</v-icon>
+                  <v-icon color="secondary" class="mr-2">mdi-domain</v-icon>
                 </template>
               </v-text-field>
             </div>
@@ -39,7 +39,7 @@
                 class="premium-input"
               >
                 <template #prepend-inner>
-                  <v-icon color="#94a3b8" class="mr-2">mdi-account-outline</v-icon>
+                  <v-icon color="secondary" class="mr-2">mdi-account-outline</v-icon>
                 </template>
               </v-text-field>
             </div>
@@ -54,7 +54,7 @@
                 class="premium-input"
               >
                 <template #prepend-inner>
-                  <v-icon color="#94a3b8" class="mr-2">mdi-email-outline</v-icon>
+                  <v-icon color="secondary" class="mr-2">mdi-email-outline</v-icon>
                 </template>
               </v-text-field>
             </div>
@@ -70,7 +70,7 @@
                 class="premium-input"
               >
                 <template #prepend-inner>
-                  <v-icon color="#94a3b8" class="mr-2">mdi-lock-outline</v-icon>
+                  <v-icon color="secondary" class="mr-2">mdi-lock-outline</v-icon>
                 </template>
               </v-text-field>
             </div>
@@ -199,10 +199,11 @@ function loginWithGoogle() {
 }
 
 .glass-premium {
-  background: rgba(2, 6, 23, 0.7) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.76) !important;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
   backdrop-filter: blur(24px) saturate(180%);
   border-radius: 32px !important;
+  box-shadow: var(--shadow-lg);
 }
 
 .register-card__content {
@@ -212,60 +213,66 @@ function loginWithGoogle() {
 .logo-orb {
   width: 72px;
   height: 72px;
-  background: linear-gradient(135deg, #00f2ff, #7c3aed);
+  background: var(--gradient-accent);
   border-radius: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
   margin: 0 auto;
-  box-shadow: 0 0 30px rgba(0, 242, 255, 0.2);
+  box-shadow: var(--glow-brand);
 }
 
 .pink-glow {
-  background: linear-gradient(135deg, #ec4899, #8b5cf6);
-  box-shadow: 0 0 30px rgba(236, 72, 153, 0.2);
+  background: var(--gradient-accent);
 }
 
 .register-card__title {
   font-size: 2rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text);
 }
 
-.register-card__subtitle {
-  color: #94a3b8;
+.register-card__subtitle,
+.footer-text {
+  color: var(--color-text-secondary);
   margin-top: 8px;
 }
 
-/* Form Inputs */
 .input-group {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--color-border);
   border-radius: 16px;
   padding: 8px 16px;
   transition: all 0.3s ease;
 }
 
 .input-group:focus-within {
-  border-color: #00f2ff;
-  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 4px var(--color-primary-soft);
+}
+
+:deep(.v-field__overlay),
+:deep(.v-field__outline) {
+  display: none;
 }
 
 :deep(.v-field__input) {
-  color: #fff !important;
+  color: var(--color-text) !important;
 }
 
 :deep(.v-label) {
-  color: #64748b !important;
+  color: var(--color-text-secondary) !important;
 }
 
 .btn-primary-gradient {
-  background: linear-gradient(135deg, #00f2ff, #7c3aed) !important;
-  color: #fff !important;
+  background: var(--gradient-brand) !important;
+  color: var(--color-text-inverse) !important;
   border-radius: 16px !important;
   font-size: 1.1rem !important;
   font-weight: 700 !important;
   text-transform: none !important;
+  box-shadow: var(--glow-brand);
 }
 
 .divider-text {
@@ -278,31 +285,28 @@ function loginWithGoogle() {
 .line {
   flex: 1;
   height: 1px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-border);
 }
 
 .text {
-  color: #475569;
+  color: var(--color-text-secondary);
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
 }
 
 .btn-google-glass {
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #fff !important;
+  border: 1px solid var(--color-border) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: var(--color-text) !important;
   border-radius: 16px !important;
   text-transform: none !important;
 }
 
 .signup-link {
-  color: #00f2ff;
+  color: var(--color-accent);
   text-decoration: none;
   font-weight: 700;
-}
-
-.footer-text {
-  color: #64748b;
 }
 
 @media (max-width: 600px) {

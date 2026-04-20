@@ -1,37 +1,24 @@
 <template>
   <v-app :class="{ 'liquid-bg': isDark }">
-    <!-- Top bar — glass effect -->
     <v-app-bar density="comfortable" flat>
       <v-app-bar-nav-icon @click="drawer = !drawer" />
 
-      <!-- AI Core Orb + Title -->
-      <div class="d-flex align-center" style="gap: 12px;">
-        <div
-          class="ai-core-orb d-flex align-center justify-center"
-          style="width: 32px; height: 32px; background: linear-gradient(135deg, #2563eb, #3b82f6); border-radius: 8px;"
-        >
+      <div class="brand-lockup d-flex align-center">
+        <div class="brand-orb ai-core-orb d-flex align-center justify-center">
           <v-icon size="18" color="white">mdi-brain</v-icon>
         </div>
-        <v-app-bar-title>
-          <span class="font-weight-bold text-slate-900" style="color: #0f172a;">Zalo</span><span style="color: #2563eb; font-weight: 800;">CRM</span>
+        <v-app-bar-title class="brand-title">
+          <span class="brand-title__base">Zalo</span><span class="brand-title__mark">CRM</span>
         </v-app-bar-title>
       </div>
 
-      <!-- Global search -->
       <GlobalSearch class="mx-2" />
 
       <v-spacer />
 
-      <!-- Status indicator -->
-      <div
-        class="d-flex align-center mr-4 px-3 py-1 rounded-pill"
-        style="background: #f0fdf4; border: 1px solid #dcfce7;"
-      >
-        <span
-          class="status-dot-mini"
-          style="width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block; margin-right: 8px;"
-        ></span>
-        <span class="text-caption font-weight-bold" style="color: #16a34a; letter-spacing: 0.5px; font-size: 0.65rem !important;">ONLINE</span>
+      <div class="status-chip d-flex align-center mr-4 px-3 py-1 rounded-pill">
+        <span class="status-dot-mini"></span>
+        <span class="status-chip__label text-caption font-weight-bold">ONLINE</span>
       </div>
 
       <span class="text-body-2 mr-3" v-if="authStore.user">{{ authStore.user.fullName }}</span>
@@ -47,7 +34,6 @@
       </v-btn>
     </v-app-bar>
 
-    <!-- Sidebar navigation -->
     <v-navigation-drawer v-model="drawer" :rail="rail" permanent @click="rail = false" color="background" class="border-right">
       <v-list density="compact" nav class="mt-2 sidebar-list">
         <v-list-item
@@ -66,7 +52,7 @@
         <v-list density="compact" nav>
           <v-list-item
             prepend-icon="mdi-chevron-left"
-            title="Thu gọn"
+            title="Thu gá»n"
             @click.stop="rail = !rail"
             rounded="xl"
             class="mx-2"
@@ -75,7 +61,6 @@
       </template>
     </v-navigation-drawer>
 
-    <!-- Main content -->
     <v-main>
       <v-container fluid>
         <slot />
@@ -98,7 +83,7 @@ const router = useRouter();
 
 const drawer = ref(true);
 const rail = ref(false);
-const isDark = ref(localStorage.getItem('theme') !== 'light');
+const isDark = ref(localStorage.getItem('theme') === 'dark');
 
 onMounted(() => {
   theme.global.name.value = isDark.value ? 'dark' : 'light';
@@ -106,18 +91,18 @@ onMounted(() => {
 
 const menuItems = [
   { title: 'Dashboard', icon: 'mdi-view-dashboard-outline', path: '/' },
-  { title: 'Tin nhắn', icon: 'mdi-message-text-outline', path: '/chat' },
-  { title: 'Khách hàng', icon: 'mdi-account-group-outline', path: '/contacts' },
-  { title: 'Tài khoản Zalo', icon: 'mdi-cellphone-link', path: '/zalo-accounts' },
-  { title: 'Lịch hẹn', icon: 'mdi-calendar-clock-outline', path: '/appointments' },
-  { title: 'Báo cáo', icon: 'mdi-chart-arc', path: '/reports' },
-  { title: 'Phân tích', icon: 'mdi-chart-timeline-variant-shimmer', path: '/analytics' },
-  { title: 'Nhân sự & Phân quyền', icon: 'mdi-account-cog-outline', path: '/settings' },
-  { title: 'Kết nối & Cấu hình AI', icon: 'mdi-cog-outline', path: '/api-settings' },
-  { title: 'Đào tạo AI', icon: 'mdi-school-outline', path: '/ai-training' },
-  { title: 'Tích hợp', icon: 'mdi-connection', path: '/integrations' },
+  { title: 'Tin nháº¯n', icon: 'mdi-message-text-outline', path: '/chat' },
+  { title: 'KhÃ¡ch hÃ ng', icon: 'mdi-account-group-outline', path: '/contacts' },
+  { title: 'TÃ i khoáº£n Zalo', icon: 'mdi-cellphone-link', path: '/zalo-accounts' },
+  { title: 'Lá»‹ch háº¹n', icon: 'mdi-calendar-clock-outline', path: '/appointments' },
+  { title: 'BÃ¡o cÃ¡o', icon: 'mdi-chart-arc', path: '/reports' },
+  { title: 'PhÃ¢n tÃ­ch', icon: 'mdi-chart-timeline-variant-shimmer', path: '/analytics' },
+  { title: 'NhÃ¢n sá»± & PhÃ¢n quyá»n', icon: 'mdi-account-cog-outline', path: '/settings' },
+  { title: 'Káº¿t ná»‘i & Cáº¥u hÃ¬nh AI', icon: 'mdi-cog-outline', path: '/api-settings' },
+  { title: 'ÄÃ o táº¡o AI', icon: 'mdi-school-outline', path: '/ai-training' },
+  { title: 'TÃ­ch há»£p', icon: 'mdi-connection', path: '/integrations' },
   { title: 'Automation', icon: 'mdi-robot-outline', path: '/automation' },
-  { title: 'Gói cước', icon: 'mdi-crown-outline', path: '/pricing' },
+  { title: 'GÃ³i cÆ°á»›c', icon: 'mdi-crown-outline', path: '/pricing' },
 ];
 
 function toggleTheme() {
@@ -131,3 +116,54 @@ function logout() {
   router.push('/login');
 }
 </script>
+
+<style scoped>
+.brand-lockup {
+  gap: 12px;
+}
+
+.brand-orb {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--gradient-brand);
+  box-shadow: var(--glow-brand);
+}
+
+.brand-title :deep(.v-toolbar-title__placeholder) {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.brand-title__base {
+  color: var(--color-text);
+  font-weight: 800;
+}
+
+.brand-title__mark {
+  color: var(--color-primary);
+  font-weight: 900;
+}
+
+.status-chip {
+  background: var(--color-success-soft);
+  border: 1px solid var(--color-success-border);
+}
+
+.status-dot-mini {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-success);
+  display: inline-block;
+  margin-right: 8px;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+}
+
+.status-chip__label {
+  color: var(--color-success);
+  letter-spacing: 0.5px;
+  font-size: 0.65rem !important;
+}
+</style>
