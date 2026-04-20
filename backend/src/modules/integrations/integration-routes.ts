@@ -87,6 +87,68 @@ export async function integrationRoutes(app: FastifyInstance): Promise<void> {
     }
   });
 
+  // GET /api/v1/integrations/google/spreadsheets — list user's spreadsheets
+  app.get('/api/v1/integrations/google/spreadsheets', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { orgId } = request.user!;
+      const connection = await prisma.organizationConnection.findUnique({
+        where: { orgId_type: { orgId, type: 'google' } }
+      });
+
+      if (!connection?.accessToken) {
+        return reply.status(401).send({ error: 'Google account not linked' });
+      }
+
+      // Simple fetch from Google Drive API to list spreadsheets
+      const url = 'https://www.googleapis.com/drive/v3/files?q=mimeType=\'application/vnd.google-apps.spreadsheet\'&fields=files(id,name)&pageSize=50';
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${connection.accessToken}` }
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        logger.error('[integrations] Drive API error:', errText);
+        return reply.status(response.status).send({ error: 'Failed to fetch spreadsheets' });
+      }
+
+      const data = await response.json() as { files: any[] };
+      return data.files;
+    } catch (err: any) {
+      logger.error('[integrations] spreadsheets list error:', err);
+      return reply.status(500).send({ error: 'Internal server error' });
+    }
+  });
+
+  // GET /api/v1/integrations/google/spreadsheets/:id/sheets — list tabs in a spreadsheet
+  app.get('/api/v1/integrations/google/spreadsheets/:id/sheets', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { id } = request.params as { id: string };
+      const { orgId } = request.user!;
+      const connection = await prisma.organizationConnection.findUnique({
+        where: { orgId_type: { orgId, type: 'google' } }
+      });
+
+      if (!connection?.accessToken) {
+        return reply.status(401).send({ error: 'Google account not linked' });
+      }
+
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${id}?fields=sheets(properties(title))`;
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${connection.accessToken}` }
+      });
+
+      if (!response.ok) {
+        return reply.status(response.status).send({ error: 'Failed to fetch sheets' });
+      }
+
+      const data = await response.json() as { sheets: any[] };
+      return data.sheets.map(s => s.properties.title);
+    } catch (err: any) {
+      logger.error('[integrations] sheets list error:', err);
+      return reply.status(500).send({ error: 'Internal server error' });
+    }
+  });
+
   // GET /api/v1/integrations — list all integrations for org
   app.get('/api/v1/integrations', async (request: FastifyRequest, reply: FastifyReply) => {
     try {

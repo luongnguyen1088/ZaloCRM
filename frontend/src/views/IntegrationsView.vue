@@ -257,7 +257,21 @@
                 <v-btn size="x-small" color="error" variant="text" @click="unlinkGoogle">Hủy kết nối</v-btn>
               </div>
 
-              <v-text-field v-model="form.config.spreadsheetId" label="Spreadsheet ID *" variant="outlined" rounded="lg" class="mb-4" />
+              <v-autocomplete
+                v-if="isGoogleLinked"
+                v-model="form.config.spreadsheetId"
+                :items="spreadsheetOptions"
+                item-title="name"
+                item-value="id"
+                label="Chọn Spreadsheet *"
+                variant="outlined"
+                rounded="lg"
+                class="mb-4"
+                :loading="loadingSpreadsheets"
+                @click:control="fetchSpreadsheets"
+              />
+              <v-text-field v-else v-model="form.config.spreadsheetId" label="Spreadsheet ID *" variant="outlined" rounded="lg" class="mb-4" />
+              
               <v-text-field
                 v-if="!isGoogleLinked"
                 v-model="form.config.apiKey"
@@ -269,7 +283,18 @@
                 hint="Không cần thiết nếu đã kết nối tài khoản Google"
                 persistent-hint
               />
-              <v-text-field v-model="form.config.sheetName" label="Tên Sheet (VD: Sheet1)" variant="outlined" rounded="lg" />
+              
+              <v-select
+                v-if="isGoogleLinked"
+                v-model="form.config.sheetName"
+                :items="sheetNameOptions"
+                label="Chọn Sheet (Bảng) *"
+                variant="outlined"
+                rounded="lg"
+                :loading="loadingSheetNames"
+                :disabled="!form.config.spreadsheetId"
+              />
+              <v-text-field v-else v-model="form.config.sheetName" label="Tên Sheet (VD: Sheet1)" variant="outlined" rounded="lg" />
             </div>
 
             <!-- Telegram Config -->
@@ -336,7 +361,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { api } from '@/api';
 
 interface SyncLog {
@@ -364,6 +389,11 @@ const syncing = ref<string | null>(null);
 const dialogError = ref('');
 const connections = ref<any[]>([]);
 const linkingGoogle = ref(false);
+
+const spreadsheetOptions = ref<any[]>([]);
+const loadingSpreadsheets = ref(false);
+const sheetNameOptions = ref<string[]>([]);
+const loadingSheetNames = ref(false);
 
 const isGoogleLinked = computed(() => connections.value.some(c => c.type === 'google'));
 
@@ -472,6 +502,50 @@ async function unlinkGoogle() {
     alert('Vui lòng liên hệ quản trị viên để gỡ bỏ kết nối thủ công (Tính năng này đang được cập nhật)');
   } catch {}
 }
+
+async function fetchSpreadsheets() {
+  if (!isGoogleLinked.value) return;
+  loadingSpreadsheets.value = true;
+  try {
+    const { data } = await api.get('/integrations/google/spreadsheets');
+    spreadsheetOptions.value = data;
+  } catch (err) {
+    console.error('Error fetching spreadsheets:', err);
+  } finally {
+    loadingSpreadsheets.value = false;
+  }
+}
+
+async function fetchSheetNames(spreadsheetId: string) {
+  if (!isGoogleLinked.value || !spreadsheetId) return;
+  loadingSheetNames.value = true;
+  try {
+    const { data } = await api.get(`/integrations/google/spreadsheets/${spreadsheetId}/sheets`);
+    sheetNameOptions.value = data;
+  } catch (err) {
+    console.error('Error fetching sheet names:', err);
+  } finally {
+    loadingSheetNames.value = false;
+  }
+}
+
+watch(() => form.value.type, (newType) => {
+  if (newType === 'google_sheets' && isGoogleLinked.value) {
+    fetchSpreadsheets();
+  }
+});
+
+watch(() => form.value.config.spreadsheetId, (newId) => {
+  if (form.value.type === 'google_sheets' && isGoogleLinked.value && newId) {
+    fetchSheetNames(newId);
+  }
+});
+
+watch(isGoogleLinked, (linked) => {
+  if (linked && form.value.type === 'google_sheets') {
+    fetchSpreadsheets();
+  }
+});
 
 function openCreate() {
   editing.value = false;
