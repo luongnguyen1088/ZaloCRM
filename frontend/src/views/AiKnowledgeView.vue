@@ -27,7 +27,7 @@
             <v-textarea
               v-model="magicInput"
               placeholder="Dán bất kỳ nội dung nào vào đây (ví dụ: Bảng giá, chính sách)... AI sẽ tự động phân loại và đặt tiêu đề."
-              variant="flat"
+              variant="plain"
               bg-color="transparent"
               rows="3"
               hide-details
