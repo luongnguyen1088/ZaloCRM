@@ -356,87 +356,104 @@
           <v-btn icon @click="showGuide = false"><v-icon>mdi-close</v-icon></v-btn>
         </v-toolbar>
 
-        <v-card-text class="pa-6 guide-content">
-          <section class="mb-8">
+        <v-card-text class="pa-6 guide-content overflow-y-auto">
+          <!-- Phần 1: Nguyên lý hoạt động -->
+          <section class="mb-10">
             <h2 class="text-h5 font-weight-bold mb-4 primary--text d-flex align-center">
-              <v-icon class="mr-2">mdi-lightbulb-on-outline</v-icon> Tri Thức AI là gì?
+              <v-icon class="mr-2">mdi-brain-outline</v-icon> Nguyên lý "Tư duy" của AI
             </h2>
-            <p class="text-body-1 mb-4">AI của bạn không tự nhiên biết giá sản phẩm hay chính sách của bạn. Bạn cần "nuôi" nó bằng dữ liệu qua trang này.</p>
-            <v-row dense>
-              <v-col cols="12" sm="6">
-                <v-card variant="tonal" color="primary" class="pa-4 h-100">
-                  <div class="font-weight-bold mb-2">Tri thức chung (Global)</div>
-                  <div class="text-caption">Áp dụng cho mọi tài khoản Zalo trong hệ thống của bạn.</div>
-                </v-card>
-              </v-col>
-              <v-col cols="12" sm="6">
-                <v-card variant="tonal" color="secondary" class="pa-4 h-100">
-                  <div class="font-weight-bold mb-2">Tri thức riêng (Local)</div>
-                  <div class="text-caption">Chỉ áp dụng cho một số điện thoại Zalo nhất định.</div>
-                </v-card>
-              </v-col>
-            </v-row>
+            <p class="text-body-1 mb-4">AI của bạn hoạt động theo cơ chế <strong>RAG (Tìm kiếm ngữ nghĩa)</strong>. Khi khách hỏi, nó sẽ quét qua kho tri thức này, chọn ra 3-5 đoạn liên quan nhất rồi mới soạn câu trả lời.</p>
+            <v-alert variant="tonal" color="info" border="start" class="rounded-lg">
+              <div class="text-caption">
+                <strong>Mẹo:</strong> AI giống như một nhân viên mới, nó chỉ trả lời tốt những gì bạn đã "viết vào sổ tay" này. Nội dung càng cụ thể, phản hồi càng ít sai sót.
+              </div>
+            </v-alert>
           </section>
 
-          <section class="mb-8">
+          <!-- Phần 2: Kỹ thuật viết tri thức hiệu quả -->
+          <section class="mb-10">
             <h2 class="text-h5 font-weight-bold mb-4 primary--text d-flex align-center">
-              <v-icon class="mr-2">mdi-creation</v-icon> 3 Phương pháp nạp dữ liệu
+              <v-icon class="mr-2">mdi-pencil-box-multiple-outline</v-icon> Kỹ thuật viết tri thức "Sạch"
             </h2>
-            <div class="mb-4">
-              <div class="d-flex mb-4">
-                <v-avatar color="primary" size="32" class="mr-3 text-white">1</v-avatar>
-                <div>
-                  <div class="font-weight-bold">Nạp nhanh bằng AI (Magic Add)</div>
-                  <div class="text-body-2">Dán văn bản thô, AI sẽ tự động phân loại và đặt tiêu đề. Đây là cách nhanh nhất.</div>
-                </div>
+            
+            <div class="mb-6">
+              <div class="font-weight-bold text-subtitle-1 mb-2 d-flex align-center text-secondary">
+                <v-icon size="18" class="mr-2">mdi-numeric-1-circle</v-icon> Quy tắc 1 Tri thức - 1 Vấn đề
               </div>
-              <div class="d-flex mb-4">
-                <v-avatar color="primary" size="32" class="mr-3 text-white">2</v-avatar>
-                <div>
-                  <div class="font-weight-bold">Sử dụng Mẫu (Templates)</div>
-                  <div class="text-body-2">Chọn các mẫu có sẵn (Giá, Bảo hành, Giao hàng) và điền vào chỗ trống.</div>
-                </div>
+              <p class="text-body-2 mb-2">Đừng viết một đoạn dài 500 chữ nói về cả giá, ship và bảo hành. Hãy chia làm 3 thẻ riêng biệt.</p>
+              <div class="d-flex ga-2">
+                <v-chip size="small" color="error" variant="flat">Sai: Một thẻ nói mọi thứ</v-chip>
+                <v-chip size="small" color="success" variant="flat">Đúng: Tách nhỏ kiến thức</v-chip>
               </div>
-              <div class="d-flex">
-                <v-avatar color="primary" size="32" class="mr-3 text-white">3</v-avatar>
-                <div>
-                  <div class="font-weight-bold">Thêm thủ công</div>
-                  <div class="text-body-2">Kiểm soát chi tiết nội dung mà bạn muốn AI học.</div>
-                </div>
+            </div>
+
+            <div class="mb-6">
+              <div class="font-weight-bold text-subtitle-1 mb-2 d-flex align-center text-secondary">
+                <v-icon size="18" class="mr-2">mdi-numeric-2-circle</v-icon> Cấu trúc Câu hỏi - Câu trả lời (Q&A)
               </div>
+              <p class="text-body-2 mb-2">Viết dưới dạng câu hỏi giả định sẽ giúp AI tìm kiếm chính xác hơn khi khách hàng hỏi câu tương tự.</p>
+              <v-card variant="outlined" class="pa-3 bg-grey-darken-4 rounded-lg">
+                <div class="text-caption font-italic">
+                   "Khách hỏi: Shop mình có chi nhánh ở Sài Gòn không?<br>
+                   Trả lời: Hiện tại shop chỉ có kho chính tại Hà Nội, nhưng có ship COD vào HCM trong 2-3 ngày."
+                </div>
+              </v-card>
+            </div>
+
+            <div>
+              <div class="font-weight-bold text-subtitle-1 mb-2 d-flex align-center text-secondary">
+                <v-icon size="18" class="mr-2">mdi-numeric-3-circle</v-icon> Sử dụng từ khóa (Keywords)
+              </div>
+              <p class="text-body-2">Hãy đưa các từ khóa đồng nghĩa vào kiến thức. Ví dụ: "Giao hàng", "Vận chuyển", "Ship", "Gửi đồ" nên cùng xuất hiện trong một thẻ về vận chuyển.</p>
             </div>
           </section>
 
-          <section class="mb-8">
+          <!-- Phần 3: So sánh trực quan -->
+          <section class="mb-10">
              <h2 class="text-h5 font-weight-bold mb-4 primary--text d-flex align-center">
-              <v-icon class="mr-2">mdi-check-decagram-outline</v-icon> Viết tri thức hiệu quả
+              <v-icon class="mr-2">mdi-compare-horizontal</v-icon> So sánh: Tri thức Tốt vs Sơ sài
             </h2>
             <v-table class="border rounded-lg bg-transparent">
               <thead>
                 <tr>
-                  <th class="text-error">❌ Nên tránh</th>
-                  <th class="text-success">✅ Nên viết</th>
+                  <th class="text-error" style="width: 40%">⚠️ Sơ sài (Dễ hiểu lầm)</th>
+                  <th class="text-success">💎 Chất lượng (AI cực chuẩn)</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td class="text-caption">Giao hàng nhanh lắm</td>
-                  <td class="text-caption">Free ship cho đơn trên 500k nội thành HN. Giao trong 2h.</td>
+                  <td class="text-caption py-4">Shop bán áo phông 200k.</td>
+                  <td class="text-caption py-4">
+                    <strong>Tên SP:</strong> Áo phông Unisex Cotton 100%.<br>
+                    <strong>Giá:</strong> 200.000đ (Chưa bao gồm ship).<br>
+                    <strong>Size:</strong> M (45-55kg), L (55-65kg), XL (65-80kg).
+                  </td>
                 </tr>
                 <tr>
-                  <td class="text-caption">Chuyển khoản Techcombank</td>
-                  <td class="text-caption">STK: 123456789 - Techcombank - Chủ TK: Nguyễn Văn A.</td>
+                  <td class="text-caption py-4">Thứ 7 chủ nhật nghỉ.</td>
+                  <td class="text-caption py-4">
+                    <strong>Giờ làm việc:</strong> Thứ 2 đến Thứ 6 (8h-18h).<br>
+                    <strong>Nghỉ lễ:</strong> Thứ 7 và CN shop dừng xử lý đơn nhưng AI vẫn sẽ hỗ trợ giải đáp thắc mắc 24/7.
+                  </td>
                 </tr>
               </tbody>
             </v-table>
           </section>
 
-          <section>
+          <!-- Phần 4: Quản lý theo tài khoản Zalo -->
+          <section class="mb-4">
             <h2 class="text-h5 font-weight-bold mb-4 primary--text d-flex align-center">
-              <v-icon class="mr-2">mdi-chart-line</v-icon> Kiểm tra và Giám sát
+              <v-icon class="mr-2">mdi-account-switch-outline</v-icon> Tri thức riêng theo tài khoản
             </h2>
-            <p class="text-body-2 mb-2">Sử dụng <strong>Trình giả lập</strong> ở khung bên phải để chat thử nghiệm.</p>
-            <p class="text-body-2">Để ý con số <v-icon size="small" color="success">mdi-head-cog-outline</v-icon> trên mỗi thẻ kiến thức để biết nó đã giúp bạn trả lời bao nhiêu khách hàng.</p>
+            <v-row dense>
+              <v-col cols="12">
+                <v-card variant="tonal" color="warning" class="pa-4">
+                  <div class="text-body-2">
+                    Nếu bạn có 2 Zalo bán 2 dòng hàng khác nhau, hãy tuyệt đối sử dụng tính năng <strong>"Gán tài khoản"</strong>. Điều này ngăn chặn việc AI lấy nhầm giá của Shop A trả lời cho khách ở Shop B.
+                  </div>
+                </v-card>
+              </v-col>
+            </v-row>
           </section>
         </v-card-text>
 
