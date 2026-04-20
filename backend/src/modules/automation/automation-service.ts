@@ -26,7 +26,16 @@ export interface AutomationContext {
   orgId: string;
   initiatedByAutomation?: boolean;
   _depth?: number;
-  contact?: { id: string; fullName: string | null; phone: string | null; status: string | null; source?: string | null; assignedUserId?: string | null } | null;
+  contact?: {
+    id: string;
+    fullName: string | null;
+    phone: string | null;
+    status: string | null;
+    source?: string | null;
+    assignedUserId?: string | null;
+    tags?: any;
+    notes?: string | null;
+  } | null;
   conversation?: { id: string; unreadCount?: number; threadId?: string | null; threadType?: string; zaloAccountId?: string } | null;
   message?: { id: string; content: string | null; contentType: string; senderType?: string } | null;
   org?: { id: string; name: string | null } | null;

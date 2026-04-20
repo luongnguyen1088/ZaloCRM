@@ -111,7 +111,7 @@ export async function handleIncomingMessage(
       const contact = contactId
         ? await prisma.contact.findUnique({
             where: { id: contactId },
-            select: { id: true, fullName: true, phone: true, status: true, source: true, assignedUserId: true },
+            select: { id: true, fullName: true, phone: true, status: true, source: true, assignedUserId: true, tags: true, notes: true },
           })
         : null;
       const conversationDetails = await prisma.conversation.findUnique({

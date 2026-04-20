@@ -179,6 +179,8 @@ export async function contactRoutes(app: FastifyInstance): Promise<void> {
           status: contact.status,
           source: contact.source,
           assignedUserId: contact.assignedUserId,
+          tags: contact.tags,
+          notes: contact.notes,
         },
       });
 
@@ -246,6 +248,8 @@ export async function contactRoutes(app: FastifyInstance): Promise<void> {
             status: updated.status,
             source: updated.source,
             assignedUserId: updated.assignedUserId,
+            tags: updated.tags,
+            notes: updated.notes,
           },
         });
       }
