@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { logger } from '../../../shared/utils/logger.js';
 
 /**
@@ -18,22 +17,29 @@ export class FacebookApi {
    */
   async sendTextMessage(psid: string, text: string) {
     try {
-      const response = await axios.post(
-        `${this.baseUrl}/${this.version}/me/messages`,
+      const response = await fetch(
+        `${this.baseUrl}/${this.version}/me/messages?access_token=${this.pageAccessToken}`,
         {
-          recipient: { id: psid },
-          message: { text },
-          messaging_type: 'RESPONSE',
-        },
-        {
-          params: { access_token: this.pageAccessToken },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipient: { id: psid },
+            message: { text },
+            messaging_type: 'RESPONSE',
+          }),
         }
       );
-      return response.data;
+
+      if (!response.ok) {
+        const errorData = await response.json() as any;
+        logger.error('[facebook-api] Send message error:', errorData?.error || response.statusText);
+        throw new Error(errorData?.error?.message || 'Failed to send message via Facebook');
+      }
+
+      return await response.json();
     } catch (err: any) {
-      const errorData = err.response?.data?.error;
-      logger.error('[facebook-api] Send message error:', errorData || err.message);
-      throw new Error(errorData?.message || 'Failed to send message via Facebook');
+      logger.error('[facebook-api] Send message exception:', err.message);
+      throw err;
     }
   }
 
@@ -42,13 +48,9 @@ export class FacebookApi {
    */
   async getPageInfo() {
     try {
-      const response = await axios.get(`${this.baseUrl}/${this.version}/me`, {
-        params: {
-          fields: 'id,name,picture',
-          access_token: this.pageAccessToken,
-        },
-      });
-      return response.data;
+      const response = await fetch(`${this.baseUrl}/${this.version}/me?fields=id,name,picture&access_token=${this.pageAccessToken}`);
+      if (!response.ok) throw new Error('Failed to fetch page info');
+      return await response.json();
     } catch (err: any) {
       logger.error('[facebook-api] Get Page Info error:', err.message);
       throw err;

@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authMiddleware } from '../../auth/auth-middleware.js';
 import { prisma } from '../../../shared/database/prisma-client.js';
 import { logger } from '../../../shared/utils/logger.js';
-import { FacebookApi } from './facebook-api.ts';
+import { FacebookApi } from './facebook-api.js';
 
 /**
  * Facebook account management routes.
