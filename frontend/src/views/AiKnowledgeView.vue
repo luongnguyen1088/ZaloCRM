@@ -7,6 +7,9 @@
         <p class="text-medium-emphasis mb-0">Xây dựng "bộ não" riêng cho trợ lý Zalo của bạn</p>
       </div>
       <v-spacer />
+      <v-btn variant="text" color="medium-emphasis" prepend-icon="mdi-help-circle-outline" rounded="xl" @click="showGuide = true" class="mr-2">
+        Hướng dẫn
+      </v-btn>
       <v-btn variant="outlined" color="primary" prepend-icon="mdi-plus" rounded="xl" @click="openAddDialog" class="mr-2">
         Thêm thủ công
       </v-btn>
@@ -343,6 +346,107 @@
       </v-card>
     </v-dialog>
 
+    <!-- Guide Dialog -->
+    <v-dialog v-model="showGuide" max-width="800" scrollable>
+      <v-card class="guide-dialog overflow-hidden">
+        <v-toolbar color="surface" density="comfortable" class="border-bottom">
+          <v-icon color="primary" class="ml-4">mdi-brain</v-icon>
+          <v-toolbar-title class="text-subtitle-1 font-weight-bold ml-2">Hướng dẫn Đào tạo AI Agent</v-toolbar-title>
+          <v-spacer />
+          <v-btn icon @click="showGuide = false"><v-icon>mdi-close</v-icon></v-btn>
+        </v-toolbar>
+
+        <v-card-text class="pa-6 guide-content">
+          <section class="mb-8">
+            <h2 class="text-h5 font-weight-bold mb-4 primary--text d-flex align-center">
+              <v-icon class="mr-2">mdi-lightbulb-on-outline</v-icon> Tri Thức AI là gì?
+            </h2>
+            <p class="text-body-1 mb-4">AI của bạn không tự nhiên biết giá sản phẩm hay chính sách của bạn. Bạn cần "nuôi" nó bằng dữ liệu qua trang này.</p>
+            <v-row dense>
+              <v-col cols="12" sm="6">
+                <v-card variant="tonal" color="primary" class="pa-4 h-100">
+                  <div class="font-weight-bold mb-2">Tri thức chung (Global)</div>
+                  <div class="text-caption">Áp dụng cho mọi tài khoản Zalo trong hệ thống của bạn.</div>
+                </v-card>
+              </v-col>
+              <v-col cols="12" sm="6">
+                <v-card variant="tonal" color="secondary" class="pa-4 h-100">
+                  <div class="font-weight-bold mb-2">Tri thức riêng (Local)</div>
+                  <div class="text-caption">Chỉ áp dụng cho một số điện thoại Zalo nhất định.</div>
+                </v-card>
+              </v-col>
+            </v-row>
+          </section>
+
+          <section class="mb-8">
+            <h2 class="text-h5 font-weight-bold mb-4 primary--text d-flex align-center">
+              <v-icon class="mr-2">mdi-creation</v-icon> 3 Phương pháp nạp dữ liệu
+            </h2>
+            <div class="mb-4">
+              <div class="d-flex mb-4">
+                <v-avatar color="primary" size="32" class="mr-3 text-white">1</v-avatar>
+                <div>
+                  <div class="font-weight-bold">Nạp nhanh bằng AI (Magic Add)</div>
+                  <div class="text-body-2">Dán văn bản thô, AI sẽ tự động phân loại và đặt tiêu đề. Đây là cách nhanh nhất.</div>
+                </div>
+              </div>
+              <div class="d-flex mb-4">
+                <v-avatar color="primary" size="32" class="mr-3 text-white">2</v-avatar>
+                <div>
+                  <div class="font-weight-bold">Sử dụng Mẫu (Templates)</div>
+                  <div class="text-body-2">Chọn các mẫu có sẵn (Giá, Bảo hành, Giao hàng) và điền vào chỗ trống.</div>
+                </div>
+              </div>
+              <div class="d-flex">
+                <v-avatar color="primary" size="32" class="mr-3 text-white">3</v-avatar>
+                <div>
+                  <div class="font-weight-bold">Thêm thủ công</div>
+                  <div class="text-body-2">Kiểm soát chi tiết nội dung mà bạn muốn AI học.</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="mb-8">
+             <h2 class="text-h5 font-weight-bold mb-4 primary--text d-flex align-center">
+              <v-icon class="mr-2">mdi-check-decagram-outline</v-icon> Viết tri thức hiệu quả
+            </h2>
+            <v-table class="border rounded-lg bg-transparent">
+              <thead>
+                <tr>
+                  <th class="text-error">❌ Nên tránh</th>
+                  <th class="text-success">✅ Nên viết</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="text-caption">Giao hàng nhanh lắm</td>
+                  <td class="text-caption">Free ship cho đơn trên 500k nội thành HN. Giao trong 2h.</td>
+                </tr>
+                <tr>
+                  <td class="text-caption">Chuyển khoản Techcombank</td>
+                  <td class="text-caption">STK: 123456789 - Techcombank - Chủ TK: Nguyễn Văn A.</td>
+                </tr>
+              </tbody>
+            </v-table>
+          </section>
+
+          <section>
+            <h2 class="text-h5 font-weight-bold mb-4 primary--text d-flex align-center">
+              <v-icon class="mr-2">mdi-chart-line</v-icon> Kiểm tra và Giám sát
+            </h2>
+            <p class="text-body-2 mb-2">Sử dụng <strong>Trình giả lập</strong> ở khung bên phải để chat thử nghiệm.</p>
+            <p class="text-body-2">Để ý con số <v-icon size="small" color="success">mdi-head-cog-outline</v-icon> trên mỗi thẻ kiến thức để biết nó đã giúp bạn trả lời bao nhiêu khách hàng.</p>
+          </section>
+        </v-card-text>
+
+        <v-card-actions class="pa-6 border-top">
+          <v-spacer />
+          <v-btn color="primary" variant="flat" rounded="lg" block @click="showGuide = false">Đã hiểu!</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <!-- Success Snackbar -->
     <v-snackbar v-model="toast.show" :color="toast.color" rounded="pill">
       <v-icon class="mr-2">{{ toast.icon }}</v-icon> {{ toast.text }}
@@ -357,6 +461,9 @@ import { useZaloAccounts } from '@/composables/use-zalo-accounts';
 
 const { accounts, fetchAccounts } = useZaloAccounts();
 
+const authStore = useAuthStore(); // added this but wait is it needed? I'll check imports
+
+const showGuide = ref(false);
 const loading = ref(true);
 const saving = ref(false);
 const deleting = ref(false);
@@ -566,4 +673,16 @@ onMounted(() => {
 .primary--text { color: #00F2FF; }
 .truncate-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
 .account-selector-mini :deep(.v-field__input) { font-size: 12px; }
+
+.guide-dialog {
+  background: #0f172a !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 20px !important;
+}
+.guide-content {
+  line-height: 1.6;
+}
+.guide-content section {
+  padding-bottom: 8px;
+}
 </style>
