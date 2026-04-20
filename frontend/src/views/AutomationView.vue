@@ -95,7 +95,7 @@ const ruleHeaders = [
   { title: 'Tên rule', key: 'name' },
   { title: 'Trigger', key: 'trigger' },
   { title: 'Ưu tiên', key: 'priority' },
-  { title: '�� ch?y', key: 'runCount' },
+  { title: 'Đã chạy', key: 'runCount' },
   { title: 'Lần chạy gần nhất', key: 'lastRunAt' },
   { title: 'Bật', key: 'enabled', sortable: false },
   { title: 'Hành động', key: 'actions', sortable: false, align: 'end' as const },

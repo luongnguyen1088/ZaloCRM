@@ -26,7 +26,7 @@
                 <div class="d-flex align-center">
                   <span :class="['status-orb mr-2', aiConfig.enabled ? 'active' : 'inactive']"></span>
                   <span class="text-caption font-weight-medium uppercase tracking-wider">
-                    {{ aiConfig.enabled ? 'H? th?ng dang ho?t d?ng' : 'H? th?ng d� t?t' }}
+                    {{ aiConfig.enabled ? 'Hệ thống đang hoạt động' : 'Hệ thống đã tắt' }}
                   </span>
                 </div>
               </div>
@@ -67,7 +67,7 @@
                     label
                     class="font-weight-bold"
                   >
-                    {{ hasCurrentProviderKey ? '�� C?U H�NH' : 'CHUA C� KEY' }}
+                    {{ hasCurrentProviderKey ? 'ĐÃ CẤU HÌNH' : 'CHƯA CÓ KEY' }}
                   </v-chip>
                 </div>
               </v-col>
@@ -96,7 +96,7 @@
             />
             <v-text-field
               v-model="webhookSecret"
-              label="M� b?o m?t (Signing Secret)"
+              label="Mã bảo mật (Signing Secret)"
               type="password"
               variant="outlined"
               density="comfortable"
@@ -164,7 +164,7 @@ GET  /api/public/appointments</pre>
             </div>
             <div>
               <div class="text-subtitle-2 font-weight-bold">Bảo mật cấp cao</div>
-              <div class="text-caption text-medium-emphasis">D? li?u du?c m� h�a chu?n AES-256 n?i b?</div>
+              <div class="text-caption text-medium-emphasis">Dữ liệu được mã hóa chuẩn AES-256 nội bộ</div>
             </div>
           </v-card-text>
         </v-card>
@@ -274,7 +274,7 @@ async function generateKey() {
   try {
     const res = await api.post('/settings/api-key/generate');
     apiKey.value = res.data.apiKey ?? '';
-    showSnack('API key m?i d� du?c t?o');
+    showSnack('API key mới đã được tạo');
   } catch {
     showSnack('Tạo key thất bại', 'error');
   } finally {
@@ -285,7 +285,7 @@ async function generateKey() {
 async function copyKey() {
   if (!apiKey.value) return;
   await navigator.clipboard.writeText(apiKey.value);
-  showSnack('�� sao ch�p API key');
+  showSnack('Đã sao chép API key');
 }
 
 async function saveWebhook() {
@@ -295,7 +295,7 @@ async function saveWebhook() {
       webhookUrl: webhookUrl.value,
       webhookSecret: webhookSecret.value,
     });
-    showSnack('�� luu c?u h�nh webhook');
+    showSnack('Đã lưu cấu hình webhook');
   } catch {
     showSnack('Lưu thất bại', 'error');
   } finally {
@@ -329,7 +329,7 @@ async function saveAiConfig(value: { provider: string; model: string; maxDaily: 
       hasOpenRouterKey: res.data.hasOpenRouterKey,
     };
     showAiConfig.value = false;
-    showSnack('�� luu c?u h�nh AI');
+    showSnack('Đã lưu cấu hình AI');
   } catch {
     showSnack('Lưu cấu hình AI thất bại', 'error');
   } finally {

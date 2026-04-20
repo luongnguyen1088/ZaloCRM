@@ -4,7 +4,7 @@
     <div class="d-flex align-center mb-8">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1">Kết nối Zalo</h1>
-        <p class="text-medium-emphasis mb-0">Qu?n l� v� k?t n?i nhi?u t�i kho?n Zalo c� nh�n</p>
+        <p class="text-medium-emphasis mb-0">Quản lý và kết nối nhiều tài khoản Zalo cá nhân</p>
       </div>
       <v-spacer />
       <v-btn
@@ -85,7 +85,7 @@
               size="small"
               class="action-btn cyan"
               @click="openAccess(item)"
-              title="Ph�n quy?n"
+              title="Phân quyền"
             >
               <v-icon size="18">mdi-shield-account-outline</v-icon>
             </v-btn>
@@ -121,7 +121,7 @@
         <v-icon size="80" color="disabled">mdi-cellphone-link-off</v-icon>
       </div>
       <h2 class="text-h5 text-disabled mb-2">Chưa có tài khoản nào</h2>
-      <p class="text-body-1 text-medium-emphasis mb-6">H�y th�m t�i kho?n Zalo d?u ti�n d? b?t d?u qu?n l�</p>
+      <p class="text-body-1 text-medium-emphasis mb-6">Hãy thêm tài khoản Zalo đầu tiên để bắt đầu quản lý</p>
       <v-btn color="primary" rounded="lg" class="px-8" @click="showAddDialog = true">Thêm ngay</v-btn>
     </div>
 
@@ -156,13 +156,13 @@
       <v-card class="glass-card tech-qr-card overflow-hidden" elevation="24">
         <div class="pa-6 text-center">
           <div class="text-h5 font-weight-bold mb-1">Xác thực Zalo</div>
-          <div class="text-caption text-medium-emphasis mb-6">S? d?ng ?ng d?ng Zalo d? qu�t m� QR b�n du?i</div>
+          <div class="text-caption text-medium-emphasis mb-6">Sử dụng ứng dụng Zalo để quét mã QR bên dưới</div>
           
           <div class="qr-container-outer">
             <!-- Loading State -->
             <div v-if="!qrImage && !qrScanned" class="qr-placeholder d-flex flex-column align-center justify-center">
               <v-progress-circular indeterminate color="primary" size="64" width="6" />
-              <div class="mt-4 text-primary font-weight-bold animate-pulse">�ANG T?O M� QR...</div>
+              <div class="mt-4 text-primary font-weight-bold animate-pulse">ĐANG TẠO MÃ QR...</div>
             </div>
 
             <!-- QR Image with Scanning Animation -->
@@ -194,11 +194,11 @@
             </div>
             <div class="step d-flex align-center mb-3">
               <div class="step-num mr-3">2</div>
-              <div class="text-body-2">Nh?n v�o bi?u tu?ng <strong>Qu�t m� QR</strong></div>
+              <div class="text-body-2">Nhấn vào biểu tượng <strong>Quét mã QR</strong></div>
             </div>
             <div class="step d-flex align-center">
               <div class="step-num mr-3">3</div>
-              <div class="text-body-2">Hu?ng camera v? ph�a m� QR n�y</div>
+              <div class="text-body-2">Hướng camera về phía mã QR này</div>
             </div>
           </div>
 
