@@ -180,7 +180,7 @@
             class="mb-4"
           >
             <template #item="{ props, item }">
-              <v-list-item v-bind="props" :prepend-icon="typeIcon(item.raw.value)" :title="item.raw.label" />
+              <v-list-item v-bind="props" :prepend-icon="typeIcon(item.value)" :title="item.label" />
             </template>
           </v-select>
 
