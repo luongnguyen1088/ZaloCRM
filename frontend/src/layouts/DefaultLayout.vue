@@ -158,7 +158,7 @@ function logout() {
   background: var(--color-success);
   display: inline-block;
   margin-right: 8px;
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+  box-shadow: 0 0 0 4px var(--color-success-soft);
 }
 
 .status-chip__label {
