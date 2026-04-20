@@ -18,8 +18,8 @@
           <div class="card-glow"></div>
           <v-card-text class="pa-6">
             <div class="d-flex align-center mb-6">
-              <v-avatar color="rgba(0, 242, 255, 0.1)" size="48" class="mr-4">
-                <v-icon color="#00F2FF">mdi-robot-happy</v-icon>
+              <v-avatar color="primary" variant="tonal" size="48" class="mr-4">
+                <v-icon color="primary">mdi-robot-happy</v-icon>
               </v-avatar>
               <div>
                 <h2 class="text-h5 font-weight-bold outfit-font mb-0">AI Assistant</h2>
@@ -92,7 +92,7 @@
               variant="outlined"
               density="comfortable"
               class="mb-4"
-              bg-color="rgba(255,255,255,0.03)"
+              bg-color="transparent"
             />
             <v-text-field
               v-model="webhookSecret"
@@ -101,7 +101,7 @@
               variant="outlined"
               density="comfortable"
               class="mb-6"
-              bg-color="rgba(255,255,255,0.03)"
+              bg-color="transparent"
             />
             <div class="d-flex gap-3">
               <v-btn color="primary" :loading="saving" @click="saveWebhook" class="px-6" rounded="lg">
@@ -349,15 +349,16 @@ onMounted(async () => {
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.05) !important;
+  background: var(--color-surface-elevated) !important;
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid var(--color-border) !important;
   border-radius: 16px !important;
   position: relative;
+  box-shadow: var(--shadow-sm);
 }
 
 .ai-control-card {
-  background: linear-gradient(135deg, rgba(0, 242, 255, 0.05) 0%, rgba(0, 119, 182, 0.05) 100%) !important;
+  background: linear-gradient(135deg, var(--color-primary-soft) 0%, rgba(124, 58, 237, 0.06) 100%) !important;
 }
 
 .card-glow {
@@ -366,17 +367,17 @@ onMounted(async () => {
   right: -50px;
   width: 150px;
   height: 150px;
-  background: radial-gradient(circle, rgba(0, 242, 255, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.14) 0%, transparent 70%);
   filter: blur(20px);
   z-index: 0;
   pointer-events: none;
 }
 
 .header-icon-box {
-  background: rgba(0, 242, 255, 0.1);
+  background: var(--color-primary-soft);
   padding: 12px;
   border-radius: 12px;
-  border: 1px solid rgba(0, 242, 255, 0.2);
+  border: 1px solid var(--color-primary-soft-strong);
 }
 
 .status-orb {
@@ -387,17 +388,17 @@ onMounted(async () => {
 }
 
 .status-orb.active {
-  background: #00F2FF;
-  box-shadow: 0 0 8px #00F2FF;
+  background: var(--color-success);
+  box-shadow: 0 0 8px var(--color-success);
 }
 
 .status-orb.inactive {
-  background: #ff5252;
+  background: var(--color-danger);
 }
 
 .info-label {
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-secondary);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -406,21 +407,22 @@ onMounted(async () => {
 .info-value {
   font-weight: 600;
   font-size: 0.95rem;
+  color: var(--color-text);
 }
 
 .bg-black-opacity {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--color-overlay);
+  border: 1px solid var(--color-border);
 }
 
 .border-left-glow {
-  border-left: 3px solid #00F2FF !important;
+  border-left: 3px solid var(--color-primary) !important;
 }
 
 .code-pre {
   font-family: 'Fira Code', monospace;
   font-size: 0.8rem;
-  color: #a9b7c6;
+  color: var(--color-text-secondary);
   white-space: pre-wrap;
   line-height: 1.6;
 }
@@ -435,7 +437,7 @@ onMounted(async () => {
 }
 
 .icon-circle.primary {
-  background: rgba(0, 242, 255, 0.1);
+  background: var(--color-primary-soft);
 }
 
 .truncate {
@@ -445,7 +447,7 @@ onMounted(async () => {
 }
 
 .color-cyan {
-  color: #00F2FF;
+  color: var(--color-primary);
 }
 
 .uppercase {

@@ -13,7 +13,7 @@
             </div>
           </div>
           <div class="kpi-content">
-            <div class="text-h4 font-weight-black text-white mb-1">{{ item.value }}</div>
+            <div class="text-h4 font-weight-black kpi-value mb-1">{{ item.value }}</div>
             <div class="text-caption text-placeholder font-weight-bold uppercase letter-spacing-1">{{ item.label }}</div>
           </div>
         </div>
@@ -25,11 +25,16 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useTheme } from 'vuetify';
 import type { KpiData } from '@/composables/use-dashboard';
+import { chartTokens, hexToRgba } from '@/theme/ui-tokens';
 
 const props = defineProps<{
   kpi: KpiData | null;
 }>();
+
+const theme = useTheme();
+const palette = computed(() => chartTokens[theme.global.current.value.dark ? 'dark' : 'light']);
 
 const stats = computed(() => {
   const d = props.kpi || {
@@ -44,36 +49,36 @@ const stats = computed(() => {
       label: 'Tổng khách hàng',
       value: d.totalContacts.toLocaleString(),
       icon: 'mdi-account-group-outline',
-      color: '#00F2FF',
-      bg: 'rgba(0, 242, 255, 0.1)',
-      borderColor: 'rgba(0, 242, 255, 0.2)',
+      color: palette.value.sent,
+      bg: hexToRgba(palette.value.sent, 0.12),
+      borderColor: hexToRgba(palette.value.sent, 0.24),
       trend: 12,
     },
     {
       label: 'Tin nhắn hôm nay',
       value: d.messagesToday.toLocaleString(),
       icon: 'mdi-chat-processing-outline',
-      color: '#A855F7',
-      bg: 'rgba(168, 85, 247, 0.1)',
-      borderColor: 'rgba(168, 85, 247, 0.2)',
+      color: palette.value.received,
+      bg: hexToRgba(palette.value.received, 0.12),
+      borderColor: hexToRgba(palette.value.received, 0.24),
       trend: 24,
     },
     {
       label: 'Chưa phản hồi',
       value: d.messagesUnreplied.toLocaleString(),
       icon: 'mdi-message-alert-outline',
-      color: '#f87171',
-      bg: 'rgba(248, 113, 113, 0.1)',
-      borderColor: 'rgba(248, 113, 113, 0.2)',
+      color: palette.value.danger,
+      bg: hexToRgba(palette.value.danger, 0.12),
+      borderColor: hexToRgba(palette.value.danger, 0.24),
       trend: -5,
     },
     {
       label: 'Lịch hẹn hôm nay',
       value: d.appointmentsToday.toLocaleString(),
       icon: 'mdi-calendar-check-outline',
-      color: '#F59E0B',
-      bg: 'rgba(245, 158, 11, 0.1)',
-      borderColor: 'rgba(245, 158, 11, 0.2)',
+      color: palette.value.warning,
+      bg: hexToRgba(palette.value.warning, 0.12),
+      borderColor: hexToRgba(palette.value.warning, 0.24),
       trend: 2,
     },
   ];
@@ -82,17 +87,18 @@ const stats = computed(() => {
 
 <style scoped>
 .glass-premium {
-  background: rgba(15, 23, 42, 0.6) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: var(--color-surface-elevated) !important;
+  border: 1px solid var(--color-border) !important;
   backdrop-filter: blur(12px);
   border-radius: 24px !important;
   overflow: hidden;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+  box-shadow: var(--shadow-sm);
 }
 
 .glass-premium:hover {
   transform: translateY(-5px);
-  border-color: rgba(255, 255, 255, 0.15) !important;
+  border-color: var(--color-border-strong) !important;
 }
 
 .kpi-icon-box {
@@ -105,11 +111,15 @@ const stats = computed(() => {
 }
 
 .text-placeholder {
-  color: #64748b;
+  color: var(--color-text-secondary);
 }
 
 .letter-spacing-1 {
   letter-spacing: 1px;
+}
+
+.kpi-value {
+  color: var(--color-text);
 }
 
 .trend-indicator {
@@ -122,13 +132,13 @@ const stats = computed(() => {
 }
 
 .trend-indicator.up {
-  background: rgba(34, 197, 94, 0.1);
-  color: #4ade80;
+  background: var(--color-success-soft);
+  color: var(--color-success);
 }
 
 .trend-indicator.down {
-  background: rgba(239, 68, 68, 0.1);
-  color: #f87171;
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
 }
 
 .kpi-progress {

@@ -1,17 +1,19 @@
 <template>
-  <v-card>
-    <v-card-title class="text-body-1">Pipeline khách hàng</v-card-title>
+  <v-card class="dashboard-chart-card" elevation="0">
+    <v-card-title class="text-body-1 chart-title">Pipeline khÃ¡ch hÃ ng</v-card-title>
     <v-card-text>
       <Doughnut v-if="chartData" :data="chartData" :options="chartOptions" style="height: 250px;" />
-      <div v-else class="text-center pa-8 text-grey">Không có dữ liệu</div>
+      <div v-else class="text-center pa-8 chart-empty">KhÃ´ng cÃ³ dá»¯ liá»‡u</div>
     </v-card-text>
   </v-card>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useTheme } from 'vuetify';
 import { Doughnut } from 'vue-chartjs';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { chartTokens } from '@/theme/ui-tokens';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -19,21 +21,24 @@ const props = defineProps<{
   data: { status: string | null; _count: { _all: number } | number }[];
 }>();
 
-const statusColors: Record<string, string> = {
-  new: '#9E9E9E',
-  contacted: '#42A5F5',
-  interested: '#FF9800',
-  converted: '#66BB6A',
-  lost: '#EF5350',
-};
+const theme = useTheme();
+const palette = computed(() => chartTokens[theme.global.current.value.dark ? 'dark' : 'light']);
 
 const statusLabels: Record<string, string> = {
-  new: 'Mới',
-  contacted: 'Đã liên hệ',
-  interested: 'Quan tâm',
-  converted: 'Chuyển đổi',
-  lost: 'Mất',
+  new: 'Má»›i',
+  contacted: 'ÄÃ£ liÃªn há»‡',
+  interested: 'Quan tÃ¢m',
+  converted: 'Chuyá»ƒn Ä‘á»•i',
+  lost: 'Máº¥t',
 };
+
+const statusColors = computed<Record<string, string>>(() => ({
+  new: palette.value.neutral,
+  contacted: palette.value.info,
+  interested: palette.value.warning,
+  converted: palette.value.success,
+  lost: palette.value.danger,
+}));
 
 function getCount(item: { _count: { _all: number } | number }): number {
   return typeof item._count === 'number' ? item._count : item._count._all;
@@ -41,20 +46,51 @@ function getCount(item: { _count: { _all: number } | number }): number {
 
 const chartData = computed(() => {
   if (!props.data?.length) return null;
-  const filtered = props.data.filter(d => d.status);
+  const filtered = props.data.filter((d) => d.status);
   if (!filtered.length) return null;
   return {
-    labels: filtered.map(d => statusLabels[d.status || ''] || d.status),
+    labels: filtered.map((d) => statusLabels[d.status || ''] || d.status),
     datasets: [{
-      data: filtered.map(d => getCount(d)),
-      backgroundColor: filtered.map(d => statusColors[d.status || ''] || '#BDBDBD'),
+      data: filtered.map((d) => getCount(d)),
+      backgroundColor: filtered.map((d) => statusColors.value[d.status || ''] || palette.value.neutral),
+      borderWidth: 0,
     }],
   };
 });
 
-const chartOptions = {
+const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
-  plugins: { legend: { position: 'right' as const, labels: { boxWidth: 12 } } },
-};
+  plugins: {
+    legend: {
+      position: 'right' as const,
+      labels: {
+        boxWidth: 12,
+        color: palette.value.textSecondary,
+      },
+    },
+    tooltip: {
+      backgroundColor: palette.value.tooltipBg,
+      titleColor: palette.value.tooltipText,
+      bodyColor: palette.value.tooltipText,
+    },
+  },
+}));
 </script>
+
+<style scoped>
+.dashboard-chart-card {
+  background: var(--color-surface-elevated) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 24px !important;
+  box-shadow: var(--shadow-sm);
+}
+
+.chart-title {
+  color: var(--color-text);
+}
+
+.chart-empty {
+  color: var(--color-text-secondary);
+}
+</style>

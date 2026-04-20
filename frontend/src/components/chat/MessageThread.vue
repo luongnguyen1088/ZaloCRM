@@ -1,16 +1,14 @@
 <template>
-  <div class="message-thread d-flex flex-column flex-grow-1" style="height: 100%;">
-    <!-- Empty state -->
+  <div class="message-thread d-flex flex-column flex-grow-1 message-thread-root">
     <div v-if="!conversation" class="d-flex align-center justify-center flex-grow-1">
       <div class="text-center text-grey">
         <v-icon icon="mdi-chat-outline" size="96" color="grey-lighten-2" />
-        <p class="text-h6 mt-4">Chọn cuộc trò chuyện</p>
+        <p class="text-h6 mt-4">Chá»n cuá»™c trÃ² chuyá»‡n</p>
       </div>
     </div>
 
     <template v-else>
-      <!-- Header -->
-      <div class="pa-3 d-flex align-center" style="border-bottom: 1px solid var(--border-glow, rgba(0,242,255,0.1));">
+      <div class="pa-3 d-flex align-center thread-header">
         <v-avatar size="36" color="grey-lighten-2" class="mr-3">
           <v-icon v-if="conversation.threadType === 'group'" icon="mdi-account-group" />
           <v-img v-else-if="conversation.contact?.avatarUrl" :src="conversation.contact.avatarUrl" />
@@ -25,72 +23,79 @@
         </v-btn>
         <v-btn
           :icon="showContactPanel ? 'mdi-account-details' : 'mdi-account-details-outline'"
-          size="small" variant="text"
+          size="small"
+          variant="text"
           :color="showContactPanel ? 'primary' : undefined"
           @click="$emit('toggle-contact-panel')"
         />
       </div>
 
-      <!-- Messages -->
       <div ref="messagesContainer" class="flex-grow-1 overflow-y-auto pa-3 chat-messages-area">
         <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-2" />
-        <div v-for="msg in messages" :key="msg.id" class="mb-2 d-flex" :class="msg.senderType === 'self' ? 'justify-end' : 'justify-start'">
-          <div style="max-width: 70%;">
-            <div v-if="conversation.threadType === 'group' && msg.senderType !== 'self'" class="text-caption mb-1" style="color: #00F2FF; font-weight: 500;">
+        <div
+          v-for="msg in messages"
+          :key="msg.id"
+          class="mb-2 d-flex"
+          :class="msg.senderType === 'self' ? 'justify-end' : 'justify-start'"
+        >
+          <div class="thread-bubble-wrap">
+            <div v-if="conversation.threadType === 'group' && msg.senderType !== 'self'" class="text-caption mb-1 thread-group-name">
               {{ msg.senderName || 'Unknown' }}
             </div>
-            <div class="message-bubble pa-2 px-3 rounded-lg" :class="msg.senderType === 'self' ? 'bg-primary text-white' : 'bg-white'" style="word-wrap: break-word;">
-              <!-- Deleted -->
-              <div v-if="msg.isDeleted" class="text-decoration-line-through font-italic" style="opacity: 0.6;">
-                {{ msg.content || '(tin nhắn)' }}<span class="text-caption"> (đã thu hồi)</span>
+            <div
+              class="message-bubble pa-2 px-3 rounded-lg"
+              :class="msg.senderType === 'self' ? 'bg-primary text-white' : 'bg-white'"
+              style="word-wrap: break-word;"
+            >
+              <div v-if="msg.isDeleted" class="text-decoration-line-through font-italic thread-faded">
+                {{ msg.content || '(tin nháº¯n)' }}<span class="text-caption"> (Ä‘Ã£ thu há»“i)</span>
               </div>
-              <!-- Image -->
+
               <div v-else-if="getImageUrl(msg)">
-                <img :src="getImageUrl(msg)!" alt="Hình ảnh" class="chat-image" @click="previewImageUrl = getImageUrl(msg)!" />
+                <img :src="getImageUrl(msg)!" alt="HÃ¬nh áº£nh" class="chat-image" @click="previewImageUrl = getImageUrl(msg)!" />
               </div>
-              <!-- File/PDF -->
+
               <div v-else-if="getFileInfo(msg)" class="file-card">
                 <v-icon size="20" class="mr-2" color="info">mdi-file-document-outline</v-icon>
                 <div class="flex-grow-1">
                   <div class="text-body-2 font-weight-medium">{{ getFileInfo(msg)!.name }}</div>
-                  <div class="text-caption" style="opacity: 0.6;">{{ getFileInfo(msg)!.size }}</div>
+                  <div class="text-caption thread-faded">{{ getFileInfo(msg)!.size }}</div>
                 </div>
                 <v-btn v-if="getFileInfo(msg)!.href" icon size="x-small" variant="text" @click="openFile(getFileInfo(msg)!.href)">
                   <v-icon size="16">mdi-download</v-icon>
                 </v-btn>
               </div>
-              <!-- Sticker/Video/Voice/GIF -->
-              <div v-else-if="msg.contentType === 'sticker'">🏷️ Sticker</div>
-              <div v-else-if="msg.contentType === 'video'">🎥 Video</div>
-              <div v-else-if="msg.contentType === 'voice'">🎤 Tin nhắn thoại</div>
+
+              <div v-else-if="msg.contentType === 'sticker'">ðŸ·ï¸ Sticker</div>
+              <div v-else-if="msg.contentType === 'video'">ðŸŽ¥ Video</div>
+              <div v-else-if="msg.contentType === 'voice'">ðŸŽ¤ Tin nháº¯n thoáº¡i</div>
               <div v-else-if="msg.contentType === 'gif'">GIF</div>
-              <!-- Reminder/Calendar -->
+
               <div v-else-if="isReminderMessage(msg)" class="reminder-card">
                 <div class="d-flex align-center mb-1">
                   <v-icon size="16" color="warning" class="mr-1">mdi-calendar-clock</v-icon>
-                  <span class="text-caption font-weight-bold" style="color: #FFB74D;">Nhắc hẹn</span>
+                  <span class="text-caption font-weight-bold reminder-label">Nháº¯c háº¹n</span>
                 </div>
                 <div class="text-body-2">{{ getReminderTitle(msg) }}</div>
-                <div v-if="getReminderTime(msg)" class="text-caption mt-1" style="opacity: 0.7;">
+                <div v-if="getReminderTime(msg)" class="text-caption mt-1 thread-faded">
                   <v-icon size="12" class="mr-1">mdi-clock-outline</v-icon>{{ getReminderTime(msg) }}
                 </div>
                 <v-btn size="x-small" variant="tonal" color="warning" class="mt-2" prepend-icon="mdi-calendar-sync" @click="syncAppointment(msg)">
-                  Đồng bộ lịch
+                  Äá»“ng bá»™ lá»‹ch
                 </v-btn>
               </div>
-              <!-- Default text -->
+
               <div v-else>{{ parseDisplayContent(msg.content) }}</div>
-              <!-- Timestamp -->
+
               <div class="text-caption mt-1 msg-time" :class="msg.senderType === 'self' ? 'msg-time-self' : 'msg-time-contact'" style="font-size: 0.7rem;">
                 {{ formatMessageTime(msg.sentAt) }}
               </div>
             </div>
           </div>
         </div>
-        <div v-if="!loading && messages.length === 0" class="text-center pa-8 text-grey">Chưa có tin nhắn</div>
+        <div v-if="!loading && messages.length === 0" class="text-center pa-8 text-grey">ChÆ°a cÃ³ tin nháº¯n</div>
       </div>
 
-      <!-- Input -->
       <div class="pa-2 chat-input-area">
         <AiSuggestionPanel
           :suggestion="aiSuggestion"
@@ -104,7 +109,7 @@
         <div class="d-flex align-end">
           <v-textarea
             v-model="inputText"
-            placeholder="Nhập tin nhắn..."
+            placeholder="Nháº­p tin nháº¯n..."
             variant="solo-filled"
             density="compact"
             hide-details
@@ -122,7 +127,7 @@
                 class="magic-wand-btn mr-1"
                 :loading="aiSuggestionLoading"
                 @click="handleMagicCompose"
-                title="AI Soạn văn bản ma thuật"
+                title="AI Soáº¡n vÄƒn báº£n ma thuáº­t"
               >
                 <v-icon color="primary">mdi-auto-fix</v-icon>
               </v-btn>
@@ -135,15 +140,13 @@
       </div>
     </template>
 
-    <!-- Image preview dialog -->
     <v-dialog v-model="showImagePreview" max-width="900" content-class="elevation-0">
-      <div class="text-center" @click="showImagePreview = false" style="cursor: pointer;">
-        <img :src="previewImageUrl" alt="Preview" style="max-width: 100%; max-height: 85vh; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);" />
-        <div class="text-caption mt-2" style="color: #aaa;">Nhấn để đóng</div>
+      <div class="text-center preview-shell" @click="showImagePreview = false">
+        <img :src="previewImageUrl" alt="Preview" class="preview-image" />
+        <div class="text-caption mt-2 preview-caption">Nháº¥n Ä‘á»ƒ Ä‘Ã³ng</div>
       </div>
     </v-dialog>
 
-    <!-- Sync snackbar -->
     <v-snackbar v-model="syncSnack.show" :color="syncSnack.color" timeout="3000">{{ syncSnack.text }}</v-snackbar>
   </div>
 </template>
@@ -165,9 +168,9 @@ const props = defineProps<{
   aiSuggestionError: string;
 }>();
 
-const emit = defineEmits<{ 
-  send: [content: string]; 
-  'toggle-contact-panel': []; 
+const emit = defineEmits<{
+  send: [content: string];
+  'toggle-contact-panel': [];
   'ask-ai': [];
   'clear-ai': [];
   'refine-ai': [data: { content: string; instruction: string }];
@@ -176,15 +179,28 @@ const emit = defineEmits<{
 const inputText = ref('');
 const messagesContainer = ref<HTMLElement | null>(null);
 const previewImageUrl = ref('');
-const showImagePreview = computed({ get: () => !!previewImageUrl.value, set: (v) => { if (!v) previewImageUrl.value = ''; } });
+const showImagePreview = computed({
+  get: () => !!previewImageUrl.value,
+  set: (value) => {
+    if (!value) previewImageUrl.value = '';
+  },
+});
 const syncSnack = ref({ show: false, text: '', color: 'success' });
 
-function handleSend() { if (!inputText.value.trim()) return; emit('send', inputText.value); inputText.value = ''; }
-function applySuggestion() { if (!props.aiSuggestion) return; inputText.value = props.aiSuggestion; }
+function handleSend() {
+  if (!inputText.value.trim()) return;
+  emit('send', inputText.value);
+  inputText.value = '';
+}
+
+function applySuggestion() {
+  if (!props.aiSuggestion) return;
+  inputText.value = props.aiSuggestion;
+}
 
 function handleMagicCompose() {
   if (inputText.value.trim()) {
-    handleRefine('Hoàn thiện và trau chuốt nội dung này cho tôi');
+    handleRefine('HoÃ n thiá»‡n vÃ  trau chuá»‘t ná»™i dung nÃ y cho tÃ´i');
   } else {
     emit('ask-ai');
   }
@@ -193,36 +209,45 @@ function handleMagicCompose() {
 function handleRefine(instruction: string) {
   emit('refine-ai', { content: inputText.value, instruction });
 }
-function formatMessageTime(d: string) { return new Date(d).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }); }
-function openFile(url: string) { window.open(url, '_blank'); }
 
-/** Extract image URL from JSON content */
+function formatMessageTime(value: string) {
+  return new Date(value).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+}
+
+function openFile(url: string) {
+  window.open(url, '_blank');
+}
+
 function getImageUrl(msg: Message): string | null {
   if (msg.contentType === 'image' && msg.content) {
     if (msg.content.startsWith('http')) return msg.content;
-    try { const p = JSON.parse(msg.content); return p.href || p.thumb || p.hdUrl || null; } catch {}
-  }
-  if (msg.content?.startsWith('{')) {
     try {
-      const p = JSON.parse(msg.content);
-      const href = p.href || p.thumb || '';
-      if (href && /\.(jpg|jpeg|png|webp|gif)/i.test(href)) return href;
-      if (href && href.includes('zdn.vn') && !p.params?.includes('fileExt')) return href;
+      const payload = JSON.parse(msg.content);
+      return payload.href || payload.thumb || payload.hdUrl || null;
     } catch {}
   }
+
+  if (msg.content?.startsWith('{')) {
+    try {
+      const payload = JSON.parse(msg.content);
+      const href = payload.href || payload.thumb || '';
+      if (href && /\.(jpg|jpeg|png|webp|gif)/i.test(href)) return href;
+      if (href && href.includes('zdn.vn') && !payload.params?.includes('fileExt')) return href;
+    } catch {}
+  }
+
   return null;
 }
 
-/** Extract file info from JSON content (PDF, docs, etc.) */
 function getFileInfo(msg: Message): { name: string; size: string; href: string } | null {
   if (!msg.content?.startsWith('{')) return null;
   try {
-    const p = JSON.parse(msg.content);
-    const params = typeof p.params === 'string' ? JSON.parse(p.params) : p.params;
+    const payload = JSON.parse(msg.content);
+    const params = typeof payload.params === 'string' ? JSON.parse(payload.params) : payload.params;
     if (params?.fileExt || params?.fType === 1) {
       const bytes = parseInt(params.fileSize || '0');
       const size = bytes > 1048576 ? `${(bytes / 1048576).toFixed(1)} MB` : `${Math.round(bytes / 1024)} KB`;
-      return { name: p.title || `file.${params.fileExt || 'unknown'}`, size, href: p.href || '' };
+      return { name: payload.title || `file.${params.fileExt || 'unknown'}`, size, href: payload.href || '' };
     }
   } catch {}
   return null;
@@ -232,79 +257,171 @@ function parseDisplayContent(content: string | null): string {
   if (!content) return '';
   if (!content.startsWith('{')) return content;
   try {
-    const p = JSON.parse(content);
-    if (p.title && p.href) return `🔗 ${p.title}`;
-    if (p.title) return p.title;
-    if (p.href) return `🔗 ${p.description || p.href}`;
+    const payload = JSON.parse(content);
+    if (payload.title && payload.href) return `ðŸ”— ${payload.title}`;
+    if (payload.title) return payload.title;
+    if (payload.href) return `ðŸ”— ${payload.description || payload.href}`;
     return content;
-  } catch { return content; }
+  } catch {
+    return content;
+  }
 }
 
 function isReminderMessage(msg: Message): boolean {
   if (!msg.content) return false;
-  try { const p = JSON.parse(msg.content); return p.action === 'msginfo.actionlist'; } catch { return false; }
+  try {
+    const payload = JSON.parse(msg.content);
+    return payload.action === 'msginfo.actionlist';
+  } catch {
+    return false;
+  }
 }
 
 function getReminderTitle(msg: Message): string {
-  try { return JSON.parse(msg.content!).title || ''; } catch { return msg.content || ''; }
+  try {
+    return JSON.parse(msg.content!).title || '';
+  } catch {
+    return msg.content || '';
+  }
 }
 
 function getReminderTime(msg: Message): string | null {
   try {
-    const p = JSON.parse(msg.content!);
-    const params = typeof p.params === 'string' ? JSON.parse(p.params) : p.params;
-    for (const h of (params?.highLightsV2 || [])) {
-      if (h.ts > 1e12) return new Date(h.ts).toLocaleString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const payload = JSON.parse(msg.content!);
+    const params = typeof payload.params === 'string' ? JSON.parse(payload.params) : payload.params;
+    for (const highlight of (params?.highLightsV2 || [])) {
+      if (highlight.ts > 1e12) {
+        return new Date(highlight.ts).toLocaleString('vi-VN', {
+          weekday: 'long',
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+      }
     }
   } catch {}
   return null;
 }
 
-/** Sync Zalo reminder to CRM appointments via API */
 async function syncAppointment(msg: Message) {
-  if (!props.conversation?.contact?.id) { syncSnack.value = { show: true, text: 'Không có thông tin khách hàng', color: 'error' }; return; }
+  if (!props.conversation?.contact?.id) {
+    syncSnack.value = { show: true, text: 'KhÃ´ng cÃ³ thÃ´ng tin khÃ¡ch hÃ ng', color: 'error' };
+    return;
+  }
+
   try {
-    const p = JSON.parse(msg.content!);
-    const params = typeof p.params === 'string' ? JSON.parse(p.params) : p.params;
+    const payload = JSON.parse(msg.content!);
+    const params = typeof payload.params === 'string' ? JSON.parse(payload.params) : payload.params;
     let appointmentDate: string | null = null;
-    for (const h of (params?.highLightsV2 || [])) {
-      if (h.ts > 1e12) { appointmentDate = new Date(h.ts).toISOString(); break; }
+
+    for (const highlight of (params?.highLightsV2 || [])) {
+      if (highlight.ts > 1e12) {
+        appointmentDate = new Date(highlight.ts).toISOString();
+        break;
+      }
     }
-    if (!appointmentDate) { syncSnack.value = { show: true, text: 'Không tìm thấy thời gian hẹn', color: 'warning' }; return; }
+
+    if (!appointmentDate) {
+      syncSnack.value = { show: true, text: 'KhÃ´ng tÃ¬m tháº¥y thá»i gian háº¹n', color: 'warning' };
+      return;
+    }
+
     await api.post('/appointments', {
       contactId: props.conversation.contact.id,
       appointmentDate,
       appointmentTime: new Date(appointmentDate).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
       type: 'tai_kham',
-      notes: `[Zalo] ${p.title || ''}`,
+      notes: `[Zalo] ${payload.title || ''}`,
     });
-    syncSnack.value = { show: true, text: 'Đã đồng bộ lịch hẹn thành công!', color: 'success' };
+
+    syncSnack.value = { show: true, text: 'ÄÃ£ Ä‘á»“ng bá»™ lá»‹ch háº¹n thÃ nh cÃ´ng!', color: 'success' };
   } catch (err: any) {
-    syncSnack.value = { show: true, text: err.response?.data?.error || 'Đồng bộ thất bại', color: 'error' };
+    syncSnack.value = { show: true, text: err.response?.data?.error || 'Äá»“ng bá»™ tháº¥t báº¡i', color: 'error' };
   }
 }
 
-watch(() => props.messages.length, async () => { await nextTick(); if (messagesContainer.value) messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight; });
+watch(
+  () => props.messages.length,
+  async () => {
+    await nextTick();
+    if (messagesContainer.value) {
+      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+    }
+  },
+);
 </script>
 
 <style scoped>
-.message-bubble { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); }
-.reminder-card { padding: 8px 12px; border-left: 3px solid #FFB74D; border-radius: 8px; background: rgba(255, 183, 77, 0.08); }
-.file-card { display: flex; align-items: center; padding: 8px 12px; border-radius: 8px; background: rgba(0, 242, 255, 0.05); border: 1px solid rgba(0, 242, 255, 0.1); }
-.chat-image { max-width: 100%; max-height: 300px; border-radius: 12px; cursor: pointer; transition: transform 0.2s; }
-.chat-image:hover { transform: scale(1.02); }
+.message-thread-root {
+  height: 100%;
+}
 
-/* Futuristic UI Enhancements */
+.thread-header {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.thread-bubble-wrap {
+  max-width: 70%;
+}
+
+.thread-group-name {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.thread-faded {
+  opacity: 0.68;
+}
+
+.message-bubble {
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.reminder-card {
+  padding: 8px 12px;
+  border-left: 3px solid var(--color-warning);
+  border-radius: 8px;
+  background: var(--color-warning-soft);
+}
+
+.reminder-label {
+  color: var(--color-warning);
+}
+
+.file-card {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-soft-strong);
+}
+
+.chat-image {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.chat-image:hover {
+  transform: scale(1.02);
+}
+
 .futuristic-input :deep(.v-field) {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  border: 1px solid var(--color-border) !important;
   border-radius: 12px !important;
   transition: all 0.3s ease;
 }
 
 .futuristic-input :deep(.v-field--focused) {
-  border-color: rgba(0, 242, 255, 0.4) !important;
-  box-shadow: 0 0 15px rgba(0, 242, 255, 0.1) !important;
+  border-color: var(--color-primary-soft-strong) !important;
+  box-shadow: 0 0 0 4px var(--color-primary-soft) !important;
 }
 
 .magic-wand-btn {
@@ -315,7 +432,7 @@ watch(() => props.messages.length, async () => { await nextTick(); if (messagesC
 .magic-wand-btn:hover {
   opacity: 1;
   transform: rotate(15deg) scale(1.1);
-  filter: drop-shadow(0 0 5px rgba(0, 242, 255, 0.5));
+  filter: drop-shadow(0 0 5px rgba(37, 99, 235, 0.32));
 }
 
 .send-btn {
@@ -326,7 +443,22 @@ watch(() => props.messages.length, async () => { await nextTick(); if (messagesC
 }
 
 .chat-input-area {
-  background: rgba(0, 0, 0, 0.15);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--color-surface-glass);
+  border-top: 1px solid var(--color-border);
+}
+
+.preview-shell {
+  cursor: pointer;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 85vh;
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+}
+
+.preview-caption {
+  color: var(--color-text-secondary);
 }
 </style>

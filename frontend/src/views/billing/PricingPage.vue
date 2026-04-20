@@ -2,7 +2,7 @@
   <v-container class="py-12 pricing-shell">
     <div class="text-center mb-16 entrance-animation">
       <div class="pricing-badge mb-4 mx-auto">
-        <v-icon color="#00F2FF" size="18">mdi-shield-crown-outline</v-icon>
+        <v-icon color="primary" size="18">mdi-shield-crown-outline</v-icon>
         <span class="ml-2">Plans & Pricing</span>
       </div>
       <h1 class="text-h2 font-weight-black text-white mb-4">Nâng cấp <span class="text-gradient">Zalo Automation</span></h1>
@@ -31,7 +31,7 @@
 
           <div class="ai-box mb-8">
             <div class="ai-box__inner">
-              <v-icon color="#0ea5e9" size="20">mdi-auto-fix</v-icon>
+              <v-icon color="info" size="20">mdi-auto-fix</v-icon>
               <div class="ml-3">
                 <div class="text-caption font-weight-bold text-white uppercase">AI POWER</div>
                 <div class="text-h6 font-weight-black text-gradient-ai">{{ plan.maxAiTokens.toLocaleString() }} Tokens</div>
@@ -42,14 +42,14 @@
           <v-list density="compact" class="bg-transparent flex-grow-1 feature-list">
             <v-list-item class="px-0 py-1">
               <template #prepend>
-                <v-icon color="#22c55e" size="20">mdi-check-circle</v-icon>
+                <v-icon color="success" size="20">mdi-check-circle</v-icon>
               </template>
               <v-list-item-title class="text-white">Tối đa <strong>{{ plan.maxZaloAcc }}</strong> tài khoản Zalo</v-list-item-title>
             </v-list-item>
 
             <v-list-item v-for="(feature, idx) in parseFeatures(plan.features)" :key="idx" class="px-0 py-1">
               <template #prepend>
-                <v-icon color="#22c55e" size="20">mdi-check-circle</v-icon>
+                <v-icon color="success" size="20">mdi-check-circle</v-icon>
               </template>
               <v-list-item-title class="text-white">{{ feature }}</v-list-item-title>
             </v-list-item>
@@ -77,7 +77,7 @@
         <div class="pa-8">
           <div class="d-flex align-center mb-6">
             <div class="modal-icon mr-4">
-              <v-icon size="32" color="white">mdi-wallet-outline</v-icon>
+              <v-icon size="32" color="primary">mdi-wallet-outline</v-icon>
             </div>
             <div>
               <h3 class="text-h5 font-weight-bold text-white">Thanh toán nâng cấp</h3>
@@ -197,57 +197,57 @@ const confirmPayment = () => {
   display: inline-flex;
   align-items: center;
   padding: 6px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--color-border);
   border-radius: 99px;
-  color: #fff;
+  color: var(--color-text-secondary);
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
+  box-shadow: var(--shadow-sm);
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #00f2ff, #a855f7);
+  background: var(--gradient-accent);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .text-gradient-ai {
-  background: linear-gradient(135deg, #0ea5e9, #2dd4bf);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-success));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .text-placeholder {
-  color: #94a3b8;
+  color: var(--color-text-secondary);
 }
 
 .text-cyan {
-  color: #00f2ff;
+  color: var(--color-primary);
 }
 
 /* Pricing Card Styles */
 .pricing-card {
   position: relative;
-  background: rgba(15, 23, 42, 0.4) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: var(--color-surface-elevated) !important;
+  border: 1px solid var(--color-border) !important;
   backdrop-filter: blur(12px);
   border-radius: 32px !important;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: visible;
+  box-shadow: var(--shadow-sm);
 }
 
 .pricing-card:hover {
   transform: translateY(-8px);
-  background: rgba(15, 23, 42, 0.6) !important;
-  border-color: rgba(0, 242, 255, 0.2) !important;
+  border-color: var(--color-primary-soft-strong) !important;
 }
 
 .plan-featured {
-  background: rgba(15, 23, 42, 0.7) !important;
-  border: 2px solid #00f2ff !important;
-  box-shadow: 0 20px 40px rgba(0, 242, 255, 0.1);
+  border: 2px solid var(--color-primary) !important;
+  box-shadow: var(--glow-brand);
 }
 
 .featured-tag {
@@ -255,8 +255,8 @@ const confirmPayment = () => {
   top: -14px;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(135deg, #00f2ff, #0077b6);
-  color: #fff;
+  background: var(--gradient-brand);
+  color: var(--color-text-inverse);
   padding: 4px 16px;
   border-radius: 99px;
   font-size: 0.75rem;
@@ -266,7 +266,7 @@ const confirmPayment = () => {
 }
 
 .plan-name {
-  color: #fff;
+  color: var(--color-text);
   font-weight: 800;
   font-size: 1.5rem;
 }
@@ -274,7 +274,7 @@ const confirmPayment = () => {
 .plan-price {
   display: flex;
   align-items: baseline;
-  color: #fff;
+  color: var(--color-text);
 }
 
 .currency {
@@ -290,15 +290,15 @@ const confirmPayment = () => {
 }
 
 .period {
-  color: #64748b;
+  color: var(--color-text-secondary);
   margin-left: 8px;
   font-size: 1rem;
 }
 
 .ai-box {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--color-overlay);
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border);
 }
 
 .ai-box__inner {
@@ -308,38 +308,39 @@ const confirmPayment = () => {
 }
 
 .btn-plan-pro {
-  background: linear-gradient(135deg, #00f2ff, #0077b6) !important;
-  color: #fff !important;
+  background: var(--gradient-brand) !important;
+  color: var(--color-text-inverse) !important;
   font-weight: 800 !important;
   text-transform: none !important;
 }
 
 .btn-plan-standard {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #fff !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text) !important;
   font-weight: 700 !important;
   text-transform: none !important;
 }
 
 .shadow-glow:hover {
-  box-shadow: 0 0 20px rgba(0, 242, 255, 0.3) !important;
+  box-shadow: var(--glow-brand) !important;
 }
 
 /* Modal Styles */
 .glass-card {
-  background: rgba(2, 6, 23, 0.8) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
   backdrop-filter: blur(24px) saturate(180%);
   border-radius: 32px !important;
-  color: #fff;
+  color: var(--color-text);
+  box-shadow: var(--shadow-lg);
 }
 
 .modal-icon {
   width: 56px;
   height: 56px;
-  background: rgba(0, 242, 255, 0.1);
-  border: 1px solid rgba(0, 242, 255, 0.2);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-soft-strong);
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -347,15 +348,23 @@ const confirmPayment = () => {
 }
 
 .border-glass {
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  border: 2px solid var(--color-border);
 }
 
 .payment-info {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--color-overlay);
+  border: 1px solid var(--color-border);
 }
 
 .btn-glow {
-  box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+  box-shadow: var(--glow-brand);
+}
+
+.pricing-shell :deep(.text-white) {
+  color: var(--color-text) !important;
+}
+
+.pricing-shell :deep(.text-h2) {
+  color: var(--color-text) !important;
 }
 </style>
