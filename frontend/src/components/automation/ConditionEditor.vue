@@ -1,26 +1,36 @@
 <template>
-  <div class="d-flex flex-column ga-3">
-    <div v-for="(condition, index) in modelValue" :key="index" class="d-flex ga-2 align-center flex-wrap">
+  <div class="condition-editor ga-4 d-flex flex-column">
+    <div v-for="(condition, index) in modelValue" :key="index" class="condition-row pa-4 rounded-xl border d-flex ga-3 align-center flex-wrap">
+      <div class="field-icon-box">
+        <v-icon size="18" color="primary">mdi-filter-variant</v-icon>
+      </div>
+
       <v-select
         :model-value="condition.field"
         :items="fieldOptions"
         item-title="title"
         item-value="value"
-        label="Trường"
+        label="Trường dữ liệu"
+        variant="outlined"
         density="comfortable"
-        style="min-width: 180px"
+        hide-details
+        class="flex-grow-1 min-w-200"
         @update:model-value="updateCondition(index, 'field', $event)"
       />
+
       <v-select
         :model-value="condition.op"
         :items="operatorOptions"
         item-title="title"
         item-value="value"
-        label="Điều kiện"
+        label="Toán tử"
+        variant="outlined"
         density="comfortable"
-        style="min-width: 160px"
+        hide-details
+        class="flex-grow-0 min-w-150"
         @update:model-value="updateCondition(index, 'op', $event)"
       />
+
       <v-select
         v-if="condition.field === 'conversation.zaloAccountId'"
         :model-value="condition.value"
@@ -28,25 +38,43 @@
         item-title="title"
         item-value="value"
         label="Chọn tài khoản"
+        variant="outlined"
         density="comfortable"
-        style="min-width: 220px"
+        hide-details
+        class="flex-grow-1 min-w-200"
         @update:model-value="updateCondition(index, 'value', $event)"
       />
       <v-text-field
         v-else
         :model-value="displayValue(condition.value)"
-        label="Giá trị"
+        label="Giá trị so sánh"
+        variant="outlined"
         density="comfortable"
-        style="min-width: 220px"
+        hide-details
+        class="flex-grow-1 min-w-200"
         @update:model-value="updateCondition(index, 'value', $event)"
       />
-      <v-btn icon variant="text" color="error" @click="removeCondition(index)">
-        <v-icon>mdi-delete</v-icon>
-      </v-btn>
+
+      <v-btn
+        icon="mdi-delete-outline"
+        variant="text"
+        color="error"
+        size="small"
+        class="remove-condition-btn"
+        @click="removeCondition(index)"
+      />
     </div>
 
     <div>
-      <v-btn variant="tonal" prepend-icon="mdi-plus" @click="addCondition">Thêm điều kiện</v-btn>
+      <v-btn
+        variant="text"
+        color="primary"
+        prepend-icon="mdi-plus"
+        class="font-weight-bold"
+        @click="addCondition"
+      >
+        Thêm điều kiện lọc
+      </v-btn>
     </div>
   </div>
 </template>
@@ -110,3 +138,48 @@ function displayValue(value: AutomationCondition['value']) {
   return Array.isArray(value) ? value.join(', ') : String(value ?? '');
 }
 </script>
+
+<style scoped>
+.condition-row {
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border) !important;
+  transition: all 0.2s;
+}
+
+.condition-row:hover {
+  background: var(--color-surface);
+  border-color: var(--color-primary-soft-strong) !important;
+}
+
+.field-icon-box {
+  width: 32px;
+  height: 32px;
+  background: var(--color-primary-soft);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.min-w-200 { min-width: 200px; }
+.min-w-150 { min-width: 150px; }
+
+.remove-condition-btn {
+  opacity: 0.5;
+}
+
+.condition-row:hover .remove-condition-btn {
+  opacity: 1;
+}
+
+@media (max-width: 600px) {
+  .condition-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .field-icon-box {
+    display: none;
+  }
+}
+</style>

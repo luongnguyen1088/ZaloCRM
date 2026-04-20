@@ -1,92 +1,146 @@
 <template>
-  <div class="d-flex flex-column ga-3">
-    <div v-for="(action, index) in modelValue" :key="index" class="pa-3 border rounded d-flex flex-column ga-2">
-      <div class="d-flex ga-2 align-center flex-wrap">
+  <div class="action-editor ga-4 d-flex flex-column">
+    <div v-for="(action, index) in modelValue" :key="index" class="action-card pa-4 rounded-xl border position-relative">
+      <div class="d-flex ga-3 align-center mb-4">
+        <div class="action-icon-circle" :class="getActionColor(action.type)">
+          <v-icon size="20">{{ getActionIcon(action.type) }}</v-icon>
+        </div>
         <v-select
           :model-value="action.type"
           :items="actionOptions"
           item-title="title"
           item-value="value"
           label="Hành động"
+          variant="filled"
           density="comfortable"
-          style="min-width: 220px"
+          hide-details
+          class="flex-grow-1 custom-select"
           @update:model-value="updateAction(index, 'type', $event)"
         />
-        <v-btn icon variant="text" color="error" @click="removeAction(index)">
-          <v-icon>mdi-delete</v-icon>
-        </v-btn>
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          size="small"
+          color="medium-emphasis"
+          class="remove-btn"
+          @click="removeAction(index)"
+        />
       </div>
 
-      <v-text-field
-        v-if="action.type === 'assign_user'"
-        :model-value="action.userId || ''"
-        label="User ID"
-        density="comfortable"
-        @update:model-value="updateAction(index, 'userId', $event)"
-      />
+      <v-divider class="mb-4 opacity-10" />
 
-      <v-select
-        v-if="action.type === 'send_template'"
-        :model-value="action.templateId || ''"
-        :items="templateItems"
-        item-title="title"
-        item-value="value"
-        label="Template"
-        density="comfortable"
-        @update:model-value="updateAction(index, 'templateId', $event)"
-      />
-
-      <v-select
-        v-if="action.type === 'update_status'"
-        :model-value="action.status || ''"
-        :items="statusItems"
-        item-title="title"
-        item-value="value"
-        label="Trạng thái mới"
-        density="comfortable"
-        @update:model-value="updateAction(index, 'status', $event)"
-      />
-
-      <template v-if="action.type === 'create_appointment'">
+      <div class="action-settings-grid">
         <v-text-field
-          :model-value="String(action.offsetHours ?? 24)"
-          label="Số giờ sau trigger"
+          v-if="action.type === 'assign_user'"
+          :model-value="action.userId || ''"
+          label="User ID nhân viên"
+          variant="outlined"
           density="comfortable"
-          type="number"
-          @update:model-value="updateNumericAction(index, 'offsetHours', $event)"
+          prepend-inner-icon="mdi-account-arrow-right"
+          @update:model-value="updateAction(index, 'userId', $event)"
         />
-        <v-text-field
-          :model-value="action.typeLabel || ''"
-          label="Loại lịch hẹn"
-          density="comfortable"
-          @update:model-value="updateAction(index, 'typeLabel', $event)"
-        />
-      </template>
 
-      <template v-if="action.type === 'ai_reply'">
-        <div class="text-caption text-medium-emphasis mb-1">
-          Dựa vào Kho tri thức để trả lời tự động.
-        </div>
-        <v-slider
-          :model-value="(action.confidenceThreshold ?? 0.8) * 100"
-          label="Độ tin cậy tối thiểu"
-          thumb-label="always"
-          step="5"
-          min="0"
-          max="100"
-          density="compact"
-          color="primary"
-          @update:model-value="updateThreshold(index, $event)"
-        >
-          <template #append>
-            <span class="text-caption font-weight-bold" style="width: 40px">{{ Math.round((action.confidenceThreshold ?? 0.8) * 100) }}%</span>
-          </template>
-        </v-slider>
-      </template>
+        <v-select
+          v-if="action.type === 'send_template'"
+          :model-value="action.templateId || ''"
+          :items="templateItems"
+          item-title="title"
+          item-value="value"
+          label="Chọn mẫu tin nhắn"
+          variant="outlined"
+          density="comfortable"
+          prepend-inner-icon="mdi-email-outline"
+          @update:model-value="updateAction(index, 'templateId', $event)"
+        />
+
+        <v-select
+          v-if="action.type === 'update_status'"
+          :model-value="action.status || ''"
+          :items="statusItems"
+          item-title="title"
+          item-value="value"
+          label="Trạng thái hội thoại mới"
+          variant="outlined"
+          density="comfortable"
+          prepend-inner-icon="mdi-tag-outline"
+          @update:model-value="updateAction(index, 'status', $event)"
+        />
+
+        <template v-if="action.type === 'create_appointment'">
+          <div class="d-flex ga-3 flex-wrap">
+            <v-text-field
+              :model-value="String(action.offsetHours ?? 24)"
+              label="Số giờ sau khi kích hoạt"
+              variant="outlined"
+              density="comfortable"
+              type="number"
+              class="flex-1-1"
+              style="min-width: 150px"
+              prepend-inner-icon="mdi-clock-outline"
+              @update:model-value="updateNumericAction(index, 'offsetHours', $event)"
+            />
+            <v-text-field
+              :model-value="action.typeLabel || ''"
+              label="Loại lịch hẹn (VD: Tư vấn)"
+              variant="outlined"
+              density="comfortable"
+              class="flex-1-1"
+              style="min-width: 150px"
+              prepend-inner-icon="mdi-calendar-check"
+              @update:model-value="updateAction(index, 'typeLabel', $event)"
+            />
+          </div>
+        </template>
+
+        <template v-if="action.type === 'ai_reply'">
+          <div class="ai-config-box pa-4 rounded-lg">
+            <div class="d-flex align-center mb-4">
+              <v-icon start color="primary">mdi-brain</v-icon>
+              <span class="text-subtitle-2 font-weight-bold">Cấu hình AI Smart Reply</span>
+            </div>
+            <div class="text-caption text-medium-emphasis mb-4">
+              AI sẽ tự động soạn tin nhắn dựa trên Kho tri thức. Nếu độ tin cậy thấp hơn ngưỡng dưới đây, AI sẽ không gửi tin nhắn.
+            </div>
+            <v-slider
+              :model-value="(action.confidenceThreshold ?? 0.8) * 100"
+              thumb-label="always"
+              step="5"
+              min="0"
+              max="100"
+              color="primary"
+              track-color="primary-soft"
+              density="compact"
+              hide-details
+              @update:model-value="updateThreshold(index, $event)"
+            >
+              <template #prepend>
+                <span class="text-caption">0%</span>
+              </template>
+              <template #append>
+                <div class="d-flex align-center ml-2">
+                  <v-chip size="x-small" color="primary" variant="flat" class="font-weight-bold">
+                    {{ Math.round((action.confidenceThreshold ?? 0.8) * 100) }}%
+                  </v-chip>
+                </div>
+              </template>
+            </v-slider>
+          </div>
+        </template>
+      </div>
     </div>
 
     <div>
-      <v-btn variant="tonal" prepend-icon="mdi-plus" @click="addAction">Thêm hành động</v-btn>
+      <v-btn
+        variant="tonal"
+        block
+        prepend-icon="mdi-plus-circle-outline"
+        size="large"
+        rounded="xl"
+        class="add-action-btn"
+        @click="addAction"
+      >
+        Thêm hành động tiếp theo
+      </v-btn>
     </div>
   </div>
 </template>
@@ -106,11 +160,11 @@ const emit = defineEmits<{
 }>();
 
 const actionOptions = [
-  { title: 'Assign user', value: 'assign_user' },
-  { title: 'Send template', value: 'send_template' },
-  { title: 'Update status', value: 'update_status' },
-  { title: 'Create appointment', value: 'create_appointment' },
-  { title: 'AI Smart Reply (Beta)', value: 'ai_reply' },
+  { title: 'Chuyển cho nhân viên', value: 'assign_user' },
+  { title: 'Gửi mẫu tin nhắn', value: 'send_template' },
+  { title: 'Cập nhật trạng thái', value: 'update_status' },
+  { title: 'Tạo lịch hẹn', value: 'create_appointment' },
+  { title: 'AI Smart Reply (Tự động)', value: 'ai_reply' },
 ];
 
 const statusItems = [
@@ -122,6 +176,28 @@ const statusItems = [
 ];
 
 const templateItems = computed(() => props.templates.map((template) => ({ title: template.name, value: template.id })));
+
+function getActionIcon(type: string) {
+  const icons: Record<string, string> = {
+    assign_user: 'mdi-account-arrow-right',
+    send_template: 'mdi-email-send-outline',
+    update_status: 'mdi-tag-sync-outline',
+    create_appointment: 'mdi-calendar-plus',
+    ai_reply: 'mdi-auto-fix',
+  };
+  return icons[type] ?? 'mdi-flash';
+}
+
+function getActionColor(type: string) {
+  const colors: Record<string, string> = {
+    assign_user: 'info',
+    send_template: 'success',
+    update_status: 'warning',
+    create_appointment: 'orange',
+    ai_reply: 'primary',
+  };
+  return colors[type] || 'grey';
+}
 
 function addAction() {
   emit('update:modelValue', [...props.modelValue, { type: 'update_status', status: 'contacted' }]);
@@ -146,3 +222,57 @@ function removeAction(index: number) {
   emit('update:modelValue', props.modelValue.filter((_, currentIndex) => currentIndex !== index));
 }
 </script>
+
+<style scoped>
+.action-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border) !important;
+  transition: all 0.2s ease;
+}
+
+.action-card:hover {
+  border-color: var(--color-primary-soft-strong) !important;
+  box-shadow: var(--shadow-sm);
+}
+
+.action-icon-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-icon-circle.info { background: var(--color-info-soft); color: var(--color-info); }
+.action-icon-circle.success { background: var(--color-success-soft); color: var(--color-success); }
+.action-icon-circle.warning { background: var(--color-warning-soft); color: var(--color-warning); }
+.action-icon-circle.orange { background: #fff3e0; color: #fb8c00; }
+.action-icon-circle.primary { background: var(--color-primary-soft); color: var(--color-primary); }
+
+.ai-config-box {
+  background: var(--color-surface-muted);
+  border: 1px dashed var(--color-border-strong);
+}
+
+.add-action-btn {
+  text-transform: none;
+  font-weight: 700;
+  border: 1px dashed var(--color-border-strong);
+}
+
+.custom-select :deep(.v-field) {
+  border-radius: 12px !important;
+}
+
+.remove-btn {
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.action-card:hover .remove-btn {
+  opacity: 1;
+}
+</style>
+
+
