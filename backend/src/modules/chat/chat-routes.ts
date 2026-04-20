@@ -120,22 +120,31 @@ export async function chatRoutes(app: FastifyInstance) {
     });
     if (!conversation) return reply.status(404).send({ error: 'Conversation not found' });
 
-    const instance = zaloPool.getInstance(conversation.zaloAccountId);
-    if (!instance?.api) return reply.status(400).send({ error: 'Zalo account not connected' });
-
-    // Rate limit check — prevent account blocking
-    const limits = zaloRateLimiter.checkLimits(conversation.zaloAccountId);
-    if (!limits.allowed) {
-      return reply.status(429).send({ error: limits.reason });
-    }
-
     try {
       const threadId = conversation.externalThreadId || '';
-      // zca-js sendMessage(message, threadId, type) — type: 0=User, 1=Group
-      const threadType = conversation.threadType === 'group' ? 1 : 0;
+      
+      // Handle Facebook Page Message
+      if (conversation.zaloAccount.type === 'facebook_page') {
+        const config = conversation.zaloAccount.platformConfig as { accessToken?: string };
+        if (!config?.accessToken) return reply.status(400).send({ error: 'Facebook configuration error' });
 
-      zaloRateLimiter.recordSend(conversation.zaloAccountId);
-      await instance.api.sendMessage({ msg: content }, threadId, threadType);
+        const { FacebookApi } = await import('../channels/facebook/facebook-api.js');
+        const fb = new FacebookApi(config.accessToken);
+        await fb.sendTextMessage(threadId, content);
+      } 
+      // Handle Zalo Personal Message (Default)
+      else {
+        const instance = zaloPool.getInstance(conversation.zaloAccountId);
+        if (!instance?.api) return reply.status(400).send({ error: 'Zalo account not connected' });
+
+        // Rate limit check
+        const limits = zaloRateLimiter.checkLimits(conversation.zaloAccountId);
+        if (!limits.allowed) return reply.status(429).send({ error: limits.reason });
+
+        const threadType = conversation.threadType === 'group' ? 1 : 0;
+        zaloRateLimiter.recordSend(conversation.zaloAccountId);
+        await instance.api.sendMessage({ msg: content }, threadId, threadType);
+      }
 
       const message = await prisma.message.create({
         data: {

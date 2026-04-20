@@ -3,8 +3,8 @@
     <!-- Header Section -->
     <div class="d-flex align-center mb-8">
       <div>
-        <h1 class="text-h4 font-weight-bold mb-1">Kết nối Zalo</h1>
-        <p class="text-medium-emphasis mb-0">Quản lý và kết nối nhiều tài khoản Zalo cá nhân</p>
+        <h1 class="text-h4 font-weight-bold mb-1">Kết nối đa kênh</h1>
+        <p class="text-medium-emphasis mb-0">Quản lý các tài khoản Zalo cá nhân và Facebook Fanpage</p>
       </div>
       <v-spacer />
       <v-btn
@@ -35,10 +35,21 @@
             <div class="d-flex align-center mb-4">
               <v-avatar size="56" class="mr-4 border-gold">
                 <v-img :src="item.avatarUrl || 'https://stc-zaloid.zadn.vn/v2/images/default_avatar.png'" />
+                <v-icon
+                  v-if="item.type === 'facebook_page'"
+                  size="18"
+                  color="#1877F2"
+                  class="type-icon-badge"
+                >
+                  mdi-facebook
+                </v-icon>
               </v-avatar>
               <div class="overflow-hidden">
                 <div class="text-h6 font-weight-bold text-truncate">{{ item.displayName || 'Chưa đặt tên' }}</div>
-                <div class="text-caption text-medium-emphasis">{{ item.phone || item.zaloUid || 'Đang cập nhật...' }}</div>
+                <div class="text-caption text-medium-emphasis">
+                  <v-icon size="12" class="mr-1">{{ item.type === 'facebook_page' ? 'mdi-facebook' : 'mdi-message-text' }}</v-icon>
+                  {{ item.phone || item.zaloUid || 'Đang cập nhật...' }}
+                </div>
               </div>
             </div>
 
@@ -126,27 +137,58 @@
     </div>
 
     <!-- Add Dialog -->
-    <v-dialog v-model="showAddDialog" max-width="450">
+    <v-dialog v-model="showAddDialog" max-width="500">
       <v-card class="glass-card fallout-border" elevation="24">
         <v-card-title class="pa-6">
-          <div class="text-h5 font-weight-bold">Thêm tài khoản mới</div>
+          <div class="text-h5 font-weight-bold">Thêm kết nối mới</div>
         </v-card-title>
         <v-card-text class="pa-6 pt-0">
-          <p class="text-body-2 text-medium-emphasis mb-4">Nhập tên để gợi nhớ tài khoản này trong hệ thống của bạn.</p>
-          <v-text-field
-            v-model="newAccountName"
-            label="Tên hiển thị"
-            placeholder="VD: Zalo CSKH 01"
-            variant="outlined"
-            rounded="lg"
-            hide-details
-            autofocus
-          />
+          <v-tabs v-model="addType" grow class="mb-6" color="primary">
+            <v-tab value="zalo">Zalo Cá nhân</v-tab>
+            <v-tab value="facebook">Facebook Fanpage</v-tab>
+          </v-tabs>
+
+          <v-window v-model="addType">
+            <v-window-item value="zalo">
+              <p class="text-body-2 text-medium-emphasis mb-4">Nhập tên để gợi nhớ tài khoản Zalo này.</p>
+              <v-text-field
+                v-model="newAccountName"
+                label="Tên hiển thị"
+                placeholder="VD: Zalo CSKH 01"
+                variant="outlined"
+                rounded="lg"
+                @keyup.enter="handleAddAccount"
+              />
+            </v-window-item>
+
+            <v-window-item value="facebook">
+              <v-alert type="info" variant="tonal" density="compact" class="mb-4 text-caption">
+                Vui lòng cung cấp Page Access Token. Bạn có thể tạo token này từ trang Meta for Developers.
+              </v-alert>
+              <v-text-field
+                v-model="fbAccessToken"
+                label="Page Access Token"
+                placeholder="EAAG...."
+                variant="outlined"
+                rounded="lg"
+                type="password"
+              />
+            </v-window-item>
+          </v-window>
         </v-card-text>
         <v-card-actions class="pa-6 pt-0">
           <v-spacer />
           <v-btn variant="text" rounded="lg" @click="showAddDialog = false">Hủy</v-btn>
-          <v-btn color="primary" rounded="lg" variant="flat" :loading="adding" @click="handleAddAccount">Thêm tài khoản</v-btn>
+          <v-btn
+            color="primary"
+            rounded="xl"
+            variant="flat"
+            class="px-8"
+            :loading="adding"
+            @click="handleUniversalAdd"
+          >
+            Bắt đầu kết nối
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -456,6 +498,16 @@
 .color-cyan {
   color: var(--color-primary);
 }
+
+.type-icon-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background: white;
+  border-radius: 50%;
+  padding: 1px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
 </style>
 
 <script setup lang="ts">
@@ -480,8 +532,33 @@ const syncing = ref<string | null>(null);
 const showDeleteDialog = ref(false);
 const showAccessDialog = ref(false);
 const newAccountName = ref('');
+const fbAccessToken = ref('');
+const addType = ref('zalo');
 const deleteTarget = ref<ZaloAccount | null>(null);
 const accessTarget = ref<ZaloAccount | null>(null);
+
+async function handleUniversalAdd() {
+  if (addType.value === 'zalo') {
+    await handleAddAccount();
+  } else {
+    await handleAddFacebook();
+  }
+}
+
+async function handleAddFacebook() {
+  if (!fbAccessToken.value) return alert('Vui lòng nhập Access Token');
+  adding.value = true;
+  try {
+    await api.post('/facebook/link-page', { accessToken: fbAccessToken.value });
+    showAddDialog.value = false;
+    fbAccessToken.value = '';
+    await fetchAccounts();
+  } catch (err: any) {
+    alert(err.response?.data?.error || 'Lỗi kết nối Fanpage');
+  } finally {
+    adding.value = false;
+  }
+}
 
 async function syncContacts(accountId: string) {
   syncing.value = accountId;

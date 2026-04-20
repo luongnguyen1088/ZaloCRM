@@ -97,12 +97,14 @@ model ZaloAccount {
   id              String    @id @default(uuid())
   orgId           String    @map("org_id")
   ownerUserId     String    @map("owner_user_id")
-  zaloUid         String?   @unique @map("zalo_uid")
+  type            String    @default("zalo_personal") // zalo_personal, facebook_page, zalo_oa
+  zaloUid         String?   @unique @map("zalo_uid") // Treats as externalId for other channels
   displayName     String?   @map("display_name")
   avatarUrl       String?   @map("avatar_url")
   phone           String?
   status          String    @default("disconnected") // connected, disconnected, qr_pending
   sessionData     Json?     @map("session_data")
+  platformConfig  Json      @default("{}") @map("platform_config") // accessToken, pageId, etc.
   lastConnectedAt DateTime? @map("last_connected_at")
   createdAt       DateTime  @default(now()) @map("created_at")
 
