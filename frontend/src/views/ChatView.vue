@@ -136,7 +136,12 @@ watch(searchQuery, () => {
 
 <style scoped>
 .chat-container {
-  margin: -12px;
+  margin: -16px;
+  background-color: #0b0f19;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(0, 114, 255, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(0, 242, 255, 0.05) 0px, transparent 50%);
+  overflow: hidden;
 }
 
 .chat-panel-left {
@@ -144,6 +149,7 @@ watch(searchQuery, () => {
   flex-shrink: 0;
   min-width: 200px;
   max-width: 500px;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .chat-panel-right {
@@ -151,6 +157,9 @@ watch(searchQuery, () => {
   flex-shrink: 0;
   min-width: 250px;
   max-width: 500px;
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(10px);
 }
 
 /* Resize handle — thin vertical line on the edge */
@@ -158,17 +167,19 @@ watch(searchQuery, () => {
   position: absolute;
   top: 0;
   right: -2px;
-  width: 5px;
+  width: 4px;
   height: 100%;
   cursor: col-resize;
   z-index: 10;
   background: transparent;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
 }
 
 .resize-handle:hover,
 .resize-handle:active {
-  background: rgba(0, 242, 255, 0.3);
+  background: linear-gradient(to bottom, transparent, rgba(0, 242, 255, 0.4), transparent);
+  width: 2px;
+  right: -1px;
 }
 
 .resize-handle-left {
