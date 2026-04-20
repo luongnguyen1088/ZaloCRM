@@ -130,12 +130,19 @@ async function handleIncomingMessage(app: FastifyInstance, event: any, pageId: s
     });
 
     // 7. Run Automation Rules
-    await runAutomationRules(orgId, conversation.id, messageText, {
-      id: contact.id,
-      fullName: contact.fullName || '',
-      phone: contact.phone || null,
-      tags: contact.tags as string[] || [],
-      notes: contact.notes || ''
+    await runAutomationRules({
+      trigger: 'message_received',
+      orgId,
+      contact: {
+        id: contact.id,
+        fullName: contact.fullName,
+        phone: contact.phone,
+        status: contact.status,
+        tags: contact.tags,
+        notes: contact.notes
+      },
+      conversation: { id: conversation.id },
+      message: { id: message.id, content: messageText, contentType: 'text' }
     });
 
   } catch (err) {
