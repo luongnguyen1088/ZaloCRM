@@ -77,8 +77,8 @@
       </v-col>
     </v-row>
 
-    <v-dialog v-model="paymentDialog" max-width="560">
-      <v-card v-if="selectedPlan" class="payment-modal glass-card">
+    <v-dialog v-model="paymentDialog" max-width="560" scrollable content-class="payment-dialog-content">
+      <v-card v-if="selectedPlan" class="payment-modal glass-card d-flex flex-column">
         <div class="payment-modal__orb payment-modal__orb--primary"></div>
         <div class="payment-modal__orb payment-modal__orb--accent"></div>
 
@@ -164,6 +164,9 @@
             </div>
           </div>
 
+        </div>
+
+        <div class="payment-actions pa-8 pt-0">
           <v-btn
             block
             height="54"
@@ -423,9 +426,40 @@ const confirmPayment = () => {
   color: var(--color-text);
 }
 
+:deep(.payment-dialog-content) {
+  width: min(560px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+  margin: 12px;
+}
+
+.payment-modal {
+  max-height: calc(100vh - 24px);
+}
+
 .payment-content {
+  flex: 1 1 auto;
+  min-height: 0;
   position: relative;
   z-index: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+.payment-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.payment-content::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+}
+
+.payment-content::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .payment-modal__orb {
@@ -645,6 +679,15 @@ const confirmPayment = () => {
   line-height: 1.55;
 }
 
+.payment-actions {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  border-top: 1px solid var(--color-border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0), var(--color-surface-elevated) 22%);
+  backdrop-filter: blur(18px);
+}
+
 .btn-glow {
   box-shadow: var(--glow-brand);
 }
@@ -671,6 +714,31 @@ const confirmPayment = () => {
 }
 
 @media (max-width: 600px) {
+  :deep(.payment-dialog-content) {
+    width: calc(100vw - 16px);
+    max-height: calc(100vh - 16px);
+    margin: 8px;
+  }
+
+  .payment-modal {
+    max-height: calc(100vh - 16px);
+  }
+
+  .payment-content,
+  .payment-actions {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  .payment-content {
+    padding-top: 20px !important;
+    padding-bottom: 18px !important;
+  }
+
+  .payment-actions {
+    padding-bottom: 20px !important;
+  }
+
   .payment-title {
     font-size: 1.36rem;
   }
