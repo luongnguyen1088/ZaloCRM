@@ -19,14 +19,31 @@
         
         <!-- Magic Add Console -->
         <v-card class="magic-console mb-6 pa-1 flex-shrink-0" elevation="12">
-          <div class="d-flex align-center pa-2 px-4">
-            <v-icon color="primary" class="mr-2 animate-sparkle">mdi-sparkles</v-icon>
-            <span class="text-subtitle-2 font-weight-bold primary--text">NẠP NHANH BẰNG AI (1-CLICK)</span>
+          <div class="d-flex align-center pa-2 px-4 justify-space-between">
+            <div class="d-flex align-center">
+              <v-icon color="primary" class="mr-2 animate-sparkle">mdi-sparkles</v-icon>
+              <span class="text-subtitle-2 font-weight-bold primary--text">NẠP NHANH BẰNG AI (1-CLICK)</span>
+            </div>
+            <!-- Templates Dropdown -->
+            <v-menu>
+              <template v-slot:activator="{ props }">
+                <v-btn v-bind="props" variant="text" size="small" color="secondary" prepend-icon="mdi-text-box-plus-outline">
+                  Sử dụng mẫu kiến thức
+                </v-btn>
+              </template>
+              <v-list class="glass-list" density="compact">
+                <v-list-item v-for="(t, i) in templates" :key="i" :title="t.name" @click="applyTemplate(t)">
+                  <template v-slot:prepend>
+                    <v-icon size="small">{{ t.icon }}</v-icon>
+                  </template>
+                </v-list-item>
+              </v-list>
+            </v-menu>
           </div>
           <div class="pa-3 pt-1">
             <v-textarea
               v-model="magicInput"
-              placeholder="Dán bất kỳ nội dung nào vào đây (ví dụ: Bảng giá, chính sách)... AI sẽ tự động phân loại và đặt tiêu đề."
+              placeholder="Dán bất kỳ nội dung nào hoặc chọn một mẫu kiến thức phía trên..."
               variant="plain"
               bg-color="transparent"
               rows="3"
@@ -113,6 +130,10 @@
                         <v-chip size="x-small" variant="outlined" class="mr-2 text-caption px-2 opacity-60">
                           {{ item.category }}
                         </v-chip>
+                        <div class="stats-badge mr-3" v-if="item.useCount > 0" title="Số lần AI đã tra cứu kiến thức này">
+                          <v-icon size="14" class="mr-1">mdi-head-cog-outline</v-icon>
+                          <span>Giúp ích {{ item.useCount }} lần</span>
+                        </div>
                         <span class="text-caption text-disabled opacity-60">
                           Cập nhật: {{ formatDate(item.updatedAt) }}
                         </span>
@@ -155,7 +176,7 @@
           <div ref="chatContainer" class="flex-grow-1 overflow-y-auto pa-4 d-flex flex-column custom-scrollbar bg-dots">
             <div v-if="testMessages.length === 0" class="ma-auto text-center opacity-40 px-8">
               <v-icon size="48" class="mb-4">mdi-chat-question-outline</v-icon>
-              <p class="text-body-2">Bạn hãy đặt câu hỏi thử nghiệm để xem AI áp dụng kiến thức thế nào nhé!</p>
+              <p class="text-body-2">Hỏi thử một câu bất kỳ để xem AI "vận dụng" kiến thức đã học như thế nào.</p>
             </div>
             
             <div v-for="(msg, i) in testMessages" :key="i" 
@@ -276,21 +297,6 @@
       </v-card>
     </v-dialog>
 
-    <!-- Delete Dialog -->
-    <v-dialog v-model="deleteDialog.show" max-width="400">
-      <v-card class="rounded-xl overflow-hidden">
-        <v-card-title class="bg-error text-white pa-4">Xóa kiến thức này?</v-card-title>
-        <v-card-text class="pa-6">
-          AI sẽ "quên" hoàn toàn kiến thức: <strong>{{ deleteDialog.item?.title }}</strong>. Bạn chắc chắn chứ?
-        </v-card-text>
-        <v-card-actions class="pa-6 pt-0">
-          <v-spacer />
-          <v-btn variant="text" @click="deleteDialog.show = false">Quay lại</v-btn>
-          <v-btn color="error" variant="flat" rounded="lg" :loading="deleting" @click="doDelete">Xóa vĩnh viễn</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
     <!-- Success Snackbar -->
     <v-snackbar v-model="toast.show" :color="toast.color" rounded="pill" elevation="12">
       <div class="d-flex align-center">
@@ -313,6 +319,15 @@ const savingMagic = ref(false);
 const search = ref('');
 const filterCategory = ref('Tất cả');
 const items = ref<any[]>([]);
+
+// Templates
+const templates = [
+  { name: 'Chính sách vận chuyển', icon: 'mdi-truck-delivery', content: 'Shop mình [miễn phí ship] cho đơn hàng từ [XXX k]. Các tỉnh khác phí ship đồng giá [YY k]. Thời gian nhận hàng từ [2-4 ngày].' },
+  { name: 'Bảng giá sản phẩm', icon: 'mdi-currency-usd', content: 'Hiện tại shop có các dòng sản phẩm chính:\n1. [Tên SP 1]: Giá [Giá 1]\n2. [Tên SP 2]: Giá [Giá 2]\nKhách mua từ [Số lượng] sẽ được giá sỉ.' },
+  { name: 'Chính sách đổi trả', icon: 'mdi-swap-horizontal', content: 'Hỗ trợ đổi trả trong vòng [7 ngày] kể từ khi nhận hàng. Điều kiện: [Sản phẩm còn nguyên tem mác, chưa qua sử dụng]. Phí ship đổi trả do [Khách hàng/Shop] chịu tùy trường hợp.' },
+  { name: 'Thông tin chuyển khoản', icon: 'mdi-bank', content: 'Quý khách vui lòng chuyển khoản qua:\nNgân hàng: [Tên NH]\nSTK: [Số tài khoản]\nChủ TK: [Tên chủ TK]\nNội dung: [Tên + SĐT].' },
+  { name: 'Khuyến mãi hiện có', icon: 'mdi-tag-heart', content: 'Trong tháng này shop đang có chương trình: [Mô tả KM]. Áp dụng cho khách hàng [Cũ/Mới]. Thời hạn đến hết ngày [Ngày].' }
+];
 
 // Simulator & Magic State
 const magicInput = ref('');
@@ -360,16 +375,17 @@ async function loadData() {
   }
 }
 
+function applyTemplate(t: any) {
+  magicInput.value = t.content;
+}
+
 async function runMagicAdd() {
   if (!magicInput.value.trim() || savingMagic.value) return;
   savingMagic.value = true;
   const content = magicInput.value;
   
   try {
-    // Stage 1: AI analyzes and categorizes
     const analysis = await api.post('/ai/knowledge/analyze', { content });
-    
-    // Stage 2: Save the knowledge
     await api.post('/ai/knowledge', {
       title: analysis.data.title,
       category: analysis.data.category,
@@ -377,18 +393,10 @@ async function runMagicAdd() {
       isActive: true
     });
     
-    toast.value = {
-      show: true,
-      text: `AI đã nạp xong: ${analysis.data.title} (${analysis.data.category})`,
-      color: 'success',
-      icon: 'mdi-sparkles'
-    };
-    
+    toast.value = { show: true, text: `AI đã nạp chuyên sâu: ${analysis.data.title}`, color: 'success', icon: 'mdi-sparkles' };
     magicInput.value = '';
     await loadData();
-    
-    // Auto-test prompt?
-    testMessages.value.push({ role: 'ai', content: `Kiến thức mới đã được nạp: "${analysis.data.title}". Bạn có muốn đặt câu hỏi thử nghiệm để kiểm tra không?` });
+    testMessages.value.push({ role: 'ai', content: `Đã nạp xong kiến thức: "${analysis.data.title}". Hãy thử hỏi tôi về nội dung này!` });
   } catch (err) {
     toast.value = { show: true, text: 'Nạp nhanh thất bại, hãy thử lại thủ công', color: 'error', icon: 'mdi-alert' };
   } finally {
@@ -453,6 +461,8 @@ async function runTest() {
   try {
     const res = await api.post('/ai/knowledge/test', { question: q });
     testMessages.value.push({ role: 'ai', content: res.data.content });
+    // Reload items to update usage counts
+    loadData();
   } catch (err: any) {
     testMessages.value.push({ role: 'ai', content: 'Lỗi: ' + (err.response?.data?.error || 'Không thể kết nối AI') });
   } finally {
@@ -519,8 +529,6 @@ onMounted(loadData);
   line-height: 1.6;
 }
 
-.search-input :deep(.v-field__outline) { border-color: rgba(255,255,255,0.1); }
-
 .glass-container {
   background: rgba(255, 255, 255, 0.02);
   backdrop-filter: blur(20px);
@@ -534,10 +542,21 @@ onMounted(loadData);
   border: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 
+.stats-badge {
+  display: inline-flex;
+  align-center: center;
+  background: rgba(var(--v-theme-success), 0.1);
+  color: #4CAF50;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid rgba(var(--v-theme-success), 0.2);
+}
+
 .simulator-panel {
   background: rgba(0, 0, 0, 0.2);
   border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.05);
 }
 
 .message-bubble {
@@ -548,6 +567,12 @@ onMounted(loadData);
 
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+.glass-list {
+  background: rgba(20, 20, 20, 0.9) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.1);
+}
 
 .animate-sparkle { animation: sparkle 2s infinite; }
 @keyframes sparkle { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } }

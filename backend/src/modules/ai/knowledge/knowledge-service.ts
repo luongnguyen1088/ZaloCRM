@@ -42,9 +42,19 @@ export async function deleteAiKnowledge(orgId: string, id: string) {
  * Later we can implement vector search or keyword-based filtering.
  */
 export async function getRelevantKnowledge(orgId: string, query?: string) {
-  return prisma.aiKnowledge.findMany({
+  const items = await prisma.aiKnowledge.findMany({
     where: { orgId, isActive: true },
-    select: { title: true, content: true },
-    take: 10, // Limit to top 10 items for now to avoid prompt token explosion
+    select: { id: true, title: true, content: true },
+    take: 10,
   });
+
+  // Increment use count asynchronously
+  if (items.length > 0) {
+    prisma.aiKnowledge.updateMany({
+      where: { id: { in: items.map(i => i.id) } },
+      data: { useCount: { increment: 1 } }
+    }).catch(err => console.error('[Knowledge Service] Failed to increment usage:', err));
+  }
+
+  return items;
 }
