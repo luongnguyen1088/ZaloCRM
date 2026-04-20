@@ -8,6 +8,7 @@ import { syncGoogleSheets } from './providers/google-sheets.js';
 import { sendTelegramNotification } from './providers/telegram-bot.js';
 import { importFacebookLeads } from './providers/facebook.js';
 import { triggerZapierWebhook } from './providers/zapier-webhook.js';
+import { triggerN8nWebhook } from './providers/n8n.js';
 
 interface Integration {
   id: string;
@@ -41,6 +42,9 @@ export async function runSync(integration: Integration) {
         break;
       case 'zapier':
         result = await triggerZapierWebhook(integration.orgId, cfg);
+        break;
+      case 'n8n':
+        result = await triggerN8nWebhook(integration.orgId, cfg);
         break;
       default:
         result = { direction: 'export', recordCount: 0, status: 'failed', errorMessage: `Unknown type: ${integration.type}` };

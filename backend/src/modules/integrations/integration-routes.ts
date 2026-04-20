@@ -9,7 +9,7 @@ import { logger } from '../../shared/utils/logger.js';
 import { requireRole } from '../auth/role-middleware.js';
 import { runSync } from './sync-engine.js';
 
-const VALID_TYPES = ['google_sheets', 'telegram', 'facebook', 'zapier'] as const;
+const VALID_TYPES = ['google_sheets', 'telegram', 'facebook', 'zapier', 'n8n'] as const;
 
 export async function integrationRoutes(app: FastifyInstance): Promise<void> {
   app.addHook('preHandler', authMiddleware);
