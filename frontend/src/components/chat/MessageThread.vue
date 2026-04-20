@@ -376,7 +376,7 @@ watch(
 }
 
 .message-bubble {
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--shadow-sm);
 }
 
 .reminder-card {
@@ -413,7 +413,7 @@ watch(
 }
 
 .futuristic-input :deep(.v-field) {
-  background: rgba(255, 255, 255, 0.72) !important;
+  background: var(--color-surface-glass) !important;
   border: 1px solid var(--color-border) !important;
   border-radius: 12px !important;
   transition: all 0.3s ease;
@@ -432,14 +432,14 @@ watch(
 .magic-wand-btn:hover {
   opacity: 1;
   transform: rotate(15deg) scale(1.1);
-  filter: drop-shadow(0 0 5px rgba(37, 99, 235, 0.32));
+  filter: drop-shadow(0 0 5px var(--color-primary-soft-strong));
 }
 
 .send-btn {
   height: 44px !important;
   width: 44px !important;
   margin-bottom: 2px;
-  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.2) !important;
+  box-shadow: var(--glow-brand) !important;
 }
 
 .chat-input-area {

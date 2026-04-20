@@ -197,7 +197,7 @@ const confirmPayment = () => {
   display: inline-flex;
   align-items: center;
   padding: 6px 16px;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--color-surface-glass);
   border: 1px solid var(--color-border);
   border-radius: 99px;
   color: var(--color-text-secondary);
@@ -315,7 +315,7 @@ const confirmPayment = () => {
 }
 
 .btn-plan-standard {
-  background: rgba(255, 255, 255, 0.72) !important;
+  background: var(--color-surface-glass) !important;
   border: 1px solid var(--color-border) !important;
   color: var(--color-text) !important;
   font-weight: 700 !important;
@@ -328,8 +328,8 @@ const confirmPayment = () => {
 
 /* Modal Styles */
 .glass-card {
-  background: rgba(255, 255, 255, 0.88) !important;
-  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  background: var(--color-surface-elevated) !important;
+  border: 1px solid var(--color-border) !important;
   backdrop-filter: blur(24px) saturate(180%);
   border-radius: 32px !important;
   color: var(--color-text);

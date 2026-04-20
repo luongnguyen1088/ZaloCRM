@@ -358,7 +358,7 @@ onMounted(async () => {
 }
 
 .ai-control-card {
-  background: linear-gradient(135deg, var(--color-primary-soft) 0%, rgba(124, 58, 237, 0.06) 100%) !important;
+  background: linear-gradient(135deg, var(--color-primary-soft) 0%, var(--color-accent-soft) 100%) !important;
 }
 
 .card-glow {
@@ -367,7 +367,7 @@ onMounted(async () => {
   right: -50px;
   width: 150px;
   height: 150px;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.14) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--color-primary-soft-strong) 0%, transparent 70%);
   filter: blur(20px);
   z-index: 0;
   pointer-events: none;

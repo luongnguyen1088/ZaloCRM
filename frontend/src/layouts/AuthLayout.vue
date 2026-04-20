@@ -29,9 +29,9 @@
   inset: 0;
   z-index: 0;
   background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 32%),
-    radial-gradient(circle at top right, rgba(124, 58, 237, 0.12), transparent 30%),
-    linear-gradient(180deg, #f8fafc 0%, #eff6ff 52%, #eef2ff 100%);
+    radial-gradient(circle at top left, var(--color-primary-soft-strong), transparent 32%),
+    radial-gradient(circle at top right, var(--color-accent-soft), transparent 30%),
+    var(--gradient-hero);
 }
 
 .noise-overlay {
@@ -54,7 +54,7 @@
 .orb-1 {
   width: 720px;
   height: 720px;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.26) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--color-primary-soft-strong) 0%, transparent 70%);
   top: -220px;
   left: -220px;
   animation: float-slow 18s infinite ease-in-out;
@@ -63,7 +63,7 @@
 .orb-2 {
   width: 560px;
   height: 560px;
-  background: radial-gradient(circle, rgba(124, 58, 237, 0.2) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--color-accent-soft) 0%, transparent 70%);
   bottom: -120px;
   right: -120px;
   animation: float-slow 24s infinite ease-in-out reverse;
@@ -72,7 +72,7 @@
 .orb-3 {
   width: 420px;
   height: 420px;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--color-success-soft) 0%, transparent 70%);
   top: 42%;
   left: 32%;
 }
@@ -81,8 +81,8 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(148, 163, 184, 0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+    linear-gradient(var(--color-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
   background-size: 64px 64px;
   mask-image: radial-gradient(circle at center, black, transparent 88%);
 }

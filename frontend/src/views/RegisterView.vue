@@ -199,8 +199,8 @@ function loginWithGoogle() {
 }
 
 .glass-premium {
-  background: rgba(255, 255, 255, 0.76) !important;
-  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  background: var(--color-surface-glass) !important;
+  border: 1px solid var(--color-border) !important;
   backdrop-filter: blur(24px) saturate(180%);
   border-radius: 32px !important;
   box-shadow: var(--shadow-lg);
@@ -239,7 +239,7 @@ function loginWithGoogle() {
 }
 
 .input-group {
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--color-surface-glass);
   border: 1px solid var(--color-border);
   border-radius: 16px;
   padding: 8px 16px;
@@ -248,7 +248,7 @@ function loginWithGoogle() {
 
 .input-group:focus-within {
   border-color: var(--color-primary);
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--color-surface);
   box-shadow: 0 0 0 4px var(--color-primary-soft);
 }
 
@@ -297,7 +297,7 @@ function loginWithGoogle() {
 
 .btn-google-glass {
   border: 1px solid var(--color-border) !important;
-  background: rgba(255, 255, 255, 0.72) !important;
+  background: var(--color-surface-glass) !important;
   color: var(--color-text) !important;
   border-radius: 16px !important;
   text-transform: none !important;

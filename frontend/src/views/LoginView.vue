@@ -369,7 +369,7 @@ function getGoogleIdentity() {
   align-items: center;
   padding: 10px 18px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--color-surface-glass);
   color: var(--color-text-secondary);
   font-size: 0.85rem;
   font-weight: 600;
@@ -497,7 +497,7 @@ function getGoogleIdentity() {
 .glow-layer {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 100% 0%, rgba(37, 99, 235, 0.14), transparent 70%);
+  background: radial-gradient(circle at 100% 0%, var(--color-primary-soft-strong), transparent 70%);
   pointer-events: none;
 }
 
@@ -524,8 +524,8 @@ function getGoogleIdentity() {
 }
 
 .glass-premium {
-  background: rgba(255, 255, 255, 0.76) !important;
-  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  background: var(--color-surface-glass) !important;
+  border: 1px solid var(--color-border) !important;
   backdrop-filter: blur(24px) saturate(180%);
   border-radius: 32px !important;
   box-shadow: var(--shadow-lg);
@@ -557,7 +557,7 @@ function getGoogleIdentity() {
 }
 
 .input-group {
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--color-surface-glass);
   border: 1px solid var(--color-border);
   border-radius: 16px;
   padding: 8px 16px;
@@ -565,7 +565,7 @@ function getGoogleIdentity() {
 }
 
 .input-group:focus-within {
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--color-surface);
   border-color: var(--color-primary);
   box-shadow: 0 0 0 4px var(--color-primary-soft);
 }
@@ -643,7 +643,7 @@ function getGoogleIdentity() {
 
 .btn-google-glass {
   border: 1px solid var(--color-border) !important;
-  background: rgba(255, 255, 255, 0.7) !important;
+  background: var(--color-surface-glass) !important;
   color: var(--color-text) !important;
   border-radius: 16px !important;
   text-transform: none !important;
@@ -651,7 +651,7 @@ function getGoogleIdentity() {
 }
 
 .btn-google-glass:hover {
-  background: rgba(255, 255, 255, 0.9) !important;
+  background: var(--color-surface) !important;
 }
 
 @media (max-width: 1200px) {
