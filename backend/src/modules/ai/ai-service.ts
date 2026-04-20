@@ -272,7 +272,7 @@ export async function generateAiOutput(input: {
   // Fetch relevant knowledge if this is a reply draft
   let knowledgeCtx = '';
   if (input.type === 'reply_draft') {
-    const knowledgeItems = await getRelevantKnowledge(input.orgId, contextText);
+    const knowledgeItems = await getRelevantKnowledge(input.orgId, conversation.zaloAccountId);
     if (knowledgeItems.length > 0) {
       knowledgeCtx = [
         '\n<business_knowledge>',

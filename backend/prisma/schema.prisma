@@ -92,6 +92,7 @@ model ZaloAccount {
   access        ZaloAccountAccess[]
   conversations Conversation[]
   dailyStats    DailyMessageStat[]
+  aiKnowledge   AiKnowledge[]
 
   @@map("zalo_accounts")
 }
@@ -436,6 +437,7 @@ model Subscription {
 model AiKnowledge {
   id        String   @id @default(uuid())
   orgId     String   @map("org_id")
+  zaloAccountId String? @map("zalo_account_id")
   title     String
   content   String   @db.Text
   category  String?  @default("general")
@@ -445,7 +447,9 @@ model AiKnowledge {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  zaloAccount  ZaloAccount? @relation(fields: [zaloAccountId], references: [id])
 
   @@index([orgId, isActive])
+  @@index([zaloAccountId])
   @@map("ai_knowledge")
 }

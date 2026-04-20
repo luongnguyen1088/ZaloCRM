@@ -32,20 +32,27 @@ export async function knowledgeRoutes(fastify: FastifyInstance) {
 
   // Simulator: Test knowledge without a real conversation
   fastify.post('/test', async (request: FastifyRequest, reply) => {
-    const { question } = request.body as { question: string };
+    const { question, zaloAccountId } = request.body as { question: string; zaloAccountId?: string };
     const orgId = request.user!.orgId;
 
     if (!question) return reply.status(400).send({ error: 'Vui lòng nhập câu hỏi' });
 
-    // Create a mock conversation context for testing
-    // We'll use a temporary mock ID or find a recent one to anchor the LLM
+    // Find conversation in this org, optionally filtered by Zalo account
     const recentConv = await prisma.conversation.findFirst({
-      where: { orgId },
+      where: { 
+        orgId,
+        zaloAccountId: zaloAccountId || undefined
+      },
       orderBy: { createdAt: 'desc' },
       select: { id: true }
     });
 
-    if (!recentConv) return reply.status(400).send({ error: 'Cần ít nhất 1 cuộc hội thoại trong hệ thống để thử nghiệm' });
+    if (!recentConv) {
+      const errorMsg = zaloAccountId 
+        ? 'Không tìm thấy hội thoại mẫu cho tài khoản Zalo này. Hãy nhắn tin vào Zalo này trước.' 
+        : 'Cần ít nhất 1 cuộc hội thoại trong hệ thống để thử nghiệm';
+      return reply.status(400).send({ error: errorMsg });
+    }
 
     return generateAiOutput({
       orgId,

@@ -4,13 +4,19 @@ export async function getAiKnowledgeList(orgId: string) {
   return prisma.aiKnowledge.findMany({
     where: { orgId },
     orderBy: { updatedAt: 'desc' },
+    include: {
+      zaloAccount: {
+        select: { displayName: true }
+      }
+    }
   });
 }
 
-export async function createAiKnowledge(orgId: string, data: { title: string; content: string; category?: string }) {
+export async function createAiKnowledge(orgId: string, data: { title: string; content: string; category?: string; zaloAccountId?: string }) {
   return prisma.aiKnowledge.create({
     data: {
       orgId,
+      zaloAccountId: data.zaloAccountId || null,
       title: data.title,
       content: data.content,
       category: data.category || 'general',
@@ -18,7 +24,13 @@ export async function createAiKnowledge(orgId: string, data: { title: string; co
   });
 }
 
-export async function updateAiKnowledge(orgId: string, id: string, data: { title?: string; content?: string; category?: string; isActive?: boolean }) {
+export async function updateAiKnowledge(orgId: string, id: string, data: { 
+  title?: string; 
+  content?: string; 
+  category?: string; 
+  isActive?: boolean;
+  zaloAccountId?: string | null;
+}) {
   return prisma.aiKnowledge.update({
     where: { id, orgId },
     data: {
@@ -26,6 +38,7 @@ export async function updateAiKnowledge(orgId: string, id: string, data: { title
       content: data.content,
       category: data.category,
       isActive: data.isActive,
+      zaloAccountId: data.zaloAccountId !== undefined ? data.zaloAccountId : undefined,
     },
   });
 }
@@ -38,12 +51,17 @@ export async function deleteAiKnowledge(orgId: string, id: string) {
 
 /**
  * Fetches relevant knowledge for a prompt context.
- * For now, we fetch all active knowledge for simplicity.
- * Later we can implement vector search or keyword-based filtering.
  */
-export async function getRelevantKnowledge(orgId: string, query?: string) {
+export async function getRelevantKnowledge(orgId: string, zaloAccountId?: string) {
   const items = await prisma.aiKnowledge.findMany({
-    where: { orgId, isActive: true },
+    where: { 
+      orgId, 
+      isActive: true,
+      OR: [
+        { zaloAccountId: null },
+        { zaloAccountId: zaloAccountId || undefined }
+      ]
+    },
     select: { id: true, title: true, content: true },
     take: 10,
   });
