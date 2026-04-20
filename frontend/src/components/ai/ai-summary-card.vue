@@ -4,9 +4,9 @@
       <div class="d-flex align-center justify-space-between mb-3">
         <div class="d-flex align-center">
           <div class="summary-icon-box mr-3">
-            <v-icon color="#00F2FF" size="20">mdi-brain-outline</v-icon>
+            <v-icon color="primary" size="20">mdi-brain-outline</v-icon>
           </div>
-          <span class="text-subtitle-2 font-weight-bold text-white uppercase letter-spacing-1">Smart Summary</span>
+          <span class="text-subtitle-2 font-weight-bold summary-title uppercase letter-spacing-1">Smart Summary</span>
         </div>
         <v-btn
           icon
@@ -23,8 +23,8 @@
       <v-divider class="border-glass mb-4"></v-divider>
 
       <div v-if="loading" class="pa-4 text-center">
-        <v-progress-circular indeterminate color="cyan" size="24" width="2"></v-progress-circular>
-        <p class="text-caption text-placeholder mt-2">AI đang phân tích hội thoại...</p>
+        <v-progress-circular indeterminate color="primary" size="24" width="2"></v-progress-circular>
+        <p class="text-caption text-placeholder mt-2">AI Ä‘ang phÃ¢n tÃ­ch há»™i thoáº¡i...</p>
       </div>
 
       <div v-else-if="summary" class="summary-content">
@@ -33,20 +33,20 @@
           <div class="section-text">{{ section.content }}</div>
         </div>
         <div v-if="updatedAt" class="text-right mt-2">
-          <span class="text-tiny text-placeholder">Cập nhật: {{ updatedAt }}</span>
+          <span class="text-tiny text-placeholder">Cáº­p nháº­t: {{ updatedAt }}</span>
         </div>
       </div>
 
       <div v-else class="pa-8 text-center text-placeholder">
         <v-icon size="32" class="mb-2 opacity-20">mdi-text-box-search-outline</v-icon>
-        <p class="text-caption">Chưa có tóm tắt hội thoại.</p>
+        <p class="text-caption">ChÆ°a cÃ³ tÃ³m táº¯t há»™i thoáº¡i.</p>
         <v-btn
           variant="outlined"
           size="small"
-          class="mt-3 border-glass text-cyan"
+          class="mt-3 summary-outline-btn"
           @click="$emit('refresh')"
         >
-          Phân tích ngay
+          PhÃ¢n tÃ­ch ngay
         </v-btn>
       </div>
     </div>
@@ -66,15 +66,14 @@ defineEmits<{ refresh: [] }>();
 
 const parsedSections = computed(() => {
   if (!props.summary) return [];
-  
-  // Try to parse the numbered sections (1. PURPOSE, 2. STATUS, etc.)
+
   const lines = props.summary.split('\n');
   const sections: { title: string; content: string }[] = [];
-  
+
   let currentSection = { title: '', content: '' };
-  
+
   lines.forEach(line => {
-    const match = line.match(/^(\d+\.|MỤC ĐÍCH|TRẠNG THÁI|CÂU HỎI CHÍNH|HÀNH ĐỘNG|PURPOSE|STATUS|KEY QUESTIONS|NEXT ACTION)[:\s]*(.*)/i);
+    const match = line.match(/^(\d+\.|Má»¤C ÄÃCH|TRáº NG THÃI|CÃ‚U Há»ŽI CHÃNH|HÃ€NH Äá»˜NG|PURPOSE|STATUS|KEY QUESTIONS|NEXT ACTION)[:\s]*(.*)/i);
     if (match) {
       if (currentSection.title) sections.push({ ...currentSection });
       currentSection.title = match[1].replace(/\d+\.\s*/, '').trim();
@@ -83,43 +82,43 @@ const parsedSections = computed(() => {
       currentSection.content += ' ' + line.trim();
     }
   });
-  
+
   if (currentSection.title) sections.push(currentSection);
-  
-  // If parsing failed, just return the whole summary as one section
+
   if (sections.length === 0 && props.summary) {
-    return [{ title: 'TỔNG QUAN', content: props.summary }];
+    return [{ title: 'Tá»”NG QUAN', content: props.summary }];
   }
-  
+
   return sections;
 });
 </script>
 
 <style scoped>
 .glass-premium {
-  background: rgba(15, 23, 42, 0.4) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  backdrop-filter: blur(12px);
+  background: var(--color-surface-elevated) !important;
+  border: 1px solid var(--color-border) !important;
+  backdrop-filter: blur(16px);
   border-radius: 16px !important;
+  box-shadow: var(--shadow-sm);
 }
 
 .summary-icon-box {
   width: 32px;
   height: 32px;
-  background: rgba(0, 242, 255, 0.1);
-  border: 1px solid rgba(0, 242, 255, 0.2);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-soft-strong);
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.text-placeholder {
-  color: #64748b;
+.summary-title {
+  color: var(--color-text);
 }
 
-.text-cyan {
-  color: #00f2ff;
+.text-placeholder {
+  color: var(--color-text-secondary);
 }
 
 .text-gradient {
@@ -127,7 +126,7 @@ const parsedSections = computed(() => {
   font-weight: 800;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  background: linear-gradient(135deg, #00f2ff, #a855f7);
+  background: var(--gradient-accent);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 2px;
@@ -135,12 +134,17 @@ const parsedSections = computed(() => {
 
 .section-text {
   font-size: 0.85rem;
-  color: #cbd5e1;
+  color: var(--color-text-secondary);
   line-height: 1.5;
 }
 
 .border-glass {
-  border-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: var(--color-border) !important;
+}
+
+.summary-outline-btn {
+  border-color: var(--color-primary-soft-strong) !important;
+  color: var(--color-primary) !important;
 }
 
 .letter-spacing-1 {

@@ -1,48 +1,45 @@
 <template>
   <div v-if="loading || suggestion || error" class="ai-suggestion-container">
     <div class="glass-ai-panel pa-3">
-      <!-- Loading State -->
       <div v-if="loading" class="d-flex align-center py-2 px-4">
         <v-progress-circular indeterminate size="20" width="2" color="primary" class="mr-3" />
-        <span class="text-body-2 animate-pulse">AI đang soạn thảo ma thuật...</span>
+        <span class="text-body-2 animate-pulse">AI Ä‘ang soáº¡n tháº£o ma thuáº­t...</span>
       </div>
 
-      <!-- Error State -->
       <v-alert v-else-if="error" type="error" variant="tonal" density="compact" class="mb-0 rounded-lg">
         {{ error }}
       </v-alert>
 
-      <!-- Suggestion Content -->
       <div v-else-if="suggestion" class="suggestion-content">
         <div class="d-flex align-center mb-2 px-1">
           <v-icon color="primary" size="18" class="mr-2">mdi-sparkles</v-icon>
-          <span class="text-caption font-weight-bold text-uppercase primary--text" style="letter-spacing: 1px;">Gợi ý từ AI AI-Agent</span>
+          <span class="text-caption font-weight-bold text-uppercase primary--text suggestion-label">Gá»£i Ã½ tá»« AI AI-Agent</span>
           <v-spacer />
           <v-btn icon size="x-small" variant="text" @click="$emit('close')"><v-icon>mdi-close</v-icon></v-btn>
         </div>
-        
+
         <div class="text-body-2 py-2 px-3 bg-white-opacity rounded-lg mb-3 draft-text">
           {{ suggestion }}
         </div>
 
         <div class="d-flex flex-wrap gap-2 align-center">
           <v-btn color="primary" size="small" rounded="pill" prepend-icon="mdi-check-all" @click="$emit('apply')">
-            Sử dụng câu này
+            Sá»­ dá»¥ng cÃ¢u nÃ y
           </v-btn>
           <v-divider vertical class="mx-1 opacity-10" />
-          
-          <v-btn size="x-small" variant="tonal" class="refine-btn" @click="$emit('refine', '💼 Làm chuyên nghiệp hơn')">
-            💼 Chuyên nghiệp
+
+          <v-btn size="x-small" variant="tonal" class="refine-btn" @click="$emit('refine', 'ðŸ’¼ LÃ m chuyÃªn nghiá»‡p hÆ¡n')">
+            ðŸ’¼ ChuyÃªn nghiá»‡p
           </v-btn>
-          <v-btn size="x-small" variant="tonal" class="refine-btn" @click="$emit('refine', '📝 Viết ngắn gọn lại')">
-            📝 Ngắn gọn
+          <v-btn size="x-small" variant="tonal" class="refine-btn" @click="$emit('refine', 'ðŸ“ Viáº¿t ngáº¯n gá»n láº¡i')">
+            ðŸ“ Ngáº¯n gá»n
           </v-btn>
-          <v-btn size="x-small" variant="tonal" class="refine-btn" @click="$emit('refine', '😊 Thêm chút thân thiện')">
-            😊 Thân thiện
+          <v-btn size="x-small" variant="tonal" class="refine-btn" @click="$emit('refine', 'ðŸ˜Š ThÃªm chÃºt thÃ¢n thiá»‡n')">
+            ðŸ˜Š ThÃ¢n thiá»‡n
           </v-btn>
-          
+
           <v-spacer />
-          <v-btn icon size="x-small" variant="text" @click="$emit('generate')" title="Tạo lại">
+          <v-btn icon size="x-small" variant="text" @click="$emit('generate')" title="Táº¡o láº¡i">
             <v-icon>mdi-refresh</v-icon>
           </v-btn>
         </div>
@@ -53,9 +50,9 @@
 
 <script setup lang="ts">
 defineProps<{ suggestion: string; loading: boolean; error: string }>();
-defineEmits<{ 
-  generate: []; 
-  apply: []; 
+defineEmits<{
+  generate: [];
+  apply: [];
   refine: [instruction: string];
   close: [];
 }>();
@@ -68,15 +65,16 @@ defineEmits<{
 }
 
 .glass-ai-panel {
-  background: #ffffff;
-  border: 1px solid rgba(37, 99, 235, 0.1);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
   border-radius: 16px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(14px);
 }
 
 .bg-white-opacity {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
 }
 
 .draft-text {
@@ -84,8 +82,12 @@ defineEmits<{
   line-height: 1.6;
   max-height: 180px;
   overflow-y: auto;
-  color: #1e293b;
+  color: var(--color-text);
   font-size: 14px;
+}
+
+.suggestion-label {
+  letter-spacing: 1px;
 }
 
 .animate-pulse {
@@ -109,18 +111,18 @@ defineEmits<{
   text-transform: none;
   font-size: 11px !important;
   font-weight: 500;
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  color: #64748b;
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text-secondary);
 }
 
 .refine-btn:hover {
-  border-color: #2563eb !important;
-  color: #2563eb !important;
-  background: #eff6ff !important;
+  border-color: var(--color-primary-soft-strong) !important;
+  color: var(--color-primary) !important;
+  background: var(--color-primary-soft) !important;
 }
 
 .primary--text {
-  color: #2563eb;
+  color: var(--color-primary);
 }
 </style>

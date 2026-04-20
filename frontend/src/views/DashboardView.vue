@@ -1,14 +1,13 @@
 <template>
   <div class="dashboard-shell">
-    <!-- Header with AI Greeting -->
     <header class="dashboard-header mb-8 entrance-animation">
       <div class="d-flex align-center justify-space-between">
         <div>
-          <h1 class="text-h3 font-weight-black text-white mb-1">
-            Chào buổi sáng, <span class="text-gradient">{{ authStore.user?.fullName?.split(' ').pop() || 'Admin' }}</span>!
+          <h1 class="text-h3 font-weight-black dashboard-title mb-1">
+            ChÃ o buá»•i sÃ¡ng, <span class="text-gradient">{{ authStore.user?.fullName?.split(' ').pop() || 'Admin' }}</span>!
           </h1>
           <p class="text-subtitle-1 text-placeholder">
-            Hôm nay hệ thống đã tự động xử lý <span class="text-cyan font-weight-bold">1,240</span> hội thoại mới.
+            HÃ´m nay há»‡ thá»‘ng Ä‘Ã£ tá»± Ä‘á»™ng xá»­ lÃ½ <span class="text-primary-strong font-weight-bold">1,240</span> há»™i thoáº¡i má»›i.
           </p>
         </div>
         <div class="header-actions">
@@ -18,7 +17,7 @@
             prepend-icon="mdi-sparkles"
             @click="router.push('/automation')"
           >
-            Tối ưu bằng AI
+            Tá»‘i Æ°u báº±ng AI
           </v-btn>
           <v-btn icon variant="outlined" class="border-glass">
             <v-icon>mdi-filter-variant</v-icon>
@@ -27,12 +26,10 @@
       </div>
     </header>
 
-    <v-progress-linear v-if="loading" indeterminate color="cyan" class="mb-4 rounded-pill" height="2" />
+    <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4 rounded-pill" height="2" />
 
-    <!-- Main KPI Grid -->
     <KpiCards :kpi="kpi" class="mb-8 entrance-animation-delay-1" />
 
-    <!-- Analytics Section -->
     <v-row class="mb-8">
       <v-col cols="12" md="8" class="entrance-animation-delay-2">
         <MessageVolumeChart :data="messageVolume" class="h-100" />
@@ -82,18 +79,44 @@ onMounted(() => fetchAll());
   padding: 10px;
 }
 
+.dashboard-header {
+  padding: 28px 32px;
+  border-radius: 24px;
+  background: var(--gradient-hero);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-header::after {
+  content: '';
+  position: absolute;
+  right: -72px;
+  bottom: -88px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--color-primary-soft-strong) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.dashboard-title {
+  color: var(--color-text);
+}
+
 .text-gradient {
-  background: linear-gradient(135deg, #00f2ff, #a855f7);
+  background: var(--gradient-accent);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .text-placeholder {
-  color: #94a3b8;
+  color: var(--color-text-secondary);
 }
 
-.text-cyan {
-  color: #00f2ff;
+.text-primary-strong {
+  color: var(--color-primary);
 }
 
 .entrance-animation {
@@ -110,16 +133,18 @@ onMounted(() => fetchAll());
 }
 
 .btn-ai-glow {
-  background: linear-gradient(135deg, #00f2ff, #7c3aed) !important;
-  color: #fff !important;
+  background: var(--gradient-accent) !important;
+  color: var(--color-text-inverse) !important;
   font-weight: 700 !important;
   text-transform: none !important;
-  border-radius: 12px !important;
-  box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+  border-radius: 14px !important;
+  box-shadow: var(--glow-brand);
 }
 
 .border-glass {
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #fff !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text) !important;
+  background: var(--color-surface-glass) !important;
+  backdrop-filter: blur(12px);
 }
 </style>
