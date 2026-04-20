@@ -96,6 +96,7 @@ function getFieldValue(field: string, context: AutomationContext): unknown {
     case 'message.content': return context.message?.content;
     case 'message.contentType': return context.message?.contentType;
     case 'conversation.unreadCount': return context.conversation?.unreadCount;
+    case 'conversation.zaloAccountId': return context.conversation?.zaloAccountId;
     default: return undefined;
   }
 }

@@ -57,6 +57,7 @@ const fieldOptions = [
   { title: 'Nội dung tin nhắn', value: 'message.content' },
   { title: 'Loại tin nhắn', value: 'message.contentType' },
   { title: 'Số tin chưa đọc', value: 'conversation.unreadCount' },
+  { title: 'Tài khoản Zalo (ID)', value: 'conversation.zaloAccountId' },
 ];
 
 const operatorOptions = [
