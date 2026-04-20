@@ -203,6 +203,31 @@
             Cấu hình kỹ thuật
           </div>
 
+          <!-- Dynamic Instructions -->
+          <v-alert
+            variant="tonal"
+            color="primary"
+            density="compact"
+            class="mb-6 rounded-lg text-caption"
+            icon="mdi-help-circle-outline"
+          >
+            <div v-if="form.type === 'google_sheets'">
+              <strong>Hướng dẫn:</strong> Tạo một Google Sheet mới, sao chép ID từ URL (đoạn mã giữa /d/ và /edit). Đảm bảo API Key có quyền truy cập vào Sheet này.
+            </div>
+            <div v-else-if="form.type === 'telegram'">
+              <strong>Hướng dẫn:</strong> Chat với <strong>@BotFather</strong> để lấy Bot Token. Để lấy Chat ID, hãy chat với <strong>@userinfobot</strong> hoặc thêm bot vào nhóm và lấy ID nhóm.
+            </div>
+            <div v-else-if="form.type === 'facebook'">
+              <strong>Hướng dẫn:</strong> Lấy Page ID trong phần <em>Giới thiệu</em> của Fanpage. Page Access Token có thể khởi tạo tại Facebook Developers.
+            </div>
+            <div v-else-if="form.type === 'n8n'">
+              <strong>Hướng dẫn:</strong> Trong n8n, tạo node <strong>Webhook</strong>, chọn HTTP Method là <code>POST</code>. Sao chép <em>Production URL</em> và dán vào đây.
+            </div>
+            <div v-else-if="form.type === 'zapier'">
+              <strong>Hướng dẫn:</strong> Tạo Zap mới, chọn Trigger là <strong>Webhooks by Zapier</strong> -> <strong>Catch Hook</strong>. Sao chép URL mà Zapier cung cấp.
+            </div>
+          </v-alert>
+
           <v-fade-transition mode="out-in">
             <!-- Google Sheets Config -->
             <div v-if="form.type === 'google_sheets'" :key="'gs'">
