@@ -540,10 +540,6 @@ function getCategoryIcon(cat: string) {
   return 'mdi-database-outline';
 }
 
-function formatDate(date: string) {
-  if (!date) return '';
-  return new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(date));
-}
 
 onMounted(() => {
   fetchAccounts();
