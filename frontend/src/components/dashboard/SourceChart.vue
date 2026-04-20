@@ -1,9 +1,9 @@
 <template>
   <v-card class="dashboard-chart-card" elevation="0">
-    <v-card-title class="text-body-1 chart-title">Nguá»“n khÃ¡ch hÃ ng</v-card-title>
+    <v-card-title class="text-body-1 chart-title">Nguồn khách hàng</v-card-title>
     <v-card-text>
       <Pie v-if="chartData" :data="chartData" :options="chartOptions" style="height: 250px;" />
-      <div v-else class="text-center pa-8 chart-empty">KhÃ´ng cÃ³ dá»¯ liá»‡u</div>
+      <div v-else class="text-center pa-8 chart-empty">Không có dữ liệu</div>
     </v-card-text>
   </v-card>
 </template>

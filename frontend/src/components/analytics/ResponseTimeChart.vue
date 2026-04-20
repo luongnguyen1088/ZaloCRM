@@ -1,11 +1,11 @@
 <template>
   <v-card>
-    <v-card-title class="text-body-1">Thá»i gian tráº£ lá»i trung bÃ¬nh</v-card-title>
+    <v-card-title class="text-body-1">Thời gian trả lời trung bình</v-card-title>
     <v-card-text>
       <Line v-if="chartData" :data="chartData" :options="chartOptions" style="height: 250px;" />
-      <div v-else class="text-center pa-8 text-grey">KhÃ´ng cÃ³ dá»¯ liá»‡u</div>
+      <div v-else class="text-center pa-8 text-grey">Không có dữ liệu</div>
       <div v-if="data?.overall" class="text-caption text-grey mt-2 text-center">
-        Trung bÃ¬nh tá»•ng: {{ formatTime(data.overall) }}
+        Trung bình tổng: {{ formatTime(data.overall) }}
       </div>
     </v-card-text>
   </v-card>
@@ -42,7 +42,7 @@ const chartData = computed(() => {
     labels: props.data.daily.map((d) => d.date.slice(5)),
     datasets: [
       {
-        label: 'TG tráº£ lá»i (giÃ¢y)',
+        label: 'TG trả lời (giây)',
         data: props.data.daily.map((d) => d.avgSeconds),
         borderColor: palette.value.sent,
         backgroundColor: hexToRgba(palette.value.sent, theme.global.current.value.dark ? 0.16 : 0.12),
@@ -71,7 +71,7 @@ const chartOptions = computed(() => ({
     },
     y: {
       beginAtZero: true,
-      title: { display: true, text: 'GiÃ¢y', color: palette.value.textSecondary },
+      title: { display: true, text: 'Giây', color: palette.value.textSecondary },
       ticks: { color: palette.value.textSecondary },
       grid: { color: palette.value.grid },
     },
@@ -79,10 +79,10 @@ const chartOptions = computed(() => ({
 }));
 
 function formatTime(seconds: number | null): string {
-  if (seconds == null) return 'â€”';
+  if (seconds == null) return '—';
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
-  if (m === 0) return `${s} giÃ¢y`;
-  return `${m} phÃºt ${s} giÃ¢y`;
+  if (m === 0) return `${s} giây`;
+  return `${m} phút ${s} giây`;
 }
 </script>

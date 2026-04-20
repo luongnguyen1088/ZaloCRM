@@ -13,7 +13,7 @@ const props = defineProps<{
 }>();
 
 const chip = computed(() => {
-  if (!props.sentiment) return { color: 'grey', icon: 'mdi-emoticon-neutral-outline', label: 'Chưa phân tích' };
+  if (!props.sentiment) return { color: 'grey', icon: 'mdi-emoticon-neutral-outline', label: 'Chua ph�n t�ch' };
   if (props.sentiment.label === 'positive') return { color: 'success', icon: 'mdi-emoticon-happy-outline', label: 'Tích cực' };
   if (props.sentiment.label === 'negative') return { color: 'error', icon: 'mdi-emoticon-sad-outline', label: 'Tiêu cực' };
   return { color: 'warning', icon: 'mdi-emoticon-neutral-outline', label: 'Trung tính' };

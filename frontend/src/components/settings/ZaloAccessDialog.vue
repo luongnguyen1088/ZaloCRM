@@ -3,7 +3,7 @@
     <v-card>
       <v-card-title class="d-flex align-center">
         <v-icon class="mr-2" color="cyan">mdi-shield-account</v-icon>
-        Phân quyền truy cập — {{ accountName }}
+        Ph�n quy?n truy c?p � {{ accountName }}
       </v-card-title>
 
       <v-card-text>
@@ -52,11 +52,11 @@
             :items="availableUsers"
             item-title="fullName"
             item-value="id"
-            label="Chọn nhân viên"
+            label="Ch?n nh�n vi�n"
             density="compact"
             hide-details
             variant="outlined"
-            no-data-text="Không có nhân viên để thêm"
+            no-data-text="Kh�ng c� nh�n vi�n d? th�m"
             class="flex-grow-1"
           />
           <v-select

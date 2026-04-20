@@ -4,7 +4,7 @@
     <div class="d-flex align-center mb-4 flex-shrink-0">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 gradient-text">Đào tạo AI</h1>
-        <p class="text-medium-emphasis mb-0">Xây dựng "bộ não" riêng cho trợ lý Zalo của bạn</p>
+        <p class="text-medium-emphasis mb-0">X�y d?ng "b? n�o" ri�ng cho tr? l� Zalo c?a b?n</p>
       </div>
       <v-spacer />
       <v-btn variant="text" color="medium-emphasis" prepend-icon="mdi-help-circle-outline" rounded="xl" @click="showGuide = true" class="mr-2">
@@ -48,7 +48,7 @@
           <div class="pa-3 pt-1">
             <v-textarea
               v-model="magicInput"
-              placeholder="Dán nội dung bất kỳ... AI sẽ tự động phân tích và gán cho đúng Zalo shop."
+              placeholder="D�n n?i dung b?t k?... AI s? t? d?ng ph�n t�ch v� g�n cho d�ng Zalo shop."
               variant="plain"
               bg-color="transparent"
               rows="3"
@@ -221,7 +221,7 @@
           <div ref="chatContainer" class="flex-grow-1 overflow-y-auto pa-4 d-flex flex-column custom-scrollbar bg-dots">
             <div v-if="testMessages.length === 0" class="ma-auto text-center opacity-40 px-8">
               <v-icon size="48" class="mb-4">mdi-chat-question-outline</v-icon>
-              <p class="text-body-2">Hỏi thử một câu bất kỳ để xem AI tại tài khoản <strong>{{ currentSimAccountName }}</strong> sẽ trả lời thế nào.</p>
+              <p class="text-body-2">H?i th? m?t c�u b?t k? d? xem AI t?i t�i kho?n <strong>{{ currentSimAccountName }}</strong> s? tr? l?i th? n�o.</p>
             </div>
             
             <div v-for="(msg, i) in testMessages" :key="i" 
@@ -291,7 +291,7 @@
                 <v-combobox
                   v-model="editDialog.item.category"
                   :items="filterCategoriesOnly"
-                  label="Phân loại"
+                  label="Ph�n lo?i"
                   variant="outlined"
                 />
               </v-col>
@@ -362,10 +362,10 @@
             <h2 class="text-h5 font-weight-bold mb-4 primary--text d-flex align-center">
               <v-icon class="mr-2">mdi-brain-outline</v-icon> Nguyên lý "Tư duy" của AI
             </h2>
-            <p class="text-body-1 mb-4">AI của bạn hoạt động theo cơ chế <strong>RAG (Tìm kiếm ngữ nghĩa)</strong>. Khi khách hỏi, nó sẽ quét qua kho tri thức này, chọn ra 3-5 đoạn liên quan nhất rồi mới soạn câu trả lời.</p>
+            <p class="text-body-1 mb-4">AI c?a b?n ho?t d?ng theo co ch? <strong>RAG (T�m ki?m ng? nghia)</strong>. Khi kh�ch h?i, n� s? qu�t qua kho tri th?c n�y, ch?n ra 3-5 do?n li�n quan nh?t r?i m?i so?n c�u tr? l?i.</p>
             <v-alert variant="tonal" color="info" border="start" class="rounded-lg">
               <div class="text-caption">
-                <strong>Mẹo:</strong> AI giống như một nhân viên mới, nó chỉ trả lời tốt những gì bạn đã "viết vào sổ tay" này. Nội dung càng cụ thể, phản hồi càng ít sai sót.
+                <strong>M?o:</strong> AI gi?ng nhu m?t nh�n vi�n m?i, n� ch? tr? l?i t?t nh?ng g� b?n d� "vi?t v�o s? tay" n�y. N?i dung c�ng c? th?, ph?n h?i c�ng �t sai s�t.
               </div>
             </v-alert>
           </section>
@@ -380,7 +380,7 @@
               <div class="font-weight-bold text-subtitle-1 mb-2 d-flex align-center text-secondary">
                 <v-icon size="18" class="mr-2">mdi-numeric-1-circle</v-icon> Quy tắc 1 Tri thức - 1 Vấn đề
               </div>
-              <p class="text-body-2 mb-2">Đừng viết một đoạn dài 500 chữ nói về cả giá, ship và bảo hành. Hãy chia làm 3 thẻ riêng biệt.</p>
+              <p class="text-body-2 mb-2">�?ng vi?t m?t do?n d�i 500 ch? n�i v? c? gi�, ship v� b?o h�nh. H�y chia l�m 3 th? ri�ng bi?t.</p>
               <div class="d-flex ga-2">
                 <v-chip size="small" color="error" variant="flat">Sai: Một thẻ nói mọi thứ</v-chip>
                 <v-chip size="small" color="success" variant="flat">Đúng: Tách nhỏ kiến thức</v-chip>
@@ -389,9 +389,9 @@
 
             <div class="mb-6">
               <div class="font-weight-bold text-subtitle-1 mb-2 d-flex align-center text-secondary">
-                <v-icon size="18" class="mr-2">mdi-numeric-2-circle</v-icon> Cấu trúc Câu hỏi - Câu trả lời (Q&A)
+                <v-icon size="18" class="mr-2">mdi-numeric-2-circle</v-icon> C?u tr�c C�u h?i - C�u tr? l?i (Q&A)
               </div>
-              <p class="text-body-2 mb-2">Viết dưới dạng câu hỏi giả định sẽ giúp AI tìm kiếm chính xác hơn khi khách hàng hỏi câu tương tự.</p>
+              <p class="text-body-2 mb-2">Vi?t du?i d?ng c�u h?i gi? d?nh s? gi�p AI t�m ki?m ch�nh x�c hon khi kh�ch h�ng h?i c�u tuong t?.</p>
               <v-card variant="outlined" class="pa-3 bg-slate-50 rounded-lg border-dashed">
                 <div class="text-caption font-italic text-slate-600">
                    "Khách hỏi: Shop mình có chi nhánh ở Sài Gòn không?<br>
@@ -404,7 +404,7 @@
               <div class="font-weight-bold text-subtitle-1 mb-2 d-flex align-center text-secondary">
                 <v-icon size="18" class="mr-2">mdi-numeric-3-circle</v-icon> Sử dụng từ khóa (Keywords)
               </div>
-              <p class="text-body-2">Hãy đưa các từ khóa đồng nghĩa vào kiến thức. Ví dụ: "Giao hàng", "Vận chuyển", "Ship", "Gửi đồ" nên cùng xuất hiện trong một thẻ về vận chuyển.</p>
+              <p class="text-body-2">H�y dua c�c t? kh�a d?ng nghia v�o ki?n th?c. V� d?: "Giao h�ng", "V?n chuy?n", "Ship", "G?i d?" n�n c�ng xu?t hi?n trong m?t th? v? v?n chuy?n.</p>
             </div>
           </section>
 
@@ -449,7 +449,7 @@
               <v-col cols="12">
                 <v-card variant="tonal" color="warning" class="pa-4">
                   <div class="text-body-2">
-                    Nếu bạn có 2 Zalo bán 2 dòng hàng khác nhau, hãy tuyệt đối sử dụng tính năng <strong>"Gán tài khoản"</strong>. Điều này ngăn chặn việc AI lấy nhầm giá của Shop A trả lời cho khách ở Shop B.
+                    N?u b?n c� 2 Zalo b�n 2 d�ng h�ng kh�c nhau, h�y tuy?t d?i s? d?ng t�nh nang <strong>"G�n t�i kho?n"</strong>. �i?u n�y ngan ch?n vi?c AI l?y nh?m gi� c?a Shop A tr? l?i cho kh�ch ? Shop B.
                   </div>
                 </v-card>
               </v-col>
@@ -459,7 +459,7 @@
 
         <v-card-actions class="pa-6 border-top">
           <v-spacer />
-          <v-btn color="primary" variant="flat" rounded="lg" block @click="showGuide = false">Đã hiểu!</v-btn>
+          <v-btn color="primary" variant="flat" rounded="lg" block @click="showGuide = false">�� hi?u!</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -505,7 +505,7 @@ const currentSimAccountName = computed(() => {
 const templates = [
   { name: 'Chính sách vận chuyển', icon: 'mdi-truck-delivery', content: 'Shop mình [miễn phí ship] cho đơn hàng từ [XXX k].' },
   { name: 'Bảng giá', icon: 'mdi-currency-usd', content: 'Sản phẩm A: [Giá]. Sản phẩm B: [Giá].' },
-  { name: 'Chuyển khoản', icon: 'mdi-bank', content: 'Chủ TK: [Tên]. Số TK: [STK]. Ngân hàng: [NH].' }
+  { name: 'Chuy?n kho?n', icon: 'mdi-bank', content: 'Ch? TK: [T�n]. S? TK: [STK]. Ng�n h�ng: [NH].' }
 ];
 
 // Simulator & Magic State
@@ -571,7 +571,7 @@ async function runMagicAdd() {
       content: magicInput.value,
       isActive: true
     });
-    toast.value = { show: true, text: `Đã nạp xong tri thức cho ${currentSimAccountName.value}`, color: 'success', icon: 'mdi-sparkles' };
+    toast.value = { show: true, text: `�� n?p xong tri th?c cho ${currentSimAccountName.value}`, color: 'success', icon: 'mdi-sparkles' };
     magicInput.value = '';
     await loadData();
   } catch (err) {

@@ -1,9 +1,9 @@
 <template>
   <v-card class="dashboard-chart-card" elevation="0">
-    <v-card-title class="text-body-1 chart-title">Tráº¡ng thÃ¡i lá»‹ch háº¹n</v-card-title>
+    <v-card-title class="text-body-1 chart-title">Trạng thái lịch hẹn</v-card-title>
     <v-card-text>
       <Pie v-if="chartData" :data="chartData" :options="chartOptions" style="height: 250px;" />
-      <div v-else class="text-center pa-8 chart-empty">KhÃ´ng cÃ³ dá»¯ liá»‡u</div>
+      <div v-else class="text-center pa-8 chart-empty">Không có dữ liệu</div>
     </v-card-text>
   </v-card>
 </template>
@@ -25,10 +25,10 @@ const theme = useTheme();
 const palette = computed(() => chartTokens[theme.global.current.value.dark ? 'dark' : 'light']);
 
 const statusLabels: Record<string, string> = {
-  scheduled: 'ÄÃ£ lÃªn lá»‹ch',
-  completed: 'HoÃ n thÃ nh',
-  cancelled: 'ÄÃ£ há»§y',
-  no_show: 'Váº¯ng máº·t',
+  scheduled: '�� l�n l?ch',
+  completed: 'Hoàn thành',
+  cancelled: '�� h?y',
+  no_show: 'Vắng mặt',
 };
 
 const statusColors = computed<Record<string, string>>(() => ({

@@ -3,10 +3,10 @@
     <div class="d-flex align-center mb-4">
       <h1 class="text-h4 integrations-title">
         <v-icon class="mr-2 integrations-title-icon">mdi-connection</v-icon>
-        TÃ­ch há»£p
+        Tích hợp
       </h1>
       <v-spacer />
-      <v-btn color="primary" prepend-icon="mdi-plus" @click="openCreate">ThÃªm tÃ­ch há»£p</v-btn>
+      <v-btn color="primary" prepend-icon="mdi-plus" @click="openCreate">Thêm tích hợp</v-btn>
     </div>
 
     <v-alert v-if="error" type="error" variant="tonal" class="mb-4" closable @click:close="error = ''">
@@ -21,7 +21,7 @@
             {{ item.name || typeLabel(item.type) }}
             <v-spacer />
             <v-chip :color="item.enabled ? 'success' : 'default'" size="small" variant="flat">
-              {{ item.enabled ? 'Báº­t' : 'Táº¯t' }}
+              {{ item.enabled ? 'Bật' : 'Tắt' }}
             </v-chip>
           </v-card-title>
 
@@ -29,11 +29,11 @@
 
           <v-card-text>
             <div class="text-body-2 mb-2">
-              Äá»“ng bá»™ láº§n cuá»‘i: {{ item.lastSyncAt ? new Date(item.lastSyncAt).toLocaleString('vi-VN') : 'ChÆ°a cÃ³' }}
+              Đồng bộ lần cuối: {{ item.lastSyncAt ? new Date(item.lastSyncAt).toLocaleString('vi-VN') : 'Chưa có' }}
             </div>
 
             <div v-if="item.syncLogs?.length">
-              <div class="text-caption text-medium-emphasis mb-1">Lá»‹ch sá»­ gáº§n Ä‘Ã¢y:</div>
+              <div class="text-caption text-medium-emphasis mb-1">L?ch s? g?n d�y:</div>
               <v-chip
                 v-for="log in item.syncLogs.slice(0, 3)"
                 :key="log.id"
@@ -49,11 +49,11 @@
 
           <v-card-actions>
             <v-btn size="small" variant="text" prepend-icon="mdi-sync" :loading="syncing === item.id" @click="handleSync(item.id)">
-              Äá»“ng bá»™
+              Đồng bộ
             </v-btn>
-            <v-btn size="small" variant="text" prepend-icon="mdi-pencil" @click="openEdit(item)">Sá»­a</v-btn>
+            <v-btn size="small" variant="text" prepend-icon="mdi-pencil" @click="openEdit(item)">Sửa</v-btn>
             <v-spacer />
-            <v-btn size="small" variant="text" color="error" prepend-icon="mdi-delete" @click="confirmDelete(item)">XÃ³a</v-btn>
+            <v-btn size="small" variant="text" color="error" prepend-icon="mdi-delete" @click="confirmDelete(item)">Xóa</v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -61,31 +61,31 @@
 
     <v-card v-if="!loading && integrations.length === 0" class="text-center pa-8">
       <v-icon size="64" color="grey">mdi-connection</v-icon>
-      <div class="text-h6 mt-4">ChÆ°a cÃ³ tÃ­ch há»£p nÃ o</div>
-      <div class="text-body-2 text-medium-emphasis mb-4">Káº¿t ná»‘i Google Sheets, Telegram, Facebook hoáº·c Zapier</div>
-      <v-btn color="primary" @click="openCreate">ThÃªm tÃ­ch há»£p Ä‘áº§u tiÃªn</v-btn>
+      <div class="text-h6 mt-4">Chưa có tích hợp nào</div>
+      <div class="text-body-2 text-medium-emphasis mb-4">Kết nối Google Sheets, Telegram, Facebook hoặc Zapier</div>
+      <v-btn color="primary" @click="openCreate">Thêm tích hợp đầu tiên</v-btn>
     </v-card>
 
     <v-dialog v-model="showDialog" max-width="520">
       <v-card>
-        <v-card-title>{{ editing ? 'Chá»‰nh sá»­a tÃ­ch há»£p' : 'ThÃªm tÃ­ch há»£p' }}</v-card-title>
+        <v-card-title>{{ editing ? 'Chỉnh sửa tích hợp' : 'Thêm tích hợp' }}</v-card-title>
         <v-card-text>
           <v-select
             v-model="form.type"
             :items="typeOptions"
             item-title="label"
             item-value="value"
-            label="Loáº¡i tÃ­ch há»£p *"
+            label="Loại tích hợp *"
             :disabled="editing"
             class="mb-2"
           />
-          <v-text-field v-model="form.name" label="TÃªn hiá»ƒn thá»‹" class="mb-2" />
-          <v-switch v-model="form.enabled" label="Báº­t" color="success" class="mb-2" />
+          <v-text-field v-model="form.name" label="Tên hiển thị" class="mb-2" />
+          <v-switch v-model="form.enabled" label="Bật" color="success" class="mb-2" />
 
           <template v-if="form.type === 'google_sheets'">
             <v-text-field v-model="form.config.spreadsheetId" label="Spreadsheet ID *" class="mb-2" />
             <v-text-field v-model="form.config.apiKey" label="API Key *" type="password" class="mb-2" />
-            <v-text-field v-model="form.config.sheetName" label="TÃªn sheet" placeholder="Contacts" />
+            <v-text-field v-model="form.config.sheetName" label="Tên sheet" placeholder="Contacts" />
           </template>
 
           <template v-if="form.type === 'telegram'">
@@ -106,20 +106,20 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn @click="showDialog = false">Há»§y</v-btn>
-          <v-btn color="primary" :loading="saving" @click="handleSave">{{ editing ? 'LÆ°u' : 'Táº¡o' }}</v-btn>
+          <v-btn @click="showDialog = false">Hủy</v-btn>
+          <v-btn color="primary" :loading="saving" @click="handleSave">{{ editing ? 'Lưu' : 'Tạo' }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <v-dialog v-model="showDelete" max-width="400">
       <v-card>
-        <v-card-title>XÃ¡c nháº­n xÃ³a</v-card-title>
-        <v-card-text>Báº¡n cÃ³ cháº¯c muá»‘n xÃ³a tÃ­ch há»£p "{{ selectedItem?.name }}"?</v-card-text>
+        <v-card-title>Xác nhận xóa</v-card-title>
+        <v-card-text>Bạn có chắc muốn xóa tích hợp "{{ selectedItem?.name }}"?</v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn @click="showDelete = false">Há»§y</v-btn>
-          <v-btn color="error" :loading="saving" @click="handleDelete">XÃ³a</v-btn>
+          <v-btn @click="showDelete = false">Hủy</v-btn>
+          <v-btn color="error" :loading="saving" @click="handleDelete">Xóa</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -203,7 +203,7 @@ async function fetchIntegrations() {
     const { data } = await api.get('/integrations');
     integrations.value = data;
   } catch (err: any) {
-    error.value = err.response?.data?.error || 'Lá»—i táº£i danh sÃ¡ch tÃ­ch há»£p';
+    error.value = err.response?.data?.error || 'Lỗi tải danh sách tích hợp';
   } finally {
     loading.value = false;
   }
@@ -246,7 +246,7 @@ async function handleSave() {
     showDialog.value = false;
     await fetchIntegrations();
   } catch (err: any) {
-    dialogError.value = err.response?.data?.error || 'Lá»—i lÆ°u tÃ­ch há»£p';
+    dialogError.value = err.response?.data?.error || 'Lỗi lưu tích hợp';
   } finally {
     saving.value = false;
   }
@@ -260,7 +260,7 @@ async function handleDelete() {
     showDelete.value = false;
     await fetchIntegrations();
   } catch (err: any) {
-    error.value = err.response?.data?.error || 'Lá»—i xÃ³a tÃ­ch há»£p';
+    error.value = err.response?.data?.error || 'Lỗi xóa tích hợp';
   } finally {
     saving.value = false;
   }
@@ -272,7 +272,7 @@ async function handleSync(id: string) {
     await api.post(`/integrations/${id}/sync`);
     await fetchIntegrations();
   } catch (err: any) {
-    error.value = err.response?.data?.error || 'Lá»—i Ä‘á»“ng bá»™';
+    error.value = err.response?.data?.error || 'Lỗi đồng bộ';
   } finally {
     syncing.value = null;
   }

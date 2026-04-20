@@ -3,7 +3,7 @@
     <v-card-title class="text-body-1">{{ title }}</v-card-title>
     <v-card-text>
       <Line v-if="chartData" :data="chartData" :options="chartOptions" style="height: 220px;" />
-      <div v-else class="text-center pa-8 text-grey">KhÃ´ng cÃ³ dá»¯ liá»‡u</div>
+      <div v-else class="text-center pa-8 text-grey">Không có dữ liệu</div>
     </v-card-text>
   </v-card>
 </template>
@@ -46,14 +46,14 @@ const chartData = computed(() => {
     labels,
     datasets: [
       {
-        label: 'Tuáº§n nÃ y',
+        label: 'Tuần này',
         data: props.currentWeek?.map((d) => d.value) ?? [],
         borderColor: palette.value.sent,
         backgroundColor: palette.value.sent,
         tension: 0.3,
       },
       {
-        label: 'Tuáº§n trÆ°á»›c',
+        label: 'Tuần trước',
         data: props.previousWeek?.map((d) => d.value) ?? [],
         borderColor: palette.value.neutral,
         backgroundColor: palette.value.neutral,

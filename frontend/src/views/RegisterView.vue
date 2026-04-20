@@ -106,7 +106,7 @@
 
           <footer class="mt-12 text-center">
             <p class="text-caption footer-text">
-              Đã có tài khoản ZaloCRM?
+              �� c� t�i kho?n ZaloCRM?
               <router-link to="/login" class="signup-link">Đăng nhập ngay</router-link>
             </p>
           </footer>

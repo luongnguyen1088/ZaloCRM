@@ -2,17 +2,17 @@
   <v-card class="glass-premium" elevation="0">
     <div class="pa-6">
       <div class="d-flex align-center justify-space-between mb-6">
-        <h3 class="text-h6 font-weight-bold chart-title">LÆ°u lÆ°á»£ng há»™i thoáº¡i</h3>
+        <h3 class="text-h6 font-weight-bold chart-title">Lưu lượng hội thoại</h3>
         <v-btn-toggle v-model="timeframe" mandatory density="compact" class="theme-toggle">
-          <v-btn value="7d" size="small">7 ngÃ y</v-btn>
-          <v-btn value="30d" size="small">30 ngÃ y</v-btn>
+          <v-btn value="7d" size="small">7 ngày</v-btn>
+          <v-btn value="30d" size="small">30 ngày</v-btn>
         </v-btn-toggle>
       </div>
       <div class="chart-container" style="height: 300px;">
         <Bar v-if="chartData" :data="chartData" :options="chartOptions" />
         <div v-else class="d-flex align-center justify-center h-100 text-placeholder">
           <v-icon class="mr-2">mdi-database-off-outline</v-icon>
-          KhÃ´ng cÃ³ dá»¯ liá»‡u
+          Không có dữ liệu
         </div>
       </div>
     </div>
@@ -50,14 +50,14 @@ const chartData = computed(() => {
     labels: props.data.map((d) => d.date.slice(5)),
     datasets: [
       {
-        label: 'Tin nháº¯n gá»­i',
+        label: 'Tin nhắn gửi',
         data: props.data.map((d) => d.sent),
         backgroundColor: palette.value.sent,
         borderRadius: 6,
         barThickness: 10,
       },
       {
-        label: 'Tin nháº¯n nháº­n',
+        label: 'Tin nhắn nhận',
         data: props.data.map((d) => d.received),
         backgroundColor: palette.value.received,
         borderRadius: 6,

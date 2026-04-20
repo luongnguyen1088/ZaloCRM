@@ -6,7 +6,7 @@
         :items="accountOptions"
         item-title="text"
         item-value="value"
-        label="Táº¥t cáº£ Zalo"
+        label="Tất cả Zalo"
         density="compact"
         variant="solo-filled"
         hide-details
@@ -17,7 +17,7 @@
       <v-text-field
         :model-value="search"
         @update:model-value="$emit('update:search', $event)"
-        placeholder="TÃ¬m kiáº¿m..."
+        placeholder="Tìm kiếm..."
         prepend-inner-icon="mdi-magnify"
         variant="solo-filled"
         density="compact"
@@ -47,9 +47,9 @@
 
         <v-list-item-title class="d-flex align-center">
           <span class="text-truncate" :class="{ 'font-weight-bold': conv.unreadCount > 0 }">
-            {{ conv.threadType === 'group' ? (conv.contact?.fullName || 'NhÃ³m') : (conv.contact?.fullName || 'Unknown') }}
+            {{ conv.threadType === 'group' ? (conv.contact?.fullName || 'Nhóm') : (conv.contact?.fullName || 'Unknown') }}
           </span>
-          <v-chip v-if="conv.threadType === 'group'" size="x-small" color="info" variant="tonal" class="ml-1">NhÃ³m</v-chip>
+          <v-chip v-if="conv.threadType === 'group'" size="x-small" color="info" variant="tonal" class="ml-1">Nhóm</v-chip>
           <v-spacer />
           <span class="text-caption text-grey ml-1">{{ formatTime(conv.lastMessageAt) }}</span>
         </v-list-item-title>
@@ -76,7 +76,7 @@
       </v-list-item>
 
       <div v-if="!loading && conversations.length === 0" class="text-center pa-8 text-grey">
-        ChÆ°a cÃ³ cuá»™c trÃ² chuyá»‡n nÃ o
+        Chưa có cuộc trò chuyện nào
       </div>
     </v-list>
   </div>
@@ -120,24 +120,24 @@ onMounted(async () => {
 function lastMessagePreview(conv: Conversation): string {
   const msg = conv.messages?.[0];
   if (!msg) return '';
-  if (msg.isDeleted) return '(Ä‘Ã£ thu há»“i)';
-  const prefix = msg.senderType === 'self' ? 'Báº¡n: ' : '';
+  if (msg.isDeleted) return '(d� thu h?i)';
+  const prefix = msg.senderType === 'self' ? 'Bạn: ' : '';
 
   switch (msg.contentType) {
-    case 'image': return prefix + 'ðŸ“· HÃ¬nh áº£nh';
-    case 'sticker': return prefix + 'ðŸ·ï¸ Sticker';
-    case 'video': return prefix + 'ðŸŽ¥ Video';
-    case 'voice': return prefix + 'ðŸŽ¤ Tin nháº¯n thoáº¡i';
+    case 'image': return prefix + '📷 Hình ảnh';
+    case 'sticker': return prefix + '🏷️ Sticker';
+    case 'video': return prefix + '🎥 Video';
+    case 'voice': return prefix + '🎤 Tin nhắn thoại';
     case 'gif': return prefix + 'GIF';
-    case 'file': return prefix + 'ðŸ“Ž Tá»‡p Ä‘Ã­nh kÃ¨m';
-    case 'link': return prefix + 'ðŸ”— LiÃªn káº¿t';
+    case 'file': return prefix + '📎 Tệp đính kèm';
+    case 'link': return prefix + '🔗 Liên kết';
   }
 
   if (msg.content) {
     try {
       const p = JSON.parse(msg.content);
       if (p.action === 'msginfo.actionlist' && p.title) {
-        return prefix + 'ðŸ“… ' + p.title.slice(0, 50);
+        return prefix + '📅 ' + p.title.slice(0, 50);
       }
     } catch {}
   }
@@ -163,15 +163,15 @@ function formatTime(dateStr: string | null): string {
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
 
-  if (diffMins < 1) return 'Vá»«a xong';
-  if (diffMins < 60) return `${diffMins} phÃºt`;
+  if (diffMins < 1) return 'Vừa xong';
+  if (diffMins < 60) return `${diffMins} phút`;
 
   const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours} giá»`;
+  if (diffHours < 24) return `${diffHours} giờ`;
 
   const diffDays = Math.floor(diffHours / 24);
-  if (diffDays === 1) return 'HÃ´m qua';
-  if (diffDays < 7) return `${diffDays} ngÃ y`;
+  if (diffDays === 1) return 'Hôm qua';
+  if (diffDays < 7) return `${diffDays} ngày`;
 
   return date.toLocaleDateString('vi-VN');
 }

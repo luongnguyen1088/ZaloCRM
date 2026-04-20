@@ -93,8 +93,8 @@ const actionOptions = [
 
 const statusItems = [
   { title: 'Mới', value: 'new' },
-  { title: 'Đã liên hệ', value: 'contacted' },
-  { title: 'Quan tâm', value: 'interested' },
+  { title: '�� li�n h?', value: 'contacted' },
+  { title: 'Quan t�m', value: 'interested' },
   { title: 'Chuyển đổi', value: 'converted' },
   { title: 'Mất', value: 'lost' },
 ];

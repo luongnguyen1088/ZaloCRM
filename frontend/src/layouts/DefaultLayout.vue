@@ -52,7 +52,7 @@
         <v-list density="compact" nav>
           <v-list-item
             prepend-icon="mdi-chevron-left"
-            title="Thu gá»n"
+            title="Thu gọn"
             @click.stop="rail = !rail"
             rounded="xl"
             class="mx-2"
@@ -91,18 +91,18 @@ onMounted(() => {
 
 const menuItems = [
   { title: 'Dashboard', icon: 'mdi-view-dashboard-outline', path: '/' },
-  { title: 'Tin nháº¯n', icon: 'mdi-message-text-outline', path: '/chat' },
-  { title: 'KhÃ¡ch hÃ ng', icon: 'mdi-account-group-outline', path: '/contacts' },
-  { title: 'TÃ i khoáº£n Zalo', icon: 'mdi-cellphone-link', path: '/zalo-accounts' },
-  { title: 'Lá»‹ch háº¹n', icon: 'mdi-calendar-clock-outline', path: '/appointments' },
-  { title: 'BÃ¡o cÃ¡o', icon: 'mdi-chart-arc', path: '/reports' },
-  { title: 'PhÃ¢n tÃ­ch', icon: 'mdi-chart-timeline-variant-shimmer', path: '/analytics' },
-  { title: 'NhÃ¢n sá»± & PhÃ¢n quyá»n', icon: 'mdi-account-cog-outline', path: '/settings' },
-  { title: 'Káº¿t ná»‘i & Cáº¥u hÃ¬nh AI', icon: 'mdi-cog-outline', path: '/api-settings' },
-  { title: 'ÄÃ o táº¡o AI', icon: 'mdi-school-outline', path: '/ai-training' },
-  { title: 'TÃ­ch há»£p', icon: 'mdi-connection', path: '/integrations' },
+  { title: 'Tin nhắn', icon: 'mdi-message-text-outline', path: '/chat' },
+  { title: 'Khách hàng', icon: 'mdi-account-group-outline', path: '/contacts' },
+  { title: 'Tài khoản Zalo', icon: 'mdi-cellphone-link', path: '/zalo-accounts' },
+  { title: 'Lịch hẹn', icon: 'mdi-calendar-clock-outline', path: '/appointments' },
+  { title: 'Báo cáo', icon: 'mdi-chart-arc', path: '/reports' },
+  { title: 'Phân tích', icon: 'mdi-chart-timeline-variant-shimmer', path: '/analytics' },
+  { title: 'Nhân sự & Phân quyền', icon: 'mdi-account-cog-outline', path: '/settings' },
+  { title: 'Kết nối & Cấu hình AI', icon: 'mdi-cog-outline', path: '/api-settings' },
+  { title: 'Đào tạo AI', icon: 'mdi-school-outline', path: '/ai-training' },
+  { title: 'Tích hợp', icon: 'mdi-connection', path: '/integrations' },
   { title: 'Automation', icon: 'mdi-robot-outline', path: '/automation' },
-  { title: 'GÃ³i cÆ°á»›c', icon: 'mdi-crown-outline', path: '/pricing' },
+  { title: 'Gói cước', icon: 'mdi-crown-outline', path: '/pricing' },
 ];
 
 function toggleTheme() {

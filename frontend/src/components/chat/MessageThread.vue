@@ -3,7 +3,7 @@
     <div v-if="!conversation" class="d-flex align-center justify-center flex-grow-1">
       <div class="text-center text-grey">
         <v-icon icon="mdi-chat-outline" size="96" color="grey-lighten-2" />
-        <p class="text-h6 mt-4">Chá»n cuá»™c trÃ² chuyá»‡n</p>
+        <p class="text-h6 mt-4">Chọn cuộc trò chuyện</p>
       </div>
     </div>
 
@@ -48,11 +48,11 @@
               style="word-wrap: break-word;"
             >
               <div v-if="msg.isDeleted" class="text-decoration-line-through font-italic thread-faded">
-                {{ msg.content || '(tin nháº¯n)' }}<span class="text-caption"> (Ä‘Ã£ thu há»“i)</span>
+                {{ msg.content || '(tin nh?n)' }}<span class="text-caption"> (d� thu h?i)</span>
               </div>
 
               <div v-else-if="getImageUrl(msg)">
-                <img :src="getImageUrl(msg)!" alt="HÃ¬nh áº£nh" class="chat-image" @click="previewImageUrl = getImageUrl(msg)!" />
+                <img :src="getImageUrl(msg)!" alt="Hình ảnh" class="chat-image" @click="previewImageUrl = getImageUrl(msg)!" />
               </div>
 
               <div v-else-if="getFileInfo(msg)" class="file-card">
@@ -66,22 +66,22 @@
                 </v-btn>
               </div>
 
-              <div v-else-if="msg.contentType === 'sticker'">ðŸ·ï¸ Sticker</div>
-              <div v-else-if="msg.contentType === 'video'">ðŸŽ¥ Video</div>
-              <div v-else-if="msg.contentType === 'voice'">ðŸŽ¤ Tin nháº¯n thoáº¡i</div>
+              <div v-else-if="msg.contentType === 'sticker'">🏷️ Sticker</div>
+              <div v-else-if="msg.contentType === 'video'">🎥 Video</div>
+              <div v-else-if="msg.contentType === 'voice'">🎤 Tin nhắn thoại</div>
               <div v-else-if="msg.contentType === 'gif'">GIF</div>
 
               <div v-else-if="isReminderMessage(msg)" class="reminder-card">
                 <div class="d-flex align-center mb-1">
                   <v-icon size="16" color="warning" class="mr-1">mdi-calendar-clock</v-icon>
-                  <span class="text-caption font-weight-bold reminder-label">Nháº¯c háº¹n</span>
+                  <span class="text-caption font-weight-bold reminder-label">Nhắc hẹn</span>
                 </div>
                 <div class="text-body-2">{{ getReminderTitle(msg) }}</div>
                 <div v-if="getReminderTime(msg)" class="text-caption mt-1 thread-faded">
                   <v-icon size="12" class="mr-1">mdi-clock-outline</v-icon>{{ getReminderTime(msg) }}
                 </div>
                 <v-btn size="x-small" variant="tonal" color="warning" class="mt-2" prepend-icon="mdi-calendar-sync" @click="syncAppointment(msg)">
-                  Äá»“ng bá»™ lá»‹ch
+                  Đồng bộ lịch
                 </v-btn>
               </div>
 
@@ -93,7 +93,7 @@
             </div>
           </div>
         </div>
-        <div v-if="!loading && messages.length === 0" class="text-center pa-8 text-grey">ChÆ°a cÃ³ tin nháº¯n</div>
+        <div v-if="!loading && messages.length === 0" class="text-center pa-8 text-grey">Chưa có tin nhắn</div>
       </div>
 
       <div class="pa-2 chat-input-area">
@@ -109,7 +109,7 @@
         <div class="d-flex align-end">
           <v-textarea
             v-model="inputText"
-            placeholder="Nháº­p tin nháº¯n..."
+            placeholder="Nhập tin nhắn..."
             variant="solo-filled"
             density="compact"
             hide-details
@@ -127,7 +127,7 @@
                 class="magic-wand-btn mr-1"
                 :loading="aiSuggestionLoading"
                 @click="handleMagicCompose"
-                title="AI Soáº¡n vÄƒn báº£n ma thuáº­t"
+                title="AI Soạn văn bản ma thuật"
               >
                 <v-icon color="primary">mdi-auto-fix</v-icon>
               </v-btn>
@@ -143,7 +143,7 @@
     <v-dialog v-model="showImagePreview" max-width="900" content-class="elevation-0">
       <div class="text-center preview-shell" @click="showImagePreview = false">
         <img :src="previewImageUrl" alt="Preview" class="preview-image" />
-        <div class="text-caption mt-2 preview-caption">Nháº¥n Ä‘á»ƒ Ä‘Ã³ng</div>
+        <div class="text-caption mt-2 preview-caption">Nhấn để đóng</div>
       </div>
     </v-dialog>
 
@@ -200,7 +200,7 @@ function applySuggestion() {
 
 function handleMagicCompose() {
   if (inputText.value.trim()) {
-    handleRefine('HoÃ n thiá»‡n vÃ  trau chuá»‘t ná»™i dung nÃ y cho tÃ´i');
+    handleRefine('Hoàn thiện và trau chuốt nội dung này cho tôi');
   } else {
     emit('ask-ai');
   }
@@ -258,9 +258,9 @@ function parseDisplayContent(content: string | null): string {
   if (!content.startsWith('{')) return content;
   try {
     const payload = JSON.parse(content);
-    if (payload.title && payload.href) return `ðŸ”— ${payload.title}`;
+    if (payload.title && payload.href) return `🔗 ${payload.title}`;
     if (payload.title) return payload.title;
-    if (payload.href) return `ðŸ”— ${payload.description || payload.href}`;
+    if (payload.href) return `🔗 ${payload.description || payload.href}`;
     return content;
   } catch {
     return content;
@@ -307,7 +307,7 @@ function getReminderTime(msg: Message): string | null {
 
 async function syncAppointment(msg: Message) {
   if (!props.conversation?.contact?.id) {
-    syncSnack.value = { show: true, text: 'KhÃ´ng cÃ³ thÃ´ng tin khÃ¡ch hÃ ng', color: 'error' };
+    syncSnack.value = { show: true, text: 'Không có thông tin khách hàng', color: 'error' };
     return;
   }
 
@@ -324,7 +324,7 @@ async function syncAppointment(msg: Message) {
     }
 
     if (!appointmentDate) {
-      syncSnack.value = { show: true, text: 'KhÃ´ng tÃ¬m tháº¥y thá»i gian háº¹n', color: 'warning' };
+      syncSnack.value = { show: true, text: 'Không tìm thấy thời gian hẹn', color: 'warning' };
       return;
     }
 
@@ -336,9 +336,9 @@ async function syncAppointment(msg: Message) {
       notes: `[Zalo] ${payload.title || ''}`,
     });
 
-    syncSnack.value = { show: true, text: 'ÄÃ£ Ä‘á»“ng bá»™ lá»‹ch háº¹n thÃ nh cÃ´ng!', color: 'success' };
+    syncSnack.value = { show: true, text: '�� d?ng b? l?ch h?n th�nh c�ng!', color: 'success' };
   } catch (err: any) {
-    syncSnack.value = { show: true, text: err.response?.data?.error || 'Äá»“ng bá»™ tháº¥t báº¡i', color: 'error' };
+    syncSnack.value = { show: true, text: err.response?.data?.error || 'Đồng bộ thất bại', color: 'error' };
   }
 }
 

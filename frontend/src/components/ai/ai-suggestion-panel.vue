@@ -3,7 +3,7 @@
     <div class="glass-ai-panel pa-3">
       <div v-if="loading" class="d-flex align-center py-2 px-4">
         <v-progress-circular indeterminate size="20" width="2" color="primary" class="mr-3" />
-        <span class="text-body-2 animate-pulse">AI Ä‘ang soáº¡n tháº£o ma thuáº­t...</span>
+        <span class="text-body-2 animate-pulse">AI đang soạn thảo ma thuật...</span>
       </div>
 
       <v-alert v-else-if="error" type="error" variant="tonal" density="compact" class="mb-0 rounded-lg">
@@ -13,7 +13,7 @@
       <div v-else-if="suggestion" class="suggestion-content">
         <div class="d-flex align-center mb-2 px-1">
           <v-icon color="primary" size="18" class="mr-2">mdi-sparkles</v-icon>
-          <span class="text-caption font-weight-bold text-uppercase primary--text suggestion-label">Gá»£i Ã½ tá»« AI AI-Agent</span>
+          <span class="text-caption font-weight-bold text-uppercase primary--text suggestion-label">Gợi ý từ AI AI-Agent</span>
           <v-spacer />
           <v-btn icon size="x-small" variant="text" @click="$emit('close')"><v-icon>mdi-close</v-icon></v-btn>
         </div>
@@ -24,22 +24,22 @@
 
         <div class="d-flex flex-wrap gap-2 align-center">
           <v-btn color="primary" size="small" rounded="pill" prepend-icon="mdi-check-all" @click="$emit('apply')">
-            Sá»­ dá»¥ng cÃ¢u nÃ y
+            S? d?ng c�u n�y
           </v-btn>
           <v-divider vertical class="mx-1 opacity-10" />
 
-          <v-btn size="x-small" variant="tonal" class="refine-btn" @click="$emit('refine', 'ðŸ’¼ LÃ m chuyÃªn nghiá»‡p hÆ¡n')">
-            ðŸ’¼ ChuyÃªn nghiá»‡p
+          <v-btn size="x-small" variant="tonal" class="refine-btn" @click="$emit('refine', '💼 Làm chuyên nghiệp hơn')">
+            💼 Chuyên nghiệp
           </v-btn>
-          <v-btn size="x-small" variant="tonal" class="refine-btn" @click="$emit('refine', 'ðŸ“ Viáº¿t ngáº¯n gá»n láº¡i')">
-            ðŸ“ Ngáº¯n gá»n
+          <v-btn size="x-small" variant="tonal" class="refine-btn" @click="$emit('refine', '📝 Viết ngắn gọn lại')">
+            📝 Ngắn gọn
           </v-btn>
-          <v-btn size="x-small" variant="tonal" class="refine-btn" @click="$emit('refine', 'ðŸ˜Š ThÃªm chÃºt thÃ¢n thiá»‡n')">
-            ðŸ˜Š ThÃ¢n thiá»‡n
+          <v-btn size="x-small" variant="tonal" class="refine-btn" @click="$emit('refine', '?? Th�m ch�t th�n thi?n')">
+            ?? Th�n thi?n
           </v-btn>
 
           <v-spacer />
-          <v-btn icon size="x-small" variant="text" @click="$emit('generate')" title="Táº¡o láº¡i">
+          <v-btn icon size="x-small" variant="text" @click="$emit('generate')" title="Tạo lại">
             <v-icon>mdi-refresh</v-icon>
           </v-btn>
         </div>

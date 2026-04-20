@@ -1,11 +1,11 @@
 <template>
   <v-card>
-    <v-card-title class="text-body-1">Phá»…u chuyá»ƒn Ä‘á»•i</v-card-title>
+    <v-card-title class="text-body-1">Phễu chuyển đổi</v-card-title>
     <v-card-text>
       <Bar v-if="chartData" :data="chartData" :options="chartOptions" style="height: 280px;" />
-      <div v-else class="text-center pa-8 text-grey">KhÃ´ng cÃ³ dá»¯ liá»‡u</div>
+      <div v-else class="text-center pa-8 text-grey">Không có dữ liệu</div>
       <div v-if="data?.avgConversionDays" class="text-caption text-grey mt-2 text-center">
-        Thá»i gian chuyá»ƒn Ä‘á»•i trung bÃ¬nh: {{ data.avgConversionDays }} ngÃ y
+        Thời gian chuyển đổi trung bình: {{ data.avgConversionDays }} ngày
       </div>
     </v-card-text>
   </v-card>
@@ -35,11 +35,11 @@ const theme = useTheme();
 const palette = computed(() => chartTokens[theme.global.current.value.dark ? 'dark' : 'light']);
 
 const statusLabels: Record<string, string> = {
-  new: 'Má»›i',
-  contacted: 'ÄÃ£ liÃªn há»‡',
-  interested: 'Quan tÃ¢m',
-  converted: 'Chuyá»ƒn Ä‘á»•i',
-  lost: 'Máº¥t',
+  new: 'Mới',
+  contacted: 'Đã liên hệ',
+  interested: 'Quan tâm',
+  converted: 'Chuyển đổi',
+  lost: 'Mất',
 };
 
 const stageColors = computed<Record<string, string>>(() => ({
@@ -56,7 +56,7 @@ const chartData = computed(() => {
     labels: props.data.stages.map((s) => statusLabels[s.status] ?? s.status),
     datasets: [
       {
-        label: 'Sá»‘ khÃ¡ch hÃ ng',
+        label: 'Số khách hàng',
         data: props.data.stages.map((s) => s.count),
         backgroundColor: props.data.stages.map((s) => stageColors.value[s.status] ?? palette.value.neutral),
       },

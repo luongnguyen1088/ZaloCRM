@@ -4,10 +4,10 @@
       <div class="d-flex align-center justify-space-between">
         <div>
           <h1 class="text-h3 font-weight-black dashboard-title mb-1">
-            ChÃ o buá»•i sÃ¡ng, <span class="text-gradient">{{ authStore.user?.fullName?.split(' ').pop() || 'Admin' }}</span>!
+            Chào buổi sáng, <span class="text-gradient">{{ authStore.user?.fullName?.split(' ').pop() || 'Admin' }}</span>!
           </h1>
           <p class="text-subtitle-1 text-placeholder">
-            HÃ´m nay há»‡ thá»‘ng Ä‘Ã£ tá»± Ä‘á»™ng xá»­ lÃ½ <span class="text-primary-strong font-weight-bold">1,240</span> há»™i thoáº¡i má»›i.
+            H�m nay h? th?ng d� t? d?ng x? l� <span class="text-primary-strong font-weight-bold">1,240</span> h?i tho?i m?i.
           </p>
         </div>
         <div class="header-actions">
@@ -17,7 +17,7 @@
             prepend-icon="mdi-sparkles"
             @click="router.push('/automation')"
           >
-            Tá»‘i Æ°u báº±ng AI
+            Tối ưu bằng AI
           </v-btn>
           <v-btn icon variant="outlined" class="border-glass">
             <v-icon>mdi-filter-variant</v-icon>

@@ -3,12 +3,12 @@
     <div class="d-flex align-center mb-4 flex-wrap gap-2">
       <h1 class="text-h4 analytics-title">
         <v-icon class="mr-2 analytics-title-icon">mdi-chart-timeline-variant-shimmer</v-icon>
-        PhÃ¢n tÃ­ch nÃ¢ng cao
+        Phân tích nâng cao
       </h1>
       <v-spacer />
       <v-text-field
         v-model="dateFrom"
-        label="Tá»« ngÃ y"
+        label="Từ ngày"
         type="date"
         density="compact"
         variant="outlined"
@@ -18,7 +18,7 @@
       />
       <v-text-field
         v-model="dateTo"
-        label="Äáº¿n ngÃ y"
+        label="Đến ngày"
         type="date"
         density="compact"
         variant="outlined"
@@ -30,11 +30,11 @@
     </div>
 
     <v-tabs v-model="tab" class="mb-4">
-      <v-tab value="overview">Tá»•ng quan</v-tab>
-      <v-tab value="funnel">Phá»…u khÃ¡ch hÃ ng</v-tab>
-      <v-tab value="team">Äá»™i nhÃ³m</v-tab>
-      <v-tab value="response">Thá»i gian tráº£ lá»i</v-tab>
-      <v-tab value="builder">BÃ¡o cÃ¡o tÃ¹y chá»‰nh</v-tab>
+      <v-tab value="overview">Tổng quan</v-tab>
+      <v-tab value="funnel">Phễu khách hàng</v-tab>
+      <v-tab value="team">Đội nhóm</v-tab>
+      <v-tab value="response">Thời gian trả lời</v-tab>
+      <v-tab value="builder">Báo cáo tùy chỉnh</v-tab>
     </v-tabs>
 
     <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4" />
@@ -69,13 +69,13 @@
           </v-col>
           <v-col cols="12" v-if="responseTime?.byUser?.length">
             <v-card>
-              <v-card-title class="text-body-1">Thá»i gian tráº£ lá»i theo nhÃ¢n viÃªn</v-card-title>
+              <v-card-title class="text-body-1">Thời gian trả lời theo nhân viên</v-card-title>
               <v-card-text>
                 <v-data-table
                   :headers="rtUserHeaders"
                   :items="responseTime.byUser"
                   density="compact"
-                  no-data-text="KhÃ´ng cÃ³ dá»¯ liá»‡u"
+                  no-data-text="Không có dữ liệu"
                 >
                   <template #item.avgSeconds="{ item }">
                     {{ formatTime(item.avgSeconds) }}
@@ -122,16 +122,16 @@ const {
 const tab = ref('overview');
 
 const rtUserHeaders = [
-  { title: 'Há» tÃªn', key: 'fullName' },
-  { title: 'TG tráº£ lá»i TB', key: 'avgSeconds', align: 'end' as const },
+  { title: 'Họ tên', key: 'fullName' },
+  { title: 'TG trả lời TB', key: 'avgSeconds', align: 'end' as const },
 ];
 
 function formatTime(seconds: number | null): string {
-  if (seconds == null) return 'â€”';
+  if (seconds == null) return '—';
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
-  if (m === 0) return `${s} giÃ¢y`;
-  return `${m} phÃºt ${s} giÃ¢y`;
+  if (m === 0) return `${s} giây`;
+  return `${m} phút ${s} giây`;
 }
 
 async function onSaveReport(data: { name: string; type: string; config: ReportConfig }) {

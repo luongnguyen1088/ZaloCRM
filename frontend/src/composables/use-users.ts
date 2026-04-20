@@ -28,7 +28,7 @@ export function useUsers() {
       const res = await api.get('/users');
       users.value = res.data.users;
     } catch (err: any) {
-      error.value = err.response?.data?.error || 'Lỗi tải danh sách nhân viên';
+      error.value = err.response?.data?.error || 'L?i t?i danh s�ch nh�n vi�n';
     } finally {
       loading.value = false;
     }
@@ -46,7 +46,7 @@ export function useUsers() {
       await fetchUsers();
       return { ok: true };
     } catch (err: any) {
-      return { ok: false, error: err.response?.data?.error || 'Lỗi tạo nhân viên' };
+      return { ok: false, error: err.response?.data?.error || 'L?i t?o nh�n vi�n' };
     }
   }
 
@@ -59,7 +59,7 @@ export function useUsers() {
       await fetchUsers();
       return { ok: true };
     } catch (err: any) {
-      return { ok: false, error: err.response?.data?.error || 'Lỗi cập nhật nhân viên' };
+      return { ok: false, error: err.response?.data?.error || 'L?i c?p nh?t nh�n vi�n' };
     }
   }
 
@@ -78,7 +78,7 @@ export function useUsers() {
       await fetchUsers();
       return { ok: true };
     } catch (err: any) {
-      return { ok: false, error: err.response?.data?.error || 'Lỗi xóa nhân viên' };
+      return { ok: false, error: err.response?.data?.error || 'L?i x�a nh�n vi�n' };
     }
   }
 

@@ -3,7 +3,7 @@
     <v-divider class="my-3" />
     <div class="d-flex align-center mb-2">
       <v-icon size="16" color="warning" class="mr-1">mdi-calendar-clock</v-icon>
-      <span class="text-caption font-weight-bold">Lá»‹ch háº¹n ({{ appointments.length }})</span>
+      <span class="text-caption font-weight-bold">Lịch hẹn ({{ appointments.length }})</span>
       <v-spacer />
       <v-btn size="x-small" variant="text" color="primary" @click="showForm = !showForm">
         <v-icon size="14">mdi-plus</v-icon>
@@ -13,7 +13,7 @@
     <div v-if="showForm" class="mb-2 pa-2 appointment-form-card">
       <v-text-field
         v-model="createForm.date"
-        label="NgÃ y"
+        label="Ngày"
         type="date"
         density="compact"
         variant="outlined"
@@ -22,7 +22,7 @@
       />
       <v-text-field
         v-model="createForm.time"
-        label="Giá»"
+        label="Giờ"
         type="time"
         density="compact"
         variant="outlined"
@@ -31,7 +31,7 @@
       />
       <v-text-field
         v-model="createForm.notes"
-        label="Ghi chÃº"
+        label="Ghi chú"
         density="compact"
         variant="outlined"
         hide-details
@@ -44,7 +44,7 @@
         :loading="creating"
         @click="submitCreate"
       >
-        Táº¡o lá»‹ch háº¹n
+        Tạo lịch hẹn
       </v-btn>
     </div>
 
@@ -76,7 +76,7 @@
       <div v-else>
         <v-text-field
           v-model="editForm.date"
-          label="NgÃ y"
+          label="Ngày"
           type="date"
           density="compact"
           variant="outlined"
@@ -85,7 +85,7 @@
         />
         <v-text-field
           v-model="editForm.time"
-          label="Giá»"
+          label="Giờ"
           type="time"
           density="compact"
           variant="outlined"
@@ -94,7 +94,7 @@
         />
         <v-text-field
           v-model="editForm.notes"
-          label="Ghi chÃº"
+          label="Ghi chú"
           density="compact"
           variant="outlined"
           hide-details
@@ -105,21 +105,21 @@
           :items="statusOptions"
           item-title="title"
           item-value="value"
-          label="Tráº¡ng thÃ¡i"
+          label="Trạng thái"
           density="compact"
           variant="outlined"
           hide-details
           class="mb-1"
         />
         <div class="d-flex gap-1">
-          <v-btn size="small" color="warning" :loading="saving" @click="submitEdit(apt.id)">LÆ°u</v-btn>
-          <v-btn size="small" variant="text" @click="editingId = null">Há»§y</v-btn>
+          <v-btn size="small" color="warning" :loading="saving" @click="submitEdit(apt.id)">Lưu</v-btn>
+          <v-btn size="small" variant="text" @click="editingId = null">Hủy</v-btn>
         </div>
       </div>
     </div>
 
     <div v-if="appointments.length === 0" class="text-caption appointment-empty">
-      ChÆ°a cÃ³ lá»‹ch háº¹n
+      Chưa có lịch hẹn
     </div>
   </div>
 </template>
@@ -155,10 +155,10 @@ const createForm = reactive({ date: '', time: '', notes: '' });
 const editForm = reactive({ date: '', time: '', notes: '', status: '' });
 
 const statusOptions = [
-  { title: 'Sáº¯p tá»›i', value: 'scheduled' },
-  { title: 'HoÃ n thÃ nh', value: 'completed' },
-  { title: 'Há»§y', value: 'cancelled' },
-  { title: 'KhÃ´ng Ä‘áº¿n', value: 'no_show' },
+  { title: 'Sắp tới', value: 'scheduled' },
+  { title: 'Hoàn thành', value: 'completed' },
+  { title: 'Hủy', value: 'cancelled' },
+  { title: 'Không đến', value: 'no_show' },
 ];
 
 function statusColor(s: string): string {

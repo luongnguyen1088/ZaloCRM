@@ -24,7 +24,7 @@
 
       <div v-if="loading" class="pa-4 text-center">
         <v-progress-circular indeterminate color="primary" size="24" width="2"></v-progress-circular>
-        <p class="text-caption text-placeholder mt-2">AI Ä‘ang phÃ¢n tÃ­ch há»™i thoáº¡i...</p>
+        <p class="text-caption text-placeholder mt-2">AI dang ph�n t�ch h?i tho?i...</p>
       </div>
 
       <div v-else-if="summary" class="summary-content">
@@ -33,20 +33,20 @@
           <div class="section-text">{{ section.content }}</div>
         </div>
         <div v-if="updatedAt" class="text-right mt-2">
-          <span class="text-tiny text-placeholder">Cáº­p nháº­t: {{ updatedAt }}</span>
+          <span class="text-tiny text-placeholder">Cập nhật: {{ updatedAt }}</span>
         </div>
       </div>
 
       <div v-else class="pa-8 text-center text-placeholder">
         <v-icon size="32" class="mb-2 opacity-20">mdi-text-box-search-outline</v-icon>
-        <p class="text-caption">ChÆ°a cÃ³ tÃ³m táº¯t há»™i thoáº¡i.</p>
+        <p class="text-caption">Chưa có tóm tắt hội thoại.</p>
         <v-btn
           variant="outlined"
           size="small"
           class="mt-3 summary-outline-btn"
           @click="$emit('refresh')"
         >
-          PhÃ¢n tÃ­ch ngay
+          Ph�n t�ch ngay
         </v-btn>
       </div>
     </div>
@@ -73,7 +73,7 @@ const parsedSections = computed(() => {
   let currentSection = { title: '', content: '' };
 
   lines.forEach(line => {
-    const match = line.match(/^(\d+\.|Má»¤C ÄÃCH|TRáº NG THÃI|CÃ‚U Há»ŽI CHÃNH|HÃ€NH Äá»˜NG|PURPOSE|STATUS|KEY QUESTIONS|NEXT ACTION)[:\s]*(.*)/i);
+    const match = line.match(/^(\d+\.|M?C ��CH|TR?NG TH�I|C�U H?I CH�NH|H�NH �?NG|PURPOSE|STATUS|KEY QUESTIONS|NEXT ACTION)[:\s]*(.*)/i);
     if (match) {
       if (currentSection.title) sections.push({ ...currentSection });
       currentSection.title = match[1].replace(/\d+\.\s*/, '').trim();
@@ -86,7 +86,7 @@ const parsedSections = computed(() => {
   if (currentSection.title) sections.push(currentSection);
 
   if (sections.length === 0 && props.summary) {
-    return [{ title: 'Tá»”NG QUAN', content: props.summary }];
+    return [{ title: 'TỔNG QUAN', content: props.summary }];
   }
 
   return sections;

@@ -12,7 +12,7 @@
           label="API Key" 
           type="password" 
           :placeholder="hasCurrentKey ? '••••••••••••' : 'Nhập API Key mới'"
-          hint="Dán API Key từ nhà cung cấp vào đây. Nếu bỏ trống sẽ dùng cấu hình hiện tại."
+          hint="D�n API Key t? nh� cung c?p v�o d�y. N?u b? tr?ng s? d�ng c?u h�nh hi?n t?i."
           persistent-hint
           variant="outlined" 
           class="mb-3" 

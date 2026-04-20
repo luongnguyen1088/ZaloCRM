@@ -11,7 +11,7 @@
         class="mb-3"
       />
       <v-alert v-if="error" type="error" density="compact" class="mb-3">{{ error }}</v-alert>
-      <v-alert v-if="saved" type="success" density="compact" class="mb-3">Đã lưu thành công</v-alert>
+      <v-alert v-if="saved" type="success" density="compact" class="mb-3">�� luu th�nh c�ng</v-alert>
       <v-btn
         v-if="authStore.isOwner"
         color="primary"

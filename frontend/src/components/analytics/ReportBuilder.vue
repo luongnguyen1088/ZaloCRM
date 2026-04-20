@@ -1,13 +1,13 @@
 <template>
   <v-card>
-    <v-card-title class="text-body-1">BÃ¡o cÃ¡o tÃ¹y chá»‰nh</v-card-title>
+    <v-card-title class="text-body-1">Báo cáo tùy chỉnh</v-card-title>
     <v-card-text>
       <v-row>
         <v-col cols="12" md="5">
           <v-select
             v-model="selectedMetrics"
             :items="metricOptions"
-            label="Chá»‰ sá»‘"
+            label="Chỉ số"
             multiple
             chips
             closable-chips
@@ -20,7 +20,7 @@
           <v-select
             v-model="groupBy"
             :items="groupByOptions"
-            label="NhÃ³m theo"
+            label="Nhóm theo"
             density="compact"
             variant="outlined"
             hide-details
@@ -30,7 +30,7 @@
           <v-select
             v-model="filterSource"
             :items="sourceOptions"
-            label="Nguá»“n"
+            label="Nguồn"
             clearable
             density="compact"
             variant="outlined"
@@ -39,10 +39,10 @@
         </v-col>
         <v-col cols="12" md="2" class="d-flex gap-2">
           <v-btn color="primary" :loading="loading" :disabled="!selectedMetrics.length" @click="run">
-            Cháº¡y
+            Chạy
           </v-btn>
           <v-btn variant="outlined" :disabled="!selectedMetrics.length" @click="saveDialog = true">
-            LÆ°u
+            Lưu
           </v-btn>
         </v-col>
       </v-row>
@@ -52,7 +52,7 @@
       </div>
 
       <div v-if="savedReports.length" class="mt-6">
-        <div class="text-subtitle-2 mb-2">BÃ¡o cÃ¡o Ä‘Ã£ lÆ°u</div>
+        <div class="text-subtitle-2 mb-2">B�o c�o d� luu</div>
         <v-list density="compact">
           <v-list-item v-for="r in savedReports" :key="r.id" :title="r.name" :subtitle="r.type">
             <template #append>
@@ -66,14 +66,14 @@
 
     <v-dialog v-model="saveDialog" max-width="400">
       <v-card>
-        <v-card-title>LÆ°u bÃ¡o cÃ¡o</v-card-title>
+        <v-card-title>Lưu báo cáo</v-card-title>
         <v-card-text>
-          <v-text-field v-model="reportName" label="TÃªn bÃ¡o cÃ¡o" variant="outlined" density="compact" hide-details />
+          <v-text-field v-model="reportName" label="Tên báo cáo" variant="outlined" density="compact" hide-details />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="saveDialog = false">Há»§y</v-btn>
-          <v-btn color="primary" :disabled="!reportName" @click="save">LÆ°u</v-btn>
+          <v-btn variant="text" @click="saveDialog = false">Hủy</v-btn>
+          <v-btn color="primary" :disabled="!reportName" @click="save">Lưu</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -121,20 +121,20 @@ const saveDialog = ref(false);
 const reportName = ref('');
 
 const metricOptions = [
-  { title: 'Tin nháº¯n gá»­i', value: 'messages_sent' },
-  { title: 'Tin nháº¯n nháº­n', value: 'messages_received' },
-  { title: 'KH má»›i', value: 'contacts_new' },
-  { title: 'KH chuyá»ƒn Ä‘á»•i', value: 'contacts_converted' },
-  { title: 'Lá»‹ch háº¹n', value: 'appointments' },
-  { title: 'TG tráº£ lá»i TB', value: 'avg_response_time' },
+  { title: 'Tin nhắn gửi', value: 'messages_sent' },
+  { title: 'Tin nhắn nhận', value: 'messages_received' },
+  { title: 'KH mới', value: 'contacts_new' },
+  { title: 'KH chuyển đổi', value: 'contacts_converted' },
+  { title: 'Lịch hẹn', value: 'appointments' },
+  { title: 'TG trả lời TB', value: 'avg_response_time' },
 ];
 
 const groupByOptions = [
-  { title: 'Theo ngÃ y', value: 'day' },
-  { title: 'Theo tuáº§n', value: 'week' },
-  { title: 'Theo thÃ¡ng', value: 'month' },
-  { title: 'Theo nhÃ¢n viÃªn', value: 'user' },
-  { title: 'Theo nguá»“n', value: 'source' },
+  { title: 'Theo ngày', value: 'day' },
+  { title: 'Theo tuần', value: 'week' },
+  { title: 'Theo tháng', value: 'month' },
+  { title: 'Theo nh�n vi�n', value: 'user' },
+  { title: 'Theo nguồn', value: 'source' },
 ];
 
 const sourceOptions = ['FB', 'TT', 'GT', 'CN', 'ZL'];
@@ -168,12 +168,12 @@ function save() {
 }
 
 const metricLabels: Record<string, string> = {
-  messages_sent: 'Tin nháº¯n gá»­i',
-  messages_received: 'Tin nháº¯n nháº­n',
-  contacts_new: 'KH má»›i',
-  contacts_converted: 'KH chuyá»ƒn Ä‘á»•i',
-  appointments: 'Lá»‹ch háº¹n',
-  avg_response_time: 'TG tráº£ lá»i (s)',
+  messages_sent: 'Tin nhắn gửi',
+  messages_received: 'Tin nhắn nhận',
+  contacts_new: 'KH mới',
+  contacts_converted: 'KH chuyển đổi',
+  appointments: 'Lịch hẹn',
+  avg_response_time: 'TG trả lời (s)',
 };
 
 const resultChartData = computed(() => {
