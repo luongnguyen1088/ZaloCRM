@@ -130,7 +130,7 @@
                         <v-chip size="x-small" variant="outlined" class="mr-2 text-caption px-2 opacity-60">
                           {{ item.category }}
                         </v-chip>
-                        <div class="stats-badge mr-3" v-if="item.useCount > 0" title="Số lần AI đã tra cứu kiến thức này">
+                        <div class="stats-badge mr-3" v-if="item.useCount > 0">
                           <v-icon size="14" class="mr-1">mdi-head-cog-outline</v-icon>
                           <span>Giúp ích {{ item.useCount }} lần</span>
                         </div>
@@ -261,8 +261,6 @@
                   counter
                   required
                   :rules="[v => !!v || 'Bạn chưa nhập kiến thức']"
-                  hint="Cố gắng viết mạch lạc, đủ ý để AI không hiểu lầm."
-                  persistent-hint
                 />
               </v-col>
               <v-col cols="12" class="pt-4">
@@ -293,6 +291,21 @@
           >
             {{ editDialog.isEdit ? 'Lưu thay đổi' : 'Xác nhận đào tạo' }}
           </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Delete Dialog -->
+    <v-dialog v-model="deleteDialog.show" max-width="400">
+      <v-card class="rounded-xl overflow-hidden">
+        <v-card-title class="bg-error text-white pa-4">Xóa kiến thức này?</v-card-title>
+        <v-card-text class="pa-6">
+          AI sẽ "quên" hoàn toàn kiến thức: <strong>{{ deleteDialog.item?.title }}</strong>. Bạn chắc chắn chứ?
+        </v-card-text>
+        <v-card-actions class="pa-6 pt-0">
+          <v-spacer />
+          <v-btn variant="text" @click="deleteDialog.show = false">Quay lại</v-btn>
+          <v-btn color="error" variant="flat" rounded="lg" :loading="deleting" @click="doDelete">Xóa vĩnh viễn</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -396,7 +409,6 @@ async function runMagicAdd() {
     toast.value = { show: true, text: `AI đã nạp chuyên sâu: ${analysis.data.title}`, color: 'success', icon: 'mdi-sparkles' };
     magicInput.value = '';
     await loadData();
-    testMessages.value.push({ role: 'ai', content: `Đã nạp xong kiến thức: "${analysis.data.title}". Hãy thử hỏi tôi về nội dung này!` });
   } catch (err) {
     toast.value = { show: true, text: 'Nạp nhanh thất bại, hãy thử lại thủ công', color: 'error', icon: 'mdi-alert' };
   } finally {
@@ -461,10 +473,9 @@ async function runTest() {
   try {
     const res = await api.post('/ai/knowledge/test', { question: q });
     testMessages.value.push({ role: 'ai', content: res.data.content });
-    // Reload items to update usage counts
     loadData();
   } catch (err: any) {
-    testMessages.value.push({ role: 'ai', content: 'Lỗi: ' + (err.response?.data?.error || 'Không thể kết nối AI') });
+    testMessages.value.push({ role: 'ai', content: 'Lỗi kết nối AI' });
   } finally {
     testing.value = false;
     scrollToBottom();
@@ -499,84 +510,21 @@ onMounted(loadData);
 </script>
 
 <style scoped>
-.gradient-text {
-  background: linear-gradient(90deg, #00F2FF, #0072FF);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.magic-console {
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.08), rgba(0, 0, 0, 0.4)) !important;
-  border: 1px solid rgba(var(--v-theme-primary), 0.2) !important;
-  border-radius: 16px !important;
-  position: relative;
-  overflow: hidden;
-}
-
-.magic-console::before {
-  content: "";
-  position: absolute;
-  top: -50%; left: -50%; width: 200%; height: 200%;
-  background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.05) 0%, transparent 70%);
-  animation: rotate 20s linear infinite;
-  pointer-events: none;
-}
-
-@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-.magic-textarea :deep(.v-field__input) {
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.glass-container {
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-}
-
-.knowledge-card {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05) !important;
-}
-
-.stats-badge {
-  display: inline-flex;
-  align-center: center;
-  background: rgba(var(--v-theme-success), 0.1);
-  color: #4CAF50;
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 500;
-  border: 1px solid rgba(var(--v-theme-success), 0.2);
-}
-
-.simulator-panel {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 20px;
-}
-
-.message-bubble {
-  padding: 10px 16px; border-radius: 18px; max-width: 85%; font-size: 14px;
-}
+.gradient-text { background: linear-gradient(90deg, #00F2FF, #0072FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.magic-console { background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.08), rgba(0, 0, 0, 0.4)) !important; border: 1px solid rgba(var(--v-theme-primary), 0.2) !important; border-radius: 16px !important; position: relative; overflow: hidden; }
+.magic-textarea :deep(.v-field__input) { font-size: 14px; line-height: 1.6; }
+.glass-container { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; }
+.knowledge-card { background: rgba(255, 255, 255, 0.03) !important; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05) !important; }
+.stats-badge { display: inline-flex; align-items: center; background: rgba(76, 175, 80, 0.1); color: #4CAF50; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 500; border: 1px solid rgba(76, 175, 80, 0.2); }
+.simulator-panel { background: rgba(0, 0, 0, 0.2); border-radius: 20px; }
+.message-bubble { padding: 10px 16px; border-radius: 18px; max-width: 85%; font-size: 14px; }
 .user-bubble { background: #0072FF; color: white; border-bottom-right-radius: 4px; }
 .ai-bubble { background: rgba(255,255,255,0.08); color: white; border-bottom-left-radius: 4px; }
-
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-
-.glass-list {
-  background: rgba(20, 20, 20, 0.9) !important;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.1);
-}
-
+.glass-list { background: rgba(20, 20, 20, 0.9) !important; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
 .animate-sparkle { animation: sparkle 2s infinite; }
 @keyframes sparkle { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } }
-
 .primary--text { color: #00F2FF; }
 .truncate-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
 </style>
