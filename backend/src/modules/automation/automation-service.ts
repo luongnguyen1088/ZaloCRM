@@ -93,6 +93,8 @@ function getFieldValue(field: string, context: AutomationContext): unknown {
     case 'contact.source': return context.contact?.source;
     case 'contact.status': return context.contact?.status;
     case 'contact.assignedUserId': return context.contact?.assignedUserId;
+    case 'contact.tags': return Array.isArray(context.contact?.tags) ? context.contact.tags.join(',') : '';
+    case 'contact.notes': return context.contact?.notes;
     case 'message.content': return context.message?.content;
     case 'message.contentType': return context.message?.contentType;
     case 'conversation.unreadCount': return context.conversation?.unreadCount;

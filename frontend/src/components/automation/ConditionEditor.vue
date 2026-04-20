@@ -96,6 +96,8 @@ const emit = defineEmits<{
 const fieldOptions = [
   { title: 'Nguồn contact', value: 'contact.source' },
   { title: 'Trạng thái contact', value: 'contact.status' },
+  { title: 'Thẻ khách hàng (Tags)', value: 'contact.tags' },
+  { title: 'Ghi chú contact', value: 'contact.notes' },
   { title: 'Người phụ trách', value: 'contact.assignedUserId' },
   { title: 'Nội dung tin nhắn', value: 'message.content' },
   { title: 'Loại tin nhắn', value: 'message.contentType' },
