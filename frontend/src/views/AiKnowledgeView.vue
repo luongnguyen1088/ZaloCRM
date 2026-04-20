@@ -461,7 +461,6 @@ import { useZaloAccounts } from '@/composables/use-zalo-accounts';
 
 const { accounts, fetchAccounts } = useZaloAccounts();
 
-const authStore = useAuthStore(); // added this but wait is it needed? I'll check imports
 
 const showGuide = ref(false);
 const loading = ref(true);
