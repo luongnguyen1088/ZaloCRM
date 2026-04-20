@@ -4,6 +4,7 @@ import { assignUserAction } from './actions/assign-user-action.js';
 import { updateStatusAction } from './actions/update-status-action.js';
 import { createAppointmentAction } from './actions/create-appointment-action.js';
 import { sendTemplateAction } from './actions/send-template-action.js';
+import { aiReplyAction } from './actions/ai-reply-action.js';
 
 export type AutomationTriggerType = 'message_received' | 'contact_created' | 'status_changed';
 
@@ -17,7 +18,8 @@ type AutomationAction =
   | { type: 'assign_user'; userId: string }
   | { type: 'send_template'; templateId: string }
   | { type: 'update_status'; status: string }
-  | { type: 'create_appointment'; offsetHours?: number; typeLabel?: string; notes?: string };
+  | { type: 'create_appointment'; offsetHours?: number; typeLabel?: string; notes?: string }
+  | { type: 'ai_reply'; confidenceThreshold?: number };
 
 export interface AutomationContext {
   trigger: AutomationTriggerType;
@@ -132,6 +134,25 @@ async function executeAction(action: AutomationAction, context: AutomationContex
       threadId: context.conversation.threadId ?? null,
       threadType: context.conversation.threadType ?? 'user',
       context: { org: context.org, contact: context.contact, conversation: context.conversation },
+    });
+
+    if (sentMessage) {
+      await prisma.conversation.update({
+        where: { id: context.conversation.id },
+        data: { lastMessageAt: new Date(), isReplied: true, unreadCount: 0 },
+      });
+    }
+    return;
+  }
+
+  if (action.type === 'ai_reply' && context.conversation?.id && context.conversation.zaloAccountId) {
+    const sentMessage = await aiReplyAction({
+      orgId: context.orgId,
+      conversationId: context.conversation.id,
+      zaloAccountId: context.conversation.zaloAccountId,
+      threadId: context.conversation.threadId ?? null,
+      threadType: context.conversation.threadType ?? 'user',
+      confidenceThreshold: action.confidenceThreshold,
     });
 
     if (sentMessage) {

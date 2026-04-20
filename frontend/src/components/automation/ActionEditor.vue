@@ -62,6 +62,27 @@
           @update:model-value="updateAction(index, 'typeLabel', $event)"
         />
       </template>
+
+      <template v-if="action.type === 'ai_reply'">
+        <div class="text-caption text-medium-emphasis mb-1">
+          Dựa vào Kho tri thức để trả lời tự động.
+        </div>
+        <v-slider
+          :model-value="(action.confidenceThreshold ?? 0.8) * 100"
+          label="Độ tin cậy tối thiểu"
+          thumb-label="always"
+          step="5"
+          min="0"
+          max="100"
+          density="compact"
+          color="primary"
+          @update:model-value="updateThreshold(index, $event)"
+        >
+          <template #append>
+            <span class="text-caption font-weight-bold" style="width: 40px">{{ Math.round((action.confidenceThreshold ?? 0.8) * 100) }}%</span>
+          </template>
+        </v-slider>
+      </template>
     </div>
 
     <div>
@@ -89,12 +110,13 @@ const actionOptions = [
   { title: 'Send template', value: 'send_template' },
   { title: 'Update status', value: 'update_status' },
   { title: 'Create appointment', value: 'create_appointment' },
+  { title: 'AI Smart Reply (Beta)', value: 'ai_reply' },
 ];
 
 const statusItems = [
   { title: 'Mới', value: 'new' },
-  { title: '�� li�n h?', value: 'contacted' },
-  { title: 'Quan t�m', value: 'interested' },
+  { title: 'Đã liên hệ', value: 'contacted' },
+  { title: 'Quan tâm', value: 'interested' },
   { title: 'Chuyển đổi', value: 'converted' },
   { title: 'Mất', value: 'lost' },
 ];
@@ -114,6 +136,10 @@ function updateAction(index: number, key: keyof AutomationAction, value: unknown
 
 function updateNumericAction(index: number, key: keyof AutomationAction, value: unknown) {
   updateAction(index, key, Number(value ?? 0));
+}
+
+function updateThreshold(index: number, value: number) {
+  updateAction(index, 'confidenceThreshold', value / 100);
 }
 
 function removeAction(index: number) {
