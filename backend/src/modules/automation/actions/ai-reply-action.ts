@@ -30,7 +30,11 @@ export async function aiReplyAction(input: {
       return null;
     }
 
-    const content = result.content.trim();
+    if (!('content' in result)) {
+      return null;
+    }
+
+    const content = (result.content as string).trim();
     if (!content) return null;
 
     // 3. Send through Zalo
