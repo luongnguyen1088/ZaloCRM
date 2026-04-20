@@ -1,14 +1,14 @@
 <template>
   <v-container fluid class="pa-6 fill-height d-flex flex-column">
     <!-- Header -->
-    <div class="d-flex align-center mb-6 flex-shrink-0">
+    <div class="d-flex align-center mb-4 flex-shrink-0">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 gradient-text">Đào tạo AI</h1>
         <p class="text-medium-emphasis mb-0">Xây dựng "bộ não" riêng cho trợ lý Zalo của bạn</p>
       </div>
       <v-spacer />
-      <v-btn color="primary" prepend-icon="mdi-plus" rounded="xl" elevation="8" size="large" @click="openAddDialog">
-        Thêm kiến thức mới
+      <v-btn variant="outlined" color="primary" prepend-icon="mdi-plus" rounded="xl" @click="openAddDialog" class="mr-2">
+        Thêm thủ công
       </v-btn>
     </div>
 
@@ -16,7 +16,44 @@
     <v-row class="flex-grow-1 overflow-hidden">
       <!-- Left Side: Knowledge Management -->
       <v-col cols="12" md="7" class="d-flex flex-column h-100 overflow-hidden">
-        <div class="glass-container pa-4 flex-grow-1 d-flex flex-column">
+        
+        <!-- Magic Add Console -->
+        <v-card class="magic-console mb-6 pa-1 flex-shrink-0" elevation="12">
+          <div class="d-flex align-center pa-2 px-4">
+            <v-icon color="primary" class="mr-2 animate-sparkle">mdi-sparkles</v-icon>
+            <span class="text-subtitle-2 font-weight-bold primary--text">NẠP NHANH BẰNG AI (1-CLICK)</span>
+          </div>
+          <div class="pa-3 pt-1">
+            <v-textarea
+              v-model="magicInput"
+              placeholder="Dán bất kỳ nội dung nào vào đây (ví dụ: Bảng giá, chính sách)... AI sẽ tự động phân loại và đặt tiêu đề."
+              variant="flat"
+              bg-color="transparent"
+              rows="3"
+              hide-details
+              class="magic-textarea"
+              :disabled="savingMagic"
+              @keyup.ctrl.enter="runMagicAdd"
+            />
+            <div class="d-flex align-center mt-2 px-1">
+              <span class="text-caption text-disabled">Nhấn Ctrl + Enter để nạp nhanh</span>
+              <v-spacer />
+              <v-btn 
+                color="primary" 
+                variant="flat" 
+                rounded="lg" 
+                size="small" 
+                :loading="savingMagic"
+                :disabled="!magicInput.trim()"
+                @click="runMagicAdd"
+              >
+                Tự động nạp kiến thức
+              </v-btn>
+            </div>
+          </div>
+        </v-card>
+
+        <div class="glass-container pa-4 flex-grow-1 d-flex flex-column overflow-hidden">
           <!-- Search & Filters -->
           <v-row dense class="mb-4 flex-shrink-0">
             <v-col cols="12" sm="8">
@@ -109,11 +146,9 @@
             <v-icon color="secondary" class="mr-2">mdi-microsoft-xbox-controller</v-icon>
             <span class="text-subtitle-1 font-weight-bold">Trình giả lập AI-Agent</span>
             <v-spacer />
-            <v-tooltip location="bottom" text="Thử nghiệm xem AI sẽ trả lời khách hàng thế nào với kiến thức hiện có">
-              <template v-slot:activator="{ props }">
-                <v-icon v-bind="props" size="18" color="medium-emphasis">mdi-help-circle-outline</v-icon>
-              </template>
-            </v-tooltip>
+            <v-btn size="x-small" variant="text" color="primary" prepend-icon="mdi-delete-sweep" @click="testMessages = []">
+              Xóa chat
+            </v-btn>
           </div>
 
           <!-- Chat Area -->
@@ -126,7 +161,7 @@
             <div v-for="(msg, i) in testMessages" :key="i" 
                  :class="['d-flex mb-4', msg.role === 'user' ? 'justify-end' : 'justify-start']">
               <div :class="['message-bubble', msg.role === 'user' ? 'user-bubble' : 'ai-bubble']">
-                <div v-if="msg.role === 'ai'" class="text-caption font-weight-bold mb-1 primary--text">AI Training Test</div>
+                <div v-if="msg.role === 'ai'" class="text-caption font-weight-bold mb-1 primary--text">Hệ thống Đào tạo AI</div>
                 {{ msg.content }}
               </div>
             </div>
@@ -255,6 +290,14 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Success Snackbar -->
+    <v-snackbar v-model="toast.show" :color="toast.color" rounded="pill" elevation="12">
+      <div class="d-flex align-center">
+        <v-icon class="mr-2">{{ toast.icon }}</v-icon>
+        {{ toast.text }}
+      </div>
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -266,14 +309,17 @@ const loading = ref(true);
 const saving = ref(false);
 const deleting = ref(false);
 const testing = ref(false);
+const savingMagic = ref(false);
 const search = ref('');
 const filterCategory = ref('Tất cả');
 const items = ref<any[]>([]);
 
-// Simulator State
+// Simulator & Magic State
+const magicInput = ref('');
 const testQuestion = ref('');
 const testMessages = ref<any[]>([]);
 const chatContainer = ref<HTMLElement | null>(null);
+const toast = ref({ show: false, text: '', color: 'success', icon: 'mdi-check-circle' });
 
 const categories = computed(() => {
   const cats = new Set(items.value.map(i => i.category).filter(Boolean));
@@ -300,10 +346,7 @@ const editDialog = ref({
   item: { id: '', title: '', content: '', category: 'Chung', isActive: true }
 });
 
-const deleteDialog = ref({
-  show: false,
-  item: null as any
-});
+const deleteDialog = ref({ show: false, item: null as any });
 
 async function loadData() {
   loading.value = true;
@@ -317,22 +360,51 @@ async function loadData() {
   }
 }
 
+async function runMagicAdd() {
+  if (!magicInput.value.trim() || savingMagic.value) return;
+  savingMagic.value = true;
+  const content = magicInput.value;
+  
+  try {
+    // Stage 1: AI analyzes and categorizes
+    const analysis = await api.post('/ai/knowledge/analyze', { content });
+    
+    // Stage 2: Save the knowledge
+    await api.post('/ai/knowledge', {
+      title: analysis.data.title,
+      category: analysis.data.category,
+      content: content,
+      isActive: true
+    });
+    
+    toast.value = {
+      show: true,
+      text: `AI đã nạp xong: ${analysis.data.title} (${analysis.data.category})`,
+      color: 'success',
+      icon: 'mdi-sparkles'
+    };
+    
+    magicInput.value = '';
+    await loadData();
+    
+    // Auto-test prompt?
+    testMessages.value.push({ role: 'ai', content: `Kiến thức mới đã được nạp: "${analysis.data.title}". Bạn có muốn đặt câu hỏi thử nghiệm để kiểm tra không?` });
+  } catch (err) {
+    toast.value = { show: true, text: 'Nạp nhanh thất bại, hãy thử lại thủ công', color: 'error', icon: 'mdi-alert' };
+  } finally {
+    savingMagic.value = false;
+  }
+}
+
 function openAddDialog() {
   editDialog.value = {
-    show: true,
-    isEdit: false,
-    valid: true,
+    show: true, isEdit: false, valid: true,
     item: { id: '', title: '', content: '', category: 'Chung', isActive: true }
   };
 }
 
 function editItem(item: any) {
-  editDialog.value = {
-    show: true,
-    isEdit: true,
-    valid: true,
-    item: { ...item }
-  };
+  editDialog.value = { show: true, isEdit: true, valid: true, item: { ...item } };
 }
 
 async function saveItem() {
@@ -373,14 +445,11 @@ async function doDelete() {
 
 async function runTest() {
   if (!testQuestion.value || testing.value) return;
-  
   const q = testQuestion.value;
   testMessages.value.push({ role: 'user', content: q });
   testQuestion.value = '';
   testing.value = true;
-  
   scrollToBottom();
-
   try {
     const res = await api.post('/ai/knowledge/test', { question: q });
     testMessages.value.push({ role: 'ai', content: res.data.content });
@@ -426,6 +495,32 @@ onMounted(loadData);
   -webkit-text-fill-color: transparent;
 }
 
+.magic-console {
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.08), rgba(0, 0, 0, 0.4)) !important;
+  border: 1px solid rgba(var(--v-theme-primary), 0.2) !important;
+  border-radius: 16px !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.magic-console::before {
+  content: "";
+  position: absolute;
+  top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.05) 0%, transparent 70%);
+  animation: rotate 20s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.magic-textarea :deep(.v-field__input) {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.search-input :deep(.v-field__outline) { border-color: rgba(255,255,255,0.1); }
+
 .glass-container {
   background: rgba(255, 255, 255, 0.02);
   backdrop-filter: blur(20px);
@@ -437,94 +532,26 @@ onMounted(loadData);
   background: rgba(255, 255, 255, 0.03) !important;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.05) !important;
-  transition: all 0.25s ease;
-}
-
-.knowledge-card:hover {
-  border-color: rgba(var(--v-theme-primary), 0.4) !important;
-  background: rgba(255, 255, 255, 0.05) !important;
 }
 
 .simulator-panel {
-  background: rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 20px;
-  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.2);
-}
-
-.glass-header {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-}
-
-.glass-footer {
-  background: rgba(255, 255, 255, 0.03);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.bg-dots {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 0);
-  background-size: 24px 24px;
+  border: 1px solid rgba(255,255,255,0.05);
 }
 
 .message-bubble {
-  padding: 10px 16px;
-  border-radius: 18px;
-  max-width: 85%;
-  font-size: 14px;
-  line-height: 1.5;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 10px 16px; border-radius: 18px; max-width: 85%; font-size: 14px;
 }
+.user-bubble { background: #0072FF; color: white; border-bottom-right-radius: 4px; }
+.ai-bubble { background: rgba(255,255,255,0.08); color: white; border-bottom-left-radius: 4px; }
 
-.user-bubble {
-  background: #0072FF;
-  color: white;
-  border-bottom-right-radius: 4px;
-}
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
-.ai-bubble {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
-  border-bottom-left-radius: 4px;
-}
+.animate-sparkle { animation: sparkle 2s infinite; }
+@keyframes sparkle { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } }
 
-.simulator-input :deep(.v-field__input) {
-  font-size: 14px;
-}
-
-.form-dialog {
-  border-radius: 24px !important;
-  overflow: hidden;
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-}
-
-.truncate-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.border-bottom {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.primary--text {
-  color: #00F2FF;
-}
+.primary--text { color: #00F2FF; }
+.truncate-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
 </style>

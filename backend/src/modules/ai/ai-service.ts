@@ -7,9 +7,10 @@ import { generateWithOpenaiCompat } from './providers/openai-compat.js';
 import { buildReplyDraftPrompt } from './prompts/reply-draft.js';
 import { buildSummaryPrompt } from './prompts/summary.js';
 import { buildSentimentPrompt } from './prompts/sentiment.js';
+import { buildCategorizePrompt } from './prompts/categorize.js';
 import { getRelevantKnowledge } from './knowledge/knowledge-service.js';
 
-export type AiTaskType = 'reply_draft' | 'summary' | 'sentiment';
+export type AiTaskType = 'reply_draft' | 'summary' | 'sentiment' | 'categorize';
 
 type MessageContext = { senderType: string; senderName: string | null; content: string | null; sentAt: Date };
 type SentimentResult = { label: 'positive' | 'neutral' | 'negative'; confidence: number; reason: string };
@@ -337,4 +338,21 @@ export async function generateAiOutput(input: {
     confidence: 0.8,
   });
   return { content: text, confidence: 0.8 };
+}
+
+export async function categorizeKnowledge(orgId: string, content: string) {
+  const currentConfig = await getAiConfig(orgId);
+  const provider = currentConfig.provider || 'anthropic';
+  const apiKey = await getProviderApiKey(orgId, provider);
+  const model = currentConfig.model || 'claude-3-5-sonnet';
+
+  const system = buildCategorizePrompt();
+  const raw = await generateText(provider, apiKey, model, system, content);
+
+  try {
+    return JSON.parse(raw) as { title: string; category: string };
+  } catch (err) {
+    console.error('[AI Categorize Error] Failed to parse JSON:', raw);
+    return { title: content.substring(0, 30) + '...', category: 'Chung' };
+  }
 }

@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { authMiddleware } from '../../auth/auth-middleware.js';
 import * as service from './knowledge-service.js';
-import { generateAiOutput } from '../ai-service.js';
+import { getAiConfig, getAiUsage, updateAiConfig, generateAiOutput, categorizeKnowledge } from '../ai-service.js';
 import { prisma } from '../../../shared/database/prisma-client.js';
 
 export async function knowledgeRoutes(fastify: FastifyInstance) {
@@ -53,5 +53,17 @@ export async function knowledgeRoutes(fastify: FastifyInstance) {
       type: 'reply_draft',
       customPrompt: `Vào vai trợ lý phản hồi câu hỏi thử nghiệm của người dùng: "${question}". Hãy ưu tiên sử dụng kiến thức doanh nghiệp đã nạp.`
     });
+  });
+
+  // AI Smart Add: Analyze and categorize content automatically
+  fastify.post('/analyze', async (request: FastifyRequest, reply) => {
+    const { content } = request.body as { content: string };
+    if (!content) return reply.status(400).send({ error: 'Nội dung không được để trống' });
+    
+    try {
+      return await categorizeKnowledge(request.user!.orgId, content);
+    } catch (err) {
+      return { title: 'Kiến thức mới', category: 'Chung' };
+    }
   });
 }
