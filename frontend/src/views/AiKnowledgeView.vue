@@ -392,8 +392,8 @@
                 <v-icon size="18" class="mr-2">mdi-numeric-2-circle</v-icon> Cấu trúc Câu hỏi - Câu trả lời (Q&A)
               </div>
               <p class="text-body-2 mb-2">Viết dưới dạng câu hỏi giả định sẽ giúp AI tìm kiếm chính xác hơn khi khách hàng hỏi câu tương tự.</p>
-              <v-card variant="outlined" class="pa-3 bg-grey-darken-4 rounded-lg">
-                <div class="text-caption font-italic">
+              <v-card variant="outlined" class="pa-3 bg-slate-50 rounded-lg border-dashed">
+                <div class="text-caption font-italic text-slate-600">
                    "Khách hỏi: Shop mình có chi nhánh ở Sài Gòn không?<br>
                    Trả lời: Hiện tại shop chỉ có kho chính tại Hà Nội, nhưng có ship COD vào HCM trong 2-3 ngày."
                 </div>
@@ -671,32 +671,68 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.gradient-text { background: linear-gradient(90deg, #00F2FF, #0072FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.magic-console { background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.08), rgba(0, 0, 0, 0.4)) !important; border: 1px solid rgba(var(--v-theme-primary), 0.2) !important; border-radius: 16px !important; }
-.magic-textarea :deep(.v-field__input) { font-size: 14px; }
-.glass-container { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; }
-.knowledge-card { background: rgba(255, 255, 255, 0.03) !important; border-radius: 12px; }
-.stats-badge { background: rgba(76, 175, 80, 0.1); color: #4CAF50; padding: 2px 8px; border-radius: 6px; font-size: 11px; }
-.simulator-panel { background: rgba(0, 0, 0, 0.2); border-radius: 20px; }
+.gradient-text { 
+  background: linear-gradient(90deg, #2563eb, #3b82f6); 
+  -webkit-background-clip: text; 
+  -webkit-text-fill-color: transparent; 
+}
+.magic-console { 
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.02), #ffffff) !important; 
+  border: 1px solid rgba(37, 99, 235, 0.1) !important; 
+  border-radius: 16px !important; 
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+}
+.magic-textarea :deep(.v-field__input) { font-size: 14px; color: #1e293b; }
+
+.glass-container { 
+  background: #ffffff; 
+  border: 1px solid #e2e8f0; 
+  border-radius: 20px; 
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+}
+
+.knowledge-card { 
+  background: #ffffff !important; 
+  border: 1px solid #f1f5f9;
+  border-radius: 12px; 
+  transition: all 0.3s ease;
+}
+.knowledge-card:hover {
+  border-color: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.stats-badge { background: #f0fdf4; color: #16a34a; padding: 2px 8px; border-radius: 6px; font-size: 11px; }
+
+.simulator-panel { 
+  background: #f8fafc; 
+  border-left: 1px solid #e2e8f0;
+  border-radius: 0 20px 20px 0; 
+}
+
 .message-bubble { padding: 10px 16px; border-radius: 18px; max-width: 85%; font-size: 14px; }
-.user-bubble { background: #0072FF; color: white; border-bottom-right-radius: 4px; }
-.ai-bubble { background: rgba(255,255,255,0.08); color: white; border-bottom-left-radius: 4px; }
+.user-bubble { background: #2563eb; color: white; border-bottom-right-radius: 4px; }
+.ai-bubble { background: #ffffff; color: #1e293b; border-bottom-left-radius: 4px; border: 1px solid #e2e8f0; }
+
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-.glass-list { background: rgba(20, 20, 20, 0.9) !important; backdrop-filter: blur(10px); }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+.glass-list { background: #ffffff !important; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
 .animate-sparkle { animation: sparkle 2s infinite; }
-@keyframes sparkle { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
-.primary--text { color: #00F2FF; }
+@keyframes sparkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+.primary--text { color: #2563eb; }
 .truncate-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
 .account-selector-mini :deep(.v-field__input) { font-size: 12px; }
 
 .guide-dialog {
-  background: #0f172a !important;
-  border: 1px solid rgba(255,255,255,0.1) !important;
+  background: #ffffff !important;
   border-radius: 20px !important;
 }
 .guide-content {
   line-height: 1.6;
+  color: #475569;
 }
 .guide-content section {
   padding-bottom: 8px;

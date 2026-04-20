@@ -8,12 +8,12 @@
       <div class="d-flex align-center" style="gap: 12px;">
         <div
           class="ai-core-orb d-flex align-center justify-center"
-          style="width: 32px; height: 32px; background: linear-gradient(135deg, #00F2FF, #0077B6);"
+          style="width: 32px; height: 32px; background: linear-gradient(135deg, #2563eb, #3b82f6); border-radius: 8px;"
         >
-          <v-icon size="18" color="white">mdi-robot</v-icon>
+          <v-icon size="18" color="white">mdi-brain</v-icon>
         </div>
         <v-app-bar-title>
-          <span class="font-weight-bold">Zalo</span><span style="color: #00F2FF;">CRM</span>
+          <span class="font-weight-bold text-slate-900" style="color: #0f172a;">Zalo</span><span style="color: #2563eb; font-weight: 800;">CRM</span>
         </v-app-bar-title>
       </div>
 
@@ -25,13 +25,13 @@
       <!-- Status indicator -->
       <div
         class="d-flex align-center mr-4 px-3 py-1 rounded-pill"
-        style="background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.2);"
+        style="background: #f0fdf4; border: 1px solid #dcfce7;"
       >
         <span
-          class="status-dot"
-          style="width: 8px; height: 8px; border-radius: 50%; background: #4CAF50; display: inline-block; margin-right: 8px;"
+          class="status-dot-mini"
+          style="width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block; margin-right: 8px;"
         ></span>
-        <span class="text-caption font-weight-bold" style="color: #4CAF50; letter-spacing: 1px;">ONLINE</span>
+        <span class="text-caption font-weight-bold" style="color: #16a34a; letter-spacing: 0.5px; font-size: 0.65rem !important;">ONLINE</span>
       </div>
 
       <span class="text-body-2 mr-3" v-if="authStore.user">{{ authStore.user.fullName }}</span>
@@ -48,8 +48,8 @@
     </v-app-bar>
 
     <!-- Sidebar navigation -->
-    <v-navigation-drawer v-model="drawer" :rail="rail" permanent @click="rail = false">
-      <v-list density="compact" nav class="mt-2">
+    <v-navigation-drawer v-model="drawer" :rail="rail" permanent @click="rail = false" color="background" class="border-right">
+      <v-list density="compact" nav class="mt-2 sidebar-list">
         <v-list-item
           v-for="item in menuItems"
           :key="item.path"

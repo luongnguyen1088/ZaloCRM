@@ -8,8 +8,27 @@ export const vuetify = createVuetify({
   components,
   directives,
   theme: {
-    defaultTheme: localStorage.getItem('theme') || 'dark',
+    defaultTheme: 'light',
     themes: {
+      light: {
+        dark: false,
+        colors: {
+          background: '#F8FAFC',
+          surface: '#FFFFFF',
+          'surface-variant': '#F1F5F9',
+          'surface-light': '#F8FAFC',
+          primary: '#2563EB',
+          secondary: '#64748B',
+          accent: '#3B82F6',
+          error: '#EF4444',
+          warning: '#F59E0B',
+          success: '#10B981',
+          info: '#3B82F6',
+          'on-background': '#0F172A',
+          'on-surface': '#1E293B',
+          'on-primary': '#FFFFFF',
+        },
+      },
       dark: {
         dark: true,
         colors: {
@@ -27,21 +46,6 @@ export const vuetify = createVuetify({
           'on-background': '#E6F1FF',
           'on-surface': '#E6F1FF',
           'on-primary': '#0A192F',
-        },
-      },
-      light: {
-        dark: false,
-        colors: {
-          background: '#F0F4F8',
-          surface: '#FFFFFF',
-          'surface-variant': '#E8EDF2',
-          primary: '#0A192F',
-          secondary: '#112240',
-          accent: '#00B4D8',
-          error: '#D32F2F',
-          warning: '#F57F17',
-          success: '#2E7D32',
-          info: '#0277BD',
         },
       },
     },

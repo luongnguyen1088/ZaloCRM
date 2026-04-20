@@ -240,52 +240,71 @@
 </template>
 
 <style scoped>
-.glass-card {
-  background: rgba(255, 255, 255, 0.03) !important;
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: 20px !important;
-  position: relative;
-  overflow: hidden;
+.gradient-text {
+  background: linear-gradient(90deg, #1e293b, #64748b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .account-card {
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .account-card:hover {
-  transform: translateY(-8px);
-  background: rgba(255, 255, 255, 0.06) !important;
-  border-color: rgba(var(--v-theme-primary), 0.5) !important;
-  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5) !important;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.08);
+  border-color: #2563eb;
 }
 
-.status-indicator {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: #666;
+.account-avatar {
+  border: 2px solid #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
-.status-indicator.success { background: linear-gradient(90deg, #4CAF50, #8BC34A); }
-.status-indicator.error { background: linear-gradient(90deg, #F44336, #E91E63); }
-.status-indicator.primary { background: linear-gradient(90deg, #2196F3, #00BCD4); }
 
-.bg-black-opacity {
-  background: rgba(0, 0, 0, 0.2);
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status-active {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #dcfce7;
+}
+
+.status-expired {
+  background: #fef2f2;
+  color: #ef4444;
+  border: 1px solid #fee2e2;
+}
+
+.last-sync {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.custom-card-text {
+  color: #475569;
 }
 
 .action-btn {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0;
   transition: all 0.2s ease;
 }
 .action-btn:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
+  background: #eff6ff !important;
+  color: #2563eb;
+  border-color: #bfdbfe;
   transform: scale(1.1);
 }
-.action-btn.primary:hover { color: #2196F3; border-color: #2196F3; }
 .action-btn.success:hover { color: #4CAF50; border-color: #4CAF50; }
 .action-btn.info:hover { color: #00BCD4; border-color: #00BCD4; }
 .action-btn.cyan:hover { color: #00E5FF; border-color: #00E5FF; }

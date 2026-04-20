@@ -330,43 +330,41 @@ function clearAiState() { emit('clear-ai'); }
 
 <style scoped>
 .chat-header {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
   z-index: 10;
 }
 
 .bg-chat-active {
+  background-color: #ffffff;
   background-image: 
-    radial-gradient(circle at 50% -20%, rgba(33, 150, 243, 0.05), transparent 60%),
-    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    radial-gradient(circle at 50% -20%, rgba(37, 99, 235, 0.02), transparent 60%);
 }
 
 .status-dot {
   width: 7px;
   height: 7px;
-  background: #4CAF50;
+  background: #10b981;
   border-radius: 50%;
-  box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
 }
 
 .message-bubble {
   padding: 10px 14px;
-  border-radius: 18px;
+  border-radius: 14px;
   position: relative;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .bubble-self {
-  background: linear-gradient(135deg, #0072FF, #00C6FF);
+  background: #2563eb;
   color: white;
   border-bottom-right-radius: 4px;
 }
 
 .bubble-contact {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  color: white;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #1e293b;
   border-bottom-left-radius: 4px;
 }
 
@@ -383,49 +381,48 @@ function clearAiState() { emit('clear-ai'); }
 }
 
 .file-card-v2 {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   min-width: 200px;
 }
 .file-icon {
-  background: #34495e;
+  background: #f1f5f9;
   padding: 8px;
   border-radius: 8px;
 }
 
 .reminder-card-v2 {
-  background: rgba(255, 183, 77, 0.05);
-  border: 1px solid rgba(255, 183, 77, 0.2);
+  background: #fffbeb;
+  border: 1px solid #fde68a;
   border-radius: 16px;
   min-width: 250px;
 }
 .reminder-time-box {
-  background: rgba(255, 183, 77, 0.1);
-  color: #FFB74D;
+  background: #fef3c7;
+  color: #d97706;
 }
 
 .chat-footer {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
 }
 
 .futuristic-input-container {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 14px;
   transition: all 0.3s ease;
 }
 .futuristic-input-container:focus-within {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(33, 150, 243, 0.4);
-  box-shadow: 0 0 20px rgba(33, 150, 243, 0.05);
+  background: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
 .custom-textarea {
   font-size: 14.5px;
-  color: white;
+  color: #1e293b;
 }
 
 .magic-btn {
@@ -433,13 +430,13 @@ function clearAiState() { emit('clear-ai'); }
 }
 .magic-btn:hover {
   transform: rotate(15deg) scale(1.15);
-  color: #00F2FF !important;
+  color: #2563eb !important;
 }
 
 .icon-orb {
   width: 100px;
   height: 100px;
-  background: radial-gradient(circle, rgba(33, 150, 243, 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.05) 0%, transparent 70%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -450,9 +447,10 @@ function clearAiState() { emit('clear-ai'); }
 .chat-img {
   cursor: zoom-in;
   transition: opacity 0.2s;
+  border: 1px solid #e2e8f0;
 }
 .chat-img:hover { opacity: 0.9; }
 
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 </style>

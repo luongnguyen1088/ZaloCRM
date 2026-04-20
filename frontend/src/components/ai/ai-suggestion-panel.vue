@@ -64,28 +64,28 @@ defineEmits<{
 <style scoped>
 .ai-suggestion-container {
   margin-bottom: 12px;
-  animation: slideUp 0.3s ease-out;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-ai-panel {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 242, 255, 0.15);
+  background: #ffffff;
+  border: 1px solid rgba(37, 99, 235, 0.1);
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
 .bg-white-opacity {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
 }
 
 .draft-text {
   white-space: pre-wrap;
-  line-height: 1.5;
-  max-height: 150px;
+  line-height: 1.6;
+  max-height: 180px;
   overflow-y: auto;
-  color: rgba(255, 255, 255, 0.9);
+  color: #1e293b;
+  font-size: 14px;
 }
 
 .animate-pulse {
@@ -93,13 +93,13 @@ defineEmits<{
 }
 
 @keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
 }
 
 @keyframes slideUp {
-  from { transform: translateY(10px); opacity: 0; }
+  from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
@@ -108,16 +108,19 @@ defineEmits<{
 .refine-btn {
   text-transform: none;
   font-size: 11px !important;
-  letter-spacing: 0.5px;
-  background: rgba(var(--v-theme-primary), 0.05) !important;
+  font-weight: 500;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #64748b;
 }
 
 .refine-btn:hover {
-  background: rgba(var(--v-theme-primary), 0.15) !important;
-  color: var(--v-theme-primary);
+  border-color: #2563eb !important;
+  color: #2563eb !important;
+  background: #eff6ff !important;
 }
 
 .primary--text {
-  color: #00F2FF;
+  color: #2563eb;
 }
 </style>

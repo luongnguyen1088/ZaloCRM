@@ -202,76 +202,79 @@ function formatTime(dateStr: string | null): string {
 
 <style scoped>
 .glass-header {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: #ffffff;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .gradient-text {
-  background: linear-gradient(90deg, #fff, #888);
+  background: linear-gradient(90deg, #1e293b, #64748b);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .filter-select :deep(.v-field) {
-  border-radius: 8px !important;
+  border-radius: 10px !important;
   font-size: 13px;
-  background: rgba(255,255,255,0.02) !important;
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
 }
 
 .search-bar :deep(.v-field) {
-  border-radius: 8px !important;
+  border-radius: 10px !important;
   font-size: 13px;
-  background: rgba(255,255,255,0.02) !important;
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
 }
 
 .conv-item {
   transition: all 0.2s ease;
   position: relative;
   cursor: pointer;
+  border-radius: 12px;
+  margin: 0 8px;
 }
 
 .conv-item:hover {
-  background: rgba(255, 255, 255, 0.03) !important;
+  background: #f1f5f9 !important;
 }
 
 .conv-active {
-  background: rgba(33, 150, 243, 0.08) !important;
+  background: #eff6ff !important;
 }
 
 .active-indicator {
   position: absolute;
-  left: 0;
-  top: 15%;
-  bottom: 15%;
-  width: 3px;
-  background: linear-gradient(to bottom, #2196F3, #00BCD4);
+  left: -8px;
+  top: 20%;
+  bottom: 20%;
+  width: 4px;
+  background: #2563eb;
   border-radius: 0 4px 4px 0;
 }
 
 .border-glass {
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid #e2e8f0;
 }
 
 .unread-dot {
   position: absolute;
   top: 2px;
   right: 2px;
-  width: 10px;
-  height: 10px;
-  background: #f44336;
-  border: 2px solid #0f172a;
+  width: 11px;
+  height: 11px;
+  background: #ef4444;
+  border: 2px solid #ffffff;
   border-radius: 50%;
   z-index: 2;
 }
 
 .unread-count-badge {
-  background: #f44336;
+  background: #ef4444;
   color: white;
   font-size: 10px;
   min-width: 18px;
   height: 18px;
-  border-radius: 9px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -283,27 +286,27 @@ function formatTime(dateStr: string | null): string {
 }
 
 @keyframes pulse-animation {
-  0% { box-shadow: 0 0 0 0px rgba(244, 67, 54, 0.4); }
-  70% { box-shadow: 0 0 0 6px rgba(244, 67, 54, 0); }
-  100% { box-shadow: 0 0 0 0px rgba(244, 67, 54, 0); }
+  0% { box-shadow: 0 0 0 0px rgba(239, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0px rgba(239, 68, 68, 0); }
 }
 
-.name-text { font-size: 14.5px; }
-.preview-text { font-size: 12.5px; color: rgba(255,255,255,0.5); }
-.unread-text { color: #fff !important; font-weight: 500; }
-.time-text { font-size: 11px; color: rgba(255,255,255,0.4); }
+.name-text { font-size: 14.5px; color: #0f172a; }
+.preview-text { font-size: 12.5px; color: #64748b; }
+.unread-text { color: #0f172a !important; font-weight: 600; }
+.time-text { font-size: 11px; color: #94a3b8; }
 
 .account-tag {
   font-size: 10px;
-  padding: 0px 6px;
-  border-radius: 4px;
-  background: rgba(33, 150, 243, 0.1);
-  color: #2196F3;
+  padding: 1px 8px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #475569;
   margin-top: 4px;
-  max-width: fit-content;
+  font-weight: 500;
+  border: 1px solid #e2e8f0;
 }
 
 .custom-scrollbar::-webkit-scrollbar { width: 3px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.1); }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 </style>
