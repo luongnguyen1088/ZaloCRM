@@ -27,7 +27,7 @@
       <v-alert
         v-if="error"
         type="error"
-        variant="glass"
+        variant="tonal"
         class="mb-6 rounded-xl border-error"
         closable
         @click:close="error = ''"
@@ -180,7 +180,7 @@
             class="mb-4"
           >
             <template #item="{ props, item }">
-              <v-list-item v-bind="props" :prepend-icon="typeIcon(item.value)" :title="item.title" />
+              <v-list-item v-bind="props" :prepend-icon="typeIcon(item.raw.value)" :title="item.raw.label" />
             </template>
           </v-select>
 
