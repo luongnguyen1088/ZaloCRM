@@ -506,11 +506,13 @@ async function unlinkGoogle() {
 async function fetchSpreadsheets() {
   if (!isGoogleLinked.value) return;
   loadingSpreadsheets.value = true;
+  dialogError.value = '';
   try {
     const { data } = await api.get('/integrations/google/spreadsheets');
     spreadsheetOptions.value = data;
-  } catch (err) {
-    console.error('Error fetching spreadsheets:', err);
+  } catch (err: any) {
+    spreadsheetOptions.value = [];
+    dialogError.value = err.response?.data?.error || 'Không thể tải danh sách Google Sheets.';
   } finally {
     loadingSpreadsheets.value = false;
   }
@@ -519,18 +521,20 @@ async function fetchSpreadsheets() {
 async function fetchSheetNames(spreadsheetId: string) {
   if (!isGoogleLinked.value || !spreadsheetId) return;
   loadingSheetNames.value = true;
+  dialogError.value = '';
   try {
     const { data } = await api.get(`/integrations/google/spreadsheets/${spreadsheetId}/sheets`);
     sheetNameOptions.value = data;
-  } catch (err) {
-    console.error('Error fetching sheet names:', err);
+  } catch (err: any) {
+    sheetNameOptions.value = [];
+    dialogError.value = err.response?.data?.error || 'Không thể tải danh sách sheet.';
   } finally {
     loadingSheetNames.value = false;
   }
 }
 
 watch(() => form.value.type, (newType) => {
-  if (newType === 'google_sheets' && isGoogleLinked.value) {
+  if (showDialog.value && newType === 'google_sheets' && isGoogleLinked.value) {
     fetchSpreadsheets();
   }
 });
@@ -541,18 +545,17 @@ watch(() => form.value.config.spreadsheetId, (newId) => {
   }
 });
 
-watch(isGoogleLinked, (linked) => {
-  if (linked && form.value.type === 'google_sheets') {
-    fetchSpreadsheets();
-  }
-});
-
 function openCreate() {
   editing.value = false;
   selectedItem.value = null;
   form.value = { type: 'google_sheets', name: '', enabled: true, config: {} };
   dialogError.value = '';
+  spreadsheetOptions.value = [];
+  sheetNameOptions.value = [];
   showDialog.value = true;
+  if (isGoogleLinked.value) {
+    fetchSpreadsheets();
+  }
 }
 
 function openEdit(item: Integration) {
@@ -560,7 +563,15 @@ function openEdit(item: Integration) {
   selectedItem.value = item;
   form.value = { type: item.type, name: item.name, enabled: item.enabled, config: { ...item.config } };
   dialogError.value = '';
+  spreadsheetOptions.value = [];
+  sheetNameOptions.value = [];
   showDialog.value = true;
+  if (item.type === 'google_sheets' && isGoogleLinked.value) {
+    fetchSpreadsheets();
+    if (item.config?.spreadsheetId) {
+      fetchSheetNames(item.config.spreadsheetId);
+    }
+  }
 }
 
 function confirmDelete(item: Integration) {

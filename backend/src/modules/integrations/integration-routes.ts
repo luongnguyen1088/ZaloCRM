@@ -96,7 +96,7 @@ export async function integrationRoutes(app: FastifyInstance): Promise<void> {
       });
 
       if (!connection?.accessToken) {
-        return reply.status(401).send({ error: 'Google account not linked' });
+        return reply.status(409).send({ error: 'Google account is not linked' });
       }
 
       // Simple fetch from Google Drive API to list spreadsheets
@@ -108,7 +108,7 @@ export async function integrationRoutes(app: FastifyInstance): Promise<void> {
       if (!response.ok) {
         const errText = await response.text();
         logger.error('[integrations] Drive API error:', errText);
-        return reply.status(response.status).send({ error: 'Failed to fetch spreadsheets' });
+        return reply.status(424).send({ error: 'Google connection expired or failed. Please relink your Google account.' });
       }
 
       const data = await response.json() as { files: any[] };
@@ -129,7 +129,7 @@ export async function integrationRoutes(app: FastifyInstance): Promise<void> {
       });
 
       if (!connection?.accessToken) {
-        return reply.status(401).send({ error: 'Google account not linked' });
+        return reply.status(409).send({ error: 'Google account is not linked' });
       }
 
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${id}?fields=sheets(properties(title))`;
@@ -138,7 +138,7 @@ export async function integrationRoutes(app: FastifyInstance): Promise<void> {
       });
 
       if (!response.ok) {
-        return reply.status(response.status).send({ error: 'Failed to fetch sheets' });
+        return reply.status(424).send({ error: 'Google connection expired or failed. Please relink your Google account.' });
       }
 
       const data = await response.json() as { sheets: any[] };
