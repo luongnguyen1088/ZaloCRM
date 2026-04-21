@@ -370,7 +370,8 @@ export async function generateAiOutput(input: {
     return normalized;
   }
 
-  const text = raw.trim();
+  // Post-processing to strip markdown bold symbols (**, __)
+  const text = raw.trim().replace(/\*\*|__/g, '');
 
   // Persist summary to conversation if type is summary
   if (input.type === 'summary') {
