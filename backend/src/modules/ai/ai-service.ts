@@ -36,7 +36,7 @@ function buildConversationContext(messages: MessageContext[]) {
     .join('\n');
 }
 
-const FALLBACK_AI_CREDITS = 500;
+const FALLBACK_AI_CREDITS = 50;
 
 function getBillingPeriodFallback() {
   const now = new Date();

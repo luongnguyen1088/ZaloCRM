@@ -424,7 +424,7 @@ model AiConfig {
   orgId     String   @unique @map("org_id")
   provider  String   @default("anthropic")
   model     String   @default("claude-sonnet-4-6")
-  maxDaily  Int      @default(500) @map("max_daily")
+  maxDaily  Float    @default(50.0) @map("max_daily")
   enabled   Boolean  @default(true)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
