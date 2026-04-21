@@ -37,7 +37,7 @@
               <div class="ml-3">
                 <div class="text-caption font-weight-bold text-white uppercase">AI POWER</div>
                 <div class="text-h6 font-weight-black text-gradient-ai">
-                  {{ plan.maxAiTokens.toLocaleString() }} Tokens
+                  {{ plan.maxAiTokens.toLocaleString() }} AI credits
                 </div>
               </div>
             </div>

@@ -19,8 +19,12 @@ export interface AiConfig {
   model: string;
   maxDaily: number;
   enabled: boolean;
-  hasAnthropicKey?: boolean;
-  hasGeminiKey?: boolean;
+  managed?: boolean;
+  platformKeyConfigured?: boolean;
+  planName?: string;
+  usedCredits?: number;
+  maxCredits?: number;
+  remainingCredits?: number;
 }
 
 interface ConversationMessage {
@@ -69,8 +73,8 @@ export function useChat() {
   const aiSummaryLoading = ref(false);
   const aiSentiment = ref<AiSentiment | null>(null);
   const aiSentimentLoading = ref(false);
-  const aiUsage = ref({ usedToday: 0, maxDaily: 500, remaining: 500, enabled: true });
-  const aiConfig = ref<AiConfig>({ provider: 'anthropic', model: 'claude-sonnet-4-6', maxDaily: 500, enabled: true });
+  const aiUsage = ref({ usedToday: 0, maxDaily: 500, remaining: 500, usedCredits: 0, maxCredits: 500, remainingCredits: 500, enabled: true });
+  const aiConfig = ref<AiConfig>({ provider: 'anthropic', model: 'claude-sonnet-4-6', maxDaily: 500, enabled: true, managed: true });
   let socket: Socket | null = null;
 
   const selectedConv = computed(() =>
@@ -120,23 +124,31 @@ export function useChat() {
         model: res.data.model,
         maxDaily: res.data.maxDaily,
         enabled: res.data.enabled,
-        hasAnthropicKey: res.data.hasAnthropicKey,
-        hasGeminiKey: res.data.hasGeminiKey,
+        managed: res.data.managed,
+        platformKeyConfigured: res.data.platformKeyConfigured,
+        planName: res.data.planName,
+        usedCredits: res.data.usedCredits,
+        maxCredits: res.data.maxCredits,
+        remainingCredits: res.data.remainingCredits,
       };
     } catch (err) {
       console.error('Failed to fetch AI config:', err);
     }
   }
 
-  async function saveAiConfig(payload: AiConfig) {
+  async function saveAiConfig(payload: { enabled: boolean }) {
     const res = await api.put('/ai/config', payload);
     aiConfig.value = {
       provider: res.data.provider,
       model: res.data.model,
       maxDaily: res.data.maxDaily,
       enabled: res.data.enabled,
-      hasAnthropicKey: aiConfig.value.hasAnthropicKey,
-      hasGeminiKey: aiConfig.value.hasGeminiKey,
+      managed: res.data.managed,
+      platformKeyConfigured: res.data.platformKeyConfigured,
+      planName: res.data.planName,
+      usedCredits: res.data.usedCredits,
+      maxCredits: res.data.maxCredits,
+      remainingCredits: res.data.remainingCredits,
     };
   }
 

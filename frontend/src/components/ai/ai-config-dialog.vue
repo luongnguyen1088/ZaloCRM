@@ -3,106 +3,61 @@
     <v-card>
       <v-card-title>Cấu hình AI</v-card-title>
       <v-card-text>
-        <v-progress-linear v-if="loadingProviders" indeterminate class="mb-4" />
-        <v-select v-model="local.provider" :items="providerItems" label="Provider" class="mb-3" :disabled="loadingProviders" @update:model-value="onProviderChange" />
-        <v-select v-model="local.model" :items="modelOptions" label="Model" class="mb-3" :disabled="loadingProviders" />
-        
-        <v-text-field 
-          v-model="local.apiKey" 
-          label="API Key" 
-          type="password" 
-          :placeholder="hasCurrentKey ? '••••••••••••' : 'Nhập API Key mới'"
-          hint="Dán API Key từ nhà cung cấp vào đây. Nếu bỏ trống sẽ sử dụng cấu hình hiện tại."
-          persistent-hint
-          variant="outlined" 
-          class="mb-3" 
-        />
+        <v-alert
+          :type="config.platformKeyConfigured ? 'info' : 'warning'"
+          variant="tonal"
+          class="mb-4"
+        >
+          AI được quản lý bởi ZaloCRM. Người dùng không cần nhập API key riêng.
+        </v-alert>
 
-        <v-text-field v-model.number="local.maxDaily" type="number" label="Quota mỗi ngày" :min="1" :rules="[v => v >= 1 || 'Tối thiểu 1']" class="mb-3" />
-        <v-switch v-model="local.enabled" label="Bật AI" inset color="primary" />
+        <v-list density="compact" class="mb-4 rounded-lg border">
+          <v-list-item title="Gói hiện tại" :subtitle="config.planName || 'Free'" />
+          <v-list-item title="AI credits" :subtitle="`${config.remainingCredits ?? config.maxDaily}/${config.maxCredits ?? config.maxDaily} còn lại`" />
+          <v-list-item title="Mô hình" :subtitle="`${config.provider} / ${config.model}`" />
+        </v-list>
+
+        <v-switch v-model="local.enabled" label="Bật AI cho workspace này" inset color="primary" />
       </v-card-text>
       <v-card-actions>
         <v-spacer />
         <v-btn variant="text" @click="$emit('update:modelValue', false)">Đóng</v-btn>
-        <v-btn color="primary" :loading="loading" @click="$emit('save', local)">Lưu</v-btn>
+        <v-btn color="primary" :loading="loading" @click="$emit('save', { enabled: local.enabled })">Lưu</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed, watch } from 'vue';
-import { api } from '@/api';
-
-type ProviderModel = { title: string; value: string };
-type ProviderInfo = { id: string; name: string; models: ProviderModel[] };
+import { reactive, watch } from 'vue';
 
 const props = defineProps<{
   modelValue: boolean;
   loading: boolean;
-  config: { 
-    provider: string; 
-    model: string; 
-    maxDaily: number; 
+  config: {
+    provider: string;
+    model: string;
+    maxDaily: number;
     enabled: boolean;
-    hasAnthropicKey?: boolean;
-    hasGeminiKey?: boolean;
-    hasOpenRouterKey?: boolean;
+    managed?: boolean;
+    platformKeyConfigured?: boolean;
+    planName?: string;
+    usedCredits?: number;
+    maxCredits?: number;
+    remainingCredits?: number;
   };
 }>();
 
-const emit = defineEmits<{
+defineEmits<{
   'update:modelValue': [value: boolean];
-  save: [value: { provider: string; model: string; maxDaily: number; enabled: boolean; apiKey?: string }];
+  save: [value: { enabled: boolean }];
 }>();
 
-const providers = ref<ProviderInfo[]>([]);
-const loadingProviders = ref(false);
+const local = reactive({ enabled: true });
 
-const hasCurrentKey = computed(() => {
-  if (local.provider === 'anthropic') return props.config.hasAnthropicKey;
-  if (local.provider === 'gemini') return props.config.hasGeminiKey;
-  if (local.provider === 'openrouter') return props.config.hasOpenRouterKey;
-  return false;
-});
-
-/* Dropdown items derived from API data */
-const providerItems = computed(() => providers.value.map((p) => ({ title: p.name, value: p.id })));
-const modelOptions = computed(() => {
-  const found = providers.value.find((p) => p.id === local.provider);
-  return found?.models ?? [];
-});
-
-const local = reactive({ provider: 'anthropic', model: '', maxDaily: 500, enabled: true, apiKey: '' });
-
-/* When provider changes, auto-select first model if current is invalid */
-function onProviderChange() {
-  const valid = modelOptions.value.some((m) => m.value === local.model);
-  if (!valid) local.model = modelOptions.value[0]?.value ?? '';
-}
-
-/* Fetch available providers from backend */
-async function fetchProviders() {
-  loadingProviders.value = true;
-  try {
-    const res = await api.get('/ai/providers');
-    providers.value = res.data;
-  } catch {
-    providers.value = [];
-  } finally {
-    loadingProviders.value = false;
-  }
-}
-
-/* Sync config prop → local state ONLY when dialog is newly opened */
 watch(() => props.modelValue, (isOpen) => {
   if (isOpen) {
-    local.provider = props.config.provider;
-    local.model = props.config.model;
-    local.maxDaily = props.config.maxDaily;
     local.enabled = props.config.enabled;
-    local.apiKey = ''; // Always reset password field on open
-    fetchProviders();
   }
 });
 </script>

@@ -29,6 +29,7 @@ model Organization {
   messageTemplates MessageTemplate[]
   aiConfig      AiConfig?
   aiSuggestions AiSuggestion[]
+  aiCreditUsages AiCreditUsage[]
   aiKnowledge   AiKnowledge[]
   subscription  Subscription?
   connections   OrganizationConnection[]
@@ -451,6 +452,25 @@ model AiSuggestion {
   @@index([conversationId, createdAt])
   @@index([orgId, type, createdAt])
   @@map("ai_suggestions")
+}
+
+model AiCreditUsage {
+  id          String   @id @default(uuid())
+  orgId       String   @map("org_id")
+  feature     String
+  provider    String?
+  model       String?
+  credits     Int      @default(1)
+  inputChars  Int?     @map("input_chars")
+  outputChars Int?     @map("output_chars")
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, createdAt])
+  @@index([orgId, feature, createdAt])
+  @@map("ai_credit_usages")
 }
 
 model SubscriptionPlan {

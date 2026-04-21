@@ -91,10 +91,10 @@ function buildProviders(): ProviderDef[] {
 
 const providers = buildProviders();
 
-/** Returns providers that have an auth token AND at least one model configured */
+/** Returns platform-managed providers that have an auth token AND at least one model configured */
 export function getAvailableProviders(): Omit<ProviderDef, 'authToken'>[] {
   return providers
-    .filter((p) => p.models.length > 0)
+    .filter((p) => p.authToken && p.models.length > 0)
     .map(({ authToken: _, ...rest }) => rest);
 }
 

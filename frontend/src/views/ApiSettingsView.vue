@@ -1,18 +1,16 @@
 <template>
   <div class="api-settings-container pb-10">
-    <!-- Header Section -->
     <div class="d-flex align-center mb-8">
       <div class="header-icon-box mr-4">
         <v-icon size="32" color="primary">mdi-connection</v-icon>
       </div>
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 outfit-font">Kết nối & AI</h1>
-        <p class="text-body-2 text-medium-emphasis mb-0">Quản lý sức mạnh AI và các kết nối hệ thống của bạn</p>
+        <p class="text-body-2 text-medium-emphasis mb-0">Quản lý AI platform, webhook và API hệ thống</p>
       </div>
     </div>
 
     <v-row>
-      <!-- Left Column: AI Control Center -->
       <v-col cols="12" md="7">
         <v-card class="glass-card ai-control-card mb-6 overflow-hidden" elevation="0">
           <div class="card-glow"></div>
@@ -26,7 +24,7 @@
                 <div class="d-flex align-center">
                   <span :class="['status-orb mr-2', aiConfig.enabled ? 'active' : 'inactive']"></span>
                   <span class="text-caption font-weight-medium uppercase tracking-wider">
-                    {{ aiConfig.enabled ? 'Hệ thống đang hoạt động' : 'Hệ thống đã tắt' }}
+                    {{ aiConfig.enabled ? 'Đang hoạt động' : 'Đang tắt' }}
                   </span>
                 </div>
               </div>
@@ -41,33 +39,31 @@
 
             <v-row>
               <v-col cols="6" sm="3">
-                <div class="info-label mb-1">Nhà cung cấp</div>
+                <div class="info-label mb-1">Gói</div>
                 <div class="info-value d-flex align-center">
-                  <v-icon size="20" class="mr-2" color="primary">
-                    {{ aiConfig.provider === 'openrouter' ? 'mdi-hub' : 'mdi-brain' }}
-                  </v-icon>
-                  {{ aiConfig.provider }}
+                  <v-icon size="20" class="mr-2" color="primary">mdi-shield-crown-outline</v-icon>
+                  {{ aiConfig.planName || 'Free' }}
                 </div>
               </v-col>
               <v-col cols="6" sm="3">
-                <div class="info-label mb-1">Mô hình AI</div>
+                <div class="info-label mb-1">Mô hình</div>
                 <div class="info-value truncate">{{ aiConfig.model }}</div>
               </v-col>
               <v-col cols="6" sm="3">
-                <div class="info-label mb-1">Hạn mức/Ngày</div>
-                <div class="info-value">{{ aiConfig.maxDaily }} <small class="text-caption ml-1">tokens</small></div>
+                <div class="info-label mb-1">AI credits</div>
+                <div class="info-value">{{ aiConfig.remainingCredits }} / {{ aiConfig.maxCredits }}</div>
               </v-col>
               <v-col cols="6" sm="3">
-                <div class="info-label mb-1">API Key</div>
+                <div class="info-label mb-1">Vận hành</div>
                 <div class="info-value">
                   <v-chip
                     size="x-small"
-                    :color="hasCurrentProviderKey ? 'success' : 'warning'"
+                    :color="aiConfig.platformKeyConfigured ? 'success' : 'warning'"
                     variant="tonal"
                     label
                     class="font-weight-bold"
                   >
-                    {{ hasCurrentProviderKey ? 'ĐÃ CẤU HÌNH' : 'CHƯA CÓ KEY' }}
+                    {{ aiConfig.platformKeyConfigured ? 'PLATFORM AI' : 'CẦN CẤU HÌNH ENV' }}
                   </v-chip>
                 </div>
               </v-col>
@@ -75,7 +71,6 @@
           </v-card-text>
         </v-card>
 
-        <!-- Webhook Section -->
         <v-card class="glass-card mb-6" elevation="0">
           <v-card-title class="pa-6 pb-2 d-flex align-center">
             <v-icon size="24" color="primary" class="mr-3">mdi-webhook</v-icon>
@@ -83,7 +78,7 @@
           </v-card-title>
           <v-card-text class="pa-6 pt-0">
             <p class="text-body-2 text-medium-emphasis mb-6">
-              Nhận thông báo tự động (thời gian thực) khi có tin nhắn mới hoặc khách hàng mới.
+              Nhận thông báo thời gian thực khi có tin nhắn mới hoặc khách hàng mới.
             </p>
             <v-text-field
               v-model="webhookUrl"
@@ -96,7 +91,7 @@
             />
             <v-text-field
               v-model="webhookSecret"
-              label="Mã bảo mật (Signing Secret)"
+              label="Signing Secret"
               type="password"
               variant="outlined"
               density="comfortable"
@@ -108,37 +103,29 @@
                 Lưu cấu hình
               </v-btn>
               <v-btn variant="outlined" :loading="testing" @click="testWebhook" rounded="lg">
-                Gửi Test Payload
+                Gửi test
               </v-btn>
             </div>
           </v-card-text>
         </v-card>
       </v-col>
 
-      <!-- Right Column: Developers & Docs -->
       <v-col cols="12" md="5">
-        <!-- API Docs Card -->
         <v-card class="glass-card mb-6 theme-dark-docs" elevation="0">
           <v-card-title class="pa-6 pb-2 d-flex align-center">
             <v-icon size="24" color="primary" class="mr-3">mdi-code-braces</v-icon>
-            <span class="outfit-font font-weight-bold">Dành cho Lập trình viên</span>
+            <span class="outfit-font font-weight-bold">Dành cho lập trình viên</span>
           </v-card-title>
           <v-card-text class="pa-6 pt-0">
             <div class="api-key-box pa-4 mb-6 rounded-lg bg-black-opacity">
               <div class="d-flex align-center justify-space-between mb-2">
                 <span class="text-caption font-weight-bold text-medium-emphasis">PRIVATE API KEY</span>
-                <v-btn
-                  size="small"
-                  variant="text"
-                  color="primary"
-                  :loading="generatingKey"
-                  @click="generateKey"
-                >
+                <v-btn size="small" variant="text" color="primary" :loading="generatingKey" @click="generateKey">
                   Làm mới
                 </v-btn>
               </div>
               <div class="d-flex align-center">
-                <code class="flex-grow-1 mr-2 text-primary font-weight-bold">{{ apiKey || '••••••••••••••••' }}</code>
+                <code class="flex-grow-1 mr-2 text-primary font-weight-bold">{{ apiKey || '****************' }}</code>
                 <v-btn icon size="x-small" variant="text" @click="copyKey" :disabled="!apiKey">
                   <v-icon size="18">mdi-content-copy</v-icon>
                 </v-btn>
@@ -156,7 +143,6 @@ GET  /api/public/appointments</pre>
           </v-card-text>
         </v-card>
 
-        <!-- Stats Card -->
         <v-card class="glass-card" elevation="0">
           <v-card-text class="pa-6 d-flex align-center">
             <div class="icon-circle primary mr-4">
@@ -164,7 +150,7 @@ GET  /api/public/appointments</pre>
             </div>
             <div>
               <div class="text-subtitle-2 font-weight-bold">Bảo mật cấp cao</div>
-              <div class="text-caption text-medium-emphasis">Dữ liệu được mã hóa chuẩn AES-256 nội bộ</div>
+              <div class="text-caption text-medium-emphasis">AI key được quản lý tập trung trên hệ thống</div>
             </div>
           </v-card-text>
         </v-card>
@@ -190,19 +176,22 @@ GET  /api/public/appointments</pre>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { api } from '@/api';
 import AiConfigDialog from '@/components/ai/ai-config-dialog.vue';
 
-// ... rest of refs
-
-const hasCurrentProviderKey = computed(() => {
-  const p = aiConfig.value.provider.toLowerCase();
-  if (p === 'anthropic') return aiConfig.value.hasAnthropicKey;
-  if (p === 'gemini') return aiConfig.value.hasGeminiKey;
-  if (p === 'openrouter') return aiConfig.value.hasOpenRouterKey;
-  return false;
-});
+type AiConfig = {
+  provider: string;
+  model: string;
+  maxDaily: number;
+  enabled: boolean;
+  managed: boolean;
+  platformKeyConfigured: boolean;
+  planName: string;
+  usedCredits: number;
+  maxCredits: number;
+  remainingCredits: number;
+};
 
 const apiKey = ref('');
 const generatingKey = ref(false);
@@ -212,20 +201,40 @@ const saving = ref(false);
 const testing = ref(false);
 const showAiConfig = ref(false);
 const aiSaving = ref(false);
-const aiConfig = ref({ 
-  provider: 'anthropic', 
-  model: 'claude-sonnet-4-6', 
-  maxDaily: 500, 
+const aiConfig = ref<AiConfig>({
+  provider: 'anthropic',
+  model: 'claude-sonnet-4-6',
+  maxDaily: 500,
   enabled: true,
-  hasAnthropicKey: false,
-  hasGeminiKey: false,
-  hasOpenRouterKey: false,
+  managed: true,
+  platformKeyConfigured: false,
+  planName: 'Free',
+  usedCredits: 0,
+  maxCredits: 500,
+  remainingCredits: 500,
 });
 
 const snack = ref({ show: false, text: '', color: 'success' });
 
 function showSnack(text: string, color = 'success') {
   snack.value = { show: true, text, color };
+}
+
+function normalizeAiConfig(data: any): AiConfig {
+  const maxCredits = Number(data.maxCredits ?? data.maxDaily ?? 500);
+  const usedCredits = Number(data.usedCredits ?? data.usedToday ?? 0);
+  return {
+    provider: data.provider || 'platform',
+    model: data.model || '',
+    maxDaily: maxCredits,
+    enabled: Boolean(data.enabled),
+    managed: Boolean(data.managed ?? true),
+    platformKeyConfigured: Boolean(data.platformKeyConfigured),
+    planName: data.planName || 'Free',
+    usedCredits,
+    maxCredits,
+    remainingCredits: Number(data.remainingCredits ?? data.remaining ?? Math.max(0, maxCredits - usedCredits)),
+  };
 }
 
 async function loadApiKey() {
@@ -250,20 +259,8 @@ async function loadWebhook() {
 
 async function loadAiConfig() {
   try {
-    // Add timestamp to bypass any caching layers
     const res = await api.get(`/ai/config?t=${Date.now()}`);
-    const data = res.data;
-    
-    // Explicitly update each field to ensure Vue reactivity
-    aiConfig.value.provider = data.provider || 'anthropic';
-    aiConfig.value.model = data.model || '';
-    aiConfig.value.maxDaily = data.maxDaily || 500;
-    aiConfig.value.enabled = Boolean(data.enabled);
-    aiConfig.value.hasAnthropicKey = Boolean(data.hasAnthropicKey);
-    aiConfig.value.hasGeminiKey = Boolean(data.hasGeminiKey);
-    aiConfig.value.hasOpenRouterKey = Boolean(data.hasOpenRouterKey);
-    
-    console.log('[AI Settings] UI Updated:', JSON.stringify(aiConfig.value));
+    aiConfig.value = normalizeAiConfig(res.data);
   } catch (err) {
     console.error('[AI Settings] Failed to load config:', err);
   }
@@ -315,19 +312,11 @@ async function testWebhook() {
   }
 }
 
-async function saveAiConfig(value: { provider: string; model: string; maxDaily: number; enabled: boolean; apiKey?: string }) {
+async function saveAiConfig(value: { enabled: boolean }) {
   aiSaving.value = true;
   try {
     const res = await api.put('/ai/config', value);
-    aiConfig.value = {
-      provider: res.data.provider,
-      model: res.data.model,
-      maxDaily: res.data.maxDaily,
-      enabled: res.data.enabled,
-      hasAnthropicKey: res.data.hasAnthropicKey,
-      hasGeminiKey: res.data.hasGeminiKey,
-      hasOpenRouterKey: res.data.hasOpenRouterKey,
-    };
+    aiConfig.value = normalizeAiConfig(res.data);
     showAiConfig.value = false;
     showSnack('Đã lưu cấu hình AI');
   } catch {
@@ -380,6 +369,27 @@ onMounted(async () => {
   border: 1px solid var(--color-primary-soft-strong);
 }
 
+.info-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+.info-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+  min-height: 24px;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .status-orb {
   width: 8px;
   height: 8px;
@@ -388,77 +398,44 @@ onMounted(async () => {
 }
 
 .status-orb.active {
-  background: var(--color-success);
-  box-shadow: 0 0 8px var(--color-success);
+  background: rgb(var(--v-theme-success));
+  box-shadow: 0 0 8px rgba(var(--v-theme-success), 0.5);
 }
 
 .status-orb.inactive {
-  background: var(--color-danger);
-}
-
-.info-label {
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.info-value {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--color-text);
+  background: rgb(var(--v-theme-warning));
 }
 
 .bg-black-opacity {
-  background: var(--color-overlay);
-  border: 1px solid var(--color-border);
+  background: rgba(0, 0, 0, 0.04);
 }
 
-.border-left-glow {
-  border-left: 3px solid var(--color-primary) !important;
+.theme-dark-docs {
+  background: #101827 !important;
+  color: white !important;
 }
 
 .code-pre {
-  font-family: 'Fira Code', monospace;
-  font-size: 0.8rem;
-  color: var(--color-text-secondary);
+  margin: 0;
   white-space: pre-wrap;
-  line-height: 1.6;
-}
-
-.icon-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.icon-circle.primary {
-  background: var(--color-primary-soft);
-}
-
-.truncate {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.82rem;
 }
 
 .color-cyan {
-  color: var(--color-primary);
+  color: #22d3ee;
 }
 
-.uppercase {
-  text-transform: uppercase;
+.border-left-glow {
+  border-left: 3px solid #22d3ee;
 }
 
-.tracking-wider {
-  letter-spacing: 1px;
-}
-
-:deep(.v-field) {
-  border-radius: 10px !important;
+.icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--color-primary-soft);
 }
 </style>
