@@ -32,6 +32,7 @@ model Organization {
   aiKnowledge   AiKnowledge[]
   subscription  Subscription?
   connections   OrganizationConnection[]
+  userInvitations UserInvitation[]
 
   @@map("organizations")
 }
