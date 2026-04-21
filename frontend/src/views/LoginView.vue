@@ -91,10 +91,14 @@
               </div>
             </header>
 
-            <div class="login-trust-row">
-              <div v-for="item in platformSignals" :key="item.text" class="login-trust-item">
-                <v-icon size="16" class="login-trust-item__icon">{{ item.icon }}</v-icon>
-                <span>{{ item.text }}</span>
+            <div class="login-card__microcopy">
+              <div class="login-card__microcopy-item">
+                <v-icon size="16" class="mr-2">mdi-shield-check-outline</v-icon>
+                <span>Bảo mật theo workspace và phân quyền người dùng.</span>
+              </div>
+              <div class="login-card__microcopy-item">
+                <v-icon size="16" class="mr-2">mdi-google</v-icon>
+                <span>Hỗ trợ đăng nhập bằng Google Workspace nếu tài khoản đã được liên kết.</span>
               </div>
             </div>
 
@@ -193,7 +197,8 @@
               height="54"
               variant="outlined"
               class="btn-google-glass"
-              :disabled="loading || !googleReady"
+              :loading="googleLoading"
+              :disabled="loading"
               @click="loginWithGoogle"
             >
               <v-img
@@ -247,6 +252,8 @@ const loading = ref(false);
 const error = ref('');
 const showPassword = ref(false);
 const googleReady = ref(false);
+const googleLoading = ref(false);
+const googleInitialized = ref(false);
 const router = useRouter();
 const authStore = useAuthStore();
 
@@ -280,19 +287,19 @@ const highlights = [
   },
 ];
 
-const platformSignals = [
-  { icon: 'mdi-shield-check-outline', text: 'Bảo mật theo workspace' },
-  { icon: 'mdi-lightning-bolt-outline', text: 'Vào lại phiên làm việc nhanh' },
-  { icon: 'mdi-google', text: 'Hỗ trợ Google Workspace' },
-];
-
 const canSubmit = computed(() => email.value.trim().length > 0 && password.value.length > 0);
 const submitLabel = computed(() => (loading.value ? 'Đang đăng nhập...' : 'Vào ZaloCRM'));
-const googleButtonLabel = computed(() => (googleReady.value ? 'Tiếp tục với Google Workspace' : 'Đang khởi tạo Google'));
+const googleButtonLabel = computed(() => {
+  if (googleLoading.value) {
+    return 'Đang khởi tạo Google';
+  }
+
+  return googleReady.value ? 'Tiếp tục với Google Workspace' : 'Thử đăng nhập với Google Workspace';
+});
 const googleHint = computed(() =>
   googleReady.value
     ? 'Dành cho tài khoản đã liên kết Google Workspace với hệ thống.'
-    : 'Google Sign-In đang tải. Bạn vẫn có thể đăng nhập bằng email và mật khẩu.'
+    : 'Nếu nút Google chưa sẵn sàng, hệ thống sẽ tự khởi tạo lại khi bạn bấm.'
 );
 
 watch([email, password], () => {
@@ -318,30 +325,20 @@ onMounted(async () => {
     }
   } catch {}
 
-  const googleIdentity = getGoogleIdentity();
-  if (!googleIdentity?.accounts?.id) {
-    let attempts = 0;
-    const interval = setInterval(() => {
-      const identity = getGoogleIdentity();
-      if (identity?.accounts?.id || attempts > 10) {
-        clearInterval(interval);
-        if (identity?.accounts?.id) {
-          initGoogle(identity);
-        }
-      }
-      attempts++;
-    }, 500);
-    return;
-  }
-
-  initGoogle(googleIdentity);
+  void ensureGoogleReady();
 });
 
 function initGoogle(identity: GoogleIdentity) {
+  if (googleInitialized.value) {
+    googleReady.value = true;
+    return;
+  }
+
   identity.accounts?.id?.initialize({
     client_id: '926202174216-4v1fml75f5403k79bvoeuau2go3oe1jq.apps.googleusercontent.com',
     callback: handleGoogleCallback,
   });
+  googleInitialized.value = true;
   googleReady.value = true;
 }
 
@@ -382,20 +379,87 @@ async function handleLogin() {
   }
 }
 
-function loginWithGoogle() {
+async function loginWithGoogle() {
   error.value = '';
 
-  const googleIdentity = getGoogleIdentity();
-  if (!googleIdentity?.accounts?.id) {
-    error.value = 'Google Sign-In chưa sẵn sàng. Vui lòng tải lại trang.';
+  const ready = await ensureGoogleReady({ force: true });
+  if (!ready) {
+    error.value = 'Google Sign-In chưa sẵn sàng. Vui lòng thử lại sau vài giây hoặc tải lại trang.';
     return;
   }
 
-  googleIdentity.accounts.id.prompt();
+  const googleIdentity = getGoogleIdentity();
+  const googlePrompt = googleIdentity?.accounts?.id;
+  if (!googlePrompt) {
+    error.value = 'Google Sign-In chưa sẵn sàng. Vui lòng thử lại.';
+    return;
+  }
+
+  googlePrompt.prompt();
 }
 
 function getGoogleIdentity() {
   return (window as Window & { google?: GoogleIdentity }).google;
+}
+
+async function ensureGoogleReady(options?: { force?: boolean }) {
+  if (googleReady.value) {
+    return true;
+  }
+
+  googleLoading.value = true;
+
+  try {
+    const availableIdentity = getGoogleIdentity();
+    if (availableIdentity?.accounts?.id) {
+      initGoogle(availableIdentity);
+      return true;
+    }
+
+    const script = getGoogleScript();
+    if (script && options?.force && !script.dataset.retryBound) {
+      script.dataset.retryBound = 'true';
+      script.addEventListener(
+        'load',
+        () => {
+          const identity = getGoogleIdentity();
+          if (identity?.accounts?.id) {
+            initGoogle(identity);
+          }
+        },
+        { once: true }
+      );
+    }
+
+    const identity = await waitForGoogleIdentity(options?.force ? 30 : 16);
+    if (!identity?.accounts?.id) {
+      googleReady.value = false;
+      return false;
+    }
+
+    initGoogle(identity);
+    return true;
+  } finally {
+    googleLoading.value = false;
+  }
+}
+
+function waitForGoogleIdentity(maxAttempts: number) {
+  return new Promise<GoogleIdentity | undefined>((resolve) => {
+    let attempts = 0;
+    const interval = window.setInterval(() => {
+      const identity = getGoogleIdentity();
+      if (identity?.accounts?.id || attempts >= maxAttempts) {
+        window.clearInterval(interval);
+        resolve(identity);
+      }
+      attempts += 1;
+    }, 400);
+  });
+}
+
+function getGoogleScript() {
+  return document.querySelector<HTMLScriptElement>('script[src*="accounts.google.com/gsi/client"]');
 }
 </script>
 
@@ -797,28 +861,22 @@ function getGoogleIdentity() {
   line-height: 1.6;
 }
 
-.login-trust-row {
-  display: flex;
-  flex-wrap: wrap;
+.login-card__microcopy {
+  display: grid;
   gap: 10px;
   margin-bottom: 20px;
-}
-
-.login-trust-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 12px;
-  border-radius: 999px;
+  padding: 14px 16px;
+  border-radius: 20px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  color: var(--color-text-secondary);
-  font-size: 0.82rem;
-  font-weight: 600;
 }
 
-.login-trust-item__icon {
-  color: var(--color-primary);
+.login-card__microcopy-item {
+  display: inline-flex;
+  align-items: flex-start;
+  color: var(--color-text-secondary);
+  font-size: 0.84rem;
+  line-height: 1.5;
 }
 
 .login-error {
@@ -954,6 +1012,7 @@ function getGoogleIdentity() {
   margin-top: 12px;
   font-size: 0.82rem;
   line-height: 1.55;
+  min-height: 2.6em;
 }
 
 .login-google-hint.is-ready {
