@@ -19,10 +19,20 @@ export async function generateWithGemini(baseUrl: string, apiKey: string, model:
       throw new Error(`Gemini request failed with status ${status}`);
     }
 
-    const data = await response.json() as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
+    const data = await response.json() as { 
+      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+      usageMetadata?: { promptTokenCount: number; candidatesTokenCount: number };
+    };
     const text = data.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('').trim();
     if (!text) throw new Error('Gemini returned empty content');
-    return text;
+    
+    return {
+      text,
+      usage: {
+        inputTokens: data.usageMetadata?.promptTokenCount || 0,
+        outputTokens: data.usageMetadata?.candidatesTokenCount || 0,
+      },
+    };
   } finally {
     clearTimeout(timeout);
   }

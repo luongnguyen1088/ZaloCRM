@@ -92,22 +92,35 @@ async function assertAiCreditAvailable(orgId: string) {
   return usage;
 }
 
+function calculateAiCredits(inputTokens: number, outputTokens: number): number {
+  const totalTokens = inputTokens + outputTokens;
+  // Logic: 1,000 tokens = 1 Credit
+  // Round to 2 decimal places, minimum 0.1 credit
+  return Math.max(0.1, parseFloat((totalTokens / 1000).toFixed(2)));
+}
+
 async function recordAiCreditUsage(input: {
   orgId: string;
   feature: AiTaskType;
   provider: string;
   model: string;
+  inputTokens?: number;
+  outputTokens?: number;
   inputText?: string;
   outputText?: string;
   metadata?: Prisma.InputJsonObject;
 }) {
+  const credits = calculateAiCredits(input.inputTokens || 0, input.outputTokens || 0);
+
   return prisma.aiCreditUsage.create({
     data: {
       orgId: input.orgId,
       feature: input.feature,
       provider: input.provider,
       model: input.model,
-      credits: 1,
+      credits: credits,
+      inputTokens: input.inputTokens,
+      outputTokens: input.outputTokens,
       inputChars: input.inputText?.length,
       outputChars: input.outputText?.length,
       metadata: input.metadata ?? {},
@@ -336,7 +349,7 @@ export async function generateAiOutput(input: {
   const system = knowledgeCtx ? `${systemBase}\nUse the following business knowledge to answer accurately:\n${knowledgeCtx}` : systemBase;
 
   const model = platform.model;
-  const raw = await generateText(provider, apiKey, model, system, userPrompt);
+  const { text: raw, usage } = await generateText(provider, apiKey, model, system, userPrompt);
 
   if (input.type === 'sentiment') {
     let parsed: SentimentResult;
@@ -363,6 +376,8 @@ export async function generateAiOutput(input: {
       feature: 'sentiment',
       provider,
       model,
+      inputTokens: usage.inputTokens,
+      outputTokens: usage.outputTokens,
       inputText: userPrompt,
       outputText: raw,
       metadata: { conversationId: input.conversationId, messageId: input.messageId },
@@ -397,6 +412,8 @@ export async function generateAiOutput(input: {
     feature: input.type,
     provider,
     model,
+    inputTokens: usage.inputTokens,
+    outputTokens: usage.outputTokens,
     inputText: userPrompt,
     outputText: text,
     metadata: { conversationId: input.conversationId, messageId: input.messageId },
@@ -414,12 +431,14 @@ export async function categorizeKnowledge(orgId: string, content: string) {
   const model = platform.model;
 
   const system = buildCategorizePrompt();
-  const raw = await generateText(provider, apiKey, model, system, content);
+  const { text: raw, usage } = await generateText(provider, apiKey, model, system, content);
   await recordAiCreditUsage({
     orgId,
     feature: 'categorize',
     provider,
     model,
+    inputTokens: usage.inputTokens,
+    outputTokens: usage.outputTokens,
     inputText: content,
     outputText: raw,
   });

@@ -25,10 +25,20 @@ export async function generateWithAnthropic(baseUrl: string, apiKey: string, mod
       throw new Error(`Anthropic request failed (${response.status}): ${body}`);
     }
 
-    const data = await response.json() as { content?: Array<{ type: string; text?: string }> };
+    const data = await response.json() as { 
+      content?: Array<{ type: string; text?: string }>;
+      usage?: { input_tokens: number; output_tokens: number };
+    };
     const text = data.content?.find((item) => item.type === 'text')?.text?.trim();
     if (!text) throw new Error('Anthropic returned empty content');
-    return text;
+    
+    return {
+      text,
+      usage: {
+        inputTokens: data.usage?.input_tokens || 0,
+        outputTokens: data.usage?.output_tokens || 0,
+      },
+    };
   } finally {
     clearTimeout(timeout);
   }

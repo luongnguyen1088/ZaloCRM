@@ -38,10 +38,18 @@ export async function generateWithOpenaiCompat(
 
     const data = (await response.json()) as {
       choices?: Array<{ message?: { content?: string } }>;
+      usage?: { prompt_tokens: number; completion_tokens: number };
     };
     const text = data.choices?.[0]?.message?.content?.trim();
     if (!text) throw new Error('OpenAI-compat returned empty content');
-    return text;
+    
+    return {
+      text,
+      usage: {
+        inputTokens: data.usage?.prompt_tokens || 0,
+        outputTokens: data.usage?.completion_tokens || 0,
+      },
+    };
   } finally {
     clearTimeout(timeout);
   }

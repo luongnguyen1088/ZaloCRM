@@ -460,7 +460,9 @@ model AiCreditUsage {
   feature     String
   provider    String?
   model       String?
-  credits     Int      @default(1)
+  credits     Float    @default(1.0)
+  inputTokens Int?     @map("input_tokens")
+  outputTokens Int?    @map("output_tokens")
   inputChars  Int?     @map("input_chars")
   outputChars Int?     @map("output_chars")
   metadata    Json     @default("{}")
