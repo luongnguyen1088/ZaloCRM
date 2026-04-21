@@ -1,9 +1,11 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
+  schemas  = ["zalocrm"]
 }
 
 // Top-level org — every resource is scoped to an org
@@ -35,6 +37,7 @@ model Organization {
   connections   OrganizationConnection[]
   userInvitations UserInvitation[]
 
+  @@schema("zalocrm")
   @@map("organizations")
 }
 
@@ -57,6 +60,7 @@ model User {
   activityLogs     ActivityLog[]
   dailyStats       DailyMessageStat[]
 
+  @@schema("zalocrm")
   @@map("users")
 }
 
@@ -76,6 +80,7 @@ model OrganizationMember {
   team Team?        @relation(fields: [teamId], references: [id])
 
   @@unique([orgId, userId])
+  @@schema("zalocrm")
   @@map("organization_members")
 }
 
@@ -94,6 +99,7 @@ model OrganizationConnection {
   org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@unique([orgId, type])
+  @@schema("zalocrm")
   @@map("organization_connections")
 }
 
@@ -107,6 +113,7 @@ model Team {
   org     Organization         @relation(fields: [orgId], references: [id], onDelete: Cascade)
   members OrganizationMember[]
 
+  @@schema("zalocrm")
   @@map("teams")
 }
 
@@ -125,6 +132,7 @@ model UserInvitation {
 
   org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
+  @@schema("zalocrm")
   @@map("user_invitations")
 }
 
@@ -151,6 +159,7 @@ model ZaloAccount {
   dailyStats    DailyMessageStat[]
   aiKnowledge   AiKnowledge[]
 
+  @@schema("zalocrm")
   @@map("zalo_accounts")
 }
 
@@ -166,6 +175,7 @@ model ZaloAccountAccess {
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([zaloAccountId, userId])
+  @@schema("zalocrm")
   @@map("zalo_account_access")
 }
 
@@ -203,6 +213,7 @@ model Contact {
   @@index([orgId, phone])
   @@index([orgId, zaloUid])
   @@index([orgId, mergedInto])
+  @@schema("zalocrm")
   @@map("contacts")
 }
 
@@ -227,6 +238,7 @@ model Conversation {
   summaryUpdatedAt DateTime? @map("summary_updated_at")
 
   @@unique([zaloAccountId, externalThreadId])
+  @@schema("zalocrm")
   @@map("conversations")
 }
 
@@ -249,6 +261,7 @@ model Message {
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   repliedBy    User?        @relation("RepliedMessages", fields: [repliedByUserId], references: [id])
 
+  @@schema("zalocrm")
   @@map("messages")
 }
 
@@ -269,6 +282,7 @@ model Appointment {
   contact      Contact      @relation(fields: [contactId], references: [id], onDelete: Cascade)
   assignedUser User?        @relation(fields: [assignedUserId], references: [id])
 
+  @@schema("zalocrm")
   @@map("appointments")
 }
 
@@ -285,6 +299,7 @@ model ActivityLog {
   org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   user User?        @relation(fields: [userId], references: [id])
 
+  @@schema("zalocrm")
   @@map("activity_logs")
 }
 
@@ -305,6 +320,7 @@ model DailyMessageStat {
   user        User         @relation(fields: [userId], references: [id])
 
   @@unique([userId, zaloAccountId, statDate])
+  @@schema("zalocrm")
   @@map("daily_message_stats")
 }
 
@@ -322,6 +338,7 @@ model Integration {
   org      Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   syncLogs SyncLog[]
 
+  @@schema("zalocrm")
   @@map("integrations")
 }
 
@@ -336,6 +353,7 @@ model SyncLog {
 
   integration Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
 
+  @@schema("zalocrm")
   @@map("sync_logs")
 }
 
@@ -351,6 +369,7 @@ model AppSetting {
   org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@unique([orgId, settingKey])
+  @@schema("zalocrm")
   @@map("app_settings")
 }
 
@@ -366,6 +385,7 @@ model DuplicateGroup {
   org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@index([orgId, resolved])
+  @@schema("zalocrm")
   @@map("duplicate_groups")
 }
 
@@ -380,6 +400,7 @@ model SavedReport {
 
   org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
+  @@schema("zalocrm")
   @@map("saved_reports")
 }
 
@@ -401,6 +422,7 @@ model AutomationRule {
   org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@index([orgId, trigger, enabled, priority])
+  @@schema("zalocrm")
   @@map("automation_rules")
 }
 
@@ -416,6 +438,7 @@ model MessageTemplate {
   org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@index([orgId, category])
+  @@schema("zalocrm")
   @@map("message_templates")
 }
 
@@ -431,6 +454,7 @@ model AiConfig {
 
   org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
+  @@schema("zalocrm")
   @@map("ai_configs")
 }
 
@@ -451,6 +475,7 @@ model AiSuggestion {
   @@index([orgId, createdAt])
   @@index([conversationId, createdAt])
   @@index([orgId, type, createdAt])
+  @@schema("zalocrm")
   @@map("ai_suggestions")
 }
 
@@ -472,6 +497,7 @@ model AiCreditUsage {
 
   @@index([orgId, createdAt])
   @@index([orgId, feature, createdAt])
+  @@schema("zalocrm")
   @@map("ai_credit_usages")
 }
 
@@ -485,6 +511,7 @@ model SubscriptionPlan {
   createdAt   DateTime @default(now()) @map("created_at")
 
   subscriptions Subscription[]
+  @@schema("zalocrm")
   @@map("subscription_plans")
 }
 
@@ -500,6 +527,7 @@ model Subscription {
 
   org  Organization     @relation(fields: [orgId], references: [id], onDelete: Cascade)
   plan SubscriptionPlan @relation(fields: [planId], references: [id])
+  @@schema("zalocrm")
   @@map("subscriptions")
 }
 
@@ -520,5 +548,6 @@ model AiKnowledge {
 
   @@index([orgId, isActive])
   @@index([zaloAccountId])
+  @@schema("zalocrm")
   @@map("ai_knowledge")
 }
