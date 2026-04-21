@@ -2,6 +2,18 @@
  * Centralized configuration loader.
  * All environment variables are read once at startup and typed here.
  */
+import dotenv from 'dotenv';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const configDir = path.dirname(fileURLToPath(import.meta.url));
+const backendEnvPath = path.resolve(configDir, '../../.env');
+const rootEnvPath = path.resolve(configDir, '../../../.env');
+
+// Load backend/.env first so backend-specific AI provider keys win in local dev.
+dotenv.config({ path: backendEnvPath, override: false });
+dotenv.config({ path: rootEnvPath, override: false });
+
 export const config = {
   port: parseInt(process.env.PORT || '3000'),
   host: process.env.HOST || '0.0.0.0',
