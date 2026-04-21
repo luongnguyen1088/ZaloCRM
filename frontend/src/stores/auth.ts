@@ -116,6 +116,7 @@ export const useAuthStore = defineStore('auth', () => {
     googleLogin, 
     fetchProfile, 
     switchOrg,
+    createOrg,
     logout, 
     init 
   };
