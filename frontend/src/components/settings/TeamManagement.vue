@@ -202,10 +202,10 @@
             class="mt-2"
           >
             <template #item="{ props, item }">
-              <v-list-item v-bind="props" :subtitle="item.raw.email">
+              <v-list-item v-bind="props" :subtitle="item.email">
                 <template #prepend>
                    <v-avatar color="primary-lighten-4" size="32" class="mr-2">
-                     <span class="text-primary text-caption font-weight-bold">{{ item.raw.fullName[0] }}</span>
+                     <span class="text-primary text-caption font-weight-bold">{{ item.fullName[0] }}</span>
                    </v-avatar>
                 </template>
               </v-list-item>
