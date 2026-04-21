@@ -31,6 +31,20 @@
 
         <v-form @submit.prevent="handleAccept">
           <v-text-field
+            v-if="!invitation?.email"
+            v-model="userEmail"
+            label="Địa chỉ Email"
+            prepend-inner-icon="mdi-email-outline"
+            variant="outlined"
+            type="email"
+            placeholder="email@company.com"
+            class="mb-4"
+            hide-details="auto"
+            rounded="lg"
+            color="primary"
+          />
+
+          <v-text-field
             v-model="fullName"
             label="Họ và tên của bạn"
             prepend-inner-icon="mdi-account-outline"
@@ -91,6 +105,7 @@ const invitation = ref<any>(null);
 const loadingVerifying = ref(true);
 const loadingSaving = ref(false);
 const error = ref('');
+const userEmail = ref('');
 const fullName = ref('');
 const password = ref('');
 const inviteError = ref('');
@@ -98,7 +113,9 @@ const success = ref(false);
 const showPass = ref(false);
 
 async function handleAccept() {
-  if (!fullName.value || !password.value) {
+  const finalEmail = invitation.value?.email || userEmail.value;
+
+  if (!finalEmail || !fullName.value || !password.value) {
     inviteError.value = 'Vui lòng nhập đầy đủ thông tin';
     return;
   }
@@ -112,6 +129,7 @@ async function handleAccept() {
   
   const res = await acceptInvitation({
     token,
+    email: finalEmail,
     fullName: fullName.value,
     password: password.value
   });

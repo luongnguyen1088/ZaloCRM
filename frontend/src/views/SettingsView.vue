@@ -187,34 +187,82 @@
       </v-window>
     </v-card>
 
-    <!-- Dialogs -->
-    <v-dialog v-model="showInvite" max-width="480" persistent transition="dialog-bottom-transition">
-      <v-card class="rounded-xl pa-2 dialog-glass">
-        <v-card-title class="d-flex align-center px-4 pt-4">
-          <span class="text-h6 font-weight-bold">Mời nhân viên mới</span>
+    <!-- New Invite Dialog (Generic Link Style) -->
+    <v-dialog v-model="showInvite" max-width="820" persistent transition="dialog-bottom-transition">
+      <v-card class="rounded-xl pa-2 dialog-glass overflow-hidden">
+        <v-card-title class="d-flex align-center px-6 pt-4">
+          <v-spacer />
+          <span class="text-h6 font-weight-bold">Mời quản lý</span>
           <v-spacer />
           <v-btn icon="mdi-close" variant="text" density="comfortable" @click="showInvite = false" />
         </v-card-title>
-        <v-card-text class="pa-4">
-          <p class="text-body-2 text-medium-emphasis mb-4">Hệ thống sẽ gửi link đăng ký đến email nhân viên. Họ sẽ tự điền họ tên và mật khẩu.</p>
-          <v-text-field v-model="inviteForm.email" label="Email nhân viên *" type="email" placeholder="email@company.com" variant="outlined" class="mb-4" hide-details="auto" rounded="lg" />
-          <v-select v-model="inviteForm.role" :items="roleOptions" item-title="label" item-value="value" label="Vai trò hệ thống" variant="outlined" hide-details="auto" rounded="lg" />
-          <v-alert v-if="inviteError" type="error" variant="tonal" density="compact" class="mt-4 rounded-lg">{{ inviteError }}</v-alert>
+        
+        <v-divider class="mx-6 opacity-50" />
+
+        <v-card-text class="pa-8">
+          <v-row>
+            <!-- Left Info Column -->
+            <v-col cols="12" md="6" class="pr-md-8 border-right">
+              <h3 class="text-h6 font-weight-bold mb-2">Vai trò</h3>
+              <p class="text-body-2 text-medium-emphasis leading-relaxed">
+                {{ selectedRoleInfo.description }}
+              </p>
+            </v-col>
+
+            <!-- Right Selection Column -->
+            <v-col cols="12" md="6" class="pl-md-8">
+              <v-radio-group v-model="inviteForm.role" class="role-radio-group" hide-details>
+                <v-radio
+                  v-for="opt in roleDetailOptions"
+                  :key="opt.value"
+                  :value="opt.value"
+                  color="primary"
+                  class="mb-3 role-radio-item"
+                >
+                  <template #label>
+                    <div class="ml-2">
+                      <div class="text-body-1 font-weight-bold">{{ opt.label }}</div>
+                    </div>
+                  </template>
+                </v-radio>
+              </v-radio-group>
+            </v-col>
+          </v-row>
+
+          <v-alert v-if="inviteError" type="error" variant="tonal" density="compact" class="mt-8 rounded-lg">{{ inviteError }}</v-alert>
           
           <v-expand-transition>
-            <div v-if="generatedLink" class="mt-4 pa-3 bg-primary-soft rounded-lg border">
-              <div class="text-caption font-weight-bold mb-1 text-primary">Link mời (Debug):</div>
+            <div v-if="generatedLink" class="mt-8 pa-4 invite-link-box rounded-xl border-dashed">
               <div class="d-flex align-center">
-                <code class="text-caption flex-grow-1 overflow-hidden">{{ generatedLink }}</code>
-                <v-btn icon="mdi-content-copy" size="x-small" variant="text" color="primary" @click="copyText(generatedLink)" />
+                <div class="mr-4 invite-link-icon">
+                  <v-icon color="primary">mdi-link-variant</v-icon>
+                </div>
+                <div class="flex-grow-1 overflow-hidden">
+                  <div class="text-caption font-weight-bold text-primary mb-1">LINK MỜI ĐÃ SẴN SÀNG:</div>
+                  <div class="text-body-2 text-truncate font-weight-medium">{{ generatedLink }}</div>
+                </div>
+                <v-btn color="primary" variant="flat" class="ml-4 rounded-lg px-6" @click="copyText(generatedLink)">Sao chép</v-btn>
               </div>
             </div>
           </v-expand-transition>
         </v-card-text>
-        <v-card-actions class="pa-4">
-          <v-spacer />
-          <v-btn variant="text" class="text-none px-6" @click="showInvite = false">Đóng</v-btn>
-          <v-btn color="primary" :loading="invitingLoading" variant="flat" class="text-none px-8 action-btn" rounded="lg" @click="handleInvite">Gửi lời mời</v-btn>
+
+        <v-divider class="mx-6 opacity-30" />
+
+        <v-card-actions class="pa-6">
+          <v-btn 
+            block 
+            color="primary" 
+            :loading="invitingLoading" 
+            variant="flat" 
+            size="large"
+            class="text-none font-weight-bold create-link-btn" 
+            rounded="pill" 
+            @click="handleInvite"
+          >
+            <v-icon start>mdi-link-variant</v-icon>
+            Tạo một link
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -298,12 +346,36 @@ const newPassword = ref('');
 const selectedUser = ref<OrgUser | null>(null);
 
 const form = ref({ fullName: '', email: '', role: 'member' });
-const inviteForm = ref({ email: '', role: 'member' });
+const inviteForm = ref({ role: 'admin' });
 
-const roleOptions = [
-  { label: 'Nhân viên', value: 'member' },
-  { label: 'Quản trị viên', value: 'admin' },
+const roleDetailOptions = [
+  { 
+    label: 'Quản trị viên', 
+    value: 'admin',
+    description: 'Quản trị viên kiểm soát quản lý các vai trò trên Bot. Họ cũng có thể vô hiệu hóa và sao chép bot, chia sẻ nội dung của nó, tạo và cài đặt các mẫu, quản lý lập hóa đơn và thanh toán.'
+  },
+  { 
+    label: 'Biên tập viên', 
+    value: 'editor',
+    description: 'Biên tập viên có quyền chỉnh sửa nội dung, kịch bản chatbot và quản lý khách hàng nhưng không có quyền thay đổi cài đặt hệ thống hay thanh toán.'
+  },
+  { 
+    label: 'Live Chat Agent', 
+    value: 'agent',
+    description: 'Nhân viên hỗ trợ có quyền truy cập vào phần Chat để trả lời khách hàng, quản lý thông tin khách hàng và đặt lịch hẹn.'
+  },
+  { 
+    label: 'Chỉ xem', 
+    value: 'viewer',
+    description: 'Quyền chỉ xem cho phép người dùng xem các báo cáo, thông số và nội dung nhưng không được phép chỉnh sửa hay nhắn tin.'
+  },
 ];
+
+const selectedRoleInfo = computed(() => {
+  return roleDetailOptions.find(opt => opt.value === inviteForm.value.role) || roleDetailOptions[0];
+});
+
+const roleOptions = roleDetailOptions.map(opt => ({ label: opt.label, value: opt.value }));
 
 const headers = [
   { title: 'Nhân viên', key: 'fullName', sortable: true },
@@ -331,12 +403,18 @@ function getInitials(name: string) {
 function roleColor(role: string) {
   if (role === 'owner') return 'deep-purple-accent-4';
   if (role === 'admin') return 'indigo-accent-3';
-  return 'blue-grey-darken-1';
+  if (role === 'editor') return 'cyan-darken-1';
+  if (role === 'agent') return 'teal-darken-1';
+  if (role === 'viewer') return 'blue-grey-darken-1';
+  return 'blue-grey-lighten-1';
 }
 
 function roleLabel(role: string) {
   if (role === 'owner') return 'Chủ sở hữu';
   if (role === 'admin') return 'Quản trị viên';
+  if (role === 'editor') return 'Biên tập viên';
+  if (role === 'agent') return 'Live Chat Agent';
+  if (role === 'viewer') return 'Chỉ xem';
   return 'Nhân viên';
 }
 
@@ -527,6 +605,50 @@ onMounted(() => {
   0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
   70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
   100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.border-right {
+  border-right: 1px solid var(--color-border);
+}
+
+.role-radio-item {
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--color-surface-elevated);
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.role-radio-item:hover {
+  background: var(--color-primary-soft);
+}
+
+:deep(.v-selection-control--active) .role-radio-item {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.invite-link-box {
+  background: var(--color-primary-soft);
+  border: 2px dashed var(--color-primary-soft-strong);
+}
+
+.invite-link-icon {
+  width: 48px;
+  height: 48px;
+  background: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.create-link-btn {
+  height: 56px !important;
+  font-size: 1.1rem !important;
+  letter-spacing: 0.02em;
+  text-transform: none;
 }
 
 .action-btn {

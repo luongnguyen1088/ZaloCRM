@@ -97,9 +97,11 @@ model User {
 model UserInvitation {
   id        String   @id @default(uuid())
   orgId     String   @map("org_id")
-  email     String
+  email     String?  // Now optional for generic links
   role      String   @default("member")
   token     String   @unique
+  maxUses   Int      @default(1) @map("max_uses") // Support for reusable links
+  useCount  Int      @default(0) @map("use_count")
   expiresAt DateTime @map("expires_at")
   status    String   @default("pending") // pending, accepted, expired
   createdAt DateTime @default(now()) @map("created_at")
