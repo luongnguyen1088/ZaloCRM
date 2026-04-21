@@ -236,7 +236,11 @@ import { useAuthStore } from '@/stores/auth';
 interface GoogleIdentity {
   accounts?: {
     id?: {
-      initialize: (config: { client_id: string; callback: (response: GoogleCredentialResponse) => void }) => void;
+      initialize: (config: {
+        client_id: string;
+        callback: (response: GoogleCredentialResponse) => void;
+        use_fedcm_for_prompt?: boolean;
+      }) => void;
       prompt: () => void;
     };
   };
@@ -337,6 +341,7 @@ function initGoogle(identity: GoogleIdentity) {
   identity.accounts?.id?.initialize({
     client_id: '926202174216-4v1fml75f5403k79bvoeuau2go3oe1jq.apps.googleusercontent.com',
     callback: handleGoogleCallback,
+    use_fedcm_for_prompt: false,
   });
   googleInitialized.value = true;
   googleReady.value = true;

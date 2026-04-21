@@ -135,6 +135,7 @@ onMounted(() => {
     googleIdentity.accounts.id.initialize({
       client_id: '926202174216-4v1fml75f5403k79bvoeuau2go3oe1jq.apps.googleusercontent.com',
       callback: handleGoogleCallback,
+      use_fedcm_for_prompt: false,
     });
   }
 });

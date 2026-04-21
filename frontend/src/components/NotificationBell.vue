@@ -57,6 +57,11 @@ const router = useRouter();
 let interval: ReturnType<typeof setInterval>;
 
 async function fetchNotifications() {
+  if (!localStorage.getItem('token')) {
+    notifications.value = [];
+    return;
+  }
+
   try {
     const res = await api.get('/notifications');
     notifications.value = res.data.notifications || [];
@@ -73,9 +78,17 @@ function handleClick(n: Notification) {
 }
 
 onMounted(() => {
+  if (!localStorage.getItem('token')) {
+    return;
+  }
+
   fetchNotifications();
   interval = setInterval(fetchNotifications, 60000);
 });
 
-onUnmounted(() => clearInterval(interval));
+onUnmounted(() => {
+  if (interval) {
+    clearInterval(interval);
+  }
+});
 </script>
