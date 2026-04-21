@@ -27,13 +27,14 @@ export async function getTeamPerformance(
   lt.setDate(lt.getDate() + 1);
 
   // Get all active users in org
-  const orgUsers = await prisma.user.findMany({
+  const members = await prisma.organizationMember.findMany({
     where: { orgId, isActive: true },
-    select: { id: true, fullName: true },
+    include: { user: { select: { id: true, fullName: true } } },
   });
 
-  if (!orgUsers.length) return { users: [] };
+  if (!members.length) return { users: [] };
 
+  const orgUsers = members.map(m => ({ id: m.userId, fullName: m.user.fullName }));
   const userIds = orgUsers.map((u) => u.id);
 
   // Parallel queries

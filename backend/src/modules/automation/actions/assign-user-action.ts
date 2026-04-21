@@ -1,8 +1,10 @@
 import { prisma } from '../../../shared/database/prisma-client.js';
 
 export async function assignUserAction(contactId: string, userId: string, orgId: string) {
-  const user = await prisma.user.findFirst({ where: { id: userId, orgId }, select: { id: true } });
-  if (!user) return null;
+  const membership = await prisma.organizationMember.findUnique({ 
+    where: { orgId_userId: { userId, orgId } } 
+  });
+  if (!membership || !membership.isActive) return null;
 
   return prisma.contact.update({
     where: { id: contactId },

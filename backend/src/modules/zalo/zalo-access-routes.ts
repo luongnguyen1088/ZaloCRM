@@ -50,8 +50,13 @@ export async function zaloAccessRoutes(app: FastifyInstance): Promise<void> {
       const account = await prisma.zaloAccount.findFirst({ where: { id, orgId: user.orgId } });
       if (!account) return reply.status(404).send({ error: 'Zalo account not found' });
 
-      const targetUser = await prisma.user.findFirst({ where: { id: userId, orgId: user.orgId } });
-      if (!targetUser) return reply.status(404).send({ error: 'User not found in org' });
+      const membership = await prisma.organizationMember.findUnique({ 
+        where: { orgId_userId: { userId, orgId: user.orgId } },
+        include: { user: true }
+      });
+      
+      if (!membership || !membership.isActive) return reply.status(404).send({ error: 'User not found in org' });
+      const targetUser = membership.user;
 
       try {
         const access = await prisma.zaloAccountAccess.create({
