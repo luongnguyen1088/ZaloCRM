@@ -241,6 +241,7 @@
                   rounded="lg"
                   prepend-icon="mdi-link-variant"
                   :loading="linkingGoogle"
+                  :disabled="unlinkingGoogle"
                   @click="linkGoogleAccount"
                 >
                   Kết nối ngay
@@ -254,7 +255,16 @@
                   <div class="text-caption font-weight-bold">Đã kết nối tài khoản Google</div>
                   <div class="text-x-small text-medium-emphasis">Hệ thống sẽ dùng quyền OAuth để truy cập Sheets</div>
                 </div>
-                <v-btn size="x-small" color="error" variant="text" @click="unlinkGoogle">Hủy kết nối</v-btn>
+                <v-btn
+                  size="x-small"
+                  color="error"
+                  variant="text"
+                  :loading="unlinkingGoogle"
+                  :disabled="linkingGoogle"
+                  @click="unlinkGoogle"
+                >
+                  Hủy kết nối
+                </v-btn>
               </div>
 
               <v-autocomplete
@@ -389,6 +399,7 @@ const syncing = ref<string | null>(null);
 const dialogError = ref('');
 const connections = ref<any[]>([]);
 const linkingGoogle = ref(false);
+const unlinkingGoogle = ref(false);
 
 const spreadsheetOptions = ref<any[]>([]);
 const loadingSpreadsheets = ref(false);
@@ -497,10 +508,26 @@ async function linkGoogleAccount() {
 
 async function unlinkGoogle() {
   if (!confirm('Bạn có chắc chắn muốn hủy kết nối tài khoản Google? Các tích hợp liên quan sẽ không thể hoạt động.')) return;
+
+  unlinkingGoogle.value = true;
+  dialogError.value = '';
+
   try {
-    // We could add an endpoint to delete the connection
-    alert('Vui lòng liên hệ quản trị viên để gỡ bỏ kết nối thủ công (Tính năng này đang được cập nhật)');
-  } catch {}
+    await api.delete('/integrations/google/connection');
+    spreadsheetOptions.value = [];
+    sheetNameOptions.value = [];
+    if (form.value.type === 'google_sheets') {
+      form.value.config = {
+        ...form.value.config,
+        apiKey: '',
+      };
+    }
+    await fetchIntegrations();
+  } catch (err: any) {
+    dialogError.value = err.response?.data?.error || 'Không thể hủy kết nối tài khoản Google.';
+  } finally {
+    unlinkingGoogle.value = false;
+  }
 }
 
 async function fetchSpreadsheets() {

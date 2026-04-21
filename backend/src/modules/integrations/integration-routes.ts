@@ -149,6 +149,29 @@ export async function integrationRoutes(app: FastifyInstance): Promise<void> {
     }
   });
 
+  // DELETE /api/v1/integrations/google/connection — unlink Google account for this org
+  app.delete('/api/v1/integrations/google/connection', { preHandler: requireRole('owner', 'admin') }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { orgId } = request.user!;
+      const connection = await prisma.organizationConnection.findUnique({
+        where: { orgId_type: { orgId, type: 'google' } }
+      });
+
+      if (!connection) {
+        return reply.status(404).send({ error: 'Google account is not linked' });
+      }
+
+      await prisma.organizationConnection.delete({
+        where: { orgId_type: { orgId, type: 'google' } }
+      });
+
+      return { success: true };
+    } catch (err) {
+      logger.error('[integrations] Google unlink error:', err);
+      return reply.status(500).send({ error: 'Failed to unlink Google account' });
+    }
+  });
+
   // GET /api/v1/integrations — list all integrations for org
   app.get('/api/v1/integrations', async (request: FastifyRequest, reply: FastifyReply) => {
     try {

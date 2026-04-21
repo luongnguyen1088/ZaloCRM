@@ -214,6 +214,22 @@
               {{ googleHint }}
             </p>
 
+            <v-alert
+              v-if="googleDiagnostic.visible"
+              :type="googleDiagnostic.level"
+              variant="tonal"
+              density="comfortable"
+              class="login-google-diagnostic"
+            >
+              <div class="login-google-diagnostic__title">{{ googleDiagnostic.title }}</div>
+              <div class="login-google-diagnostic__text">{{ googleDiagnostic.detail }}</div>
+            </v-alert>
+
+            <div class="login-google-diagnostic-note">
+              Nếu bạn thấy lỗi <strong>`Google connection expired or failed. Please relink your Google account.`</strong>
+              ở trang <strong>Tích hợp</strong>, đó là lỗi OAuth của Google Sheets, không phải lỗi đăng nhập Google.
+            </div>
+
             <footer class="login-footer">
               <p class="footer-text">
                 Chưa có hệ thống cho đội ngũ của bạn?
@@ -241,7 +257,7 @@ interface GoogleIdentity {
         callback: (response: GoogleCredentialResponse) => void;
         use_fedcm_for_prompt?: boolean;
       }) => void;
-      prompt: () => void;
+      prompt: (momentListener?: (notification: GooglePromptMomentNotification) => void) => void;
     };
   };
 }
@@ -249,6 +265,16 @@ interface GoogleIdentity {
 interface GoogleCredentialResponse {
   credential?: string;
 }
+
+interface GooglePromptMomentNotification {
+  isNotDisplayed?: () => boolean;
+  isSkippedMoment?: () => boolean;
+  getNotDisplayedReason?: () => string;
+  getSkippedReason?: () => string;
+}
+
+type GoogleDiagnosticLevel = 'info' | 'warning' | 'error' | 'success';
+type GoogleDiagnosticSource = 'prompt' | 'backend' | 'integration' | 'init' | 'callback';
 
 const email = ref('');
 const password = ref('');
@@ -258,6 +284,13 @@ const showPassword = ref(false);
 const googleReady = ref(false);
 const googleLoading = ref(false);
 const googleInitialized = ref(false);
+const googleDiagnostic = ref({
+  visible: false,
+  source: 'init' as GoogleDiagnosticSource,
+  level: 'info' as GoogleDiagnosticLevel,
+  title: '',
+  detail: '',
+});
 const router = useRouter();
 const authStore = useAuthStore();
 
@@ -349,17 +382,58 @@ function initGoogle(identity: GoogleIdentity) {
 
 async function handleGoogleCallback(response: GoogleCredentialResponse) {
   if (!response.credential) {
+    setGoogleDiagnostic(
+      'callback',
+      'warning',
+      'Google đã mở prompt nhưng không trả về token',
+      'Người dùng có thể đã đóng popup, hủy chọn tài khoản hoặc trình duyệt chặn bước xác thực cuối.'
+    );
+    console.warn('[Google Login] Callback returned without credential');
     error.value = 'Không nhận được xác thực từ Google. Vui lòng thử lại.';
     return;
   }
 
+  setGoogleDiagnostic(
+    'backend',
+    'info',
+    'Đã nhận token từ Google',
+    'Đang gửi token tới máy chủ để xác thực qua POST /api/v1/auth/google.'
+  );
+  console.info('[Google Login] Credential received, sending POST /auth/google');
   loading.value = true;
   error.value = '';
 
   try {
     await authStore.googleLogin(response.credential);
+    setGoogleDiagnostic(
+      'backend',
+      'success',
+      'Đăng nhập Google thành công',
+      'Máy chủ đã xác thực tài khoản Google và tạo phiên đăng nhập thành công.'
+    );
+    console.info('[Google Login] POST /auth/google succeeded');
     router.push('/');
-  } catch {
+  } catch (err: any) {
+    const backendMessage = err.response?.data?.error || err.message || 'Đăng nhập với Google thất bại.';
+    const normalized = String(backendMessage).toLowerCase();
+
+    if (normalized.includes('google connection expired') || normalized.includes('relink your google account')) {
+      setGoogleDiagnostic(
+        'integration',
+        'warning',
+        'Đây là lỗi Google Sheets integration, không phải lỗi đăng nhập',
+        'Token OAuth của Google Sheets ở trang Tích hợp đã hết hạn. Việc đó không phải là bước POST /auth/google của màn đăng nhập.'
+      );
+    } else {
+      setGoogleDiagnostic(
+        'backend',
+        'error',
+        'Google prompt đã xong nhưng POST /auth/google bị lỗi',
+        backendMessage
+      );
+    }
+
+    console.error('[Google Login] POST /auth/google failed:', backendMessage, err);
     error.value = 'Đăng nhập với Google thất bại. Vui lòng thử lại.';
   } finally {
     loading.value = false;
@@ -386,9 +460,23 @@ async function handleLogin() {
 
 async function loginWithGoogle() {
   error.value = '';
+  clearGoogleDiagnostic();
 
+  setGoogleDiagnostic(
+    'init',
+    'info',
+    'Đang chuẩn bị Google Sign-In',
+    'Hệ thống đang kiểm tra thư viện Google và chuẩn bị mở prompt chọn tài khoản.'
+  );
   const ready = await ensureGoogleReady({ force: true });
   if (!ready) {
+    setGoogleDiagnostic(
+      'init',
+      'warning',
+      'Google Sign-In chưa sẵn sàng',
+      'Thư viện Google chưa khởi tạo xong hoặc bị trình duyệt/extension chặn trước khi mở prompt.'
+    );
+    console.warn('[Google Login] Google library is not ready');
     error.value = 'Google Sign-In chưa sẵn sàng. Vui lòng thử lại sau vài giây hoặc tải lại trang.';
     return;
   }
@@ -396,11 +484,25 @@ async function loginWithGoogle() {
   const googleIdentity = getGoogleIdentity();
   const googlePrompt = googleIdentity?.accounts?.id;
   if (!googlePrompt) {
+    setGoogleDiagnostic(
+      'init',
+      'warning',
+      'Google prompt chưa thể mở',
+      'Thư viện Google đã tải nhưng `accounts.id.prompt()` chưa sẵn sàng trong ngữ cảnh hiện tại.'
+    );
+    console.warn('[Google Login] Google prompt handler is unavailable');
     error.value = 'Google Sign-In chưa sẵn sàng. Vui lòng thử lại.';
     return;
   }
 
-  googlePrompt.prompt();
+  setGoogleDiagnostic(
+    'prompt',
+    'info',
+    'Đang mở Google prompt',
+    'Nếu không thấy popup hoặc thanh chọn tài khoản, trình duyệt có thể đang chặn Google/FedCM cho site này.'
+  );
+  console.info('[Google Login] Prompt requested');
+  googlePrompt.prompt(handleGooglePromptMoment);
 }
 
 function getGoogleIdentity() {
@@ -465,6 +567,50 @@ function waitForGoogleIdentity(maxAttempts: number) {
 
 function getGoogleScript() {
   return document.querySelector<HTMLScriptElement>('script[src*="accounts.google.com/gsi/client"]');
+}
+
+function handleGooglePromptMoment(notification: GooglePromptMomentNotification) {
+  if (notification?.isNotDisplayed?.()) {
+    const reason = notification.getNotDisplayedReason?.() || 'unknown_reason';
+    setGoogleDiagnostic(
+      'prompt',
+      'warning',
+      'Google prompt không hiển thị',
+      `Prompt đã bị chặn trước khi người dùng chọn tài khoản. Lý do: ${reason}.`
+    );
+    console.warn('[Google Login] Prompt not displayed:', reason);
+    return;
+  }
+
+  if (notification?.isSkippedMoment?.()) {
+    const reason = notification.getSkippedReason?.() || 'unknown_reason';
+    setGoogleDiagnostic(
+      'prompt',
+      'warning',
+      'Google prompt đã bị bỏ qua',
+      `Google bỏ qua prompt trước khi trả token. Lý do: ${reason}.`
+    );
+    console.warn('[Google Login] Prompt skipped:', reason);
+  }
+}
+
+function setGoogleDiagnostic(
+  source: GoogleDiagnosticSource,
+  level: GoogleDiagnosticLevel,
+  title: string,
+  detail: string
+) {
+  googleDiagnostic.value = {
+    visible: true,
+    source,
+    level,
+    title,
+    detail,
+  };
+}
+
+function clearGoogleDiagnostic() {
+  googleDiagnostic.value.visible = false;
 }
 </script>
 
@@ -1022,6 +1168,31 @@ function getGoogleScript() {
 
 .login-google-hint.is-ready {
   color: var(--color-success);
+}
+
+.login-google-diagnostic {
+  margin-top: 10px;
+  border-radius: 18px;
+}
+
+.login-google-diagnostic__title {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.login-google-diagnostic__text,
+.login-google-diagnostic-note {
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.login-google-diagnostic-note {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
 }
 
 .login-footer {
