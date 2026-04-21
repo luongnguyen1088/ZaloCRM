@@ -7,6 +7,7 @@ import { getAvailableProviders } from './provider-registry.js';
 import { logger } from '../../shared/utils/logger.js';
 import { prisma } from '../../shared/database/prisma-client.js';
 import { knowledgeRoutes } from './knowledge/knowledge-routes.js';
+import { mcpRoutes } from './mcp/mcp-routes.js';
 
 async function assertConversationReadAccess(request: FastifyRequest, reply: FastifyReply, conversationId: string) {
   const user = request.user!;
@@ -42,7 +43,6 @@ function sendHandledError(reply: FastifyReply, err: unknown, fallback: string) {
   const safeMessage = handled.status === 500 ? fallback : handled.message;
   return reply.status(handled.status).send({ error: safeMessage });
 }
-
 
 export async function aiRoutes(app: FastifyInstance) {
   app.addHook('preHandler', authMiddleware);
@@ -122,4 +122,7 @@ export async function aiRoutes(app: FastifyInstance) {
 
   // Knowledge Management
   await app.register(knowledgeRoutes, { prefix: '/api/v1/ai/knowledge' });
+
+  // Remote MCP
+  await app.register(mcpRoutes);
 }
