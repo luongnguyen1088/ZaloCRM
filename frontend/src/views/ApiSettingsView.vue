@@ -111,6 +111,39 @@
       </v-col>
 
       <v-col cols="12" md="5">
+        <v-card class="glass-card mb-6 mcp-connection-card overflow-hidden" elevation="0">
+          <div class="mcp-accent-bar"></div>
+          <v-card-title class="pa-6 pb-2 d-flex align-center">
+            <v-icon size="24" color="secondary" class="mr-3">mdi-robot-outline</v-icon>
+            <span class="outfit-font font-weight-bold">Kết nối AI Agent (MCP)</span>
+          </v-card-title>
+          <v-card-text class="pa-6 pt-0">
+            <p class="text-body-2 text-medium-emphasis mb-4">
+              Dùng URL này để Antigravity hoặc Claude có thể tự động cấu hình và đào tạo AI cho bạn.
+            </p>
+            
+            <div class="api-key-box pa-4 rounded-lg bg-black-opacity border-glow-secondary">
+              <div class="text-caption font-weight-bold text-secondary mb-2 uppercase">Connection URL (SSE)</div>
+              <div class="d-flex align-center">
+                <div class="mcp-url-text flex-grow-1 mr-2 text-truncate text-body-2">{{ mcpUrl }}</div>
+                <v-btn icon size="x-small" variant="text" color="secondary" @click="copyMcpUrl">
+                  <v-icon size="18">mdi-content-copy</v-icon>
+                </v-btn>
+              </div>
+            </div>
+
+            <v-alert
+              type="info"
+              variant="tonal"
+              density="compact"
+              class="mt-4 text-caption rounded-lg"
+              icon="mdi-information-outline"
+            >
+              Dán URL này vào phần cấu hình MCP của AI Agent để điều khiển CRM từ xa.
+            </v-alert>
+          </v-card-text>
+        </v-card>
+
         <v-card class="glass-card mb-6 theme-dark-docs" elevation="0">
           <v-card-title class="pa-6 pb-2 d-flex align-center">
             <v-icon size="24" color="primary" class="mr-3">mdi-code-braces</v-icon>
@@ -135,10 +168,8 @@
             <div class="docs-snippet pa-4 rounded-lg bg-black-opacity border-left-glow">
               <div class="text-caption font-weight-bold color-cyan mb-2">QUICK GUIDE</div>
               <pre class="code-pre">Header: X-API-Key: your-key
-
 GET  /api/public/contacts
-POST /api/public/messages/send
-GET  /api/public/appointments</pre>
+POST /api/public/messages/send</pre>
             </div>
           </v-card-text>
         </v-card>
@@ -176,7 +207,7 @@ GET  /api/public/appointments</pre>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { api } from '@/api';
 import AiConfigDialog from '@/components/ai/ai-config-dialog.vue';
 
@@ -212,6 +243,11 @@ const aiConfig = ref<AiConfig>({
   usedCredits: 0,
   maxCredits: 500,
   remainingCredits: 500,
+});
+
+const mcpUrl = computed(() => {
+  const base = window.location.origin;
+  return `${base}/api/v1/ai/mcp/sse?token=${localStorage.getItem('token') || ''}`;
 });
 
 const snack = ref({ show: false, text: '', color: 'success' });
@@ -283,6 +319,11 @@ async function copyKey() {
   if (!apiKey.value) return;
   await navigator.clipboard.writeText(apiKey.value);
   showSnack('Đã sao chép API key');
+}
+
+async function copyMcpUrl() {
+  await navigator.clipboard.writeText(mcpUrl.value);
+  showSnack('Đã sao chép Connection URL');
 }
 
 async function saveWebhook() {
@@ -407,7 +448,20 @@ onMounted(async () => {
 }
 
 .bg-black-opacity {
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.api-key-box {
+  border: 1px solid rgba(var(--v-theme-primary), 0.1);
+}
+
+.mcp-url-text {
+  font-family: var(--font-mono, monospace);
+  color: rgb(var(--v-theme-secondary));
+}
+
+.border-glow-secondary {
+  border: 1px solid rgba(var(--v-theme-secondary), 0.2);
 }
 
 .theme-dark-docs {
