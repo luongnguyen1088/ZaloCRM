@@ -37,7 +37,7 @@ export async function mcpRoutes(app: FastifyInstance) {
 
   // Message Endpoint (where the client POSTs JSON-RPC messages)
   app.post('/api/v1/ai/mcp/messages', async (request: FastifyRequest, reply: FastifyReply) => {
-    const sessionId = request.query['sessionId'] as string;
+    const { sessionId } = request.query as { sessionId?: string };
     if (!sessionId) return reply.code(400).send({ error: "Missing sessionId" });
 
     const transport = transports.get(sessionId);
