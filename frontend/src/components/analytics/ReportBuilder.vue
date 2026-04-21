@@ -52,7 +52,7 @@
       </div>
 
       <div v-if="savedReports.length" class="mt-6">
-        <div class="text-subtitle-2 mb-2">B�o c�o d� luu</div>
+        <div class="text-subtitle-2 mb-2">Báo cáo đã lưu</div>
         <v-list density="compact">
           <v-list-item v-for="r in savedReports" :key="r.id" :title="r.name" :subtitle="r.type">
             <template #append>
@@ -133,7 +133,7 @@ const groupByOptions = [
   { title: 'Theo ngày', value: 'day' },
   { title: 'Theo tuần', value: 'week' },
   { title: 'Theo tháng', value: 'month' },
-  { title: 'Theo nh�n vi�n', value: 'user' },
+  { title: 'Theo nhân viên', value: 'user' },
   { title: 'Theo nguồn', value: 'source' },
 ];
 

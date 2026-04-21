@@ -6,7 +6,7 @@
     </h1>
 
     <v-tabs v-model="tab" class="mb-4">
-      <v-tab value="users">Nh�n vi�n</v-tab>
+      <v-tab value="users">Nhân viên</v-tab>
       <v-tab value="teams">Đội nhóm</v-tab>
       <v-tab value="org">Tổ chức</v-tab>
     </v-tabs>
@@ -15,7 +15,7 @@
       <v-window-item value="users">
         <div class="d-flex align-center mb-4">
           <v-btn v-if="authStore.isAdmin" color="primary" prepend-icon="mdi-plus" @click="openCreate">
-            Th�m nh�n vi�n
+            Thêm nhân viên
           </v-btn>
         </div>
 
@@ -24,7 +24,7 @@
         </v-alert>
 
         <v-card>
-          <v-data-table :headers="headers" :items="users" :loading="loading" no-data-text="Chua c� nh�n vi�n n�o">
+          <v-data-table :headers="headers" :items="users" :loading="loading" no-data-text="Chưa có nhân viên nào">
             <template #item.role="{ item }">
               <v-chip :color="roleColor(item.role)" size="small" variant="flat">{{ roleLabel(item.role) }}</v-chip>
             </template>
@@ -49,7 +49,7 @@
 
         <v-dialog v-model="showCreate" max-width="440">
           <v-card>
-            <v-card-title>Th�m nh�n vi�n</v-card-title>
+            <v-card-title>Thêm nhân viên</v-card-title>
             <v-card-text>
               <v-text-field v-model="form.fullName" label="Họ tên *" class="mb-2" />
               <v-text-field v-model="form.email" label="Email *" type="email" class="mb-2" />
@@ -67,7 +67,7 @@
 
         <v-dialog v-model="showEdit" max-width="440">
           <v-card>
-            <v-card-title>Ch?nh s?a nh�n vi�n</v-card-title>
+            <v-card-title>Chỉnh sửa nhân viên</v-card-title>
             <v-card-text>
               <v-text-field v-model="form.fullName" label="Họ tên" class="mb-2" />
               <v-text-field v-model="form.email" label="Email" type="email" class="mb-2" />
@@ -100,7 +100,7 @@
         <v-dialog v-model="showDelete" max-width="400">
           <v-card>
             <v-card-title>Xác nhận vô hiệu hóa</v-card-title>
-            <v-card-text>B?n c� ch?c mu?n v� hi?u h�a nh�n vi�n "{{ selectedUser?.fullName }}"?</v-card-text>
+            <v-card-text>Bạn có chắc muốn vô hiệu hóa nhân viên "{{ selectedUser?.fullName }}"?</v-card-text>
             <v-card-actions>
               <v-spacer />
               <v-btn @click="showDelete = false">Hủy</v-btn>
@@ -144,7 +144,7 @@ const selectedUser = ref<OrgUser | null>(null);
 const form = ref({ fullName: '', email: '', password: '', role: 'member' });
 
 const roleOptions = [
-  { label: 'Nh�n vi�n', value: 'member' },
+  { label: 'Nhân viên', value: 'member' },
   { label: 'Quản trị viên', value: 'admin' },
 ];
 
@@ -165,7 +165,7 @@ function roleColor(role: string) {
 function roleLabel(role: string) {
   if (role === 'owner') return 'Chủ sở hữu';
   if (role === 'admin') return 'Quản trị viên';
-  return 'Nh�n vi�n';
+  return 'Nhân viên';
 }
 
 function openCreate() {

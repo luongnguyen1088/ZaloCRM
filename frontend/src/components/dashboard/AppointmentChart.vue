@@ -25,9 +25,9 @@ const theme = useTheme();
 const palette = computed(() => chartTokens[theme.global.current.value.dark ? 'dark' : 'light']);
 
 const statusLabels: Record<string, string> = {
-  scheduled: '�� l�n l?ch',
+  scheduled: 'Đã lên lịch',
   completed: 'Hoàn thành',
-  cancelled: '�� h?y',
+  cancelled: 'Đã hủy',
   no_show: 'Vắng mặt',
 };
 

@@ -49,7 +49,7 @@
       <v-btn color="primary" block :loading="saving" @click="saveContact">Lưu thông tin</v-btn>
 
       <v-alert v-if="saveSuccess" type="success" density="compact" class="mt-2" closable @click:close="saveSuccess = false">
-        �� luu th�nh c�ng!
+        Đã lưu thành công!
       </v-alert>
       <v-alert v-if="saveError" type="error" density="compact" class="mt-2" closable @click:close="saveError = false">
         Lưu thất bại, thử lại!

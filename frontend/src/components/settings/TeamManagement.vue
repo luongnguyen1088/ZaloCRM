@@ -118,8 +118,8 @@
             :items="availableUsers"
             item-title="fullName"
             item-value="id"
-            label="Ch?n nh�n vi�n"
-            no-data-text="Kh�ng c� nh�n vi�n d? th�m"
+            label="Chọn nhân viên"
+            no-data-text="Không có nhân viên để thêm"
           />
           <v-alert v-if="dialogError" type="error" density="compact" class="mt-2">{{ dialogError }}</v-alert>
         </v-card-text>

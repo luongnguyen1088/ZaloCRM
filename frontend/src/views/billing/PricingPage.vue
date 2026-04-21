@@ -6,7 +6,7 @@
         <span class="ml-2">Plans & Pricing</span>
       </div>
       <h1 class="text-h2 font-weight-black text-white mb-4">
-        N�ng c?p <span class="text-gradient">Zalo Automation</span>
+        Nâng cấp <span class="text-gradient">Zalo Automation</span>
       </h1>
       <p class="text-h6 text-placeholder mx-auto pricing-intro">
         Chọn gói cước phù hợp để tự động hóa chăm sóc khách hàng trên Zalo và mở rộng doanh thu bền vững.
@@ -70,7 +70,7 @@
             :disabled="currentPlanId === plan.id"
             @click="selectPlan(plan)"
           >
-            <span>{{ currentPlanId === plan.id ? 'G�i hi?n t?i' : 'N�ng c?p ngay' }}</span>
+            <span>{{ currentPlanId === plan.id ? 'Gói hiện tại' : 'Nâng cấp ngay' }}</span>
             <v-icon v-if="currentPlanId !== plan.id" end>mdi-arrow-right</v-icon>
           </v-btn>
         </v-card>
@@ -89,10 +89,10 @@
                 <v-icon size="28" color="primary">mdi-wallet-outline</v-icon>
               </div>
               <div>
-                <div class="payment-kicker mb-2">Thanh to�n n�ng c?p</div>
+                <div class="payment-kicker mb-2">Thanh toán nâng cấp</div>
                 <h3 class="payment-title">Gói {{ selectedPlan.name }}</h3>
                 <p class="payment-subtitle mb-0">
-                  Qu�t m� QR d? thanh to�n. H? th?ng s? t? d?ng k�ch ho?t ngay sau khi ghi nh?n giao d?ch.
+                  Quét mã QR để thanh toán. Hệ thống sẽ tự động kích hoạt ngay sau khi ghi nhận giao dịch.
                 </p>
               </div>
             </div>
@@ -115,7 +115,7 @@
 
           <div class="payment-body mb-6">
             <div class="payment-qr-panel">
-              <div class="payment-panel__label mb-3">M� QR thanh to�n</div>
+              <div class="payment-panel__label mb-3">Mã QR thanh toán</div>
               <div class="qr-wrapper text-center mb-3 pa-4">
                 <v-img
                   src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=ZaloCRM-Payment"
@@ -124,7 +124,7 @@
                 />
               </div>
               <div class="payment-qr-caption">
-                D�ng ?ng d?ng ng�n h�ng d? qu�t m� v� gi? nguy�n s? ti?n chuy?n kho?n.
+                Dùng ứng dụng ngân hàng để quét mã và giữ nguyên số tiền chuyển khoản.
               </div>
             </div>
 
@@ -145,7 +145,7 @@
               <div class="payment-steps mb-4">
                 <div class="payment-step">
                   <div class="payment-step__index">1</div>
-                  <div>M? ?ng d?ng ng�n h�ng v� ch?n <strong>Qu�t QR</strong>.</div>
+                  <div>Mở ứng dụng ngân hàng và chọn <strong>Quét QR</strong>.</div>
                 </div>
                 <div class="payment-step">
                   <div class="payment-step__index">2</div>
@@ -175,7 +175,7 @@
             class="btn-glow payment-confirm"
             @click="confirmPayment"
           >
-            T�i d� chuy?n kho?n th�nh c�ng
+            Tôi đã chuyển khoản thành công
           </v-btn>
           <v-btn
             block
@@ -251,7 +251,7 @@ const selectPlan = (plan: any) => {
 
 const confirmPayment = () => {
   paymentDialog.value = false;
-  alert('H? th?ng dang ki?m tra giao d?ch c?a b?n. Vui l�ng ch? trong gi�y l�t.');
+  alert('Hệ thống đang kiểm tra giao dịch của bạn. Vui lòng chờ trong giây lát.');
 };
 </script>
 

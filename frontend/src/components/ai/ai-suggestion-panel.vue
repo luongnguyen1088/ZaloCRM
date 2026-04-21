@@ -24,7 +24,7 @@
 
         <div class="d-flex flex-wrap gap-2 align-center">
           <v-btn color="primary" size="small" rounded="pill" prepend-icon="mdi-check-all" @click="$emit('apply')">
-            S? d?ng c�u n�y
+            Sử dụng câu này
           </v-btn>
           <v-divider vertical class="mx-1 opacity-10" />
 
@@ -34,8 +34,8 @@
           <v-btn size="x-small" variant="tonal" class="refine-btn" @click="$emit('refine', '📝 Viết ngắn gọn lại')">
             📝 Ngắn gọn
           </v-btn>
-          <v-btn size="x-small" variant="tonal" class="refine-btn" @click="$emit('refine', '?? Th�m ch�t th�n thi?n')">
-            ?? Th�n thi?n
+          <v-btn size="x-small" variant="tonal" class="refine-btn" @click="$emit('refine', '😊 Thêm chút thân thiện')">
+            😊 Thân thiện
           </v-btn>
 
           <v-spacer />

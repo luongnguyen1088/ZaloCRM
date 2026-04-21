@@ -7,7 +7,7 @@
             Chào buổi sáng, <span class="text-gradient">{{ authStore.user?.fullName?.split(' ').pop() || 'Admin' }}</span>!
           </h1>
           <p class="text-subtitle-1 text-placeholder">
-            H�m nay h? th?ng d� t? d?ng x? l� <span class="text-primary-strong font-weight-bold">1,240</span> h?i tho?i m?i.
+            Hôm nay hệ thống đã tự động xử lý <span class="text-primary-strong font-weight-bold">1,240</span> hội thoại mới.
           </p>
         </div>
         <div class="header-actions">

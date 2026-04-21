@@ -26,8 +26,8 @@ const palette = computed(() => chartTokens[theme.global.current.value.dark ? 'da
 
 const statusLabels: Record<string, string> = {
   new: 'Mới',
-  contacted: '�� li�n h?',
-  interested: 'Quan t�m',
+  contacted: 'Đã liên hệ',
+  interested: 'Quan tâm',
   converted: 'Chuyển đổi',
   lost: 'Mất',
 };

@@ -120,7 +120,7 @@ onMounted(async () => {
 function lastMessagePreview(conv: Conversation): string {
   const msg = conv.messages?.[0];
   if (!msg) return '';
-  if (msg.isDeleted) return '(d� thu h?i)';
+  if (msg.isDeleted) return '(đã thu hồi)';
   const prefix = msg.senderType === 'self' ? 'Bạn: ' : '';
 
   switch (msg.contentType) {

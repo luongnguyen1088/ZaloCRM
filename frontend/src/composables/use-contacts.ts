@@ -48,13 +48,13 @@ export const SOURCE_OPTIONS = [
   { text: 'Facebook', value: 'FB' },
   { text: 'TikTok', value: 'TT' },
   { text: 'Giới thiệu', value: 'GT' },
-  { text: 'C� nh�n', value: 'CN' },
+  { text: 'Cá nhân', value: 'CN' },
 ];
 
 export const STATUS_OPTIONS = [
   { text: 'Mới', value: 'new' },
-  { text: '�� li�n h?', value: 'contacted' },
-  { text: 'Quan t�m', value: 'interested' },
+  { text: 'Đã liên hệ', value: 'contacted' },
+  { text: 'Quan tâm', value: 'interested' },
   { text: 'Chuyển đổi', value: 'converted' },
   { text: 'Mất', value: 'lost' },
 ];

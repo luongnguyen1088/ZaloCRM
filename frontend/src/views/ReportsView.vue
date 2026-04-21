@@ -84,17 +84,17 @@ const aptData = ref<{ label: string; count: number }[]>([]);
 
 const msgHeaders = [
   { title: 'Ngày', key: 'date' },
-  { title: '�� g?i', key: 'sent' },
-  { title: '�� nh?n', key: 'received' },
+  { title: 'Đã gửi', key: 'sent' },
+  { title: 'Đã nhận', key: 'received' },
 ];
 
 const contactHeaders = [
-  { title: 'Ph�n lo?i', key: 'label' },
+  { title: 'Phân loại', key: 'label' },
   { title: 'Số lượng', key: 'count' },
 ];
 
 const aptHeaders = [
-  { title: 'Ph�n lo?i', key: 'label' },
+  { title: 'Phân loại', key: 'label' },
   { title: 'Số lượng', key: 'count' },
 ];
 

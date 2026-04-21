@@ -48,7 +48,7 @@
               style="word-wrap: break-word;"
             >
               <div v-if="msg.isDeleted" class="text-decoration-line-through font-italic thread-faded">
-                {{ msg.content || '(tin nh?n)' }}<span class="text-caption"> (d� thu h?i)</span>
+                {{ msg.content || '(tin nhắn)' }}<span class="text-caption"> (đã thu hồi)</span>
               </div>
 
               <div v-else-if="getImageUrl(msg)">
@@ -336,7 +336,7 @@ async function syncAppointment(msg: Message) {
       notes: `[Zalo] ${payload.title || ''}`,
     });
 
-    syncSnack.value = { show: true, text: '�� d?ng b? l?ch h?n th�nh c�ng!', color: 'success' };
+    syncSnack.value = { show: true, text: 'Đã đồng bộ lịch hẹn thành công!', color: 'success' };
   } catch (err: any) {
     syncSnack.value = { show: true, text: err.response?.data?.error || 'Đồng bộ thất bại', color: 'error' };
   }

@@ -27,9 +27,9 @@ export interface AppointmentFilters {
 }
 
 export const APPOINTMENT_STATUS_OPTIONS = [
-  { text: '�� l�n l?ch', value: 'scheduled' },
+  { text: 'Đã lên lịch', value: 'scheduled' },
   { text: 'Hoàn thành', value: 'completed' },
-  { text: '�� hu?', value: 'cancelled' },
+  { text: 'Đã hủy', value: 'cancelled' },
   { text: 'Vắng mặt', value: 'no_show' },
 ];
 

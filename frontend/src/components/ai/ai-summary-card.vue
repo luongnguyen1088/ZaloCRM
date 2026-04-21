@@ -24,7 +24,7 @@
 
       <div v-if="loading" class="pa-4 text-center">
         <v-progress-circular indeterminate color="primary" size="24" width="2"></v-progress-circular>
-        <p class="text-caption text-placeholder mt-2">AI dang ph�n t�ch h?i tho?i...</p>
+        <p class="text-caption text-placeholder mt-2">AI đang phân tích hội thoại...</p>
       </div>
 
       <div v-else-if="summary" class="summary-content">
@@ -46,7 +46,7 @@
           class="mt-3 summary-outline-btn"
           @click="$emit('refresh')"
         >
-          Ph�n t�ch ngay
+          Phân tích ngay
         </v-btn>
       </div>
     </div>
@@ -73,7 +73,7 @@ const parsedSections = computed(() => {
   let currentSection = { title: '', content: '' };
 
   lines.forEach(line => {
-    const match = line.match(/^(\d+\.|M?C ��CH|TR?NG TH�I|C�U H?I CH�NH|H�NH �?NG|PURPOSE|STATUS|KEY QUESTIONS|NEXT ACTION)[:\s]*(.*)/i);
+    const match = line.match(/^(\d+\.|MỤC ĐÍCH|TRẠNG THÁI|CÂU HỎI CHÍNH|HÀNH ĐỘNG|PURPOSE|STATUS|KEY QUESTIONS|NEXT ACTION)[:\s]*(.*)/i);
     if (match) {
       if (currentSection.title) sections.push({ ...currentSection });
       currentSection.title = match[1].replace(/\d+\.\s*/, '').trim();
