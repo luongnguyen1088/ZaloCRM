@@ -61,6 +61,46 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     return getProfile(user.id);
   });
 
+  // POST /api/v1/organizations — Create a new organization for existing user
+  app.post<{ Body: { name: string } }>(
+    '/api/v1/organizations',
+    { preHandler: [authMiddleware] },
+    async (request, reply) => {
+      const user = request.user!;
+      const { name } = request.body;
+      if (!name) return reply.status(400).send({ error: 'Tên tổ chức là bắt buộc' });
+
+      const newOrg = await prisma.$transaction(async (tx) => {
+        const org = await tx.organization.create({ data: { name } });
+        await tx.organizationMember.create({
+          data: {
+            orgId: org.id,
+            userId: user.id,
+            role: 'owner',
+          },
+        });
+
+        // Initialize free subscription
+        let freePlan = await tx.subscriptionPlan.findFirst({ where: { name: 'Free' } });
+        if (!freePlan) {
+          freePlan = await tx.subscriptionPlan.create({
+            data: { name: 'Free', priceMonth: 0, maxZaloAcc: 1, maxAiTokens: 500, features: '[]' }
+          });
+        }
+        const now = new Date();
+        const end = new Date();
+        end.setFullYear(now.getFullYear() + 10);
+        await tx.subscription.create({
+          data: { orgId: org.id, planId: freePlan.id, status: 'active', currentPeriodStart: now, currentPeriodEnd: end }
+        });
+
+        return org;
+      });
+
+      return newOrg;
+    }
+  );
+
   // POST /api/v1/auth/switch-org/:orgId — Switch active organization
   app.post<{ Params: { orgId: string } }>(
     '/api/v1/auth/switch-org/:orgId',

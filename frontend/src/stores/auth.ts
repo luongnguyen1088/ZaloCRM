@@ -78,6 +78,12 @@ export const useAuthStore = defineStore('auth', () => {
     window.location.href = '/';
   }
 
+  async function createOrg(name: string) {
+    const res = await api.post('/organizations', { name });
+    // After creation, switch to the new one
+    await switchOrg(res.data.id);
+  }
+
   function setAuth(newToken: string, userData: any) {
     token.value = newToken;
     user.value = userData;

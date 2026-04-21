@@ -42,8 +42,49 @@
               <v-icon size="x-small" color="primary">mdi-check</v-icon>
             </template>
           </v-list-item>
+
+          <v-divider class="my-2" />
+          
+          <v-list-item rounded="lg" class="mx-2 mb-1" color="primary" @click="showNewOrgDialog = true">
+            <template v-slot:prepend>
+              <v-icon size="small" class="mr-2">mdi-plus-circle-outline</v-icon>
+            </template>
+            <v-list-item-title class="text-body-2 font-weight-bold">Thêm tổ chức mới</v-list-item-title>
+          </v-list-item>
         </v-list>
       </v-menu>
+
+      <!-- New Org Dialog -->
+      <v-dialog v-model="showNewOrgDialog" max-width="400">
+        <v-card class="pa-4 rounded-xl">
+          <v-card-title class="text-h6 font-weight-bold">Tạo tổ chức mới</v-card-title>
+          <v-card-text class="pa-4">
+            <p class="text-body-2 text-medium-emphasis mb-4">Bạn có thể tạo một không gian làm việc riêng biệt cho một công ty hoặc dự án khác.</p>
+            <v-text-field
+              v-model="newOrgName"
+              label="Tên tổ chức / Công ty"
+              variant="outlined"
+              placeholder="Vd: Apple Inc."
+              autofocus
+              hide-details="auto"
+              rounded="lg"
+            />
+          </v-card-text>
+          <v-card-actions class="pa-4">
+            <v-spacer />
+            <v-btn variant="text" @click="showNewOrgDialog = false" class="text-none">Hủy</v-btn>
+            <v-btn
+              color="primary"
+              variant="flat"
+              class="px-6 text-none"
+              rounded="lg"
+              :loading="creatingOrg"
+              :disabled="!newOrgName.trim()"
+              @click="handleCreateOrg"
+            >Tạo ngay</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
 
       <GlobalSearch class="mx-2" />
 
@@ -117,6 +158,25 @@ const router = useRouter();
 const drawer = ref(true);
 const rail = ref(false);
 const isDark = ref(localStorage.getItem('theme') === 'dark');
+
+// New Org Creation
+const showNewOrgDialog = ref(false);
+const newOrgName = ref('');
+const creatingOrg = ref(false);
+
+async function handleCreateOrg() {
+  if (!newOrgName.value.trim()) return;
+  creatingOrg.value = true;
+  try {
+    await authStore.createOrg(newOrgName.value.trim());
+    showNewOrgDialog.value = false;
+    newOrgName.value = '';
+  } catch (err) {
+    console.error('Failed to create organization:', err);
+  } finally {
+    creatingOrg.value = false;
+  }
+}
 
 onMounted(() => {
   theme.global.name.value = isDark.value ? 'dark' : 'light';
