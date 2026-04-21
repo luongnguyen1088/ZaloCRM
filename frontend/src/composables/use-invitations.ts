@@ -3,12 +3,27 @@ import { api } from '@/api';
 
 export interface Invitation {
   id: string;
-  email: string;
+  email: string | null;
   role: string;
   status: 'pending' | 'accepted' | 'expired';
   token: string;
   expiresAt: string;
   createdAt: string;
+  useCount: number;
+  maxUses: number;
+}
+
+export interface CreateInviteData {
+  email?: string;
+  role: string;
+  maxUses?: number;
+}
+
+export interface AcceptInviteData {
+  token: string;
+  fullName: string;
+  password: any;
+  email?: string;
 }
 
 export function useInvitations() {
@@ -29,13 +44,13 @@ export function useInvitations() {
     }
   }
 
-  async function createInvitation(data: { email: string; role: string }) {
+  async function createInvitation(data: CreateInviteData) {
     loading.value = true;
     error.value = '';
     try {
       const res = await api.post('/invitations', data);
       await fetchInvitations();
-      return { ok: true, debugLink: res.data.debugLink };
+      return { ok: true, inviteLink: res.data.inviteLink };
     } catch (err: any) {
       return { ok: false, error: err.response?.data?.error || 'Lỗi tạo lời mời' };
     } finally {
@@ -52,7 +67,7 @@ export function useInvitations() {
     }
   }
 
-  async function acceptInvitation(data: { token: string; fullName: string; password: any }) {
+  async function acceptInvitation(data: AcceptInviteData) {
     try {
       await api.post('/invitations/accept', data);
       return { ok: true };

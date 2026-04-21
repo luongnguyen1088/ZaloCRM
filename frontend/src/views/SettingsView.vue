@@ -433,7 +433,7 @@ function formatDate(dateStr: string) {
 }
 
 function openInvite() {
-  inviteForm.value = { email: '', role: 'member' };
+  inviteForm.value = { role: 'admin' };
   inviteError.value = '';
   generatedLink.value = '';
   showInvite.value = true;
@@ -459,14 +459,9 @@ function confirmDelete(user: OrgUser) {
 }
 
 async function handleInvite() {
-  if (!inviteForm.value.email) {
-    inviteError.value = 'Vui lòng nhập email';
-    return;
-  }
   const res = await createInvitation(inviteForm.value);
   if (res.ok) {
-    generatedLink.value = res.debugLink || '';
-    if (!res.debugLink) showInvite.value = false;
+    generatedLink.value = res.inviteLink || '';
   } else {
     inviteError.value = res.error || '';
   }
