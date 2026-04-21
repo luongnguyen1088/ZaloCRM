@@ -33,11 +33,14 @@
       <v-window v-model="tab" class="pa-6">
         <!-- USERS TAB -->
         <v-window-item value="users">
+          <!-- Users List -->
           <div class="d-flex align-center gap-4 mb-6">
+            <h3 class="text-subtitle-1 font-weight-bold">Danh sách nhân viên</h3>
+            <v-spacer />
             <v-text-field
               v-model="search"
               prepend-inner-icon="mdi-magnify"
-              label="Tìm kiếm nhân viên..."
+              label="Tìm kiếm..."
               variant="solo-filled"
               flat
               density="compact"
@@ -45,17 +48,16 @@
               class="search-bar"
               rounded="lg"
             />
-            <v-spacer />
             <v-btn
               v-if="authStore.isAdmin"
               color="primary"
-              prepend-icon="mdi-account-plus-outline"
-              @click="openCreate"
+              prepend-icon="mdi-email-plus-outline"
+              @click="openInvite"
               class="text-none px-6 action-btn"
               rounded="lg"
               elevation="0"
             >
-              Thêm nhân viên
+              Mời nhân viên
             </v-btn>
           </div>
 
@@ -69,7 +71,7 @@
             :loading="loading"
             :search="search"
             no-data-text="Chưa có nhân viên nào"
-            class="user-table"
+            class="user-table mb-8"
             hover
           >
             <template #item.fullName="{ item }">
@@ -140,6 +142,37 @@
               </div>
             </template>
           </v-data-table>
+
+          <!-- Pending Invitations Section -->
+          <template v-if="authStore.isAdmin">
+            <div class="d-flex align-center gap-4 mb-4 mt-8">
+              <h3 class="text-subtitle-1 font-weight-bold">Lời mời đang chờ ({{ pendingInvitations.length }})</h3>
+            </div>
+            
+            <v-data-table
+              :headers="invitationHeaders"
+              :items="pendingInvitations"
+              :loading="invitingLoading"
+              no-data-text="Không có lời mời nào đang chờ"
+              class="user-table"
+              density="comfortable"
+            >
+               <template #item.status="{ item }">
+                  <v-chip size="x-small" :color="inviteStatusColor(item.status)" variant="flat" class="text-uppercase font-weight-bold">
+                    {{ item.status }}
+                  </v-chip>
+               </template>
+               <template #item.expiresAt="{ item }">
+                  <span class="text-caption">{{ formatDate(item.expiresAt) }}</span>
+               </template>
+               <template #item.role="{ item }">
+                  <span class="text-caption font-weight-bold text-uppercase">{{ item.role }}</span>
+               </template>
+               <template #item.actions="{ item }">
+                  <v-btn icon="mdi-content-copy" size="x-small" variant="text" title="Copy link mời" @click="copyInviteLink(item.token)" />
+               </template>
+            </v-data-table>
+          </template>
         </v-window-item>
 
         <!-- TEAMS TAB -->
@@ -155,24 +188,33 @@
     </v-card>
 
     <!-- Dialogs -->
-    <v-dialog v-model="showCreate" max-width="480" persistent transition="dialog-bottom-transition">
+    <v-dialog v-model="showInvite" max-width="480" persistent transition="dialog-bottom-transition">
       <v-card class="rounded-xl pa-2 dialog-glass">
         <v-card-title class="d-flex align-center px-4 pt-4">
-          <span class="text-h6 font-weight-bold">Thêm nhân viên mới</span>
+          <span class="text-h6 font-weight-bold">Mời nhân viên mới</span>
           <v-spacer />
-          <v-btn icon="mdi-close" variant="text" density="comfortable" @click="showCreate = false" />
+          <v-btn icon="mdi-close" variant="text" density="comfortable" @click="showInvite = false" />
         </v-card-title>
         <v-card-text class="pa-4">
-          <v-text-field v-model="form.fullName" label="Họ tên *" placeholder="Vd: Nguyễn Văn A" variant="outlined" class="mb-4" hide-details="auto" rounded="lg" />
-          <v-text-field v-model="form.email" label="Email *" type="email" placeholder="email@company.com" variant="outlined" class="mb-4" hide-details="auto" rounded="lg" />
-          <v-text-field v-model="form.password" label="Mật khẩu *" type="password" variant="outlined" class="mb-4" hide-details="auto" rounded="lg" />
-          <v-select v-model="form.role" :items="roleOptions" item-title="label" item-value="value" label="Vai trò hệ thống" variant="outlined" hide-details="auto" rounded="lg" />
-          <v-alert v-if="dialogError" type="error" variant="tonal" density="compact" class="mt-4 rounded-lg">{{ dialogError }}</v-alert>
+          <p class="text-body-2 text-medium-emphasis mb-4">Hệ thống sẽ gửi link đăng ký đến email nhân viên. Họ sẽ tự điền họ tên và mật khẩu.</p>
+          <v-text-field v-model="inviteForm.email" label="Email nhân viên *" type="email" placeholder="email@company.com" variant="outlined" class="mb-4" hide-details="auto" rounded="lg" />
+          <v-select v-model="inviteForm.role" :items="roleOptions" item-title="label" item-value="value" label="Vai trò hệ thống" variant="outlined" hide-details="auto" rounded="lg" />
+          <v-alert v-if="inviteError" type="error" variant="tonal" density="compact" class="mt-4 rounded-lg">{{ inviteError }}</v-alert>
+          
+          <v-expand-transition>
+            <div v-if="generatedLink" class="mt-4 pa-3 bg-primary-soft rounded-lg border">
+              <div class="text-caption font-weight-bold mb-1 text-primary">Link mời (Debug):</div>
+              <div class="d-flex align-center">
+                <code class="text-caption flex-grow-1 overflow-hidden">{{ generatedLink }}</code>
+                <v-btn icon="mdi-content-copy" size="x-small" variant="text" color="primary" @click="copyText(generatedLink)" />
+              </div>
+            </div>
+          </v-expand-transition>
         </v-card-text>
         <v-card-actions class="pa-4">
           <v-spacer />
-          <v-btn variant="text" class="text-none px-6" @click="showCreate = false">Hủy bỏ</v-btn>
-          <v-btn color="primary" :loading="saving" variant="flat" class="text-none px-8 action-btn" rounded="lg" @click="handleCreate">Tạo nhân viên</v-btn>
+          <v-btn variant="text" class="text-none px-6" @click="showInvite = false">Đóng</v-btn>
+          <v-btn color="primary" :loading="invitingLoading" variant="flat" class="text-none px-8 action-btn" rounded="lg" @click="handleInvite">Gửi lời mời</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -231,27 +273,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useUsers, type OrgUser } from '@/composables/use-users';
+import { useInvitations } from '@/composables/use-invitations';
 import { useAuthStore } from '@/stores/auth';
 import TeamManagement from '@/components/settings/TeamManagement.vue';
 import OrgSettings from '@/components/settings/OrgSettings.vue';
 
-const { users, loading, error, fetchUsers, createUser, updateUser, resetPassword, deleteUser } = useUsers();
+const { users, loading, error, fetchUsers, updateUser, resetPassword, deleteUser } = useUsers();
+const { invitations, loading: invitingLoading, fetchInvitations, createInvitation } = useInvitations();
 const authStore = useAuthStore();
 
 const tab = ref('users');
 const search = ref('');
-const showCreate = ref(false);
+const showInvite = ref(false);
 const showEdit = ref(false);
 const showPassword = ref(false);
 const showDelete = ref(false);
 const saving = ref(false);
 const dialogError = ref('');
+const inviteError = ref('');
+const generatedLink = ref('');
 const newPassword = ref('');
 const selectedUser = ref<OrgUser | null>(null);
 
-const form = ref({ fullName: '', email: '', password: '', role: 'member' });
+const form = ref({ fullName: '', email: '', role: 'member' });
+const inviteForm = ref({ email: '', role: 'member' });
 
 const roleOptions = [
   { label: 'Nhân viên', value: 'member' },
@@ -264,6 +311,18 @@ const headers = [
   { title: 'Trạng thái', key: 'isActive', sortable: true },
   { title: 'Hành động', key: 'actions', sortable: false, align: 'end' as const },
 ];
+
+const invitationHeaders = [
+  { title: 'Email', key: 'email' },
+  { title: 'Vai trò', key: 'role' },
+  { title: 'Thời hạn', key: 'expiresAt' },
+  { title: 'Trạng thái', key: 'status' },
+  { title: '', key: 'actions', sortable: false, align: 'end' as const },
+];
+
+const pendingInvitations = computed(() => {
+  return invitations.value.filter(i => i.status === 'pending');
+});
 
 function getInitials(name: string) {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
@@ -281,15 +340,30 @@ function roleLabel(role: string) {
   return 'Nhân viên';
 }
 
-function openCreate() {
-  form.value = { fullName: '', email: '', password: '', role: 'member' };
-  dialogError.value = '';
-  showCreate.value = true;
+function inviteStatusColor(status: string) {
+  if (status === 'pending') return 'warning';
+  if (status === 'accepted') return 'success';
+  return 'grey';
+}
+
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr);
+  return d.toLocaleString('vi-VN', { 
+    day: '2-digit', month: '2-digit', 
+    hour: '2-digit', minute: '2-digit' 
+  });
+}
+
+function openInvite() {
+  inviteForm.value = { email: '', role: 'member' };
+  inviteError.value = '';
+  generatedLink.value = '';
+  showInvite.value = true;
 }
 
 function openEdit(user: OrgUser) {
   selectedUser.value = user;
-  form.value = { fullName: user.fullName, email: user.email, password: '', role: user.role };
+  form.value = { fullName: user.fullName, email: user.email, role: user.role };
   dialogError.value = '';
   showEdit.value = true;
 }
@@ -306,16 +380,18 @@ function confirmDelete(user: OrgUser) {
   showDelete.value = true;
 }
 
-async function handleCreate() {
-  if (!form.value.fullName || !form.value.email || !form.value.password) {
-    dialogError.value = 'Vui lòng điền đầy đủ thông tin bắt buộc';
+async function handleInvite() {
+  if (!inviteForm.value.email) {
+    inviteError.value = 'Vui lòng nhập email';
     return;
   }
-  saving.value = true;
-  dialogError.value = '';
-  const res = await createUser(form.value);
-  saving.value = false;
-  if (res.ok) { showCreate.value = false; } else { dialogError.value = res.error || ''; }
+  const res = await createInvitation(inviteForm.value);
+  if (res.ok) {
+    generatedLink.value = res.debugLink || '';
+    if (!res.debugLink) showInvite.value = false;
+  } else {
+    inviteError.value = res.error || '';
+  }
 }
 
 async function handleUpdate() {
@@ -344,7 +420,19 @@ async function handleDelete() {
   if (res.ok) { showDelete.value = false; }
 }
 
-onMounted(fetchUsers);
+function copyInviteLink(token: string) {
+  const link = `${window.location.origin}/accept-invite?token=${token}`;
+  copyText(link);
+}
+
+function copyText(text: string) {
+  navigator.clipboard.writeText(text);
+}
+
+onMounted(() => {
+  fetchUsers();
+  if (authStore.isAdmin) fetchInvitations();
+});
 </script>
 
 <style scoped>
@@ -458,6 +546,10 @@ onMounted(fetchUsers);
   background: var(--color-surface-glass) !important;
   backdrop-filter: blur(24px) !important;
   border: 1px solid var(--color-border-strong) !important;
+}
+
+.bg-primary-soft {
+  background: var(--color-primary-soft);
 }
 
 .gap-4 { gap: 1rem; }

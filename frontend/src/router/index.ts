@@ -21,6 +21,12 @@ const routes = [
     meta: { layout: 'auth' },
   },
   {
+    path: '/accept-invite',
+    name: 'AcceptInvite',
+    component: () => import('@/views/AcceptInviteView.vue'),
+    meta: { layout: 'auth' },
+  },
+  {
     path: '/',
     name: 'Dashboard',
     component: () => import('@/views/DashboardView.vue'),
@@ -114,8 +120,8 @@ export const router = createRouter({
 router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore();
 
-  // Skip guard for setup and login pages
-  if (to.name === 'Setup' || to.name === 'Login') {
+  // Skip guard for public pages
+  if (['Setup', 'Login', 'Register', 'AcceptInvite'].includes(to.name as string)) {
     return next();
   }
 

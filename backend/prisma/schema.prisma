@@ -92,6 +92,22 @@ model User {
   @@map("users")
 }
 
+// Invitations for new users
+model UserInvitation {
+  id        String   @id @default(uuid())
+  orgId     String   @map("org_id")
+  email     String
+  role      String   @default("member")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  status    String   @default("pending") // pending, accepted, expired
+  createdAt DateTime @default(now()) @map("created_at")
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@map("user_invitations")
+}
+
 // Zalo account linked to a user (one user may own multiple Zalo accounts)
 model ZaloAccount {
   id              String    @id @default(uuid())
