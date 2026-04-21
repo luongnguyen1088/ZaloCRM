@@ -192,23 +192,32 @@
               <span class="line"></span>
             </div>
 
-            <v-btn
-              block
-              height="54"
-              variant="outlined"
-              class="btn-google-glass"
-              :loading="googleLoading"
-              :disabled="loading"
-              @click="loginWithGoogle"
-            >
-              <v-img
-                width="20"
-                height="20"
-                src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png"
-                class="mr-3"
-              />
-              <span>{{ googleButtonLabel }}</span>
-            </v-btn>
+            <div class="google-signin-block">
+              <div
+                ref="googleButtonHost"
+                class="google-button-host"
+                :class="{ 'is-visible': googleReady && googleButtonRendered }"
+              ></div>
+
+              <v-btn
+                v-if="!googleButtonRendered"
+                block
+                height="54"
+                variant="outlined"
+                class="btn-google-glass"
+                :loading="googleLoading"
+                :disabled="loading"
+                @click="retryGoogleButton"
+              >
+                <v-img
+                  width="20"
+                  height="20"
+                  src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png"
+                  class="mr-3"
+                />
+                <span>{{ googleButtonLabel }}</span>
+              </v-btn>
+            </div>
 
             <p class="login-google-hint" :class="{ 'is-ready': googleReady }">
               {{ googleHint }}
@@ -257,7 +266,7 @@ interface GoogleIdentity {
         callback: (response: GoogleCredentialResponse) => void;
         use_fedcm_for_prompt?: boolean;
       }) => void;
-      prompt: (momentListener?: (notification: GooglePromptMomentNotification) => void) => void;
+      renderButton: (parent: HTMLElement, options: Record<string, unknown>) => void;
     };
   };
 }
@@ -266,15 +275,8 @@ interface GoogleCredentialResponse {
   credential?: string;
 }
 
-interface GooglePromptMomentNotification {
-  isNotDisplayed?: () => boolean;
-  isSkippedMoment?: () => boolean;
-  getNotDisplayedReason?: () => string;
-  getSkippedReason?: () => string;
-}
-
 type GoogleDiagnosticLevel = 'info' | 'warning' | 'error' | 'success';
-type GoogleDiagnosticSource = 'prompt' | 'backend' | 'integration' | 'init' | 'callback';
+type GoogleDiagnosticSource = 'backend' | 'integration' | 'init' | 'callback' | 'render';
 
 const email = ref('');
 const password = ref('');
@@ -284,6 +286,8 @@ const showPassword = ref(false);
 const googleReady = ref(false);
 const googleLoading = ref(false);
 const googleInitialized = ref(false);
+const googleButtonRendered = ref(false);
+const googleButtonHost = ref<HTMLElement | null>(null);
 const googleDiagnostic = ref({
   visible: false,
   source: 'init' as GoogleDiagnosticSource,
@@ -328,10 +332,10 @@ const canSubmit = computed(() => email.value.trim().length > 0 && password.value
 const submitLabel = computed(() => (loading.value ? 'Đang đăng nhập...' : 'Vào ZaloCRM'));
 const googleButtonLabel = computed(() => {
   if (googleLoading.value) {
-    return 'Đang khởi tạo Google';
+    return 'Đang tải Google Sign-In';
   }
 
-  return googleReady.value ? 'Tiếp tục với Google Workspace' : 'Thử đăng nhập với Google Workspace';
+  return googleReady.value ? 'Tải lại nút Google' : 'Thử tải Google Sign-In';
 });
 const googleHint = computed(() =>
   googleReady.value
@@ -362,7 +366,10 @@ onMounted(async () => {
     }
   } catch {}
 
-  void ensureGoogleReady();
+  const ready = await ensureGoogleReady();
+  if (ready) {
+    void renderGoogleButton();
+  }
 });
 
 function initGoogle(identity: GoogleIdentity) {
@@ -458,15 +465,15 @@ async function handleLogin() {
   }
 }
 
-async function loginWithGoogle() {
+async function retryGoogleButton() {
   error.value = '';
   clearGoogleDiagnostic();
 
   setGoogleDiagnostic(
     'init',
     'info',
-    'Đang chuẩn bị Google Sign-In',
-    'Hệ thống đang kiểm tra thư viện Google và chuẩn bị mở prompt chọn tài khoản.'
+    'Đang chuẩn bị nút Google Sign-In',
+    'Hệ thống đang kiểm tra thư viện Google và thử render lại nút đăng nhập chính thức.'
   );
   const ready = await ensureGoogleReady({ force: true });
   if (!ready) {
@@ -474,35 +481,23 @@ async function loginWithGoogle() {
       'init',
       'warning',
       'Google Sign-In chưa sẵn sàng',
-      'Thư viện Google chưa khởi tạo xong hoặc bị trình duyệt/extension chặn trước khi mở prompt.'
+      'Thư viện Google chưa khởi tạo xong hoặc bị trình duyệt/extension chặn trước khi nút đăng nhập được render.'
     );
     console.warn('[Google Login] Google library is not ready');
     error.value = 'Google Sign-In chưa sẵn sàng. Vui lòng thử lại sau vài giây hoặc tải lại trang.';
     return;
   }
 
-  const googleIdentity = getGoogleIdentity();
-  const googlePrompt = googleIdentity?.accounts?.id;
-  if (!googlePrompt) {
+  const rendered = await renderGoogleButton();
+  if (!rendered) {
     setGoogleDiagnostic(
-      'init',
+      'render',
       'warning',
-      'Google prompt chưa thể mở',
-      'Thư viện Google đã tải nhưng `accounts.id.prompt()` chưa sẵn sàng trong ngữ cảnh hiện tại.'
+      'Không thể render nút Google Sign-In',
+      'Thư viện Google đã tải nhưng không render được nút đăng nhập. Kiểm tra trình duyệt, extension hoặc CSP của site.'
     );
-    console.warn('[Google Login] Google prompt handler is unavailable');
-    error.value = 'Google Sign-In chưa sẵn sàng. Vui lòng thử lại.';
-    return;
+    console.warn('[Google Login] Google button render failed');
   }
-
-  setGoogleDiagnostic(
-    'prompt',
-    'info',
-    'Đang mở Google prompt',
-    'Nếu không thấy popup hoặc thanh chọn tài khoản, trình duyệt có thể đang chặn Google/FedCM cho site này.'
-  );
-  console.info('[Google Login] Prompt requested');
-  googlePrompt.prompt(handleGooglePromptMoment);
 }
 
 function getGoogleIdentity() {
@@ -569,31 +564,6 @@ function getGoogleScript() {
   return document.querySelector<HTMLScriptElement>('script[src*="accounts.google.com/gsi/client"]');
 }
 
-function handleGooglePromptMoment(notification: GooglePromptMomentNotification) {
-  if (notification?.isNotDisplayed?.()) {
-    const reason = notification.getNotDisplayedReason?.() || 'unknown_reason';
-    setGoogleDiagnostic(
-      'prompt',
-      'warning',
-      'Google prompt không hiển thị',
-      `Prompt đã bị chặn trước khi người dùng chọn tài khoản. Lý do: ${reason}.`
-    );
-    console.warn('[Google Login] Prompt not displayed:', reason);
-    return;
-  }
-
-  if (notification?.isSkippedMoment?.()) {
-    const reason = notification.getSkippedReason?.() || 'unknown_reason';
-    setGoogleDiagnostic(
-      'prompt',
-      'warning',
-      'Google prompt đã bị bỏ qua',
-      `Google bỏ qua prompt trước khi trả token. Lý do: ${reason}.`
-    );
-    console.warn('[Google Login] Prompt skipped:', reason);
-  }
-}
-
 function setGoogleDiagnostic(
   source: GoogleDiagnosticSource,
   level: GoogleDiagnosticLevel,
@@ -611,6 +581,44 @@ function setGoogleDiagnostic(
 
 function clearGoogleDiagnostic() {
   googleDiagnostic.value.visible = false;
+}
+
+async function renderGoogleButton() {
+  if (!googleReady.value) {
+    return false;
+  }
+
+  const host = googleButtonHost.value;
+  const identity = getGoogleIdentity();
+  const renderer = identity?.accounts?.id?.renderButton;
+
+  if (!host || !renderer) {
+    googleButtonRendered.value = false;
+    return false;
+  }
+
+  host.innerHTML = '';
+  const width = Math.max(Math.round(host.getBoundingClientRect().width || 360), 280);
+
+  renderer(host, {
+    type: 'standard',
+    theme: 'outline',
+    size: 'large',
+    text: 'continue_with',
+    shape: 'pill',
+    logo_alignment: 'left',
+    width,
+  });
+
+  googleButtonRendered.value = true;
+  setGoogleDiagnostic(
+    'render',
+    'success',
+    'Nút Google đã sẵn sàng',
+    'Đăng nhập Google giờ dùng nút chính thức của Google thay cho luồng prompt dễ bị skip.'
+  );
+  console.info('[Google Login] Official Google button rendered');
+  return true;
 }
 </script>
 
@@ -1157,6 +1165,24 @@ function clearGoogleDiagnostic() {
 
 .btn-google-glass:hover {
   background: var(--color-surface) !important;
+}
+
+.google-signin-block {
+  margin-top: 2px;
+}
+
+.google-button-host {
+  display: none;
+  min-height: 54px;
+  width: 100%;
+}
+
+.google-button-host.is-visible {
+  display: block;
+}
+
+:deep(.google-button-host > div) {
+  width: 100% !important;
 }
 
 .login-google-hint {
