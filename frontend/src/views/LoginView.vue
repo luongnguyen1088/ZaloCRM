@@ -413,7 +413,7 @@ function getGoogleIdentity() {
   gap: 72px;
   width: 100%;
   max-width: 1300px;
-  align-items: center;
+  align-items: start;
 }
 
 .login-showcase {
@@ -968,6 +968,98 @@ function getGoogleIdentity() {
 .footer-text {
   font-size: 0.9rem;
   line-height: 1.6;
+}
+
+@media (min-width: 1201px) {
+  .login-form-side {
+    position: sticky;
+    top: clamp(20px, 4vh, 40px);
+    align-self: start;
+  }
+}
+
+@media (max-height: 920px) and (min-width: 1201px) {
+  .login-container {
+    gap: 52px;
+  }
+
+  .login-badge {
+    margin-bottom: 20px;
+  }
+
+  .login-title {
+    font-size: clamp(2.7rem, 4.5vw, 4rem);
+  }
+
+  .login-description {
+    margin-top: 18px;
+    font-size: 1rem;
+    line-height: 1.62;
+  }
+
+  .login-stat-grid {
+    margin-top: 30px;
+    gap: 14px;
+  }
+
+  .login-stat-card {
+    padding: 18px 18px;
+  }
+
+  .login-preview {
+    margin-top: 24px;
+  }
+
+  .login-preview__surface {
+    padding: 22px;
+  }
+
+  .login-preview__top {
+    margin-bottom: 18px;
+  }
+
+  .login-preview__illustration {
+    height: 220px;
+  }
+
+  .login-preview__metrics {
+    gap: 12px;
+    margin: 18px 0 18px;
+  }
+
+  .login-preview__metric {
+    padding: 12px 14px;
+  }
+
+  .login-feature-list {
+    gap: 12px;
+  }
+}
+
+@media (max-height: 820px) and (min-width: 1201px) {
+  .login-container {
+    gap: 42px;
+  }
+
+  .login-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .login-preview__metrics {
+    display: none;
+  }
+
+  .login-preview__illustration {
+    height: 188px;
+  }
+
+  .login-preview__callout {
+    padding: 12px 14px;
+  }
+
+  .login-feature__text {
+    margin-top: 4px;
+  }
 }
 
 @media (max-width: 1200px) {
