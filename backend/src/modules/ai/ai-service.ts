@@ -227,6 +227,14 @@ export async function getAiUsage(orgId: string) {
   };
 }
 
+export async function getAiUsageHistory(orgId: string, limit = 50) {
+  return prisma.aiCreditUsage.findMany({
+    where: { orgId },
+    orderBy: { createdAt: 'desc' },
+    take: limit,
+  });
+}
+
 async function loadConversation(conversationId: string, orgId: string) {
   const conversation = await prisma.conversation.findFirst({
     where: { id: conversationId, orgId },

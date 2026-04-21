@@ -193,6 +193,7 @@ const menuItems = [
   { title: 'Nhân sự & Phân quyền', icon: 'mdi-account-cog-outline', path: '/settings' },
   { title: 'Kết nối & Cấu hình AI', icon: 'mdi-cog-outline', path: '/api-settings' },
   { title: 'Đào tạo AI', icon: 'mdi-school-outline', path: '/ai-training' },
+  { title: 'Lịch sử AI', icon: 'mdi-history', path: '/ai-usage' },
   { title: 'Tích hợp', icon: 'mdi-connection', path: '/integrations' },
   { title: 'Automation', icon: 'mdi-robot-outline', path: '/automation' },
   { title: 'Gói cước', icon: 'mdi-crown-outline', path: '/pricing' },

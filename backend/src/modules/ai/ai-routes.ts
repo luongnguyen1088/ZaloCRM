@@ -2,7 +2,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { authMiddleware } from '../auth/auth-middleware.js';
 import { requireRole } from '../auth/role-middleware.js';
 import { requireZaloAccess } from '../zalo/zalo-access-middleware.js';
-import { getAiConfig, getAiUsage, updateAiConfig, generateAiOutput } from './ai-service.js';
+import { getAiConfig, getAiUsage, getAiUsageHistory, updateAiConfig, generateAiOutput } from './ai-service.js';
 import { getAvailableProviders } from './provider-registry.js';
 import { logger } from '../../shared/utils/logger.js';
 import { prisma } from '../../shared/database/prisma-client.js';
@@ -77,6 +77,16 @@ export async function aiRoutes(app: FastifyInstance) {
     } catch (err) {
       logger.error('[ai] Usage error:', err);
       return reply.status(500).send({ error: 'Failed to fetch AI usage' });
+    }
+  });
+
+  app.get('/api/v1/ai/usage/history', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { limit } = request.query as { limit?: string };
+      return await getAiUsageHistory(request.user!.orgId, limit ? parseInt(limit) : 50);
+    } catch (err) {
+      logger.error('[ai] Usage history error:', err);
+      return reply.status(500).send({ error: 'Failed to fetch AI usage history' });
     }
   });
 
