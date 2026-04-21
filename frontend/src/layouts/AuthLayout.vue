@@ -21,7 +21,10 @@
   background: var(--gradient-hero) !important;
   min-height: 100vh;
   position: relative;
-  overflow: hidden;
+  overflow-x: clip;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .space-bg {
@@ -91,15 +94,16 @@
   position: relative;
   z-index: 10;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  min-height: 100vh;
 }
 
 .auth-content-wrapper {
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
-  padding: 40px 24px;
+  padding: clamp(24px, 5vh, 48px) 24px;
 }
 
 @keyframes float-slow {
