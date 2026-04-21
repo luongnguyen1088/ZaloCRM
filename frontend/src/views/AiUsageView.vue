@@ -127,8 +127,19 @@
 import { ref, onMounted } from 'vue';
 import { api } from '@/api';
 
+interface AiUsageRecord {
+  id: string;
+  feature: string;
+  provider: string;
+  model: string;
+  credits: number;
+  inputTokens: number;
+  outputTokens: number;
+  createdAt: string;
+}
+
 const loading = ref(true);
-const history = ref([]);
+const history = ref<AiUsageRecord[]>([]);
 const usageData = ref<any>(null);
 
 const headers = [
