@@ -16,7 +16,7 @@
       <div v-else-if="success" class="text-center py-6">
         <v-icon color="success" size="64" class="mb-4">mdi-check-circle-outline</v-icon>
         <h2 class="text-h5 font-weight-bold mb-2">Kích hoạt thành công!</h2>
-        <p class="text-body-2 text-medium-emphasis mb-6">Tài khoản của bạn đã sẵn sàng. Chào mừng bạn gia nhập đội ngũ.</p>
+        <p class="text-body-2 text-medium-emphasis mb-6">Bạn đã tham gia vào <strong>{{ invitation?.org?.name }}</strong>. Chào mừng bạn gia nhập đội ngũ.</p>
         <v-btn to="/login" color="primary" variant="flat" block rounded="lg" class="text-none">Đăng nhập ngay</v-btn>
       </div>
 
@@ -25,8 +25,11 @@
           <div class="invite-icon mb-4">
             <v-icon color="white" size="32">mdi-account-plus</v-icon>
           </div>
-          <h1 class="text-h5 font-weight-bold">Chào mừng thành viên mới</h1>
-          <p class="text-body-2 text-medium-emphasis mt-1">Đang thiết lập tài khoản cho <span class="text-primary font-weight-bold">{{ invitation?.email }}</span></p>
+          <h1 class="text-h5 font-weight-bold">Tham gia tổ chức</h1>
+          <p class="text-body-2 text-medium-emphasis mt-1">
+            Bạn được mời tham gia vào <strong>{{ invitation?.org?.name }}</strong>
+            với vai trò <span class="text-primary font-weight-medium">{{ roleLabel(invitation?.role) }}</span>
+          </p>
         </div>
 
         <v-form @submit.prevent="handleAccept">
@@ -45,6 +48,7 @@
           />
 
           <v-text-field
+            v-if="!isExistingUser"
             v-model="fullName"
             label="Họ và tên của bạn"
             prepend-inner-icon="mdi-account-outline"
@@ -55,10 +59,14 @@
             rounded="lg"
             color="primary"
           />
+
+          <v-alert v-if="isExistingUser" type="info" variant="tonal" density="compact" class="mb-4 rounded-lg text-caption">
+            Tài khoản này đã tồn tại. Vui lòng xác nhận mật khẩu để tham gia tổ chức này.
+          </v-alert>
           
           <v-text-field
             v-model="password"
-            label="Thiết lập mật khẩu"
+            :label="isExistingUser ? 'Xác thực mật khẩu' : 'Thiết lập mật khẩu'"
             prepend-inner-icon="mdi-lock-outline"
             :type="showPass ? 'text' : 'password'"
             :append-inner-icon="showPass ? 'mdi-eye-off' : 'mdi-eye'"
@@ -80,7 +88,7 @@
             rounded="lg"
             elevation="0"
           >
-            Kích hoạt tài khoản
+            {{ isExistingUser ? 'Tham gia ngay' : 'Kích hoạt tài khoản' }}
           </v-btn>
         </v-form>
 
@@ -93,9 +101,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useInvitations } from '@/composables/use-invitations';
+import { api } from '@/api';
 
 const route = useRoute();
 const { verifyInvitation, acceptInvitation } = useInvitations();
@@ -112,24 +121,55 @@ const inviteError = ref('');
 const success = ref(false);
 const showPass = ref(false);
 
-async function handleAccept() {
-  const finalEmail = invitation.value?.email || userEmail.value;
+const isExistingUser = ref(false);
 
-  if (!finalEmail || !fullName.value || !password.value) {
+const finalEmail = computed(() => (invitation.value?.email || userEmail.value)?.toLowerCase().trim());
+
+// Debounced check for existing user if generic link
+let checkTimeout: any = null;
+import { watch } from 'vue';
+watch(userEmail, (val) => {
+  if (checkTimeout) clearTimeout(checkTimeout);
+  if (val && val.includes('@')) {
+    checkTimeout = setTimeout(checkIfUserExists, 1000);
+  } else {
+    isExistingUser.value = false;
+  }
+});
+
+async function checkIfUserExists() {
+  if (!finalEmail.value) return;
+  try {
+    const res = await api.get(`/users/check?email=${finalEmail.value}`);
+    isExistingUser.value = res.data.exists;
+  } catch {
+    isExistingUser.value = false;
+  }
+}
+
+function roleLabel(role: string) {
+  const roles: any = {
+    owner: 'Chủ sở hữu',
+    admin: 'Quản trị viên',
+    editor: 'Biên tập viên',
+    agent: 'Live Chat Agent',
+    viewer: 'Chỉ xem'
+  };
+  return roles[role] || 'Thành viên';
+}
+
+async function handleAccept() {
+  if (!finalEmail.value || (!isExistingUser.value && !fullName.value) || !password.value) {
     inviteError.value = 'Vui lòng nhập đầy đủ thông tin';
     return;
   }
-  if (password.value.length < 6) {
-    inviteError.value = 'Mật khẩu phải từ 6 ký tự trở lên';
-    return;
-  }
-
+  
   loadingSaving.value = true;
   inviteError.value = '';
   
   const res = await acceptInvitation({
     token,
-    email: finalEmail,
+    email: finalEmail.value,
     fullName: fullName.value,
     password: password.value
   });
@@ -154,6 +194,10 @@ onMounted(async () => {
   
   if (res.ok) {
     invitation.value = res.invitation;
+    if (invitation.value.email) {
+      userEmail.value = invitation.value.email;
+      checkIfUserExists();
+    }
   } else {
     error.value = res.error || 'Lời mời không hợp lệ hoặc đã hết hạn';
   }

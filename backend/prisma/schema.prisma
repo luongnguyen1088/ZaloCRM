@@ -13,8 +13,8 @@ model Organization {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  members       OrganizationMember[]
   teams         Team[]
-  users         User[]
   zaloAccounts  ZaloAccount[]
   contacts        Contact[]
   conversations   Conversation[]
@@ -35,6 +35,47 @@ model Organization {
   userInvitations UserInvitation[]
 
   @@map("organizations")
+}
+
+// Global User identity for the entire platform
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  fullName     String   @map("full_name")
+  avatarUrl    String?  @map("avatar_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  memberships      OrganizationMember[]
+  zaloAccounts     ZaloAccount[]
+  zaloAccess       ZaloAccountAccess[]
+  assignedContacts Contact[]           @relation("AssignedContacts")
+  appointments     Appointment[]
+  repliedMessages  Message[]           @relation("RepliedMessages")
+  activityLogs     ActivityLog[]
+  dailyStats       DailyMessageStat[]
+
+  @@map("users")
+}
+
+// Membership link between a specific User and an Organization
+model OrganizationMember {
+  id        String   @id @default(uuid())
+  orgId     String   @map("org_id")
+  userId    String   @map("user_id")
+  teamId    String?  @map("team_id")
+  role      String   @default("member") // owner, admin, editor, agent, viewer
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team?        @relation(fields: [teamId], references: [id])
+
+  @@unique([orgId, userId])
+  @@map("organization_members")
 }
 
 // OAuth connections for external services (Google, etc.)
@@ -62,45 +103,20 @@ model Team {
   name      String
   createdAt DateTime @default(now()) @map("created_at")
 
-  org   Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  users User[]
+  org     Organization         @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  members OrganizationMember[]
 
   @@map("teams")
 }
 
-// CRM user with role-based access
-model User {
-  id           String   @id @default(uuid())
-  orgId        String   @map("org_id")
-  teamId       String?  @map("team_id")
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  fullName     String   @map("full_name")
-  role         String   @default("member") // owner, admin, member
-  isActive     Boolean  @default(true) @map("is_active")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-
-  org              Organization        @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  team             Team?               @relation(fields: [teamId], references: [id])
-  zaloAccounts     ZaloAccount[]
-  zaloAccess       ZaloAccountAccess[]
-  assignedContacts Contact[]           @relation("AssignedContacts")
-  appointments     Appointment[]
-  repliedMessages  Message[]           @relation("RepliedMessages")
-  activityLogs     ActivityLog[]
-
-  @@map("users")
-}
-
-// Invitations for new users
+// Invitations for new users (can join via link or email)
 model UserInvitation {
   id        String   @id @default(uuid())
   orgId     String   @map("org_id")
-  email     String?  // Now optional for generic links
+  email     String?  // Optional for generic links
   role      String   @default("member")
   token     String   @unique
-  maxUses   Int      @default(1) @map("max_uses") // Support for reusable links
+  maxUses   Int      @default(1) @map("max_uses")
   useCount  Int      @default(0) @map("use_count")
   expiresAt DateTime @map("expires_at")
   status    String   @default("pending") // pending, accepted, expired
@@ -116,14 +132,14 @@ model ZaloAccount {
   id              String    @id @default(uuid())
   orgId           String    @map("org_id")
   ownerUserId     String    @map("owner_user_id")
-  type            String    @default("zalo_personal") // zalo_personal, facebook_page, zalo_oa
-  zaloUid         String?   @unique @map("zalo_uid") // Treats as externalId for other channels
+  type            String    @default("zalo_personal")
+  zaloUid         String?   @unique @map("zalo_uid")
   displayName     String?   @map("display_name")
   avatarUrl       String?   @map("avatar_url")
   phone           String?
-  status          String    @default("disconnected") // connected, disconnected, qr_pending
+  status          String    @default("disconnected")
   sessionData     Json?     @map("session_data")
-  platformConfig  Json      @default("{}") @map("platform_config") // accessToken, pageId, etc.
+  platformConfig  Json      @default("{}") @map("platform_config")
   lastConnectedAt DateTime? @map("last_connected_at")
   createdAt       DateTime  @default(now()) @map("created_at")
 
@@ -152,7 +168,7 @@ model ZaloAccountAccess {
   @@map("zalo_account_access")
 }
 
-// CRM contact record — generic pipeline with status field
+// CRM contact record
 model Contact {
   id               String    @id @default(uuid())
   orgId            String    @map("org_id")
@@ -161,10 +177,10 @@ model Contact {
   email            String?   @map("email")
   fullName         String?   @map("full_name")
   avatarUrl        String?   @map("avatar_url")
-  source           String?   // FB, TT, GT, CN, etc.
+  source           String?
   sourceDate       DateTime? @map("source_date")
   firstContactDate DateTime? @map("first_contact_date")
-  status           String?   @default("new") // new/contacted/interested/converted/lost
+  status           String?   @default("new")
   nextAppointment  DateTime? @map("next_appointment")
   assignedUserId   String?   @map("assigned_user_id")
   notes            String?
@@ -189,13 +205,12 @@ model Contact {
   @@map("contacts")
 }
 
-// A chat thread between a Zalo account and a contact (or group)
 model Conversation {
   id               String    @id @default(uuid())
   orgId            String    @map("org_id")
   zaloAccountId    String    @map("zalo_account_id")
   contactId        String?   @map("contact_id")
-  threadType       String    @default("user") // user, group
+  threadType       String    @default("user")
   externalThreadId String?   @map("external_thread_id")
   lastMessageAt    DateTime? @map("last_message_at")
   unreadCount      Int       @default(0) @map("unread_count")
@@ -214,16 +229,15 @@ model Conversation {
   @@map("conversations")
 }
 
-// Individual message within a conversation
 model Message {
   id              String    @id @default(uuid())
   conversationId  String    @map("conversation_id")
   zaloMsgId       String?   @map("zalo_msg_id")
-  senderType      String    @map("sender_type") // self, contact
+  senderType      String    @map("sender_type")
   senderUid       String?   @map("sender_uid")
   senderName      String?   @map("sender_name")
   content         String?
-  contentType     String    @default("text") @map("content_type") // text, image, file, sticker, voice, video, link
+  contentType     String    @default("text") @map("content_type")
   attachments     Json      @default("[]")
   isDeleted       Boolean   @default(false) @map("is_deleted")
   deletedAt       DateTime? @map("deleted_at")
@@ -237,7 +251,6 @@ model Message {
   @@map("messages")
 }
 
-// Appointment scheduled for a contact
 model Appointment {
   id              String   @id @default(uuid())
   orgId           String   @map("org_id")
@@ -246,7 +259,7 @@ model Appointment {
   appointmentDate DateTime @map("appointment_date")
   appointmentTime String?  @map("appointment_time")
   type            String?
-  status          String   @default("scheduled") // scheduled, completed, cancelled, no_show
+  status          String   @default("scheduled")
   notes           String?
   reminderSent    Boolean  @default(false) @map("reminder_sent")
   createdAt       DateTime @default(now()) @map("created_at")
@@ -258,7 +271,6 @@ model Appointment {
   @@map("appointments")
 }
 
-// Audit trail for user actions
 model ActivityLog {
   id         String   @id @default(uuid())
   orgId      String   @map("org_id")
@@ -275,7 +287,6 @@ model ActivityLog {
   @@map("activity_logs")
 }
 
-// Daily messaging statistics per user per Zalo account
 model DailyMessageStat {
   id                String   @id @default(uuid())
   orgId             String   @map("org_id")
@@ -290,18 +301,18 @@ model DailyMessageStat {
 
   org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   zaloAccount ZaloAccount  @relation(fields: [zaloAccountId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id])
 
   @@unique([userId, zaloAccountId, statDate])
   @@map("daily_message_stats")
 }
 
-// External service integration (Google Sheets, Telegram, Facebook, Zapier)
 model Integration {
   id         String    @id @default(uuid())
   orgId      String    @map("org_id")
-  type       String    // google_sheets | telegram | facebook | zapier
+  type       String
   name       String    @default("")
-  config     Json      @default("{}") // credentials + settings
+  config     Json      @default("{}")
   enabled    Boolean   @default(true)
   lastSyncAt DateTime? @map("last_sync_at")
   createdAt  DateTime  @default(now()) @map("created_at")
@@ -313,13 +324,12 @@ model Integration {
   @@map("integrations")
 }
 
-// Sync execution log for integrations
 model SyncLog {
   id            String   @id @default(uuid())
   integrationId String   @map("integration_id")
-  direction     String   // import | export
+  direction     String
   recordCount   Int      @default(0) @map("record_count")
-  status        String   // success | partial | failed
+  status        String
   errorMessage  String?  @map("error_message")
   createdAt     DateTime @default(now()) @map("created_at")
 
@@ -328,7 +338,6 @@ model SyncLog {
   @@map("sync_logs")
 }
 
-// Encrypted or plain key-value settings per org
 model AppSetting {
   id             String   @id @default(uuid())
   orgId          String   @map("org_id")
@@ -344,12 +353,11 @@ model AppSetting {
   @@map("app_settings")
 }
 
-// Groups of potentially duplicate contacts detected by the intelligence cron
 model DuplicateGroup {
   id         String   @id @default(uuid())
   orgId      String   @map("org_id")
   contactIds String[] @map("contact_ids")
-  matchType  String   @map("match_type") // phone, zalo_uid, name
+  matchType  String   @map("match_type")
   confidence Float    @default(1.0)
   resolved   Boolean  @default(false)
   createdAt  DateTime @default(now()) @map("created_at")
@@ -360,12 +368,11 @@ model DuplicateGroup {
   @@map("duplicate_groups")
 }
 
-// Saved analytics report configuration
 model SavedReport {
   id        String   @id @default(uuid())
   orgId     String   @map("org_id")
   name      String
-  type      String   // conversion_funnel, team_performance, response_time, custom
+  type      String
   config    Json     @default("{}")
   createdBy String   @map("created_by")
   createdAt DateTime @default(now()) @map("created_at")
@@ -448,7 +455,7 @@ model AiSuggestion {
 
 model SubscriptionPlan {
   id          String   @id @default(uuid())
-  name        String   @unique // Free, Pro, Enterprise
+  name        String   @unique
   priceMonth  Float    @map("price_month")
   maxZaloAcc  Int      @default(1) @map("max_zalo_acc")
   maxAiTokens Int      @default(1000) @map("max_ai_tokens")
@@ -463,7 +470,7 @@ model Subscription {
   id              String   @id @default(uuid())
   orgId           String   @unique @map("org_id")
   planId          String   @map("plan_id")
-  status          String   @default("active") // active, expired, cancelled
+  status          String   @default("active")
   currentPeriodStart DateTime @map("current_period_start")
   currentPeriodEnd   DateTime @map("current_period_end")
   createdAt       DateTime @default(now()) @map("created_at")

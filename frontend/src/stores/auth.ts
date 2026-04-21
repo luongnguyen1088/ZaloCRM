@@ -2,13 +2,28 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { api } from '@/api/index';
 
+interface Organization {
+  id: string;
+  name: string;
+}
+
+interface Membership {
+  id: string;
+  orgId: string;
+  role: string;
+  isActive: boolean;
+  org: Organization;
+}
+
 interface User {
   id: string;
   email: string;
   fullName: string;
-  role: string;
-  orgId: string;
-  orgName: string;
+  avatarUrl?: string;
+  role: string; // Active role
+  orgId: string; // Active org
+  org?: Organization; // Active org details
+  memberships: Membership[];
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -28,9 +43,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function register(data: { orgName: string; fullName: string; email: string; password: string }) {
     const res = await api.post('/auth/register', data);
-    token.value = res.data.token;
-    user.value = res.data.user;
-    localStorage.setItem('token', res.data.token);
+    setAuth(res.data.token, res.data.user);
   }
 
   async function setup(data: { orgName: string; fullName: string; email: string; password: string }) {
@@ -39,16 +52,12 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function login(email: string, password: string) {
     const res = await api.post('/auth/login', { email, password });
-    token.value = res.data.token;
-    user.value = res.data.user;
-    localStorage.setItem('token', res.data.token);
+    setAuth(res.data.token, res.data.user);
   }
 
   async function googleLogin(idToken: string) {
     const res = await api.post('/auth/google', { idToken });
-    token.value = res.data.token;
-    user.value = res.data.user;
-    localStorage.setItem('token', res.data.token);
+    setAuth(res.data.token, res.data.user);
   }
 
   async function fetchProfile() {
@@ -58,6 +67,21 @@ export const useAuthStore = defineStore('auth', () => {
     } catch {
       logout();
     }
+  }
+
+  async function switchOrg(orgId: string) {
+    const res = await api.post(`/auth/switch-org/${orgId}`);
+    setAuth(res.data.token, res.data.user);
+    // Reload profile to get full details
+    await fetchProfile();
+    // Redirect to home
+    window.location.href = '/';
+  }
+
+  function setAuth(newToken: string, userData: any) {
+    token.value = newToken;
+    user.value = userData;
+    localStorage.setItem('token', newToken);
   }
 
   function logout() {
@@ -72,5 +96,21 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return { user, token, needsSetup, isAuthenticated, isOwner, isAdmin, checkSetup, setup, register, login, googleLogin, fetchProfile, logout, init };
+  return { 
+    user, 
+    token, 
+    needsSetup, 
+    isAuthenticated, 
+    isOwner, 
+    isAdmin, 
+    checkSetup, 
+    setup, 
+    register, 
+    login, 
+    googleLogin, 
+    fetchProfile, 
+    switchOrg,
+    logout, 
+    init 
+  };
 });

@@ -12,6 +12,39 @@
         </v-app-bar-title>
       </div>
 
+      <!-- Organization Switcher -->
+      <v-menu v-if="authStore.user && authStore.user.memberships.length > 0" offset-y transition="scale-transition">
+        <template v-slot:activator="{ props }">
+          <v-btn v-bind="props" variant="tonal" color="primary" rounded="pill" class="ml-4 px-4 text-none" density="comfortable">
+            <v-icon start size="small">mdi-domain</v-icon>
+            {{ authStore.user.org?.name || 'Chọn tổ chức' }}
+            <v-icon end size="small">mdi-chevron-down</v-icon>
+          </v-btn>
+        </template>
+        <v-list density="compact" min-width="200" class="rounded-lg py-2">
+          <v-list-subheader class="text-uppercase font-weight-bold" style="font-size: 10px;">Tổ chức của bạn</v-list-subheader>
+          <v-list-item
+            v-for="member in authStore.user.memberships"
+            :key="member.orgId"
+            @click="authStore.switchOrg(member.orgId)"
+            :active="member.orgId === authStore.user.orgId"
+            rounded="lg"
+            class="mx-2 mb-1"
+          >
+            <template v-slot:prepend>
+              <v-avatar size="24" color="primary-lighten-4" class="mr-2">
+                <span class="text-caption font-weight-bold">{{ member.org.name.charAt(0) }}</span>
+              </v-avatar>
+            </template>
+            <v-list-item-title class="text-body-2">{{ member.org.name }}</v-list-item-title>
+            <v-list-item-subtitle style="font-size: 10px;">{{ member.role === 'owner' ? 'Chủ sở hữu' : 'Thành viên' }}</v-list-item-subtitle>
+            <template v-slot:append v-if="member.orgId === authStore.user.orgId">
+              <v-icon size="x-small" color="primary">mdi-check</v-icon>
+            </template>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+
       <GlobalSearch class="mx-2" />
 
       <v-spacer />

@@ -17,10 +17,26 @@ export async function teamRoutes(app: FastifyInstance): Promise<void> {
     const user = request.user!;
     const teams = await prisma.team.findMany({
       where: { orgId: user.orgId },
-      include: { users: { select: { id: true, fullName: true, email: true, role: true } } },
+      include: { 
+        members: { 
+          include: { user: { select: { id: true, fullName: true, email: true } } } 
+        } 
+      },
       orderBy: { createdAt: 'asc' },
     });
-    return { teams };
+
+    // Flatten members for frontend
+    const results = teams.map(t => ({
+      ...t,
+      users: t.members.map(m => ({
+        id: m.userId,
+        fullName: m.user.fullName,
+        email: m.user.email,
+        role: m.role
+      }))
+    }));
+
+    return { teams: results };
   });
 
   // POST /api/v1/teams — create team (owner/admin only)
@@ -40,7 +56,7 @@ export async function teamRoutes(app: FastifyInstance): Promise<void> {
     },
   );
 
-  // PUT /api/v1/teams/:id — update team name (owner/admin only)
+  // PUT /api/v1/teams/:id — update team name
   app.put(
     '/api/v1/teams/:id',
     { preHandler: requireRole('owner', 'admin') },
@@ -62,7 +78,7 @@ export async function teamRoutes(app: FastifyInstance): Promise<void> {
     },
   );
 
-  // DELETE /api/v1/teams/:id — delete team (owner only, unassigns members first)
+  // DELETE /api/v1/teams/:id — delete team
   app.delete(
     '/api/v1/teams/:id',
     { preHandler: requireRole('owner') },
@@ -73,8 +89,12 @@ export async function teamRoutes(app: FastifyInstance): Promise<void> {
       const team = await prisma.team.findFirst({ where: { id, orgId: user.orgId } });
       if (!team) return reply.status(404).send({ error: 'Team not found' });
 
-      // Unassign all members before deleting
-      await prisma.user.updateMany({ where: { teamId: id }, data: { teamId: null } });
+      // Unassign all members in this org who belong to this team
+      await prisma.organizationMember.updateMany({ 
+        where: { teamId: id, orgId: user.orgId }, 
+        data: { teamId: null } 
+      });
+      
       await prisma.team.delete({ where: { id } });
 
       logger.info(`Team deleted: ${team.name} by ${user.email}`);
@@ -90,56 +110,71 @@ export async function teamRoutes(app: FastifyInstance): Promise<void> {
     const team = await prisma.team.findFirst({
       where: { id, orgId: user.orgId },
       include: {
-        users: {
-          select: { id: true, fullName: true, email: true, role: true, isActive: true },
+        members: {
+          include: { user: { select: { id: true, fullName: true, email: true } } }
         },
       },
     });
     if (!team) return reply.status(404).send({ error: 'Team not found' });
 
-    return { members: team.users };
+    const members = team.members.map(m => ({
+      id: m.userId,
+      fullName: m.user.fullName,
+      email: m.user.email,
+      role: m.role,
+      isActive: m.isActive
+    }));
+
+    return { members };
   });
 
-  // POST /api/v1/teams/:id/members — assign user to team (owner/admin only)
+  // POST /api/v1/teams/:id/members — assign user to team
   app.post(
     '/api/v1/teams/:id/members',
     { preHandler: requireRole('owner', 'admin') },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const user = request.user!;
-      const { id } = request.params as { id: string };
+      const { id: teamId } = request.params as { id: string };
       const { userId } = request.body as { userId: string };
       if (!userId) return reply.status(400).send({ error: 'userId là bắt buộc' });
 
-      const team = await prisma.team.findFirst({ where: { id, orgId: user.orgId } });
+      const team = await prisma.team.findFirst({ where: { id: teamId, orgId: user.orgId } });
       if (!team) return reply.status(404).send({ error: 'Team not found' });
 
       try {
-        const updated = await prisma.user.update({
-          where: { id: userId, orgId: user.orgId },
-          data: { teamId: id },
-          select: { id: true, fullName: true, email: true, role: true, teamId: true },
+        const updated = await prisma.organizationMember.update({
+          where: { orgId_userId: { orgId: user.orgId, userId } },
+          data: { teamId },
+          include: { user: true }
         });
-        return updated;
+        
+        return {
+          id: updated.userId,
+          fullName: updated.user.fullName,
+          email: updated.user.email,
+          role: updated.role,
+          teamId: updated.teamId
+        };
       } catch {
         return reply.status(404).send({ error: 'User not found in org' });
       }
     },
   );
 
-  // DELETE /api/v1/teams/:id/members/:userId — remove user from team (owner/admin only)
+  // DELETE /api/v1/teams/:id/members/:userId — remove user from team
   app.delete(
     '/api/v1/teams/:id/members/:userId',
     { preHandler: requireRole('owner', 'admin') },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const user = request.user!;
-      const { id, userId } = request.params as { id: string; userId: string };
+      const { id: teamId, userId } = request.params as { id: string; userId: string };
 
-      const team = await prisma.team.findFirst({ where: { id, orgId: user.orgId } });
+      const team = await prisma.team.findFirst({ where: { id: teamId, orgId: user.orgId } });
       if (!team) return reply.status(404).send({ error: 'Team not found' });
 
       try {
-        await prisma.user.update({
-          where: { id: userId, orgId: user.orgId, teamId: id },
+        await prisma.organizationMember.update({
+          where: { orgId_userId: { orgId: user.orgId, userId } },
           data: { teamId: null },
         });
         return { success: true };

@@ -9,10 +9,10 @@ import { logger } from '../../shared/utils/logger.js';
 import { config } from '../../config/index.js';
 
 export interface JwtPayload {
-  id: string;
+  id: string;      // User ID
   email: string;
-  role: string;
-  orgId: string;
+  role: string;    // Role in current Org
+  orgId: string;   // Current active Org ID
 }
 
 // Check if any users exist — true means first-run setup is needed
@@ -28,7 +28,9 @@ export async function register(
   email: string,
   password: string,
 ): Promise<JwtPayload> {
-  const existing = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
+  const normalizedEmail = email.toLowerCase().trim();
+  const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+  
   if (existing) {
     const err = new Error('Email already in use') as Error & { statusCode: number };
     err.statusCode = 400;
@@ -38,21 +40,28 @@ export async function register(
   const passwordHash = await bcrypt.hash(password, 12);
 
   const result = await prisma.$transaction(async (tx) => {
-    // 1. Create Org
-    const org = await tx.organization.create({ data: { name: orgName } });
-    
-    // 2. Create User as Owner
+    // 1. Create User
     const user = await tx.user.create({
       data: {
-        orgId: org.id,
-        email: email.toLowerCase().trim(),
+        email: normalizedEmail,
         passwordHash,
         fullName,
+      },
+    });
+
+    // 2. Create Org
+    const org = await tx.organization.create({ data: { name: orgName } });
+    
+    // 3. Create Membership as Owner
+    const membership = await tx.organizationMember.create({
+      data: {
+        orgId: org.id,
+        userId: user.id,
         role: 'owner',
       },
     });
 
-    // 3. Find Free Plan (fallback to standard values if seed hasn't run)
+    // 4. Find Free Plan
     let freePlan = await tx.subscriptionPlan.findFirst({
       where: { name: 'Free' }
     });
@@ -69,10 +78,10 @@ export async function register(
       });
     }
 
-    // 4. Create Subscription
+    // 5. Create Subscription
     const now = new Date();
     const end = new Date();
-    end.setFullYear(now.getFullYear() + 10); // Free plan effectively never expires
+    end.setFullYear(now.getFullYear() + 10);
 
     await tx.subscription.create({
       data: {
@@ -84,26 +93,33 @@ export async function register(
       }
     });
 
-    return { org, user };
+    return { org, user, membership };
   });
 
-  logger.info(`Registration complete — org=${result.org.id}, user=${result.user.id}`);
+  logger.info(`Registration complete — user=${result.user.id}, org=${result.org.id}`);
 
   return {
     id: result.user.id,
     email: result.user.email,
-    role: result.user.role,
+    role: result.membership.role,
     orgId: result.org.id,
   };
 }
 
-// Verify credentials, return JWT payload
+// Verify credentials, return JWT payload for the first available organization
 export async function login(email: string, password: string): Promise<JwtPayload> {
   const user = await prisma.user.findUnique({
     where: { email: email.toLowerCase().trim() },
+    include: {
+      memberships: {
+        where: { isActive: true },
+        include: { org: true },
+        take: 1
+      }
+    }
   });
 
-  if (!user || !user.isActive) {
+  if (!user) {
     const err = new Error('Invalid email or password') as Error & { statusCode: number };
     err.statusCode = 401;
     throw err;
@@ -116,10 +132,23 @@ export async function login(email: string, password: string): Promise<JwtPayload
     throw err;
   }
 
-  return { id: user.id, email: user.email, role: user.role, orgId: user.orgId };
+  if (user.memberships.length === 0) {
+    const err = new Error('Your account is not linked to any active organization') as Error & { statusCode: number };
+    err.statusCode = 403;
+    throw err;
+  }
+
+  const activeMembership = user.memberships[0];
+
+  return { 
+    id: user.id, 
+    email: user.email, 
+    role: activeMembership.role, 
+    orgId: activeMembership.orgId 
+  };
 }
 
-// Return safe user profile (no password hash)
+// Return safe user profile with all memberships
 export async function getProfile(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -127,12 +156,15 @@ export async function getProfile(userId: string) {
       id: true,
       email: true,
       fullName: true,
-      role: true,
-      orgId: true,
-      teamId: true,
-      isActive: true,
+      avatarUrl: true,
       createdAt: true,
-      org: { select: { id: true, name: true } },
+      memberships: {
+        where: { isActive: true },
+        include: {
+          org: { select: { id: true, name: true } },
+          team: { select: { id: true, name: true } }
+        }
+      }
     },
   });
 
@@ -142,7 +174,16 @@ export async function getProfile(userId: string) {
     throw err;
   }
 
-  return user;
+  // To maintain backward compatibility with components expecting profile.role and profile.orgId,
+  // we add them from the first membership if available.
+  const firstMember = user.memberships[0];
+
+  return {
+    ...user,
+    role: firstMember?.role || 'member',
+    orgId: firstMember?.orgId || null,
+    org: firstMember?.org || null,
+  };
 }
 
 const googleClient = new OAuth2Client(config.googleClientId);
@@ -162,8 +203,14 @@ export async function loginWithGoogle(idToken: string): Promise<JwtPayload> {
   }
 
   const email = payload.email.toLowerCase().trim();
-  let user = await prisma.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: { email },
+    include: {
+      memberships: {
+        where: { isActive: true },
+        take: 1
+      }
+    }
   });
 
   if (!user) {
@@ -172,9 +219,20 @@ export async function loginWithGoogle(idToken: string): Promise<JwtPayload> {
       `${payload.name || 'My Org'}'s Workspace`,
       payload.name || 'New User',
       email,
-      Math.random().toString(36).slice(-12) // Random password for social login
+      Math.random().toString(36).slice(-12)
     );
   }
 
-  return { id: user.id, email: user.email, role: user.role, orgId: user.orgId };
+  if (user.memberships.length === 0) {
+    throw new Error('Your account is not linked to any active organization');
+  }
+
+  const activeMembership = user.memberships[0];
+
+  return { 
+    id: user.id, 
+    email: user.email, 
+    role: activeMembership.role, 
+    orgId: activeMembership.orgId 
+  };
 }

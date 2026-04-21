@@ -1,8 +1,9 @@
 /**
- * Auth routes — setup, login, and profile endpoints.
+ * Auth routes — setup, login, profile, and organization switching.
  * Registered as a Fastify plugin via app.register(authRoutes).
  */
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { prisma } from '../../shared/database/prisma-client.js';
 import { authMiddleware } from './auth-middleware.js';
 import {
   checkSetupStatus,
@@ -10,6 +11,7 @@ import {
   login,
   loginWithGoogle,
   getProfile,
+  JwtPayload
 } from './auth-service.js';
 
 export async function authRoutes(app: FastifyInstance): Promise<void> {
@@ -31,7 +33,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     return { token, user: payload };
   });
 
-  // Alias /setup for backward compatibility or first run
+  // Alias /setup for backward compatibility
   app.post('/api/v1/setup', async (request) => {
     return app.inject({
       method: 'POST',
@@ -40,7 +42,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     });
   });
 
-  // POST /api/v1/auth/login — verify credentials, return JWT
+  // POST /api/v1/auth/login — verify credentials, return JWT for active org
   app.post<{
     Body: { email: string; password: string };
   }>('/api/v1/auth/login', async (request, reply) => {
@@ -53,13 +55,41 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     return { token, user: payload };
   });
 
-  // GET /api/v1/profile — return current user (requires auth)
+  // GET /api/v1/profile — return current user profile with all organizations
   app.get('/api/v1/profile', { preHandler: authMiddleware }, async (request) => {
-    const user = request.user as { id: string; email: string; role: string; orgId: string };
+    const user = request.user!;
     return getProfile(user.id);
   });
 
-  // POST /api/v1/auth/google — verify Google token and return JWT
+  // POST /api/v1/auth/switch-org/:orgId — Switch active organization
+  app.post<{ Params: { orgId: string } }>(
+    '/api/v1/auth/switch-org/:orgId',
+    { preHandler: [authMiddleware] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = request.user!;
+      const { orgId } = request.params as { orgId: string };
+
+      const membership = await prisma.organizationMember.findUnique({
+        where: { orgId_userId: { orgId, userId: user.id } }
+      });
+
+      if (!membership || !membership.isActive) {
+        return reply.status(403).send({ error: 'Bạn không có quyền truy cập vào tổ chức này' });
+      }
+
+      const payload: JwtPayload = {
+        id: user.id,
+        email: user.email,
+        role: membership.role,
+        orgId: membership.orgId
+      };
+
+      const token = app.jwt.sign(payload, { expiresIn: '7d' });
+      return { token, user: payload };
+    }
+  );
+
+  // POST /api/v1/auth/google — verify Google token
   app.post<{ Body: { idToken: string } }>('/api/v1/auth/google', async (request, reply) => {
     const { idToken } = request.body;
     if (!idToken) {

@@ -16,27 +16,38 @@ export async function invitationRoutes(app: FastifyInstance) {
 
     const { email, role = 'member', maxUses = 1 } = request.body as { email?: string; role: string; maxUses?: number };
 
-    // If specific email provided, check if user exists
     if (email) {
-      const existingUser = await prisma.user.findUnique({ where: { email } });
-      if (existingUser) {
-        return reply.status(400).send({ error: 'Người dùng đã có tài khoản trong hệ thống' });
+      // Check if user is already a member of this organization
+      const existingMember = await prisma.organizationMember.findFirst({
+        where: {
+          orgId: currentUser.orgId,
+          user: { email }
+        }
+      });
+
+      if (existingMember) {
+        return reply.status(400).send({ error: 'Người dùng đã là thành viên của tổ chức này' });
       }
 
-      // Check if there is an active invitation for this specific email
+      // Check for pending specific invites
       const existingInvite = await prisma.userInvitation.findFirst({
-        where: { email, status: 'pending', expiresAt: { gt: new Date() } }
+        where: { 
+          orgId: currentUser.orgId,
+          email, 
+          status: 'pending', 
+          expiresAt: { gt: new Date() } 
+        }
       });
       if (existingInvite) {
-        return reply.status(400).send({ error: 'Đã có một lời mời đang chờ xử lý cho email này' });
+        return reply.status(400).send({ error: 'Đã có một lời mời đang chờ cho email này' });
       }
     }
 
     const token = randomBytes(32).toString('hex');
     const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 48); // 48 hours expiry
+    expiresAt.setHours(expiresAt.getHours() + 48);
 
-    const invitation = await prisma.userInvitation.create({
+    await prisma.userInvitation.create({
       data: {
         id: randomUUID(),
         orgId: currentUser.orgId,
@@ -49,7 +60,6 @@ export async function invitationRoutes(app: FastifyInstance) {
     });
 
     const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/accept-invite?token=${token}`;
-    logger.info(`[INVITATION] Created ${email ? 'targeted' : 'generic'} link: ${inviteLink}`);
     
     return { 
       message: 'Lời mời đã được tạo', 
@@ -58,7 +68,7 @@ export async function invitationRoutes(app: FastifyInstance) {
     };
   });
 
-  // GET /api/v1/invitations — List invitations (Owner/Admin only)
+  // GET /api/v1/invitations — List invitations
   app.get('/api/v1/invitations', { preHandler: [authMiddleware] }, async (request: FastifyRequest) => {
     const currentUser = request.user!;
     if (!['owner', 'admin'].includes(currentUser.role)) {
@@ -73,12 +83,12 @@ export async function invitationRoutes(app: FastifyInstance) {
     return { invitations };
   });
 
-  // POST /api/v1/invitations/accept — Public route to accept invite
+  // POST /api/v1/invitations/accept — Accept invite (joins user to org)
   app.post('/api/v1/invitations/accept', async (request: FastifyRequest, reply: FastifyReply) => {
     const { token, fullName, password, email: userEmail } = request.body as any;
 
-    if (!token || !fullName || !password) {
-      return reply.status(400).send({ error: 'Thiếu thông tin bắt buộc' });
+    if (!token) {
+      return reply.status(400).send({ error: 'Thiếu token mời' });
     }
 
     const invitation = await prisma.userInvitation.findUnique({
@@ -89,34 +99,55 @@ export async function invitationRoutes(app: FastifyInstance) {
       return reply.status(400).send({ error: 'Lời mời không hợp lệ hoặc đã hết hạn' });
     }
 
-    // Determine target email
-    const finalEmail = invitation.email || userEmail;
+    const finalEmail = (invitation.email || userEmail)?.toLowerCase().trim();
     if (!finalEmail) {
       return reply.status(400).send({ error: 'Vui lòng cung cấp email' });
     }
 
-    // Check if user already exists (important for generic links)
-    const existingUser = await prisma.user.findUnique({ where: { email: finalEmail } });
-    if (existingUser) {
-      return reply.status(400).send({ error: 'Email này đã được sử dụng' });
-    }
+    let user = await prisma.user.findUnique({ where: { email: finalEmail } });
 
-    // Create the user
-    const passwordHash = await bcrypt.hash(password, 10);
-    
     await prisma.$transaction(async (tx) => {
-      await tx.user.create({
+      let activeUserId: string;
+
+      if (user) {
+        // User already exists. Verify password to join.
+        const valid = await bcrypt.compare(password, user.passwordHash);
+        if (!valid) {
+          throw new Error('Mật khẩu không chính xác để xác nhận danh tính');
+        }
+        activeUserId = user.id;
+        
+        // Already a member?
+        const member = await tx.organizationMember.findUnique({
+          where: { orgId_userId: { orgId: invitation.orgId, userId: user.id } }
+        });
+        if (member) {
+          throw new Error('Bạn đã là thành viên của tổ chức này');
+        }
+      } else {
+        // New user. Create identity.
+        const passwordHash = await bcrypt.hash(password, 12);
+        const newUser = await tx.user.create({
+          data: {
+            id: randomUUID(),
+            email: finalEmail,
+            fullName,
+            passwordHash,
+          }
+        });
+        activeUserId = newUser.id;
+      }
+
+      // Create Membership
+      await tx.organizationMember.create({
         data: {
-          id: randomUUID(),
           orgId: invitation.orgId,
-          email: finalEmail,
-          fullName,
-          passwordHash,
+          userId: activeUserId,
           role: invitation.role,
         }
       });
 
-      // Update invitation usage
+      // Update invitation
       const newUseCount = invitation.useCount + 1;
       const isFulfilled = newUseCount >= invitation.maxUses;
 
@@ -127,9 +158,11 @@ export async function invitationRoutes(app: FastifyInstance) {
           status: isFulfilled ? 'accepted' : 'pending' 
         }
       });
+    }).catch(err => {
+      return reply.status(400).send({ error: err.message });
     });
 
-    return { success: true, message: 'Tài khoản đã được kích hoạt thành công' };
+    return { success: true, message: 'Tham gia tổ chức thành công' };
   });
 
   // GET /api/v1/invitations/verify/:token
@@ -137,7 +170,15 @@ export async function invitationRoutes(app: FastifyInstance) {
     const { token } = request.params as { token: string };
     const invitation = await prisma.userInvitation.findUnique({
       where: { token },
-      select: { email: true, role: true, status: true, expiresAt: true, useCount: true, maxUses: true }
+      select: { 
+        email: true, 
+        role: true, 
+        status: true, 
+        expiresAt: true, 
+        useCount: true, 
+        maxUses: true,
+        org: { select: { name: true } }
+      }
     });
 
     if (!invitation || (invitation.status !== 'pending' && invitation.useCount >= invitation.maxUses) || invitation.expiresAt < new Date()) {
