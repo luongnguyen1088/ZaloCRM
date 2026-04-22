@@ -218,10 +218,24 @@ class ZaloAccountPool {
           return; // DON'T reconnect
         }
 
-        // Normal auto-reconnect after 30 seconds
-        setTimeout(() => this.autoReconnect(id), 30_000);
+        // Normal auto-reconnect after 5 seconds instead of 30
+        setTimeout(() => this.autoReconnect(id), 5_000);
       },
     });
+
+    // Start heartbeat to keep session alive
+    const heartbeatInterval = setInterval(async () => {
+      const currentInst = this.instances.get(accountId);
+      if (!currentInst || currentInst.status !== 'connected' || !currentInst.api) {
+        clearInterval(heartbeatInterval);
+        return;
+      }
+      try {
+        await currentInst.api.getOwnId(); // Light ping to Zalo
+      } catch (err) {
+        logger.warn(`[zalo:${accountId}] Heartbeat failed, connection might be unstable.`);
+      }
+    }, 60_000); // Every 1 minute
   }
 
   // Persist session credentials to DB
