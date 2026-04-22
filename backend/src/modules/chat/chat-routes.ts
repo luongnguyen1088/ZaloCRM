@@ -199,32 +199,35 @@ export async function chatRoutes(app: FastifyInstance) {
           const fullPath = path.join(UPLOADS_DIR, fileName);
           logger.info(`[chat] Sending image to ${threadId}: ${fullPath}`);
           
-          const sendImageFn = findMethod(['sendImage', 'sendPhoto', 'uploadImage', 'sendImageFile']);
-          if (sendImageFn) {
-            await sendImageFn(fullPath, threadId, threadType);
-          } else {
-            const apiKeys = Object.keys(instance.api);
-            logger.warn(`[chat] No sendImage method found. Available: ${apiKeys.join(', ')}`);
-            const sendFileFn = findMethod(['sendFile', 'uploadFile', 'sendAttachment']);
-            if (sendFileFn) {
-              await sendFileFn(fullPath, threadId, threadType);
-            } else {
-              throw new Error(`Zalo API không hỗ trợ gửi ảnh/tệp. Các hàm khả dụng: ${apiKeys.filter(k => !k.startsWith('_')).join(', ')}`);
-            }
+        const sendMultiMedia = async (filePath: string, type: 'image' | 'file') => {
+          if (typeof instance.api.uploadAttachment !== 'function') {
+             throw new Error('Zalo API không hỗ trợ upload (thiếu hàm uploadAttachment)');
           }
+          
+          logger.info(`[chat] Uploading ${type}: ${filePath}`);
+          const uploadResult = await instance.api.uploadAttachment(filePath);
+          
+          // The sendMessage call needs the correct payload structure for attachments
+          // In zca-js, it usually looks like this:
+          const payload = {
+            msg: '',
+            attachments: [uploadResult]
+          };
+          
+          return instance.api.sendMessage(payload, threadId, threadType);
+        };
+
+        if (contentType === 'image' && attachments.length > 0) {
+          const fileUrl = attachments[0].url;
+          const fileName = fileUrl.replace('/uploads/', '');
+          const fullPath = path.join(UPLOADS_DIR, fileName);
+          await sendMultiMedia(fullPath, 'image');
           logger.info(`[chat] Image sent successfully to ${threadId}`);
         } else if (contentType === 'file' && attachments.length > 0) {
           const fileUrl = attachments[0].url;
           const fileName = fileUrl.replace('/uploads/', '');
           const fullPath = path.join(UPLOADS_DIR, fileName);
-          logger.info(`[chat] Sending file to ${threadId}: ${fullPath}`);
-          
-          const sendFileFn = findMethod(['sendFile', 'uploadFile', 'sendAttachment', 'sendImage']);
-          if (sendFileFn) {
-            await sendFileFn(fullPath, threadId, threadType);
-          } else {
-            throw new Error('Zalo API does not support sending files (no method found)');
-          }
+          await sendMultiMedia(fullPath, 'file');
           logger.info(`[chat] File sent successfully to ${threadId}`);
         } else {
           const sendTextFn = findMethod(['sendTextMessage', 'sendMessage', 'send']);
