@@ -181,7 +181,7 @@ export async function updateAiConfig(orgId: string, input: { enabled?: boolean }
         data: {
           provider: platform.provider,
           model: platform.model,
-          maxDaily: entitlement.maxCredits,
+          maxDaily: entitlement.maxTokens,
           enabled: enabledValue,
         }
       });
