@@ -16,7 +16,9 @@ import { emitWebhook } from '../api/webhook-service.js';
 // zca-js has no reliable ESM type exports — load via CJS interop
 const require = createRequire(import.meta.url);
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { Zalo } = require('zca-js') as { Zalo: new (opts: { logging: boolean }) => any };
+const { Zalo } = require('zca-js') as { Zalo: new (opts: { logging: boolean; imageMetadataGetter?: (path: string) => Promise<{ width: number; height: number }> }) => any };
+const sizeOf = require('image-size');
+
 
 interface ZaloCredentials {
   cookie: any;
@@ -47,7 +49,19 @@ class ZaloAccountPool {
 
   // Initiate QR-based login; emits QR events to frontend via Socket.IO
   async loginQR(accountId: string): Promise<void> {
-    const zalo = new Zalo({ logging: false });
+    const zalo = new Zalo({ 
+      logging: false,
+      imageMetadataGetter: async (filePath: string) => {
+        try {
+          const dimensions = sizeOf(filePath);
+          return { width: dimensions.width || 0, height: dimensions.height || 0 };
+        } catch (err) {
+          logger.error(`[zalo] imageMetadataGetter error for ${filePath}:`, err);
+          return { width: 0, height: 0 };
+        }
+      }
+    });
+
     this.instances.set(accountId, { zalo, api: null, status: 'qr_pending', lastActivity: new Date() });
 
     try {
@@ -113,9 +127,21 @@ class ZaloAccountPool {
     }
   }
 
-  // Reconnect using previously saved session credentials
+  // Reconnect with existing credentials
   async reconnect(accountId: string, credentials: ZaloCredentials): Promise<void> {
-    const zalo = new Zalo({ logging: false });
+    const zalo = new Zalo({ 
+      logging: false,
+      imageMetadataGetter: async (filePath: string) => {
+        try {
+          const dimensions = sizeOf(filePath);
+          return { width: dimensions.width || 0, height: dimensions.height || 0 };
+        } catch (err) {
+          logger.error(`[zalo] imageMetadataGetter error for ${filePath}:`, err);
+          return { width: 0, height: 0 };
+        }
+      }
+    });
+
     this.instances.set(accountId, { zalo, api: null, status: 'connecting', lastActivity: new Date() });
 
     try {
