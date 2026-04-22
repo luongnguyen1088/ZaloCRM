@@ -200,7 +200,12 @@ export async function chatRoutes(app: FastifyInstance) {
           await instance.api.sendFile(fullPath, threadId, threadType);
           logger.info(`[chat] File sent successfully to ${threadId}`);
         } else {
-          await instance.api.sendTextMessage(content, threadId, threadType);
+          // Fallback for different SDK versions
+          if (typeof instance.api.sendTextMessage === 'function') {
+            await instance.api.sendTextMessage(content, threadId, threadType);
+          } else {
+            await instance.api.sendMessage({ msg: content }, threadId, threadType);
+          }
         }
       }
 
@@ -227,9 +232,17 @@ export async function chatRoutes(app: FastifyInstance) {
       io?.emit('chat:message', { accountId: conversation.zaloAccountId, message, conversationId: id });
 
       return message;
-    } catch (err) {
-      logger.error('[chat] Send message error:', err);
-      return reply.status(500).send({ error: 'Failed to send message' });
+    } catch (err: any) {
+      logger.error('[chat] Send message error details:', {
+        message: err.message,
+        stack: err.stack,
+        conversationId: id,
+        contentType
+      });
+      return reply.status(500).send({ 
+        error: `Lỗi Zalo: ${err.message || 'Không rõ nguyên nhân'}`,
+        details: err.toString()
+      });
     }
   });
 
