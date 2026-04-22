@@ -193,22 +193,14 @@ export async function chatRoutes(app: FastifyInstance) {
           return null;
         };
 
-        if (contentType === 'image' && attachments.length > 0) {
-          const fileUrl = attachments[0].url;
-          const fileName = fileUrl.replace('/uploads/', '');
-          const fullPath = path.join(UPLOADS_DIR, fileName);
-          logger.info(`[chat] Sending image to ${threadId}: ${fullPath}`);
-          
         const sendMultiMedia = async (filePath: string, type: 'image' | 'file') => {
           if (typeof instance.api.uploadAttachment !== 'function') {
-             throw new Error('Zalo API không hỗ trợ upload (thiếu hàm uploadAttachment)');
+            throw new Error('Zalo API không hỗ trợ upload (thiếu hàm uploadAttachment)');
           }
           
           logger.info(`[chat] Uploading ${type}: ${filePath}`);
           const uploadResult = await instance.api.uploadAttachment(filePath);
           
-          // The sendMessage call needs the correct payload structure for attachments
-          // In zca-js, it usually looks like this:
           const payload = {
             msg: '',
             attachments: [uploadResult]
@@ -232,7 +224,6 @@ export async function chatRoutes(app: FastifyInstance) {
         } else {
           const sendTextFn = findMethod(['sendTextMessage', 'sendMessage', 'send']);
           if (sendTextFn) {
-            // Some methods take an object { msg: content }, some take a string
             try {
               await sendTextFn(content, threadId, threadType);
             } catch (e) {
