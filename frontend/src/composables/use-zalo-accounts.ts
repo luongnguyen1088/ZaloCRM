@@ -15,6 +15,7 @@ export interface ZaloAccount {
   type: 'zalo_personal' | 'facebook_page' | 'zalo_oa';
   status: string;
   liveStatus?: string;
+  hasSession?: boolean;
   phone: string | null;
   sessionData: any;
   platformConfig?: any;

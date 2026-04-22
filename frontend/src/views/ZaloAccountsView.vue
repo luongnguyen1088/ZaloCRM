@@ -81,12 +81,12 @@
               <v-icon size="18">mdi-qrcode-scan</v-icon>
             </v-btn>
             <v-btn
-              v-if="item.liveStatus === 'disconnected' && item.sessionData"
+              v-if="item.liveStatus !== 'connected' && item.hasSession"
               icon
               size="small"
               class="action-btn info"
               @click="reconnectAccount(item.id)"
-              title="Kết nối lại"
+              title="Kết nối lại nhanh"
             >
               <v-icon size="18">mdi-sync</v-icon>
             </v-btn>

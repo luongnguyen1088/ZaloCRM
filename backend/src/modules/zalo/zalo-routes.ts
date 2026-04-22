@@ -24,6 +24,7 @@ export async function zaloRoutes(app: FastifyInstance): Promise<void> {
         avatarUrl: true,
         phone: true,
         status: true,
+        sessionData: true,
         lastConnectedAt: true,
         createdAt: true,
         owner: { select: { id: true, fullName: true, email: true } },
@@ -31,11 +32,15 @@ export async function zaloRoutes(app: FastifyInstance): Promise<void> {
       orderBy: { createdAt: 'asc' },
     });
 
-    // Merge live status from pool
-    return accounts.map((a) => ({
-      ...a,
-      liveStatus: zaloPool.getStatus(a.id),
-    }));
+    // Merge live status from pool and check if session exists (hide raw sessionData)
+    return accounts.map((a: any) => {
+      const { sessionData, ...rest } = a;
+      return {
+        ...rest,
+        liveStatus: zaloPool.getStatus(a.id),
+        hasSession: !!sessionData
+      };
+    });
   });
 
   // POST /api/v1/zalo-accounts — create a new account record
