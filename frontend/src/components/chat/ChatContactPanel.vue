@@ -115,7 +115,7 @@ const props = defineProps<{
 const emit = defineEmits<{ close: []; saved: []; 'refresh-ai-summary': []; 'refresh-ai-sentiment': [] }>();
 
 const {
-  form, saving, saveSuccess, saveError,
+  form, saving,
   contactAppointments,
   saveContact, reloadAppointments,
 } = useChatContactPanel(

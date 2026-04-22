@@ -218,6 +218,7 @@ const emit = defineEmits<{
   'ask-ai': [];
   'clear-ai': [];
   'refine-ai': [data: { content: string; instruction: string }];
+  back: [];
 }>();
 
 const inputText = ref('');
