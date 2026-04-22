@@ -53,7 +53,10 @@ import { invitationRoutes } from './modules/auth/invitation-routes.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function bootstrap() {
-  const app = Fastify({ logger: false });
+  const app = Fastify({ 
+    logger: false,
+    bodyLimit: 10 * 1024 * 1024 // 10MB limit
+  });
 
   // ── Plugins ──────────────────────────────────────────────────────────────
 

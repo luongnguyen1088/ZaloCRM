@@ -320,9 +320,10 @@ async function uploadAndSend(file: File, type: 'image' | 'file') {
     });
     
     // We don't need to manually emit because Socket.IO will sync the message back
-  } catch (err) {
+  } catch (err: any) {
     console.error('Upload failed:', err);
-    syncSnack.value = { show: true, text: 'Không thể gửi tệp. Vui lòng thử lại.', color: 'error' };
+    const errorMsg = err.response?.data?.error || 'Không thể gửi tệp. Vui lòng thử lại.';
+    syncSnack.value = { show: true, text: errorMsg, color: 'error' };
   }
 }
 

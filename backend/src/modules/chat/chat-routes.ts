@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const UPLOADS_DIR = path.join(__dirname, '../../../uploads');
 
+// Ensure uploads directory exists
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
@@ -118,18 +119,22 @@ export async function chatRoutes(app: FastifyInstance) {
   });
 
   // ── Upload file ──────────────────────────────────────────────────────────
-  app.post('/api/v1/chat/upload', async (request: FastifyRequest, reply: FastifyReply) => {
-    const data = await (request as any).file();
-    if (!data) return reply.status(400).send({ error: 'No file uploaded' });
+    try {
+      const data = await (request as any).file();
+      if (!data) return reply.status(400).send({ error: 'No file uploaded' });
 
-    const ext = path.extname(data.filename);
-    const fileName = `${randomUUID()}${ext}`;
-    const filePath = path.join(UPLOADS_DIR, fileName);
+      const ext = path.extname(data.filename);
+      const fileName = `${randomUUID()}${ext}`;
+      const filePath = path.join(UPLOADS_DIR, fileName);
 
-    await pipeline(data.file, fs.createWriteStream(filePath));
+      await pipeline(data.file, fs.createWriteStream(filePath));
 
-    const publicUrl = `/uploads/${fileName}`;
-    return { url: publicUrl, filename: data.filename, mimetype: data.mimetype };
+      const publicUrl = `/uploads/${fileName}`;
+      return { url: publicUrl, filename: data.filename, mimetype: data.mimetype };
+    } catch (err) {
+      logger.error('[chat] Upload error:', err);
+      return reply.status(500).send({ error: 'Failed to upload file' });
+    }
   });
 
   // ── Send message ─────────────────────────────────────────────────────────
@@ -182,18 +187,20 @@ export async function chatRoutes(app: FastifyInstance) {
 
         if (contentType === 'image' && attachments.length > 0) {
           const fileUrl = attachments[0].url;
-          const fullPath = fileUrl.startsWith('/uploads/') 
-            ? path.join(UPLOADS_DIR, fileUrl.replace('/uploads/', ''))
-            : fileUrl;
+          const fileName = fileUrl.replace('/uploads/', '');
+          const fullPath = path.join(UPLOADS_DIR, fileName);
+          logger.info(`[chat] Sending image to ${threadId}: ${fullPath}`);
           await instance.api.sendImage(fullPath, threadId, threadType);
+          logger.info(`[chat] Image sent successfully to ${threadId}`);
         } else if (contentType === 'file' && attachments.length > 0) {
           const fileUrl = attachments[0].url;
-          const fullPath = fileUrl.startsWith('/uploads/') 
-            ? path.join(UPLOADS_DIR, fileUrl.replace('/uploads/', ''))
-            : fileUrl;
+          const fileName = fileUrl.replace('/uploads/', '');
+          const fullPath = path.join(UPLOADS_DIR, fileName);
+          logger.info(`[chat] Sending file to ${threadId}: ${fullPath}`);
           await instance.api.sendFile(fullPath, threadId, threadType);
+          logger.info(`[chat] File sent successfully to ${threadId}`);
         } else {
-          await instance.api.sendMessage({ msg: content }, threadId, threadType);
+          await instance.api.sendTextMessage(content, threadId, threadType);
         }
       }
 
