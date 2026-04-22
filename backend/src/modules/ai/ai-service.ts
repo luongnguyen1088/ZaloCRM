@@ -36,7 +36,7 @@ function buildConversationContext(messages: MessageContext[]) {
     .join('\n');
 }
 
-const FALLBACK_AI_CREDITS = 50;
+const FALLBACK_AI_TOKENS = 5000;
 
 function getBillingPeriodFallback() {
   const now = new Date();
@@ -53,9 +53,9 @@ async function getAiEntitlement(orgId: string) {
   const fallback = getBillingPeriodFallback();
   const periodStart = subscription?.currentPeriodStart ?? fallback.periodStart;
   const periodEnd = subscription?.currentPeriodEnd ?? fallback.periodEnd;
-  const maxCredits = subscription?.status === 'active'
+  const maxTokens = subscription?.status === 'active'
     ? subscription.plan.maxAiTokens
-    : FALLBACK_AI_CREDITS;
+    : FALLBACK_AI_TOKENS;
 
   const aggregate = await prisma.aiCreditUsage.aggregate({
     where: {
@@ -65,14 +65,14 @@ async function getAiEntitlement(orgId: string) {
     _sum: { credits: true },
   });
 
-  const usedCredits = aggregate._sum.credits ?? 0;
+  const usedTokens = aggregate._sum.credits ?? 0;
   return {
     planName: subscription?.plan.name ?? 'Free',
     periodStart,
     periodEnd,
-    maxCredits,
-    usedCredits,
-    remainingCredits: Math.max(0, maxCredits - usedCredits),
+    maxTokens,
+    usedTokens,
+    remainingTokens: Math.max(0, maxTokens - usedTokens),
   };
 }
 
@@ -86,9 +86,9 @@ function getPlatformAiProvider(options: { requireKey?: boolean } = {}) {
   return { provider, model, apiKey: providerDef.authToken, keyConfigured: Boolean(providerDef.authToken) };
 }
 
-async function assertAiCreditAvailable(orgId: string) {
+async function assertAiTokenAvailable(orgId: string) {
   const usage = await getAiEntitlement(orgId);
-  if (usage.remainingCredits <= 0) throw new Error('AI credits quota exceeded');
+  if (usage.remainingTokens <= 0) throw new Error('AI tokens quota exceeded');
   return usage;
 }
 
@@ -138,7 +138,7 @@ export async function getAiConfig(orgId: string) {
       orgId,
       provider: platform.provider,
       model: platform.model,
-      maxDaily: entitlement.maxCredits,
+      maxDaily: entitlement.maxTokens,
       enabled: true,
     } as any;
   } else {
@@ -149,15 +149,15 @@ export async function getAiConfig(orgId: string) {
     ...aiConfig, 
     provider: platform.provider,
     model: platform.model,
-    maxDaily: entitlement.maxCredits,
+    maxDaily: entitlement.maxTokens,
     managed: true,
     billingMode: 'platform_managed',
     platformKeyConfigured: platform.keyConfigured,
     availableProviders: getAvailableProviders(),
     planName: entitlement.planName,
-    usedCredits: entitlement.usedCredits,
-    maxCredits: entitlement.maxCredits,
-    remainingCredits: entitlement.remainingCredits,
+    usedTokens: entitlement.usedTokens,
+    maxTokens: entitlement.maxTokens,
+    remainingTokens: entitlement.remainingTokens,
     periodStart: entitlement.periodStart,
     periodEnd: entitlement.periodEnd,
   };
@@ -192,7 +192,7 @@ export async function updateAiConfig(orgId: string, input: { enabled?: boolean }
           orgId,
           provider: platform.provider,
           model: platform.model,
-          maxDaily: entitlement.maxCredits,
+          maxDaily: entitlement.maxTokens,
           enabled: enabledValue ?? true,
         }
       });
@@ -211,12 +211,12 @@ export async function getAiUsage(orgId: string) {
   const currentConfig = await getAiConfig(orgId);
   const entitlement = await getAiEntitlement(orgId);
   return {
-    usedToday: entitlement.usedCredits,
-    maxDaily: entitlement.maxCredits,
-    remaining: entitlement.remainingCredits,
-    usedCredits: entitlement.usedCredits,
-    maxCredits: entitlement.maxCredits,
-    remainingCredits: entitlement.remainingCredits,
+    usedToday: entitlement.usedTokens,
+    maxDaily: entitlement.maxTokens,
+    remaining: entitlement.remainingTokens,
+    usedTokens: entitlement.usedTokens,
+    maxTokens: entitlement.maxTokens,
+    remainingTokens: entitlement.remainingTokens,
     planName: entitlement.planName,
     periodStart: entitlement.periodStart,
     periodEnd: entitlement.periodEnd,
@@ -308,7 +308,7 @@ export async function generateAiOutput(input: {
 
   if (!currentConfig.enabled) throw new Error('AI is disabled for this organization');
 
-  await assertAiCreditAvailable(input.orgId);
+  await assertAiTokenAvailable(input.orgId);
   const platform = getPlatformAiProvider({ requireKey: true });
   const provider = platform.provider;
   const apiKey = platform.apiKey;
@@ -429,7 +429,7 @@ export async function generateAiOutput(input: {
 export async function categorizeKnowledge(orgId: string, content: string) {
   const currentConfig = await getAiConfig(orgId);
   if (!currentConfig.enabled) throw new Error('AI is disabled for this organization');
-  await assertAiCreditAvailable(orgId);
+  await assertAiTokenAvailable(orgId);
   const platform = getPlatformAiProvider({ requireKey: true });
   const provider = platform.provider;
   const apiKey = platform.apiKey;
