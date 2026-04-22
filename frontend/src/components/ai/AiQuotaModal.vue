@@ -28,21 +28,35 @@
           </v-list-item>
         </v-list>
 
-        <div class="d-flex ga-3">
-          <v-btn
-            variant="text"
-            class="flex-grow-1 rounded-lg"
-            @click="internalValue = false"
-          >
-            Để sau
-          </v-btn>
+        <div class="d-flex flex-column ga-2">
           <v-btn
             color="primary"
-            class="flex-grow-1 rounded-lg shadow-primary"
+            block
+            height="48"
+            class="rounded-lg shadow-primary font-weight-bold"
+            prepend-icon="mdi-lightning-bolt"
+            @click="goToPricing"
+          >
+            Mua thêm AI Credit
+          </v-btn>
+          <v-btn
+            variant="tonal"
+            color="primary"
+            block
+            height="48"
+            class="rounded-lg font-weight-bold"
             prepend-icon="mdi-arrow-up-bold-circle"
             @click="goToPricing"
           >
-            Nâng cấp ngay
+            Nâng cấp gói tháng
+          </v-btn>
+          <v-btn
+            variant="text"
+            block
+            class="rounded-lg mt-2"
+            @click="internalValue = false"
+          >
+            Để sau
           </v-btn>
         </div>
       </v-card-text>

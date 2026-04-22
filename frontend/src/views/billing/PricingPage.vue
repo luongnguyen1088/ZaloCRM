@@ -77,6 +77,37 @@
       </v-col>
     </v-row>
 
+    <!-- AI Top-up Packs Section -->
+    <div class="text-center mt-16 mb-10 entrance-animation">
+      <h2 class="text-h4 font-weight-black text-white mb-4">Gói bổ sung AI Credit</h2>
+      <p class="text-body-1 text-placeholder">Bạn cần thêm Credit để sử dụng trong tháng? Hãy mua thêm các gói lẻ bên dưới.</p>
+    </div>
+
+    <v-row justify="center" class="mb-12">
+      <v-col v-for="pack in aiPacks" :key="pack.id" cols="12" sm="6" md="3">
+        <v-card class="topup-card pa-6 text-center h-100 d-flex flex-column" variant="flat">
+          <div class="topup-icon mb-4">
+            <v-icon color="primary" size="32">mdi-lightning-bolt</v-icon>
+          </div>
+          <h3 class="text-h6 font-weight-bold mb-1">{{ pack.name }}</h3>
+          <div class="text-h5 font-weight-black text-gradient-ai mb-4">
+            +{{ (pack.credits / 1000).toLocaleString() }}k Credits
+          </div>
+          <v-spacer />
+          <div class="text-subtitle-1 font-weight-bold mb-4">{{ formatPrice(pack.price) }}</div>
+          <v-btn
+            block
+            color="primary"
+            variant="tonal"
+            rounded="lg"
+            @click="selectTopup(pack)"
+          >
+            Mua ngay
+          </v-btn>
+        </v-card>
+      </v-col>
+    </v-row>
+
     <v-dialog v-model="paymentDialog" max-width="560" scrollable content-class="payment-dialog-content">
       <v-card v-if="selectedPlan" class="payment-modal glass-card d-flex flex-column">
         <div class="payment-modal__orb payment-modal__orb--primary"></div>
@@ -118,7 +149,7 @@
               <div class="payment-panel__label mb-3">Mã QR thanh toán</div>
               <div class="qr-wrapper text-center mb-3 pa-4">
                 <v-img
-                  :src="`https://img.vietqr.io/image/MB-6386365999-compact2.png?amount=${selectedPlan.priceMonth}&addInfo=CRMPAY%20${selectedPlan.name}&accountName=CONG%20TY%20TNHH%20CLARO%20VIET%20NAM`"
+                  :src="`https://img.vietqr.io/image/MB-6386365999-compact2.png?amount=${selectedPlan.priceMonth}&addInfo=${isTopup ? 'NAPAI' : 'CRMPAY'}%20${selectedPlan.name}&accountName=CONG%20TY%20TNHH%20CLARO%20VIET%20NAM`"
                   width="220"
                   class="mx-auto rounded-xl border-glass"
                 />
@@ -153,7 +184,7 @@
                 </div>
                 <div class="payment-info__row">
                   <span class="payment-info__label">Nội dung</span>
-                  <span class="payment-info__value payment-info__value--accent">CRMPAY {{ selectedPlan.name }}</span>
+                  <span class="payment-info__value payment-info__value--accent">{{ isTopup ? 'NAP AI' : 'CRMPAY' }} {{ selectedPlan.name }}</span>
                 </div>
               </div>
 
@@ -215,6 +246,14 @@ const plans = ref<any[]>([]);
 const currentPlanId = ref<string | null>(null);
 const paymentDialog = ref(false);
 const selectedPlan = ref<any>(null);
+const isTopup = ref(false);
+
+const aiPacks = ref([
+  { id: 'ai_10k', name: 'Gói Tiết kiệm', credits: 10000, price: 50000 },
+  { id: 'ai_50k', name: 'Gói Phổ thông', credits: 50000, price: 200000 },
+  { id: 'ai_150k', name: 'Gói Chuyên nghiệp', credits: 150000, price: 500000 },
+  { id: 'ai_500k', name: 'Gói Doanh nghiệp', credits: 500000, price: 1500000 },
+]);
 
 const fetchPlans = async () => {
   try {
@@ -261,6 +300,16 @@ const parseFeatures = (features: any) => {
 
 const selectPlan = (plan: any) => {
   selectedPlan.value = plan;
+  isTopup.value = false;
+  paymentDialog.value = true;
+};
+
+const selectTopup = (pack: any) => {
+  selectedPlan.value = {
+    name: pack.name + ' (' + (pack.credits / 1000) + 'k Credits)',
+    priceMonth: pack.price
+  };
+  isTopup.value = true;
   paymentDialog.value = true;
 };
 
@@ -335,6 +384,30 @@ const copyText = (text: string) => {
 
 .text-cyan {
   color: var(--color-primary);
+}
+
+.topup-card {
+  background: var(--color-surface-glass) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 24px !important;
+  transition: all 0.3s ease;
+}
+
+.topup-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--color-primary) !important;
+  box-shadow: var(--shadow-md);
+}
+
+.topup-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-soft);
+  border-radius: 20px;
 }
 
 .pricing-card {
