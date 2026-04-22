@@ -77,8 +77,16 @@ async function bootstrap() {
     await app.register(fastifyStatic, {
       root: path.join(__dirname, '../static'),
       prefix: '/',
+      decorateReply: false, // Prevent conflict with multiple static registrations
     });
   }
+
+  // Serve uploaded files (images, attachments)
+  await app.register(fastifyStatic, {
+    root: path.join(__dirname, '../uploads'),
+    prefix: '/uploads/',
+    decorateReply: false,
+  });
 
   // ── Socket.IO ─────────────────────────────────────────────────────────────
 

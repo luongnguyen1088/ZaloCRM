@@ -148,9 +148,19 @@
           @close="$emit('clear-ai')"
         />
         <div class="d-flex align-end">
+          <div class="d-flex flex-column mb-1">
+            <v-btn icon size="small" variant="text" class="mb-1" @click="triggerUpload('image')" title="Gửi ảnh">
+              <v-icon color="grey-darken-1">mdi-image-outline</v-icon>
+            </v-btn>
+            <v-btn icon size="small" variant="text" @click="triggerUpload('file')" title="Gửi tệp">
+              <v-icon color="grey-darken-1">mdi-paperclip</v-icon>
+            </v-btn>
+          </div>
+          <input type="file" ref="fileInput" hidden @change="onFileSelected" />
+          
           <v-textarea
             v-model="inputText"
-            placeholder="Nhập tin nhắn..."
+            placeholder="Nhập tin nhắn... (Dán ảnh để gửi)"
             variant="solo-filled"
             density="compact"
             hide-details
@@ -158,6 +168,7 @@
             rows="1"
             max-rows="5"
             @keydown.enter.exact.prevent="handleSend"
+            @paste="handlePaste"
             class="flex-grow-1 mr-2 futuristic-input"
           >
             <template #append-inner>
@@ -222,6 +233,8 @@ const emit = defineEmits<{
 }>();
 
 const inputText = ref('');
+const fileInput = ref<HTMLInputElement | null>(null);
+const uploadType = ref<'image' | 'file'>('image');
 const messagesContainer = ref<HTMLElement | null>(null);
 const previewImageUrl = ref('');
 const showImagePreview = computed({
@@ -254,6 +267,67 @@ function handleSend() {
   inputText.value = '';
 }
 
+async function triggerUpload(type: 'image' | 'file') {
+  uploadType.value = type;
+  if (fileInput.value) {
+    fileInput.value.accept = type === 'image' ? 'image/*' : '*/*';
+    fileInput.value.click();
+  }
+}
+
+async function onFileSelected(e: Event) {
+  const target = e.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (!file) return;
+  await uploadAndSend(file, uploadType.value);
+  target.value = '';
+}
+
+async function handlePaste(e: ClipboardEvent) {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+
+  for (const item of items) {
+    if (item.type.indexOf('image') !== -1) {
+      const file = item.getAsFile();
+      if (file) {
+        await uploadAndSend(file, 'image');
+      }
+    }
+  }
+}
+
+async function uploadAndSend(file: File, type: 'image' | 'file') {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    // Using api instead of axios to stay consistent
+    const uploadRes = await api.post('/chat/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    
+    const { url, filename, mimetype } = uploadRes.data;
+    
+    // Construct attachment object
+    const attachment = { url, name: filename, type: mimetype };
+    
+    // Send message with attachment
+    // The emit('send') currently only takes string content, we might need to update use-chat.ts or just handle it here
+    // However, keeping it consistent with our backend update:
+    await api.post(`/conversations/${props.conversation?.id}/messages`, {
+      content: type === 'image' ? 'Gửi một hình ảnh' : `Gửi tệp: ${filename}`,
+      contentType: type,
+      attachments: [attachment]
+    });
+    
+    // We don't need to manually emit because Socket.IO will sync the message back
+  } catch (err) {
+    console.error('Upload failed:', err);
+    syncSnack.value = { show: true, text: 'Không thể gửi tệp. Vui lòng thử lại.', color: 'error' };
+  }
+}
+
 function applySuggestion() {
   if (!props.aiSuggestion) return;
   inputText.value = props.aiSuggestion;
@@ -281,10 +355,10 @@ function openFile(url: string) {
 
 function getImageUrl(msg: Message): string | null {
   if (msg.contentType === 'image' && msg.content) {
-    if (msg.content.startsWith('http')) return msg.content;
+    if (msg.content.startsWith('http') || msg.content.startsWith('/uploads/')) return msg.content;
     try {
       const payload = JSON.parse(msg.content);
-      return payload.href || payload.thumb || payload.hdUrl || null;
+      return payload.url || payload.href || payload.thumb || payload.hdUrl || null;
     } catch {}
   }
 
@@ -304,6 +378,12 @@ function getFileInfo(msg: Message): { name: string; size: string; href: string }
   if (!msg.content?.startsWith('{')) return null;
   try {
     const payload = JSON.parse(msg.content);
+    
+    // Support local upload format
+    if (msg.contentType === 'file' && payload.url) {
+      return { name: payload.name || 'Tệp đính kèm', size: '', href: payload.url };
+    }
+
     const params = typeof payload.params === 'string' ? JSON.parse(payload.params) : payload.params;
     if (params?.fileExt || params?.fType === 1) {
       const bytes = parseInt(params.fileSize || '0');

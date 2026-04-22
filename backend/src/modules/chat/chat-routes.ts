@@ -11,6 +11,17 @@ import { zaloRateLimiter } from '../zalo/zalo-rate-limiter.js';
 import { logger } from '../../shared/utils/logger.js';
 import { randomUUID } from 'node:crypto';
 import type { Server } from 'socket.io';
+import fs from 'node:fs';
+import { pipeline } from 'node:stream/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const UPLOADS_DIR = path.join(__dirname, '../../../uploads');
+
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
 
 type QueryParams = Record<string, string>;
 
@@ -106,13 +117,32 @@ export async function chatRoutes(app: FastifyInstance) {
     return { messages: messages.reverse(), total, page: parseInt(page), limit: parseInt(limit) };
   });
 
+  // ── Upload file ──────────────────────────────────────────────────────────
+  app.post('/api/v1/chat/upload', async (request: FastifyRequest, reply: FastifyReply) => {
+    const data = await request.file();
+    if (!data) return reply.status(400).send({ error: 'No file uploaded' });
+
+    const ext = path.extname(data.filename);
+    const fileName = `${randomUUID()}${ext}`;
+    const filePath = path.join(UPLOADS_DIR, fileName);
+
+    await pipeline(data.file, fs.createWriteStream(filePath));
+
+    const publicUrl = `/uploads/${fileName}`;
+    return { url: publicUrl, filename: data.filename, mimetype: data.mimetype };
+  });
+
   // ── Send message ─────────────────────────────────────────────────────────
   app.post('/api/v1/conversations/:id/messages', { preHandler: requireZaloAccess('chat') }, async (request: FastifyRequest, reply: FastifyReply) => {
     const user = request.user!;
     const { id } = request.params as { id: string };
-    const { content } = request.body as { content: string };
+    const { content, contentType = 'text', attachments = [] } = request.body as { 
+      content: string; 
+      contentType?: 'text' | 'image' | 'file';
+      attachments?: any[];
+    };
 
-    if (!content?.trim()) return reply.status(400).send({ error: 'Content required' });
+    if (contentType === 'text' && !content?.trim()) return reply.status(400).send({ error: 'Content required' });
 
     const conversation = await prisma.conversation.findFirst({
       where: { id, orgId: user.orgId },
@@ -130,7 +160,13 @@ export async function chatRoutes(app: FastifyInstance) {
 
         const { FacebookApi } = await import('../channels/facebook/facebook-api.js');
         const fb = new FacebookApi(config.accessToken);
-        await fb.sendTextMessage(threadId, content);
+        if (contentType === 'image' && attachments.length > 0) {
+          // Note: Facebook requires public URL for attachments
+          // If we are on local, this might need a tunnel or S3
+          await fb.sendTextMessage(threadId, `[Image]: ${attachments[0].url}`);
+        } else {
+          await fb.sendTextMessage(threadId, content);
+        }
       } 
       // Handle Zalo Personal Message (Default)
       else {
@@ -143,7 +179,22 @@ export async function chatRoutes(app: FastifyInstance) {
 
         const threadType = conversation.threadType === 'group' ? 1 : 0;
         zaloRateLimiter.recordSend(conversation.zaloAccountId);
-        await instance.api.sendMessage({ msg: content }, threadId, threadType);
+
+        if (contentType === 'image' && attachments.length > 0) {
+          const fileUrl = attachments[0].url;
+          const fullPath = fileUrl.startsWith('/uploads/') 
+            ? path.join(UPLOADS_DIR, fileUrl.replace('/uploads/', ''))
+            : fileUrl;
+          await instance.api.sendImage(fullPath, threadId, threadType);
+        } else if (contentType === 'file' && attachments.length > 0) {
+          const fileUrl = attachments[0].url;
+          const fullPath = fileUrl.startsWith('/uploads/') 
+            ? path.join(UPLOADS_DIR, fileUrl.replace('/uploads/', ''))
+            : fileUrl;
+          await instance.api.sendFile(fullPath, threadId, threadType);
+        } else {
+          await instance.api.sendMessage({ msg: content }, threadId, threadType);
+        }
       }
 
       const message = await prisma.message.create({
@@ -153,8 +204,8 @@ export async function chatRoutes(app: FastifyInstance) {
           senderType: 'self',
           senderUid: conversation.zaloAccount.zaloUid || '',
           senderName: 'Staff',
-          content,
-          contentType: 'text',
+          content: contentType === 'text' ? content : JSON.stringify(attachments[0] || {}),
+          contentType,
           sentAt: new Date(),
           repliedByUserId: user.id,
         },
