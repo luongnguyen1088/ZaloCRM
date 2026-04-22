@@ -203,12 +203,13 @@ export async function chatRoutes(app: FastifyInstance) {
           if (sendImageFn) {
             await sendImageFn(fullPath, threadId, threadType);
           } else {
-            logger.warn(`[chat] No sendImage method found, falling back to sendFile`);
+            const apiKeys = Object.keys(instance.api);
+            logger.warn(`[chat] No sendImage method found. Available: ${apiKeys.join(', ')}`);
             const sendFileFn = findMethod(['sendFile', 'uploadFile', 'sendAttachment']);
             if (sendFileFn) {
               await sendFileFn(fullPath, threadId, threadType);
             } else {
-              throw new Error('Zalo API does not support sending images/files (no method found)');
+              throw new Error(`Zalo API không hỗ trợ gửi ảnh/tệp. Các hàm khả dụng: ${apiKeys.filter(k => !k.startsWith('_')).join(', ')}`);
             }
           }
           logger.info(`[chat] Image sent successfully to ${threadId}`);
