@@ -92,14 +92,11 @@ async function assertAiCreditAvailable(orgId: string) {
   return usage;
 }
 
-function calculateAiCredits(inputTokens: number, outputTokens: number): number {
-  const totalTokens = inputTokens + outputTokens;
-  // Logic: 1,000 tokens = 1 Credit
-  // Round to 2 decimal places, minimum 0.1 credit
-  return Math.max(0.1, parseFloat((totalTokens / 1000).toFixed(2)));
+function calculateAiTokens(inputTokens: number, outputTokens: number): number {
+  return inputTokens + outputTokens;
 }
 
-async function recordAiCreditUsage(input: {
+async function recordAiTokenUsage(input: {
   orgId: string;
   feature: AiTaskType;
   provider: string;
@@ -110,7 +107,7 @@ async function recordAiCreditUsage(input: {
   outputText?: string;
   metadata?: Prisma.InputJsonObject;
 }) {
-  const credits = calculateAiCredits(input.inputTokens || 0, input.outputTokens || 0);
+  const tokens = calculateAiTokens(input.inputTokens || 0, input.outputTokens || 0);
 
   return prisma.aiCreditUsage.create({
     data: {
@@ -118,7 +115,7 @@ async function recordAiCreditUsage(input: {
       feature: input.feature,
       provider: input.provider,
       model: input.model,
-      credits: credits,
+      credits: tokens, // We use the credits column to store token count
       inputTokens: input.inputTokens,
       outputTokens: input.outputTokens,
       inputChars: input.inputText?.length,
@@ -379,7 +376,7 @@ export async function generateAiOutput(input: {
       content: JSON.stringify(normalized),
       confidence: normalized.confidence,
     });
-    await recordAiCreditUsage({
+    await recordAiTokenUsage({
       orgId: input.orgId,
       feature: 'sentiment',
       provider,
@@ -415,7 +412,7 @@ export async function generateAiOutput(input: {
     content: text,
     confidence: 0.8,
   });
-  await recordAiCreditUsage({
+  await recordAiTokenUsage({
     orgId: input.orgId,
     feature: input.type,
     provider,
@@ -440,7 +437,7 @@ export async function categorizeKnowledge(orgId: string, content: string) {
 
   const system = buildCategorizePrompt();
   const { text: raw, usage } = await generateText(provider, apiKey, model, system, content);
-  await recordAiCreditUsage({
+  await recordAiTokenUsage({
     orgId,
     feature: 'categorize',
     provider,

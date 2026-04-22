@@ -7,16 +7,16 @@
         </v-avatar>
         <h2 class="text-h5 font-weight-bold mb-2">Hết hạn mức AI</h2>
         <p class="text-body-1 text-grey-darken-1">
-          Bạn đã sử dụng hết số lượng Credit AI được cấp trong gói hiện tại. 
-          Hãy nâng cấp để tiếp tục sử dụng các tính năng thông minh.
+          Bạn đã sử dụng hết số lượng Token AI được cấp trong gói hiện tại. 
+          Hãy mua thêm hoặc nâng cấp để tiếp tục sử dụng các tính năng thông minh.
         </p>
       </div>
 
       <v-card-text class="pa-6 pt-0">
         <v-list lines="two" class="bg-grey-lighten-4 rounded-lg mb-4">
           <v-list-item prepend-icon="mdi-check-circle" color="success">
-            <v-list-item-title class="font-weight-bold">Tăng giới hạn Credit</v-list-item-title>
-            <v-list-item-subtitle>Nhận thêm hàng ngàn credit mỗi tháng</v-list-item-subtitle>
+            <v-list-item-title class="font-weight-bold">Tăng giới hạn Token</v-list-item-title>
+            <v-list-item-subtitle>Nhận thêm hàng triệu Token mỗi tháng</v-list-item-subtitle>
           </v-list-item>
           <v-list-item prepend-icon="mdi-check-circle" color="success">
             <v-list-item-title class="font-weight-bold">Ưu tiên xử lý</v-list-item-title>
@@ -37,7 +37,7 @@
             prepend-icon="mdi-lightning-bolt"
             @click="goToPricing"
           >
-            Mua thêm AI Credit
+            Mua thêm AI Token
           </v-btn>
           <v-btn
             variant="tonal"

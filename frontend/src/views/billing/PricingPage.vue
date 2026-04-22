@@ -37,7 +37,7 @@
               <div class="ml-3">
                 <div class="text-caption font-weight-bold text-white uppercase">AI POWER</div>
                 <div class="text-h6 font-weight-black text-gradient-ai">
-                  {{ plan.maxAiTokens.toLocaleString() }} AI credits
+                   {{ plan.maxAiTokens.toLocaleString() }} Tokens
                 </div>
               </div>
             </div>
@@ -79,8 +79,8 @@
 
     <!-- AI Top-up Packs Section -->
     <div class="text-center mt-16 mb-10 entrance-animation">
-      <h2 class="text-h4 font-weight-black text-white mb-4">Gói bổ sung AI Credit</h2>
-      <p class="text-body-1 text-placeholder">Bạn cần thêm Credit để sử dụng trong tháng? Hãy mua thêm các gói lẻ bên dưới.</p>
+      <h2 class="text-h4 font-weight-black text-white mb-4">Gói bổ sung AI Token</h2>
+      <p class="text-body-1 text-placeholder">Bạn cần thêm Token để sử dụng trong tháng? Hãy mua thêm các gói lẻ bên dưới.</p>
     </div>
 
     <v-row justify="center" class="mb-12">
@@ -91,7 +91,7 @@
           </div>
           <h3 class="text-h6 font-weight-bold mb-1">{{ pack.name }}</h3>
           <div class="text-h5 font-weight-black text-gradient-ai mb-4">
-            +{{ (pack.credits / 1000).toLocaleString() }}k Credits
+            +{{ pack.tokens >= 1000000 ? (pack.tokens / 1000000) + 'M' : (pack.tokens / 1000).toLocaleString() + 'k' }} Tokens
           </div>
           <v-spacer />
           <div class="text-subtitle-1 font-weight-bold mb-4">{{ formatPrice(pack.price) }}</div>
@@ -249,10 +249,10 @@ const selectedPlan = ref<any>(null);
 const isTopup = ref(false);
 
 const aiPacks = ref([
-  { id: 'ai_10k', name: 'Gói Tiết kiệm', credits: 10000, price: 50000 },
-  { id: 'ai_50k', name: 'Gói Phổ thông', credits: 50000, price: 200000 },
-  { id: 'ai_150k', name: 'Gói Chuyên nghiệp', credits: 150000, price: 500000 },
-  { id: 'ai_500k', name: 'Gói Doanh nghiệp', credits: 500000, price: 1500000 },
+  { id: 'ai_100k', name: 'Gói Tiết kiệm', tokens: 100000, price: 50000 },
+  { id: 'ai_500k', name: 'Gói Phổ thông', tokens: 500000, price: 200000 },
+  { id: 'ai_1m', name: 'Gói Chuyên nghiệp', tokens: 1500000, price: 500000 },
+  { id: 'ai_5m', name: 'Gói Doanh nghiệp', tokens: 5000000, price: 1500000 },
 ]);
 
 const fetchPlans = async () => {
@@ -306,7 +306,7 @@ const selectPlan = (plan: any) => {
 
 const selectTopup = (pack: any) => {
   selectedPlan.value = {
-    name: pack.name + ' (' + (pack.credits / 1000) + 'k Credits)',
+    name: pack.name + ' (+' + (pack.tokens >= 1000000 ? (pack.tokens / 1000000) + 'M' : (pack.tokens / 1000) + 'k') + ' Tokens)',
     priceMonth: pack.price
   };
   isTopup.value = true;

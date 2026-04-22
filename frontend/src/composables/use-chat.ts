@@ -22,9 +22,9 @@ export interface AiConfig {
   managed?: boolean;
   platformKeyConfigured?: boolean;
   planName?: string;
-  usedCredits?: number;
-  maxCredits?: number;
-  remainingCredits?: number;
+  usedTokens?: number;
+  maxTokens?: number;
+  remainingTokens?: number;
 }
 
 interface ConversationMessage {
@@ -73,8 +73,8 @@ export function useChat() {
   const aiSummaryLoading = ref(false);
   const aiSentiment = ref<AiSentiment | null>(null);
   const aiSentimentLoading = ref(false);
-  const aiUsage = ref({ usedToday: 0, maxDaily: 500, remaining: 500, usedCredits: 0, maxCredits: 500, remainingCredits: 500, enabled: true });
-  const aiConfig = ref<AiConfig>({ provider: 'anthropic', model: 'claude-sonnet-4-6', maxDaily: 500, enabled: true, managed: true });
+  const aiUsage = ref({ usedToday: 0, maxDaily: 500000, remaining: 500000, usedTokens: 0, maxTokens: 500000, remainingTokens: 500000, enabled: true });
+  const aiConfig = ref<AiConfig>({ provider: 'anthropic', model: 'claude-sonnet-4-6', maxDaily: 500000, enabled: true, managed: true });
   const isAiQuotaExceeded = ref(false);
   let socket: Socket | null = null;
 
@@ -128,9 +128,9 @@ export function useChat() {
         managed: res.data.managed,
         platformKeyConfigured: res.data.platformKeyConfigured,
         planName: res.data.planName,
-        usedCredits: res.data.usedCredits,
-        maxCredits: res.data.maxCredits,
-        remainingCredits: res.data.remainingCredits,
+        usedTokens: res.data.usedCredits,
+        maxTokens: res.data.maxCredits,
+        remainingTokens: res.data.remainingCredits,
       };
     } catch (err) {
       console.error('Failed to fetch AI config:', err);
@@ -147,16 +147,24 @@ export function useChat() {
       managed: res.data.managed,
       platformKeyConfigured: res.data.platformKeyConfigured,
       planName: res.data.planName,
-      usedCredits: res.data.usedCredits,
-      maxCredits: res.data.maxCredits,
-      remainingCredits: res.data.remainingCredits,
+      usedTokens: res.data.usedTokens,
+      maxTokens: res.data.maxTokens,
+      remainingTokens: res.data.remainingTokens,
     };
   }
 
   async function fetchAiUsage() {
     try {
       const res = await api.get('/ai/usage');
-      aiUsage.value = res.data;
+      aiUsage.value = {
+        usedToday: res.data.usedToday,
+        maxDaily: res.data.maxDaily,
+        remaining: res.data.remaining,
+        usedTokens: res.data.usedTokens,
+        maxTokens: res.data.maxTokens,
+        remainingTokens: res.data.remainingTokens,
+        enabled: res.data.enabled
+      };
     } catch (err) {
       console.error('Failed to fetch AI usage:', err);
     }
