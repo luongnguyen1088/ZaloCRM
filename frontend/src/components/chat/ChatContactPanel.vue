@@ -9,64 +9,78 @@
       </v-btn>
     </div>
 
-    <div class="pa-3">
-      <div v-if="props.contact" class="d-flex align-center mb-3 ga-2">
-        <v-chip
-          :color="scoreColor(props.contact.leadScore)"
-          size="small"
-          variant="tonal"
-          prepend-icon="mdi-star"
-        >
-          {{ props.contact.leadScore ?? 0 }} điểm
-        </v-chip>
-        <span v-if="props.contact.lastActivity" class="text-caption text-grey">
-          {{ relativeTime(props.contact.lastActivity) }}
-        </span>
+    <div class="pa-4 overflow-y-auto flex-grow-1">
+      <div v-if="props.contact" class="d-flex align-center mb-5 ga-2">
+        <v-avatar size="64" class="avatar-glow mr-2">
+          <v-img :src="props.contact.avatarUrl || ''">
+            <template #placeholder>
+              <v-icon size="32">mdi-account</v-icon>
+            </template>
+          </v-img>
+        </v-avatar>
+        <div>
+          <div class="text-h6 font-weight-bold mb-1">{{ props.contact.fullName || 'Khách hàng' }}</div>
+          <div class="d-flex align-center ga-2">
+            <v-chip
+              :color="scoreColor(props.contact.leadScore)"
+              size="x-small"
+              variant="flat"
+              prepend-icon="mdi-star"
+            >
+              {{ props.contact.leadScore ?? 0 }} điểm
+            </v-chip>
+            <span v-if="props.contact.lastActivity" class="text-caption text-grey">
+              {{ relativeTime(props.contact.lastActivity) }}
+            </span>
+          </div>
+        </div>
       </div>
 
-      <v-text-field v-model="form.fullName" label="Họ tên" density="compact" variant="outlined" class="mb-2" hide-details />
-      <v-text-field v-model="form.phone" label="Số điện thoại" density="compact" variant="outlined" class="mb-2" hide-details />
-      <v-text-field v-model="form.email" label="Email" type="email" density="compact" variant="outlined" class="mb-2" hide-details />
+      <v-divider class="mb-4" />
 
-      <v-select v-model="form.source" label="Nguồn" :items="SOURCE_OPTIONS" item-title="text" item-value="value"
-        density="compact" variant="outlined" clearable class="mb-2" hide-details />
+      <div class="section-label mb-3">Thông tin liên hệ</div>
+      <div class="field-group mb-4">
+        <v-text-field v-model="form.fullName" label="Họ tên" density="compact" variant="filled" class="mb-2" hide-details flat />
+        <v-text-field v-model="form.phone" label="Số điện thoại" density="compact" variant="filled" class="mb-2" hide-details flat />
+        <v-text-field v-model="form.email" label="Email" type="email" density="compact" variant="filled" class="mb-2" hide-details flat />
+      </div>
 
-      <v-select v-model="form.status" label="Trạng thái" :items="STATUS_OPTIONS" item-title="text" item-value="value"
-        density="compact" variant="outlined" clearable class="mb-2" hide-details />
+      <div class="section-label mb-3">Phân loại & Trạng thái</div>
+      <div class="field-group mb-4">
+        <v-select v-model="form.source" label="Nguồn khách" :items="SOURCE_OPTIONS" item-title="text" item-value="value"
+          density="compact" variant="filled" clearable class="mb-2" hide-details flat />
 
-      <v-text-field v-model="form.firstContactDate" label="Ngày tiếp nhận" type="date"
-        density="compact" variant="outlined" class="mb-2" hide-details />
+        <v-select v-model="form.status" label="Trạng thái" :items="STATUS_OPTIONS" item-title="text" item-value="value"
+          density="compact" variant="filled" clearable class="mb-2" hide-details flat />
+      </div>
 
-      <v-text-field v-model="form.nextAppointmentDate" label="Hẹn tái khám" type="date"
-        density="compact" variant="outlined" class="mb-2" hide-details />
+      <div class="section-label mb-3">Ghi chú & Tags</div>
+      <div class="field-group mb-4">
+        <v-combobox v-model="form.tags" label="Thêm thẻ (Tags)" multiple chips closable-chips
+          density="compact" variant="filled" class="mb-2" hide-details flat />
 
-      <v-combobox v-model="form.tags" label="Tags" multiple chips closable-chips
-        density="compact" variant="outlined" class="mb-2" hide-details />
+        <v-textarea v-model="form.notes" label="Ghi chú nhanh" rows="2" auto-grow
+          density="compact" variant="filled" class="mb-3" hide-details flat />
+      </div>
 
-      <v-textarea v-model="form.notes" label="Ghi chú" rows="2" auto-grow
-        density="compact" variant="outlined" class="mb-3" hide-details />
+      <v-btn color="primary" block variant="flat" :loading="saving" @click="saveContact" class="mb-6 rounded-xl">
+        Cập nhật thông tin
+      </v-btn>
 
-      <v-btn color="primary" block :loading="saving" @click="saveContact">Lưu thông tin</v-btn>
+      <v-divider class="mb-4" />
 
-      <v-alert v-if="saveSuccess" type="success" density="compact" class="mt-2" closable @click:close="saveSuccess = false">
-        Đã lưu thành công!
-      </v-alert>
-      <v-alert v-if="saveError" type="error" density="compact" class="mt-2" closable @click:close="saveError = false">
-        Lưu thất bại, thử lại!
-      </v-alert>
+      <AiSummaryCard :summary="aiSummary" :loading="aiSummaryLoading" @refresh="$emit('refresh-ai-summary')" class="mb-4" />
 
-      <AiSummaryCard :summary="aiSummary" :loading="aiSummaryLoading" @refresh="$emit('refresh-ai-summary')" />
-
-      <v-card variant="outlined" class="mb-3">
-        <v-card-title class="d-flex align-center text-body-1">
-          <v-icon class="mr-2">mdi-chart-bell-curve-cumulative</v-icon>
-          Cảm xúc khách hàng
+      <v-card variant="flat" class="sentiment-card mb-4 rounded-xl">
+        <v-card-title class="d-flex align-center text-subtitle-2 font-weight-bold pa-3">
+          <v-icon size="18" class="mr-2" color="primary">mdi-brain</v-icon>
+          Tâm trạng khách hàng
           <v-spacer />
-          <v-btn size="small" variant="text" :loading="aiSentimentLoading" @click="$emit('refresh-ai-sentiment')">Làm mới</v-btn>
+          <v-btn icon="mdi-refresh" size="x-small" variant="text" :loading="aiSentimentLoading" @click="$emit('refresh-ai-sentiment')" />
         </v-card-title>
-        <v-card-text>
+        <v-card-text class="pa-3 pt-0">
           <AiSentimentBadge :sentiment="aiSentiment" />
-          <div v-if="aiSentiment?.reason" class="text-body-2 mt-2">{{ aiSentiment.reason }}</div>
+          <div v-if="aiSentiment?.reason" class="text-caption mt-2 text-grey-darken-1">{{ aiSentiment.reason }}</div>
         </v-card-text>
       </v-card>
 
@@ -129,7 +143,6 @@ function relativeTime(dateStr: string) {
 .chat-contact-panel {
   width: 320px;
   height: 100%;
-  overflow-y: auto;
   flex-shrink: 0;
   border-left: 1px solid var(--color-border);
   background: var(--color-surface-glass);
@@ -138,5 +151,32 @@ function relativeTime(dateStr: string) {
 
 .chat-contact-panel__header {
   border-bottom: 1px solid var(--color-border);
+  height: 64px;
+}
+
+.section-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-primary);
+  opacity: 0.8;
+}
+
+.field-group {
+  background: var(--color-surface-muted);
+  border-radius: 16px;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.avatar-glow {
+  box-shadow: 0 0 0 4px var(--color-primary-soft);
+  border: 2px solid white;
+}
+
+.sentiment-card {
+  background: var(--color-surface-muted) !important;
+  border: 1px solid var(--color-border) !important;
 }
 </style>

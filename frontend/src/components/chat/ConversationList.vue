@@ -1,28 +1,41 @@
 <template>
   <div class="conversation-list d-flex flex-column">
-    <div class="pa-2">
+    <div class="search-section pa-4">
+      <div class="d-flex align-center justify-space-between mb-4">
+        <h2 class="text-h5 font-weight-bold mb-0">Tin nhắn</h2>
+        <v-btn icon="mdi-plus" size="small" variant="tonal" color="primary" title="Tạo hội thoại mới" />
+      </div>
+      
       <v-select
         v-model="selectedAccountId"
         :items="accountOptions"
         item-title="text"
         item-value="value"
-        label="Tất cả Zalo"
+        placeholder="Tất cả tài khoản Zalo"
         density="compact"
-        variant="solo-filled"
+        variant="solo"
+        flat
         hide-details
         clearable
-        class="mb-2"
+        class="mb-3 account-selector"
         @update:model-value="$emit('filter-account', $event)"
-      />
+      >
+        <template #prepend-inner>
+          <v-icon color="primary" size="18">mdi-account-switch-outline</v-icon>
+        </template>
+      </v-select>
+
       <v-text-field
         :model-value="search"
         @update:model-value="$emit('update:search', $event)"
-        placeholder="Tìm kiếm..."
+        placeholder="Tìm tên khách hàng, nội dung..."
         prepend-inner-icon="mdi-magnify"
-        variant="solo-filled"
+        variant="solo"
+        flat
         density="compact"
         hide-details
         clearable
+        class="search-input"
       />
     </div>
 
@@ -65,18 +78,14 @@
             :content="conv.unreadCount"
             color="error"
             inline
+            class="ml-1"
           />
         </v-list-item-subtitle>
-
-        <template #append>
-          <span v-if="conv.zaloAccount?.displayName" class="text-caption text-grey-darken-1 ml-1 conversation-account-name">
-            {{ conv.zaloAccount.displayName }}
-          </span>
-        </template>
       </v-list-item>
 
-      <div v-if="!loading && conversations.length === 0" class="text-center pa-8 text-grey">
-        Chưa có cuộc trò chuyện nào
+      <div v-if="!loading && conversations.length === 0" class="text-center pa-12">
+        <v-icon icon="mdi-chat-sleep-outline" size="48" color="grey-lighten-1" class="mb-2" />
+        <div class="text-grey">Không tìm thấy hội thoại</div>
       </div>
     </v-list>
   </div>
@@ -184,21 +193,59 @@ function formatTime(dateStr: string | null): string {
   border-right: 1px solid var(--color-border);
   background: var(--color-surface-glass);
   backdrop-filter: blur(14px);
+  display: flex;
+  flex-direction: column;
 }
 
-.conversation-unread {
-  background: var(--color-primary-soft);
+.search-section {
+  border-bottom: 1px solid var(--color-border);
 }
 
-.conversation-preview {
-  max-width: 200px;
+.account-selector :deep(.v-field),
+.search-input :deep(.v-field) {
+  background: var(--color-surface-muted) !important;
+  border-radius: 12px !important;
 }
 
-.conversation-account-name {
-  font-size: 0.65rem;
-  max-width: 60px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.list-root {
+  background: transparent !important;
+}
+
+.conversation-item {
+  padding: 12px !important;
+  transition: all 0.2s ease;
+  border: 1px solid transparent !important;
+}
+
+.conversation-item:hover {
+  background: var(--color-primary-soft) !important;
+}
+
+.item-active {
+  background: var(--color-primary-soft) !important;
+  border-color: var(--color-primary-soft-strong) !important;
+  box-shadow: var(--shadow-sm);
+}
+
+.avatar-border {
+  border: 2px solid var(--color-canvas);
+  box-shadow: 0 0 0 1px var(--color-border);
+}
+
+.unread-dot-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  background: var(--color-primary);
+  border: 2px solid white;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.scale-80 {
+  transform: scale(0.85);
+  transform-origin: right center;
 }
 </style>

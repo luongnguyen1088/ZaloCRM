@@ -8,26 +8,51 @@
     </div>
 
     <template v-else>
-      <div class="pa-3 d-flex align-center thread-header">
-        <v-avatar size="36" color="grey-lighten-2" class="mr-3">
-          <v-icon v-if="conversation.threadType === 'group'" icon="mdi-account-group" />
-          <v-img v-else-if="conversation.contact?.avatarUrl" :src="conversation.contact.avatarUrl" />
-          <v-icon v-else icon="mdi-account" />
-        </v-avatar>
-        <div class="flex-grow-1">
-          <div class="font-weight-medium">{{ conversation.contact?.fullName || 'Unknown' }}</div>
-          <div class="text-caption text-grey">{{ conversation.zaloAccount?.displayName || 'Zalo' }}</div>
-        </div>
-        <v-btn size="small" variant="tonal" color="primary" class="mr-2" :loading="aiSuggestionLoading" @click="$emit('ask-ai')">
-          Ask AI
+      <div class="pa-3 d-flex align-center thread-header glass-header">
+        <v-btn icon size="small" variant="text" class="mr-1 d-md-none" @click="$emit('back')">
+          <v-icon>mdi-arrow-left</v-icon>
         </v-btn>
-        <v-btn
-          :icon="showContactPanel ? 'mdi-account-details' : 'mdi-account-details-outline'"
-          size="small"
-          variant="text"
-          :color="showContactPanel ? 'primary' : undefined"
-          @click="$emit('toggle-contact-panel')"
-        />
+        <div class="position-relative mr-3">
+          <v-avatar size="42" class="avatar-glow">
+            <v-icon v-if="conversation.threadType === 'group'" icon="mdi-account-group" color="primary" />
+            <v-img v-else-if="conversation.contact?.avatarUrl" :src="conversation.contact.avatarUrl" />
+            <v-icon v-else icon="mdi-account" color="primary" />
+          </v-avatar>
+          <div class="status-indicator online"></div>
+        </div>
+        <div class="flex-grow-1 overflow-hidden">
+          <div class="font-weight-bold text-truncate text-h6 mb-n1">{{ conversation.contact?.fullName || 'Khách hàng' }}</div>
+          <div class="d-flex align-center">
+            <v-icon size="12" color="success" class="mr-1">mdi-circle</v-icon>
+            <span class="text-caption text-grey-darken-1">{{ conversation.zaloAccount?.displayName || 'Zalo' }}</span>
+          </div>
+        </div>
+        <div class="d-flex ga-2">
+          <v-tooltip text="Hỗ trợ trả lời bằng AI" location="bottom">
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                size="small"
+                variant="flat"
+                color="primary"
+                class="ai-spark-btn"
+                :loading="aiSuggestionLoading"
+                @click="$emit('ask-ai')"
+              >
+                <v-icon start>mdi-sparkles</v-icon>
+                AI Reply
+              </v-btn>
+            </template>
+          </v-tooltip>
+          <v-btn
+            :icon="showContactPanel ? 'mdi-information' : 'mdi-information-outline'"
+            size="small"
+            variant="tonal"
+            :color="showContactPanel ? 'primary' : 'grey-darken-1'"
+            @click="$emit('toggle-contact-panel')"
+            title="Thông tin chi tiết"
+          />
+        </div>
       </div>
 
       <div ref="messagesContainer" class="flex-grow-1 overflow-y-auto pa-3 chat-messages-area">
@@ -96,7 +121,23 @@
         <div v-if="!loading && messages.length === 0" class="text-center pa-8 text-grey">Chưa có tin nhắn</div>
       </div>
 
-      <div class="pa-2 chat-input-area">
+      <div class="pa-2 chat-input-area border-t">
+        <div v-if="aiPills.length > 0 && !aiSuggestionLoading" class="ai-pills-container d-flex ga-2 px-2 pb-2 overflow-x-auto">
+          <v-chip
+            v-for="(pill, idx) in aiPills"
+            :key="idx"
+            size="small"
+            variant="tonal"
+            color="primary"
+            class="ai-pill"
+            @click="applyPill(pill)"
+          >
+            <v-icon start size="14">mdi-robot-outline</v-icon>
+            {{ pill }}
+          </v-chip>
+          <v-btn size="x-small" variant="text" icon="mdi-close" @click="aiPills = []" />
+        </div>
+
         <AiSuggestionPanel
           :suggestion="aiSuggestion"
           :loading="aiSuggestionLoading"
@@ -147,7 +188,10 @@
       </div>
     </v-dialog>
 
-    <v-snackbar v-model="syncSnack.show" :color="syncSnack.color" timeout="3000">{{ syncSnack.text }}</v-snackbar>
+    <v-snackbar v-model="syncSnack.show" :color="syncSnack.color" timeout="3000" location="top">
+      <v-icon start>{{ syncSnack.color === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle' }}</v-icon>
+      {{ syncSnack.text }}
+    </v-snackbar>
   </div>
 </template>
 
@@ -185,7 +229,23 @@ const showImagePreview = computed({
     if (!value) previewImageUrl.value = '';
   },
 });
+const aiPills = ref<string[]>([]);
 const syncSnack = ref({ show: false, text: '', color: 'success' });
+
+// Mock or intelligent pills based on context
+watch(() => props.conversation?.id, () => {
+  aiPills.value = ['Dạ vâng ạ', 'Cảm ơn bạn', 'Để mình kiểm tra', 'Bạn cần hỗ trợ gì?'];
+});
+
+watch(() => props.aiSuggestion, (newVal) => {
+  if (newVal && newVal.length < 50) {
+    if (!aiPills.value.includes(newVal)) aiPills.value.unshift(newVal);
+  }
+});
+
+function applyPill(text: string) {
+  inputText.value = text;
+}
 
 function handleSend() {
   if (!inputText.value.trim()) return;
@@ -358,8 +418,39 @@ watch(
   height: 100%;
 }
 
+.glass-header {
+  background: var(--color-surface-glass) !important;
+  backdrop-filter: blur(12px);
+  z-index: 5;
+}
+
+.avatar-glow {
+  box-shadow: 0 0 0 2px var(--color-canvas), 0 0 0 4px var(--color-primary-soft);
+}
+
+.status-indicator {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--color-surface);
+}
+
+.status-indicator.online {
+  background: var(--color-success);
+}
+
+.ai-spark-btn {
+  background: var(--gradient-brand) !important;
+  color: white !important;
+  box-shadow: var(--glow-brand);
+}
+
 .thread-header {
   border-bottom: 1px solid var(--color-border);
+  height: 64px;
 }
 
 .thread-bubble-wrap {
@@ -445,6 +536,24 @@ watch(
 .chat-input-area {
   background: var(--color-surface-glass);
   border-top: 1px solid var(--color-border);
+  transition: all 0.3s ease;
+}
+
+.ai-pills-container {
+  scrollbar-width: none;
+}
+.ai-pills-container::-webkit-scrollbar {
+  display: none;
+}
+
+.ai-pill {
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.ai-pill:hover {
+  transform: translateY(-2px);
 }
 
 .preview-shell {

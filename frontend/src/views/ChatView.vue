@@ -136,43 +136,55 @@ watch(searchQuery, () => {
 
 <style scoped>
 .chat-container {
-  margin: -12px;
+  margin: -16px;
+  background: var(--color-canvas);
+  overflow: hidden;
 }
 
 .chat-panel-left {
   position: relative;
   flex-shrink: 0;
-  min-width: 200px;
+  min-width: 260px;
   max-width: 500px;
+  z-index: 2;
+  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.02);
 }
 
 .chat-panel-right {
   position: relative;
   flex-shrink: 0;
-  min-width: 250px;
+  min-width: 300px;
   max-width: 500px;
+  z-index: 2;
+  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.02);
 }
 
-/* Resize handle — thin vertical line on the edge */
+/* Resize handle — elegant vertical line */
 .resize-handle {
   position: absolute;
   top: 0;
-  right: -2px;
-  width: 5px;
+  right: -3px;
+  width: 6px;
   height: 100%;
   cursor: col-resize;
-  z-index: 10;
+  z-index: 100;
   background: transparent;
-  transition: background 0.2s;
+  transition: all 0.3s;
 }
 
-.resize-handle:hover,
-.resize-handle:active {
-  background: var(--color-primary-soft-strong);
+.resize-handle:hover::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: var(--color-primary);
+  box-shadow: 0 0 10px var(--color-primary-soft-strong);
 }
 
 .resize-handle-left {
   right: auto;
-  left: -2px;
+  left: -3px;
 }
 </style>
