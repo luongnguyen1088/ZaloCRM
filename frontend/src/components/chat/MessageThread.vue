@@ -303,9 +303,7 @@ async function uploadAndSend(file: File, type: 'image' | 'file') {
     formData.append('file', file);
     
     // Using api instead of axios to stay consistent
-    const uploadRes = await api.post('/chat/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
+    const uploadRes = await api.post('/chat/upload', formData);
     
     const { url, filename, mimetype } = uploadRes.data;
     

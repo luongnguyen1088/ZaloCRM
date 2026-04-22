@@ -8,6 +8,7 @@ import cors from '@fastify/cors';
 import fastifyJwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
 import fastifyStatic from '@fastify/static';
+import fastifyMultipart from '@fastify/multipart';
 import { Server } from 'socket.io';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -70,6 +71,12 @@ async function bootstrap() {
     timeWindow: '1 minute',
     // Skip rate limiting for static assets — only limit API routes
     allowList: (request: { url: string }) => !request.url.startsWith('/api/'),
+  });
+
+  await app.register(fastifyMultipart, {
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB limit
+    },
   });
 
   // Serve compiled frontend assets in production

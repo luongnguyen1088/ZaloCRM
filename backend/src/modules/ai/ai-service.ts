@@ -36,7 +36,7 @@ function buildConversationContext(messages: MessageContext[]) {
     .join('\n');
 }
 
-const FALLBACK_AI_TOKENS = 5000;
+const FALLBACK_AI_TOKENS = 100000;
 
 function getBillingPeriodFallback() {
   const now = new Date();
