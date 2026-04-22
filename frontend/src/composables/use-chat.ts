@@ -75,6 +75,7 @@ export function useChat() {
   const aiSentimentLoading = ref(false);
   const aiUsage = ref({ usedToday: 0, maxDaily: 500, remaining: 500, usedCredits: 0, maxCredits: 500, remainingCredits: 500, enabled: true });
   const aiConfig = ref<AiConfig>({ provider: 'anthropic', model: 'claude-sonnet-4-6', maxDaily: 500, enabled: true, managed: true });
+  const isAiQuotaExceeded = ref(false);
   let socket: Socket | null = null;
 
   const selectedConv = computed(() =>
@@ -173,6 +174,9 @@ export function useChat() {
       aiSuggestion.value = res.data.content || '';
       await fetchAiUsage();
     } catch (err: any) {
+      if (err.response?.status === 429) {
+        isAiQuotaExceeded.value = true;
+      }
       aiSuggestionError.value = err.response?.data?.error || 'Không thể tạo gợi ý AI';
     } finally {
       aiSuggestionLoading.value = false;
@@ -205,7 +209,10 @@ export function useChat() {
       const res = await api.post(`/ai/summarize/${selectedConvId.value}`);
       aiSummary.value = res.data.content || '';
       await fetchAiUsage();
-    } catch (err) {
+    } catch (err: any) {
+      if (err.response?.status === 429) {
+        isAiQuotaExceeded.value = true;
+      }
       console.error('Failed to summarize conversation:', err);
     } finally {
       aiSummaryLoading.value = false;
@@ -219,7 +226,10 @@ export function useChat() {
       const res = await api.post(`/ai/sentiment/${selectedConvId.value}`);
       aiSentiment.value = res.data;
       await fetchAiUsage();
-    } catch (err) {
+    } catch (err: any) {
+      if (err.response?.status === 429) {
+        isAiQuotaExceeded.value = true;
+      }
       console.error('Failed to analyze sentiment:', err);
     } finally {
       aiSentimentLoading.value = false;
@@ -312,6 +322,7 @@ export function useChat() {
     aiSummaryLoading,
     aiSentiment,
     aiSentimentLoading,
+    isAiQuotaExceeded,
     aiUsage,
     aiConfig,
     fetchConversations,

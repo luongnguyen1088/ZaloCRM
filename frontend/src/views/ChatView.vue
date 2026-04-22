@@ -50,6 +50,7 @@
       />
     </div>
   </div>
+  <AiQuotaModal v-model="isAiQuotaExceeded" />
 </template>
 
 <script setup lang="ts">
@@ -60,6 +61,7 @@ import ChatContactPanel from '@/components/chat/ChatContactPanel.vue';
 import { useChat } from '@/composables/use-chat';
 import MobileChatView from '@/views/MobileChatView.vue';
 import { useMobile } from '@/composables/use-mobile';
+import AiQuotaModal from '@/components/ai/AiQuotaModal.vue';
 
 const { isMobile } = useMobile();
 
@@ -68,6 +70,7 @@ const {
   loadingConvs, loadingMsgs, sendingMsg, searchQuery, accountFilter,
   aiSuggestion, aiSuggestionLoading, aiSuggestionError,
   aiSummary, aiSummaryLoading, aiSentiment, aiSentimentLoading,
+  isAiQuotaExceeded,
   fetchConversations, fetchAiConfig, selectConversation, sendMessage,
   generateAiSuggestion, refineAiSuggestion, generateAiSummary, generateAiSentiment,
   clearAiState, initSocket, destroySocket,
