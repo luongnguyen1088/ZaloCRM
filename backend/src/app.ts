@@ -77,7 +77,6 @@ async function bootstrap() {
     await app.register(fastifyStatic, {
       root: path.join(__dirname, '../static'),
       prefix: '/',
-      decorateReply: false, // Prevent conflict with multiple static registrations
     });
   }
 
