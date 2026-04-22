@@ -118,7 +118,7 @@ export async function chatRoutes(app: FastifyInstance) {
     return { messages: messages.reverse(), total, page: parseInt(page), limit: parseInt(limit) };
   });
 
-  // ── Upload file ──────────────────────────────────────────────────────────
+  app.post('/api/v1/chat/upload', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const data = await (request as any).file();
       if (!data) return reply.status(400).send({ error: 'No file uploaded' });
