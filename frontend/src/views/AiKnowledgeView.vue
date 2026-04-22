@@ -505,7 +505,7 @@ const currentSimAccountName = computed(() => {
 const templates = [
   { name: 'Chính sách vận chuyển', icon: 'mdi-truck-delivery', content: 'Shop mình [miễn phí ship] cho đơn hàng từ [XXX k].' },
   { name: 'Bảng giá', icon: 'mdi-currency-usd', content: 'Sản phẩm A: [Giá]. Sản phẩm B: [Giá].' },
-  { name: 'Chuyển khoản', icon: 'mdi-bank', content: 'Chủ TK: [Tên]. Số TK: [STK]. Ngân hàng: [NH].' }
+  { name: 'Chuyển khoản', icon: 'mdi-bank', content: 'CÔNG TY TNHH CLARO VIỆT NAM\nMB Bank\nSTK: 6386365999\nNội dung: [Họ tên] [SĐT] thanh toán đơn hàng' }
 ];
 
 // Simulator & Magic State

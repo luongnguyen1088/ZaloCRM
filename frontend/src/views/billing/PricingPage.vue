@@ -118,7 +118,7 @@
               <div class="payment-panel__label mb-3">Mã QR thanh toán</div>
               <div class="qr-wrapper text-center mb-3 pa-4">
                 <v-img
-                  src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=ZaloCRM-Payment"
+                  :src="`https://img.vietqr.io/image/MB-6386365999-compact2.png?amount=${selectedPlan.priceMonth}&addInfo=CRMPAY%20${selectedPlan.name}&accountName=CONG%20TY%20TNHH%20CLARO%20VIET%20NAM`"
                   width="220"
                   class="mx-auto rounded-xl border-glass"
                 />
@@ -133,8 +133,23 @@
 
               <div class="payment-info rounded-xl mb-4">
                 <div class="payment-info__row">
+                  <span class="payment-info__label">Chủ tài khoản</span>
+                  <span class="payment-info__value">CÔNG TY TNHH CLARO VIỆT NAM</span>
+                </div>
+                <div class="payment-info__row">
+                  <span class="payment-info__label">Ngân hàng</span>
+                  <span class="payment-info__value">MB Bank</span>
+                </div>
+                <div class="payment-info__row">
+                  <span class="payment-info__label">Số tài khoản</span>
+                  <span class="payment-info__value d-flex align-center">
+                    6386365999
+                    <v-btn icon="mdi-content-copy" variant="text" size="x-small" color="primary" class="ml-2" @click="copyText('6386365999')"></v-btn>
+                  </span>
+                </div>
+                <div class="payment-info__row">
                   <span class="payment-info__label">Số tiền</span>
-                  <span class="payment-info__value">{{ formatPrice(selectedPlan.priceMonth) }}</span>
+                  <span class="payment-info__value text-primary">{{ formatPrice(selectedPlan.priceMonth) }}</span>
                 </div>
                 <div class="payment-info__row">
                   <span class="payment-info__label">Nội dung</span>
@@ -252,6 +267,10 @@ const selectPlan = (plan: any) => {
 const confirmPayment = () => {
   paymentDialog.value = false;
   alert('Hệ thống đang kiểm tra giao dịch của bạn. Vui lòng chờ trong giây lát.');
+};
+
+const copyText = (text: string) => {
+  navigator.clipboard.writeText(text);
 };
 </script>
 

@@ -83,6 +83,25 @@ async function main() {
     },
   });
 
+  console.log('Seeding payment knowledge...');
+  await prisma.aiKnowledge.upsert({
+    where: { 
+      // Using a unique combination or finding by title since there's no unique ID for knowledge in seed
+      id: 'claro-payment-info' 
+    },
+    update: {
+      content: 'CÔNG TY TNHH CLARO VIỆT NAM\nMB Bank\nSố tài khoản: 6386365999\nNội dung chuyển khoản: [Họ tên] [SĐT] thanh toán'
+    },
+    create: {
+      id: 'claro-payment-info',
+      orgId: org.id,
+      title: 'Thông tin thanh toán Claro Việt Nam',
+      content: 'CÔNG TY TNHH CLARO VIỆT NAM\nMB Bank\nSố tài khoản: 6386365999\nNội dung chuyển khoản: [Họ tên] [SĐT] thanh toán',
+      category: 'Thanh toán',
+      isActive: true
+    }
+  });
+
   console.log('Seeding complete.');
 }
 
