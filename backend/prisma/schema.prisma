@@ -36,6 +36,7 @@ model Organization {
   subscription  Subscription?
   connections   OrganizationConnection[]
   userInvitations UserInvitation[]
+  paymentOrders PaymentOrder[]
 
   @@schema("zalocrm")
   @@map("organizations")
@@ -533,6 +534,42 @@ model Subscription {
   plan SubscriptionPlan @relation(fields: [planId], references: [id])
   @@schema("zalocrm")
   @@map("subscriptions")
+}
+
+model PaymentOrder {
+  id               String   @id @default(uuid())
+  orgId            String   @map("org_id")
+  orderType        String   @map("order_type")
+  status           String   @default("pending")
+  requestedByUserId String? @map("requested_by_user_id")
+  requestedByEmail String?  @map("requested_by_email")
+  reviewedByUserId String?  @map("reviewed_by_user_id")
+  reviewedByEmail  String?  @map("reviewed_by_email")
+  planId           String?  @map("plan_id")
+  planName         String?  @map("plan_name")
+  months           Int?
+  tokenAmount      Int?     @map("token_amount")
+  amount           Float    @default(0)
+  currency         String   @default("VND")
+  paymentContent   String?  @map("payment_content")
+  customerNote     String?  @map("customer_note")
+  adminNote        String?  @map("admin_note")
+  approvedAt       DateTime? @map("approved_at")
+  reviewedAt       DateTime? @map("reviewed_at")
+  effectiveFrom    DateTime? @map("effective_from")
+  effectiveTo      DateTime? @map("effective_to")
+  referenceCode    String   @unique @map("reference_code")
+  metadata         Json     @default("{}")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, createdAt])
+  @@index([status, createdAt])
+  @@index([orderType, status, createdAt])
+  @@schema("zalocrm")
+  @@map("payment_orders")
 }
 
 model AiKnowledge {

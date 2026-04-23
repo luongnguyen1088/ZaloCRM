@@ -1,4 +1,5 @@
 import { prisma } from '../../shared/database/prisma-client.js';
+import { getApprovedTopupTokensForWindow } from '../billing/payment-order-service.js';
 
 const FALLBACK_AI_TOKENS = 100000;
 
@@ -25,6 +26,8 @@ async function getOrganizationAiOverview(orgId: string, input?: {
   const maxTokens = subscription?.status === 'active'
     ? subscription.plan.maxAiTokens
     : FALLBACK_AI_TOKENS;
+  const topupTokens = await getApprovedTopupTokensForWindow(orgId, periodStart, periodEnd);
+  const totalTokens = maxTokens + topupTokens;
 
   const aggregate = await prisma.aiCreditUsage.aggregate({
     where: {
@@ -35,15 +38,17 @@ async function getOrganizationAiOverview(orgId: string, input?: {
   });
 
   const usedTokens = Number(aggregate._sum.credits ?? 0);
-  const remainingTokens = Math.max(0, maxTokens - usedTokens);
-  const usagePercent = maxTokens > 0 ? Math.min(100, Math.round((usedTokens / maxTokens) * 100)) : 0;
+  const remainingTokens = Math.max(0, totalTokens - usedTokens);
+  const usagePercent = totalTokens > 0 ? Math.min(100, Math.round((usedTokens / totalTokens) * 100)) : 0;
 
   return {
     enabled: input?.aiConfig?.enabled ?? true,
     planName: subscription?.plan.name ?? 'Free',
     periodStart,
     periodEnd,
-    maxTokens,
+    maxTokens: totalTokens,
+    baseTokens: maxTokens,
+    topupTokens,
     usedTokens,
     remainingTokens,
     usagePercent,
@@ -91,8 +96,14 @@ export async function getAllOrganizations() {
 
 export async function updateOrgSubscription(orgId: string, planId: string, months: number = 1) {
   const now = new Date();
-  const end = new Date();
-  end.setMonth(now.getMonth() + months);
+  const current = await prisma.subscription.findUnique({
+    where: { orgId },
+  });
+  const startDate = current?.currentPeriodEnd && current.currentPeriodEnd > now
+    ? current.currentPeriodEnd
+    : now;
+  const end = new Date(startDate);
+  end.setMonth(end.getMonth() + months);
 
   return await prisma.subscription.upsert({
     where: { orgId },
@@ -100,13 +111,13 @@ export async function updateOrgSubscription(orgId: string, planId: string, month
       orgId,
       planId,
       status: 'active',
-      currentPeriodStart: now,
+      currentPeriodStart: startDate,
       currentPeriodEnd: end,
     },
     update: {
       planId,
       status: 'active',
-      currentPeriodStart: now,
+      currentPeriodStart: startDate,
       currentPeriodEnd: end,
     },
   });

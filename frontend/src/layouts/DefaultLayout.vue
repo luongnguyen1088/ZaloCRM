@@ -203,6 +203,7 @@ const computedMenuItems = computed(() => {
   const items = [...menuItems];
   if (authStore.isSuperAdmin) {
     items.push({ title: 'Hệ thống Quản trị', icon: 'mdi-shield-crown-outline', path: '/admin' });
+    items.push({ title: 'Duyệt Thanh Toán', icon: 'mdi-receipt-text-check-outline', path: '/admin/orders' });
   }
   return items;
 });

@@ -10,6 +10,7 @@ import { buildSummaryPrompt } from './prompts/summary.js';
 import { buildSentimentPrompt } from './prompts/sentiment.js';
 import { buildCategorizePrompt } from './prompts/categorize.js';
 import { getRelevantKnowledge } from './knowledge/knowledge-service.js';
+import { getApprovedTopupTokensForWindow } from '../billing/payment-order-service.js';
 
 export type AiTaskType = 'reply_draft' | 'summary' | 'sentiment' | 'categorize';
 
@@ -56,6 +57,8 @@ async function getAiEntitlement(orgId: string) {
   const maxTokens = subscription?.status === 'active'
     ? subscription.plan.maxAiTokens
     : FALLBACK_AI_TOKENS;
+  const topupTokens = await getApprovedTopupTokensForWindow(orgId, periodStart, periodEnd);
+  const totalTokens = maxTokens + topupTokens;
 
   const aggregate = await prisma.aiCreditUsage.aggregate({
     where: {
@@ -70,9 +73,11 @@ async function getAiEntitlement(orgId: string) {
     planName: subscription?.plan.name ?? 'Free',
     periodStart,
     periodEnd,
-    maxTokens,
+    maxTokens: totalTokens,
+    baseTokens: maxTokens,
+    topupTokens,
     usedTokens,
-    remainingTokens: Math.max(0, maxTokens - usedTokens),
+    remainingTokens: Math.max(0, totalTokens - usedTokens),
   };
 }
 

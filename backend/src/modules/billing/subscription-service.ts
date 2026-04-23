@@ -28,8 +28,14 @@ export async function canAddZaloAccount(orgId: string): Promise<boolean> {
  */
 export async function subscribe(orgId: string, planId: string, months: number = 1) {
   const now = new Date();
-  const end = new Date();
-  end.setMonth(now.getMonth() + months);
+  const current = await prisma.subscription.findUnique({
+    where: { orgId },
+  });
+  const startDate = current?.currentPeriodEnd && current.currentPeriodEnd > now
+    ? current.currentPeriodEnd
+    : now;
+  const end = new Date(startDate);
+  end.setMonth(end.getMonth() + months);
 
   return await prisma.subscription.upsert({
     where: { orgId },
@@ -37,13 +43,13 @@ export async function subscribe(orgId: string, planId: string, months: number = 
       orgId,
       planId,
       status: 'active',
-      currentPeriodStart: now,
+      currentPeriodStart: startDate,
       currentPeriodEnd: end,
     },
     update: {
       planId,
       status: 'active',
-      currentPeriodStart: now,
+      currentPeriodStart: startDate,
       currentPeriodEnd: end,
     },
   });

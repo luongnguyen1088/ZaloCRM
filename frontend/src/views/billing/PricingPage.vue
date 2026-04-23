@@ -123,7 +123,7 @@
                 <div class="payment-kicker mb-2">Thanh toán nâng cấp</div>
                 <h3 class="payment-title">Gói {{ selectedPlan.name }}</h3>
                 <p class="payment-subtitle mb-0">
-                  Quét mã QR để thanh toán. Hệ thống sẽ tự động kích hoạt ngay sau khi ghi nhận giao dịch.
+                  Quét mã QR để thanh toán. Sau khi bạn xác nhận, đơn sẽ được chuyển tới quản trị viên để đối soát và duyệt thủ công.
                 </p>
               </div>
             </div>
@@ -139,8 +139,8 @@
               <div class="payment-summary__amount">{{ formatPrice(selectedPlan.priceMonth) }}</div>
             </div>
             <div class="payment-summary__badge">
-              <v-icon size="16" color="success">mdi-check-decagram-outline</v-icon>
-              <span>Kích hoạt tự động</span>
+              <v-icon size="16" color="warning">mdi-timer-sand</v-icon>
+              <span>Chờ admin duyệt</span>
             </div>
           </div>
 
@@ -205,7 +205,7 @@
 
               <div class="payment-note">
                 <v-icon size="18" color="primary">mdi-information-outline</v-icon>
-                <span>Gói sẽ được kích hoạt ngay khi hệ thống ghi nhận giao dịch thành công.</span>
+                <span>Đơn thanh toán sẽ được tạo sau khi bạn xác nhận, sau đó admin duyệt để kích hoạt gói hoặc cộng thêm AI Token.</span>
               </div>
             </div>
           </div>
@@ -219,9 +219,10 @@
             color="primary"
             rounded="xl"
             class="btn-glow payment-confirm"
+            :loading="paymentSubmitting"
             @click="confirmPayment"
           >
-            Tôi đã chuyển khoản thành công
+            Tôi đã chuyển khoản, tạo đơn duyệt
           </v-btn>
           <v-btn
             block
@@ -235,6 +236,10 @@
         </div>
       </v-card>
     </v-dialog>
+
+    <v-snackbar v-model="feedbackOpen" :color="feedbackColor" timeout="4200" rounded="pill">
+      {{ feedbackMessage }}
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -247,6 +252,10 @@ const currentPlanId = ref<string | null>(null);
 const paymentDialog = ref(false);
 const selectedPlan = ref<any>(null);
 const isTopup = ref(false);
+const paymentSubmitting = ref(false);
+const feedbackOpen = ref(false);
+const feedbackColor = ref<'success' | 'error'>('success');
+const feedbackMessage = ref('');
 
 const aiPacks = ref([
   { id: 'ai_100k', name: 'Gói Tiết kiệm', tokens: 100000, price: 50000 },
@@ -307,15 +316,55 @@ const selectPlan = (plan: any) => {
 const selectTopup = (pack: any) => {
   selectedPlan.value = {
     name: pack.name + ' (+' + (pack.tokens >= 1000000 ? (pack.tokens / 1000000) + 'M' : (pack.tokens / 1000) + 'k') + ' Tokens)',
-    priceMonth: pack.price
+    priceMonth: pack.price,
+    tokenAmount: pack.tokens,
   };
   isTopup.value = true;
   paymentDialog.value = true;
 };
 
-const confirmPayment = () => {
-  paymentDialog.value = false;
-  alert('Hệ thống đang kiểm tra giao dịch của bạn. Vui lòng chờ trong giây lát.');
+const confirmPayment = async () => {
+  if (!selectedPlan.value) return;
+
+  paymentSubmitting.value = true;
+
+  try {
+    const payload = isTopup.value
+      ? {
+          orderType: 'ai_topup',
+          planName: selectedPlan.value.name,
+          tokenAmount: selectedPlan.value.tokenAmount,
+          amount: selectedPlan.value.priceMonth,
+          paymentContent: `NAPAI ${selectedPlan.value.name}`,
+          metadata: {
+            source: 'pricing_page',
+          },
+        }
+      : {
+          orderType: 'subscription_upgrade',
+          planId: selectedPlan.value.id,
+          planName: selectedPlan.value.name,
+          months: 1,
+          amount: selectedPlan.value.priceMonth,
+          paymentContent: `CRMPAY ${selectedPlan.value.name}`,
+          metadata: {
+            source: 'pricing_page',
+          },
+        };
+
+    const res = await api.post('/billing/orders', payload);
+    paymentDialog.value = false;
+    feedbackColor.value = 'success';
+    feedbackMessage.value = `Đã tạo đơn ${res.data.referenceCode}. Quản trị viên sẽ duyệt sau khi đối soát giao dịch.`;
+    feedbackOpen.value = true;
+  } catch (err: any) {
+    console.error('Failed to create payment order', err);
+    feedbackColor.value = 'error';
+    feedbackMessage.value = err.response?.data?.error || 'Không thể tạo đơn thanh toán. Vui lòng thử lại.';
+    feedbackOpen.value = true;
+  } finally {
+    paymentSubmitting.value = false;
+  }
 };
 
 const copyText = (text: string) => {
