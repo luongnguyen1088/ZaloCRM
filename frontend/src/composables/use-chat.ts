@@ -1,15 +1,13 @@
 import { ref, computed } from 'vue';
 import { api } from '@/api/index';
 import { io, Socket } from 'socket.io-client';
-import type { Contact } from '@/composables/use-contacts';
 import type { 
   Conversation, 
   ConversationMessage as Message, 
-  AiSentiment, 
-  ZaloAccount 
+  AiSentiment,
 } from '@/views/Chat/types';
 
-export type { AiSentiment, Message };
+export type { AiSentiment, Message, Conversation };
 
 export interface AiConfig {
   provider: string;
