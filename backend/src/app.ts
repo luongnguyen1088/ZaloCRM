@@ -86,10 +86,21 @@ async function bootstrap() {
 
   // Serve compiled frontend assets in production
   if (config.isProduction) {
+    const staticPath = path.join(__dirname, '../static');
+    logger.info(`[Static] Serving frontend from: ${staticPath}`);
+    
     await app.register(fastifyStatic, {
-      root: path.join(__dirname, '../static'),
+      root: staticPath,
       prefix: '/',
+      wildcard: true,
     });
+    
+    // Ensure root serves index.html
+    app.get('/', async (request, reply) => {
+      return reply.sendFile('index.html');
+    });
+  } else {
+    logger.warn(`[Static] NODE_ENV is ${config.nodeEnv}, frontend will not be served by backend.`);
   }
 
   // Serve uploaded files (images, attachments)
@@ -176,6 +187,7 @@ async function bootstrap() {
       if (request.url.startsWith('/api/')) {
         return reply.status(404).send({ error: 'not_found' });
       }
+      logger.debug(`[SPA] Fallback to index.html for: ${request.url}`);
       return reply.sendFile('index.html');
     });
   }
