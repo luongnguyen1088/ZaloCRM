@@ -118,3 +118,10 @@ export const getTopFeature = (plan: SubscriptionPlan) => {
   const feature = parseFeatures(plan.features)[0];
   return feature || 'Gói cơ bản cho vận hành hằng ngày';
 };
+
+export const getAiUsageStatus = (org: Organization) => {
+  const percent = getAiUsagePercent(org);
+  if (percent >= 100) return { label: 'Đã hết quota', color: 'error', icon: 'mdi-alert-octagon' };
+  if (percent >= 80) return { label: 'Sắp hết quota', color: 'warning', icon: 'mdi-alert-circle' };
+  return { label: 'Trong ngưỡng', color: 'primary', icon: 'mdi-check-circle' };
+};
