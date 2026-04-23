@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
-import { mcpServer } from './mcp-server.js';
+import { setupMcpServer } from './mcp-server.js';
 import { logger } from '../../../shared/utils/logger.js';
 
 // Multiple sessions might be active across different users
@@ -41,8 +41,11 @@ export async function mcpRoutes(app: FastifyInstance) {
     // Store transport
     transports.set(transport.sessionId, transport);
 
-    // Connect the server to this transport with extra context
-    await mcpServer.connect(transport, { orgId });
+    // Setup server for this specific organization
+    const server = setupMcpServer(orgId);
+
+    // Connect the server to this transport
+    await server.connect(transport);
     
     // Cleanup when connection closes
     request.raw.on('close', () => {
