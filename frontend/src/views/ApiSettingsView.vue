@@ -216,7 +216,7 @@ POST /api/public/messages/send</pre>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { api } from '@/api';
 import AiConfigDialog from '@/components/ai/ai-config-dialog.vue';
 
