@@ -125,9 +125,18 @@
             <div class="api-key-box pa-4 rounded-lg bg-black-opacity border-glow-secondary">
               <div class="text-caption font-weight-bold text-secondary mb-2 uppercase">Connection URL (SSE)</div>
               <div class="d-flex align-center">
-                <div class="mcp-url-text flex-grow-1 mr-2 text-truncate text-body-2">{{ mcpUrl }}</div>
-                <v-btn icon size="x-small" variant="text" color="secondary" @click="copyMcpUrl">
-                  <v-icon size="18">mdi-content-copy</v-icon>
+                <div class="mcp-url-text flex-grow-1 mr-2 text-truncate text-body-2">
+                  {{ mcpUrl || 'Nhấn để tạo URL kết nối...' }}
+                </div>
+                <v-btn 
+                  icon 
+                  size="x-small" 
+                  variant="text" 
+                  color="secondary" 
+                  @click="generateAndCopyMcpUrl"
+                  :loading="generatingTicket"
+                >
+                  <v-icon size="18">{{ mcpUrl ? 'mdi-content-copy' : 'mdi-refresh' }}</v-icon>
                 </v-btn>
               </div>
             </div>
@@ -245,10 +254,25 @@ const aiConfig = ref<AiConfig>({
   remainingTokens: 500000,
 });
 
-const mcpUrl = computed(() => {
-  const base = window.location.origin;
-  return `${base}/api/v1/ai/mcp/sse?token=${localStorage.getItem('token') || ''}`;
-});
+const mcpUrl = ref('');
+const generatingTicket = ref(false);
+
+async function generateAndCopyMcpUrl() {
+  generatingTicket.value = true;
+  try {
+    const res = await api.post('/ai/mcp/ticket');
+    const ticket = res.data.ticket;
+    const base = window.location.origin;
+    mcpUrl.value = `${base}/api/v1/ai/mcp/sse?ticket=${ticket}`;
+    
+    await navigator.clipboard.writeText(mcpUrl.value);
+    showSnack('Đã tạo và sao chép URL kết nối (hết hạn sau 10 phút)');
+  } catch (err) {
+    showSnack('Không thể tạo ticket bảo mật', 'error');
+  } finally {
+    generatingTicket.value = false;
+  }
+}
 
 const snack = ref({ show: false, text: '', color: 'success' });
 
@@ -321,10 +345,6 @@ async function copyKey() {
   showSnack('Đã sao chép API key');
 }
 
-async function copyMcpUrl() {
-  await navigator.clipboard.writeText(mcpUrl.value);
-  showSnack('Đã sao chép Connection URL');
-}
 
 async function saveWebhook() {
   saving.value = true;

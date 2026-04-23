@@ -71,6 +71,29 @@ mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["name", "trigger", "conditions", "actions"],
         },
       },
+      {
+        name: "search_contacts",
+        description: "Search for contacts by name, phone, or tags.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            query: { type: "string", description: "Name, phone, or email to search for" },
+            limit: { type: "number", default: 10 }
+          },
+          required: ["query"],
+        },
+      },
+      {
+        name: "get_contact_details",
+        description: "Get full profile and activity log for a specific contact.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            contactId: { type: "string", description: "The internal UUID of the contact" }
+          },
+          required: ["contactId"],
+        },
+      },
     ],
   };
 });
@@ -114,6 +137,35 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
           },
         });
         return { content: [{ type: "text", text: `Automation rule "${rule.name}" created.` }] };
+      }
+      case "search_contacts": {
+        const query = args!.query as string;
+        const limit = (args!.limit as number) || 10;
+        const contacts = await prisma.contact.findMany({
+          where: {
+            orgId,
+            OR: [
+              { fullName: { contains: query, mode: 'insensitive' } },
+              { phone: { contains: query } },
+              { zaloUid: { contains: query } },
+            ],
+          },
+          take: limit,
+          select: { id: true, fullName: true, phone: true, status: true, lastActivity: true },
+        });
+        return { content: [{ type: "text", text: JSON.stringify(contacts, null, 2) }] };
+      }
+      case "get_contact_details": {
+        const contactId = args!.contactId as string;
+        const contact = await prisma.contact.findFirst({
+          where: { id: contactId, orgId },
+          include: {
+            activityLogs: { orderBy: { createdAt: 'desc' }, take: 5 },
+            appointments: { orderBy: { appointmentDate: 'desc' }, take: 3 },
+          },
+        });
+        if (!contact) throw new Error("Contact not found");
+        return { content: [{ type: "text", text: JSON.stringify(contact, null, 2) }] };
       }
       default:
         throw new Error(`Tool not found: ${name}`);
