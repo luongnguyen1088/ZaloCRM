@@ -80,7 +80,7 @@ export interface ListenerContext {
  * Calls listener.start() with retryOnClose at the end.
  */
 export function attachZaloListener(ctx: ListenerContext): void {
-  const { accountId, api, io, userInfoCache, onDisconnected } = ctx;
+  const { accountId, api, io, userInfoCache, onDisconnected, onActivity } = ctx;
   const listener = api.listener;
 
   listener.on('connected', () => {
