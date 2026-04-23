@@ -14,66 +14,82 @@
           </header>
 
           <v-form @submit.prevent="handleRegister" ref="form" class="mt-6">
-            <div class="input-group mb-4">
+            <div class="input-group mb-4" :class="{ 'has-error': errors.orgName }">
               <v-text-field 
                 v-model="orgName" 
                 label="Tên doanh nghiệp / Tổ chức" 
                 variant="plain" 
-                :rules="[v => !!v || 'Bắt buộc']" 
                 hide-details
                 class="premium-input"
+                @blur="validateField('orgName', orgName)"
               >
                 <template #prepend-inner>
-                  <v-icon color="secondary" class="mr-2">mdi-domain</v-icon>
+                   <v-icon :color="errors.orgName ? 'error' : 'secondary'" class="mr-2">mdi-domain</v-icon>
                 </template>
               </v-text-field>
+              <div v-if="errors.orgName" class="error-msg">{{ errors.orgName }}</div>
             </div>
 
-            <div class="input-group mb-4">
+            <div class="input-group mb-4" :class="{ 'has-error': errors.fullName }">
               <v-text-field 
                 v-model="fullName" 
                 label="Họ và tên người quản trị" 
                 variant="plain" 
-                :rules="[v => !!v || 'Bắt buộc']" 
                 hide-details
                 class="premium-input"
+                @blur="validateField('fullName', fullName)"
               >
                 <template #prepend-inner>
-                  <v-icon color="secondary" class="mr-2">mdi-account-outline</v-icon>
+                  <v-icon :color="errors.fullName ? 'error' : 'secondary'" class="mr-2">mdi-account-outline</v-icon>
                 </template>
               </v-text-field>
+              <div v-if="errors.fullName" class="error-msg">{{ errors.fullName }}</div>
             </div>
 
-            <div class="input-group mb-4">
+            <div class="input-group mb-4" :class="{ 'has-error': errors.email }">
               <v-text-field 
                 v-model="email" 
                 label="Email doanh nghiệp" 
                 variant="plain" 
-                :rules="[v => !!v || 'Bắt buộc']" 
                 hide-details
                 class="premium-input"
+                @blur="validateField('email', email)"
               >
                 <template #prepend-inner>
-                  <v-icon color="secondary" class="mr-2">mdi-email-outline</v-icon>
+                  <v-icon :color="errors.email ? 'error' : 'secondary'" class="mr-2">mdi-email-outline</v-icon>
                 </template>
               </v-text-field>
+              <div v-if="errors.email" class="error-msg">{{ errors.email }}</div>
             </div>
 
-            <div class="input-group mb-8">
+            <div class="input-group mb-8" :class="{ 'has-error': errors.password }">
               <v-text-field 
                 v-model="password" 
                 label="Mật khẩu hệ thống" 
                 type="password" 
                 variant="plain" 
-                :rules="[v => v.length >= 6 || 'Tối thiểu 6 ký tự']" 
                 hide-details
                 class="premium-input"
+                @blur="validateField('password', password)"
               >
                 <template #prepend-inner>
-                  <v-icon color="secondary" class="mr-2">mdi-lock-outline</v-icon>
+                  <v-icon :color="errors.password ? 'error' : 'secondary'" class="mr-2">mdi-lock-outline</v-icon>
                 </template>
               </v-text-field>
+              <div v-if="errors.password" class="error-msg">{{ errors.password }}</div>
             </div>
+
+            <v-alert
+              v-if="serverError"
+              type="error"
+              variant="tonal"
+              density="compact"
+              class="mb-6 rounded-lg text-caption"
+              closable
+              @click:close="serverError = ''"
+            >
+              {{ serverError }}
+            </v-alert>
             
             <v-btn 
               type="submit" 
@@ -117,17 +133,41 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { z } from 'zod';
 
 const orgName = ref('');
 const fullName = ref('');
 const email = ref('');
 const password = ref('');
 const loading = ref(false);
+const serverError = ref('');
 const router = useRouter();
 const authStore = useAuthStore();
+
+// Zod Validation Schema
+const registerSchema = z.object({
+  orgName: z.string().min(2, 'Tên doanh nghiệp tối thiểu 2 ký tự'),
+  fullName: z.string().min(2, 'Họ tên tối thiểu 2 ký tự'),
+  email: z.string().email('Email không hợp lệ'),
+  password: z.string().min(6, 'Mật khẩu tối thiểu 6 ký tự'),
+});
+
+const errors = ref<Record<string, string>>({});
+
+function validateField(field: string, value: any) {
+  try {
+    const fieldSchema = registerSchema.pick({ [field]: true } as any);
+    fieldSchema.parse({ [field]: value });
+    errors.value[field] = '';
+  } catch (err: any) {
+    if (err instanceof z.ZodError) {
+      errors.value[field] = err.errors[0].message;
+    }
+  }
+}
 
 onMounted(() => {
   const googleIdentity = (window as any).google;
@@ -153,16 +193,33 @@ async function handleGoogleCallback(response: any) {
 }
 
 async function handleRegister() {
+  serverError.value = '';
+  
+  // Validate all fields
+  const result = registerSchema.safeParse({
+    orgName: orgName.value,
+    fullName: fullName.value,
+    email: email.value,
+    password: password.value,
+  });
+
+  if (!result.success) {
+    const formatted = result.error.format();
+    errors.value = {
+      orgName: formatted.orgName?._errors[0] || '',
+      fullName: formatted.fullName?._errors[0] || '',
+      email: formatted.email?._errors[0] || '',
+      password: formatted.password?._errors[0] || '',
+    };
+    return;
+  }
+
   loading.value = true;
   try {
-    await authStore.register({ 
-      orgName: orgName.value, 
-      fullName: fullName.value, 
-      email: email.value, 
-      password: password.value 
-    });
+    await authStore.register(result.data);
     router.push('/');
-  } catch (err) {
+  } catch (err: any) {
+    serverError.value = err.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.';
     console.error('Registration failed', err);
   } finally {
     loading.value = false;
@@ -251,6 +308,25 @@ function loginWithGoogle() {
   border-color: var(--color-primary);
   background: var(--color-surface);
   box-shadow: 0 0 0 4px var(--color-primary-soft);
+}
+
+.input-group.has-error {
+  border-color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+
+.error-msg {
+  color: var(--color-danger);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 0 0 32px;
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
 }
 
 :deep(.v-field__overlay),
