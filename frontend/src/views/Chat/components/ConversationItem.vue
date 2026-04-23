@@ -10,7 +10,7 @@
     <template #prepend>
       <div class="avatar-wrapper mr-3">
         <v-avatar size="48" class="avatar-main">
-          <v-img v-if="conv.contact?.avatarUrl" :src="conv.contact.avatarUrl" />
+          <v-img v-if="conv.contact?.avatarUrl" :src="conv.contact.avatarUrl || ''" />
           <v-icon v-else :icon="conv.threadType === 'group' ? 'mdi-account-group' : 'mdi-account'" />
         </v-avatar>
         

@@ -24,7 +24,7 @@
                     {{ msg.content }}
                   </template>
                   <template v-else-if="msg.contentType === 'image'">
-                    <v-img :src="msg.content" max-width="300" class="rounded-lg cursor-pointer" @click="openMedia(msg.content)" />
+                    <v-img :src="msg.content || ''" max-width="300" class="rounded-lg cursor-pointer" @click="openMedia(msg.content)" />
                   </template>
                   <template v-else>
                     <div class="d-flex align-center ga-2 py-1">

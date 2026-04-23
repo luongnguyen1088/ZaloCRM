@@ -72,7 +72,7 @@ export async function chatRoutes(app: FastifyInstance) {
           messages: {
             take: 1,
             orderBy: { sentAt: 'desc' },
-            select: { content: true, contentType: true, senderType: true, sentAt: true, isDeleted: true },
+            select: { id: true, content: true, contentType: true, senderType: true, senderName: true, sentAt: true, isDeleted: true, zaloMsgId: true },
           },
         },
         orderBy: { lastMessageAt: 'desc' },

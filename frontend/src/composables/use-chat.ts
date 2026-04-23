@@ -2,60 +2,16 @@ import { ref, computed } from 'vue';
 import { api } from '@/api/index';
 import { io, Socket } from 'socket.io-client';
 import type { Contact } from '@/composables/use-contacts';
+import type { 
+  Conversation, 
+  ConversationMessage as Message, 
+  AiSentiment, 
+  ZaloAccount 
+} from '@/views/Chat/types';
 
-interface ZaloAccount {
-  id: string;
-  displayName: string | null;
-}
-
-export interface AiSentiment {
-  label: 'positive' | 'neutral' | 'negative';
-  confidence: number;
-  reason: string;
-}
+export type { AiSentiment, Message };
 
 export interface AiConfig {
-  provider: string;
-  model: string;
-  maxDaily: number;
-  enabled: boolean;
-  managed?: boolean;
-  platformKeyConfigured?: boolean;
-  planName?: string;
-  usedTokens?: number;
-  maxTokens?: number;
-  remainingTokens?: number;
-}
-
-interface ConversationMessage {
-  content: string | null;
-  contentType: string;
-  senderType: string;
-  sentAt: string;
-  isDeleted: boolean;
-}
-
-export interface Conversation {
-  id: string;
-  threadType: 'user' | 'group';
-  contact: Contact | null;
-  zaloAccount: ZaloAccount | null;
-  lastMessageAt: string | null;
-  unreadCount: number;
-  isReplied: boolean;
-  messages?: ConversationMessage[];
-}
-
-export interface Message {
-  id: string;
-  content: string | null;
-  contentType: string;
-  senderType: string;
-  senderName: string | null;
-  sentAt: string;
-  isDeleted: boolean;
-  zaloMsgId: string | null;
-}
 
 export function useChat() {
   const conversations = ref<Conversation[]>([]);
