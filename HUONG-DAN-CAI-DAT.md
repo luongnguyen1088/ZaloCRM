@@ -62,6 +62,13 @@ ENCRYPTION_KEY= # Dán kết quả lệnh: openssl rand -hex 16
 
 # URL công khai (nếu có domain)
 APP_URL=https://ten-domain-cua-ban.com
+
+# Nếu dùng Supabase:
+# DATABASE_URL nên là connection string runtime/pooler
+# DIRECT_URL nên là direct connection string để `prisma migrate deploy` chạy ổn định
+# Ví dụ:
+# DATABASE_URL=postgresql://postgres.xxx:[PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require
+# DIRECT_URL=postgresql://postgres.xxx:[PASSWORD]@db.xxx.supabase.co:5432/postgres?sslmode=require
 ```
 
 **Tạo secret keys:**

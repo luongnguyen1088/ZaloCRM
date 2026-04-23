@@ -39,5 +39,6 @@ USER zalocrm
 EXPOSE 3000
 ENTRYPOINT ["/sbin/tini", "--"]
 
-# Run migrations and start server
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/app.js"]
+# Run migrations with DIRECT_URL when present (useful for Supabase direct connections),
+# then start the app with the pooled/runtime DATABASE_URL.
+CMD ["sh", "-c", "DATABASE_URL=\"${DIRECT_URL:-$DATABASE_URL}\" npx prisma migrate deploy && node dist/app.js"]
