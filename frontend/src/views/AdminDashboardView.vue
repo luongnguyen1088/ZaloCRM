@@ -214,41 +214,91 @@
     </v-card>
 
     <!-- Upgrade Dialog -->
-    <v-dialog v-model="upgradeDialog" max-width="500">
-      <v-card class="glass-premium pa-6">
-        <h3 class="text-h5 font-weight-bold mb-4">Kích hoạt/Nâng cấp Gói</h3>
-        <p class="text-body-2 mb-6">Chọn gói cước và thời hạn để kích hoạt cho tổ chức <strong>{{ selectedOrg?.name }}</strong>.</p>
-        
-        <v-select
-          v-model="upgradeForm.planId"
-          :items="plans"
-          item-title="name"
-          item-value="id"
-          label="Chọn gói cước"
-          variant="outlined"
-          class="mb-4"
-        >
-          <template #item="{ props, item }">
-            <v-list-item v-bind="props" :subtitle="`${(item.raw.priceMonth / 1000).toLocaleString()}k / tháng`"></v-list-item>
-          </template>
-        </v-select>
+    <v-dialog v-model="upgradeDialog" max-width="600" persistent>
+      <v-card class="glass-premium pa-0 overflow-hidden">
+        <div class="pa-6 border-bottom d-flex align-center justify-space-between bg-primary-darken-1">
+          <div class="d-flex align-center">
+            <v-icon color="white" class="mr-3">mdi-rocket-launch</v-icon>
+            <h3 class="text-h5 font-weight-bold text-white">Kích hoạt Gói Cước</h3>
+          </div>
+          <v-btn icon="mdi-close" variant="text" color="white" @click="upgradeDialog = false" size="small"></v-btn>
+        </div>
 
-        <v-select
-          v-model="upgradeForm.months"
-          :items="[
-            { title: '1 Tháng', value: 1 },
-            { title: '3 Tháng', value: 3 },
-            { title: '6 Tháng', value: 6 },
-            { title: '12 Tháng (1 Năm)', value: 12 }
-          ]"
-          label="Thời hạn"
-          variant="outlined"
-          class="mb-6"
-        ></v-select>
+        <div class="pa-8">
+          <div class="mb-8 d-flex align-center pa-4 bg-white-opacity-5 rounded-xl">
+            <v-avatar color="primary" size="48" class="mr-4">
+              <span class="text-h6">{{ selectedOrg?.name.charAt(0).toUpperCase() }}</span>
+            </v-avatar>
+            <div>
+              <div class="text-h6 font-weight-bold text-white">{{ selectedOrg?.name }}</div>
+              <div class="text-caption text-placeholder">
+                Hiện tại: 
+                <v-chip size="x-small" :color="getPlanColor(selectedOrg?.subscription?.plan?.name || 'Free')" class="ml-1 font-weight-bold">
+                  {{ (selectedOrg?.subscription?.plan?.name || 'FREE').toUpperCase() }}
+                </v-chip>
+              </div>
+            </div>
+          </div>
 
-        <div class="d-flex justify-end gap-2">
-          <v-btn variant="text" @click="upgradeDialog = false">Hủy</v-btn>
-          <v-btn color="primary" :loading="submitting" @click="handleUpgrade">Xác nhận Kích hoạt</v-btn>
+          <!-- Plan Selection Cards -->
+          <div class="text-subtitle-1 font-weight-bold text-white mb-4">1. Chọn gói cước</div>
+          <v-row class="mb-8">
+            <v-col v-for="plan in plans" :key="plan.id" cols="12" sm="4">
+              <v-card
+                @click="upgradeForm.planId = plan.id"
+                :class="['plan-select-card text-center pa-4', upgradeForm.planId === plan.id ? 'active-plan' : '']"
+                variant="flat"
+              >
+                <v-icon :color="getPlanColor(plan.name)" size="32" class="mb-2">
+                  {{ plan.name === 'Enterprise' ? 'mdi-crown' : plan.name === 'Pro' ? 'mdi-star' : 'mdi-leaf' }}
+                </v-icon>
+                <div class="font-weight-black text-body-1">{{ plan.name }}</div>
+                <div class="text-caption opacity-60">{{ (plan.priceMonth / 1000).toLocaleString() }}k/tháng</div>
+                
+                <v-fade-transition>
+                  <v-icon v-if="upgradeForm.planId === plan.id" color="primary" class="check-badge" size="20">mdi-check-circle</v-icon>
+                </v-fade-transition>
+              </v-card>
+            </v-col>
+          </v-row>
+
+          <!-- Duration Selection -->
+          <div class="text-subtitle-1 font-weight-bold text-white mb-4">2. Thời hạn kích hoạt</div>
+          <v-btn-toggle
+            v-model="upgradeForm.months"
+            mandatory
+            color="primary"
+            class="duration-toggle mb-8 w-100"
+            rounded="xl"
+          >
+            <v-btn :value="1" class="flex-grow-1">1Th</v-btn>
+            <v-btn :value="3" class="flex-grow-1">3Th</v-btn>
+            <v-btn :value="6" class="flex-grow-1">6Th</v-btn>
+            <v-btn :value="12" class="flex-grow-1">12Th</v-btn>
+          </v-btn-toggle>
+
+          <!-- Expiry Preview -->
+          <v-card variant="tonal" color="primary" class="pa-4 rounded-xl mb-8 border-dashed">
+            <div class="d-flex align-center justify-space-between">
+              <div class="d-flex align-center">
+                <v-icon color="primary" class="mr-2">mdi-calendar-clock</v-icon>
+                <span class="text-body-2 text-white">Ngày hết hạn dự kiến:</span>
+              </div>
+              <div class="text-h6 font-weight-black text-primary">{{ previewExpiryDate }}</div>
+            </div>
+          </v-card>
+
+          <v-btn
+            block
+            size="x-large"
+            color="primary"
+            class="rounded-xl font-weight-black"
+            :loading="submitting"
+            @click="handleUpgrade"
+            elevation="8"
+          >
+            XÁC NHẬN KÍCH HOẠT
+          </v-btn>
         </div>
       </v-card>
     </v-dialog>
@@ -294,6 +344,29 @@ const totalUsersCount = computed(() => {
 const newOrgsToday = computed(() => {
   const today = new Date().toDateString();
   return orgs.value.filter(o => new Date(o.createdAt).toDateString() === today).length;
+});
+
+const previewExpiryDate = computed(() => {
+  if (!selectedOrg.value) return '—';
+  
+  const now = new Date();
+  // If already has active sub and it hasn't expired, extend from there
+  let startDate = now;
+  if (selectedOrg.value.subscription) {
+    const currentExpiry = new Date(selectedOrg.value.subscription.currentPeriodEnd);
+    if (currentExpiry > now) {
+      startDate = currentExpiry;
+    }
+  }
+  
+  const futureDate = new Date(startDate);
+  futureDate.setMonth(futureDate.getMonth() + upgradeForm.value.months);
+  
+  return futureDate.toLocaleDateString('vi-VN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
 });
 
 const filteredOrgs = computed(() => {
@@ -511,4 +584,54 @@ onMounted(fetchData);
 
 .uppercase { text-transform: uppercase; }
 .tracking-wider { letter-spacing: 0.05em; }
+
+/* Plan Selection */
+.plan-select-card {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 16px !important;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.plan-select-card:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  transform: scale(1.05);
+}
+
+.active-plan {
+  background: rgba(var(--v-theme-primary), 0.1) !important;
+  border: 2px solid rgba(var(--v-theme-primary), 0.8) !important;
+  transform: scale(1.05);
+}
+
+.check-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.bg-white-opacity-5 {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.border-dashed {
+  border: 1px dashed rgba(var(--v-theme-primary), 0.4) !important;
+}
+
+.duration-toggle {
+  height: 48px !important;
+}
+
+.duration-toggle :deep(.v-btn) {
+  border-radius: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  font-weight: 700;
+}
+
+.duration-toggle :deep(.v-btn--active) {
+  background: var(--v-theme-primary) !important;
+  color: white !important;
+}
 </style>
