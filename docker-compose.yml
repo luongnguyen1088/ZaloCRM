@@ -8,16 +8,16 @@ services:
       - .env
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://${DB_USER:-crmuser}:${DB_PASSWORD}@db:5432/${DB_NAME:-zalocrm}
+      - PORT=3000
+      - APP_URL=${APP_URL}
+      - DATABASE_URL=${DATABASE_URL}
+      - DIRECT_URL=${DIRECT_URL}
       - AI_DEFAULT_PROVIDER=${AI_DEFAULT_PROVIDER:-openrouter}
       - AI_DEFAULT_MODEL=${AI_DEFAULT_MODEL:-anthropic/claude-3.5-sonnet}
       - OPENROUTER_BASE_URL=${OPENROUTER_BASE_URL:-https://openrouter.ai/api/v1}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - OPENROUTER_AUTH_TOKEN=${OPENROUTER_AUTH_TOKEN}
       - OPENROUTER_DEFAULT_MODEL=${OPENROUTER_DEFAULT_MODEL:-anthropic/claude-3.5-sonnet}
-    depends_on:
-      db:
-        condition: service_healthy
     volumes:
       - file_storage:/var/lib/zalo-crm/files
     tmpfs:
@@ -27,49 +27,7 @@ services:
     networks:
       - dokploy-network
 
-  db:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${DB_USER:-crmuser}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME:-zalocrm}
-    volumes:
-      - pg_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-crmuser}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    command: >
-      postgres
-      -c shared_buffers=128MB
-      -c effective_cache_size=256MB
-      -c max_connections=50
-    networks:
-      - dokploy-network
-
-  backup:
-    image: prodrigestivill/postgres-backup-local
-    restart: unless-stopped
-    volumes:
-      - ./backups:/backups
-    environment:
-      POSTGRES_HOST: db
-      POSTGRES_DB: ${DB_NAME:-zalocrm}
-      POSTGRES_USER: ${DB_USER:-crmuser}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      SCHEDULE: "@daily"
-      BACKUP_KEEP_DAYS: 7
-      BACKUP_KEEP_WEEKS: 4
-      BACKUP_KEEP_MONTHS: 3
-    depends_on:
-      - db
-    networks:
-      - dokploy-network
-
 volumes:
-  pg_data:
   file_storage:
 
 networks:
