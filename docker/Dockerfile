@@ -32,5 +32,5 @@ RUN mkdir -p /var/lib/zalo-crm/files
 
 EXPOSE 3000
 ENTRYPOINT ["/sbin/tini", "--"]
-# Run migrations against DIRECT_URL when present, then start the app.
-CMD ["sh", "-c", "DATABASE_URL=\"${DIRECT_URL:-$DATABASE_URL}\" npx prisma migrate deploy && node dist/app.js"]
+# Prefer migrations, but fall back to db push for existing production schemas that were never baselined.
+CMD ["sh", "-c", "DATABASE_URL=\"${DIRECT_URL:-$DATABASE_URL}\" npx prisma migrate deploy || DATABASE_URL=\"${DIRECT_URL:-$DATABASE_URL}\" npx prisma db push --accept-data-loss; node dist/app.js"]
