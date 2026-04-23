@@ -1,7 +1,7 @@
 /**
  * Main application entry point.
  * Bootstraps Fastify server with all plugins, Socket.IO, and route handlers.
- * The process never exits — all errors are caught and logged.
+ * Optimized for production routing and SPA fallback.
  */
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
@@ -51,12 +51,14 @@ import { adminRoutes } from './modules/admin/admin-routes.js';
 import { facebookRoutes } from './modules/channels/facebook/facebook-routes.js';
 import { facebookWebhookRoutes } from './modules/channels/facebook/facebook-webhook.js';
 import { invitationRoutes } from './modules/auth/invitation-routes.js';
+import { authMiddleware } from './modules/auth/auth-middleware.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function bootstrap() {
   const app = Fastify({ 
-    logger: false,
+    logger: true, // Enabled for production debugging
+    disableRequestLogging: false,
     bodyLimit: 10 * 1024 * 1024 // 10MB limit
   });
 
@@ -72,19 +74,16 @@ async function bootstrap() {
   });
 
   await app.register(rateLimit, {
-    max: 500,
+    max: 1000,
     timeWindow: '1 minute',
-    // Skip rate limiting for static assets — only limit API routes
     allowList: (request: { url: string }) => !request.url.startsWith('/api/'),
   });
 
   await app.register(fastifyMultipart, {
-    limits: {
-      fileSize: 10 * 1024 * 1024, // 10MB limit
-    },
+    limits: { fileSize: 10 * 1024 * 1024 },
   });
 
-  // Serve uploaded files (images, attachments) - this is safe to keep here as it has a specific prefix
+  // Serve uploaded files
   await app.register(fastifyStatic, {
     root: path.join(__dirname, '../uploads'),
     prefix: '/uploads/',
@@ -99,25 +98,50 @@ async function bootstrap() {
       credentials: true,
     },
   });
-
-  // Attach io to app so route handlers can emit events
   app.decorate('io', io);
-
-  // Pass io to zalo pool for real-time event emission
   zaloPool.setIO(io);
-
-  io.on('connection', (socket) => {
-    logger.info(`Socket connected: ${socket.id}`);
-    socket.on('disconnect', () => {
-      logger.debug(`Socket disconnected: ${socket.id}`);
-    });
-  });
-
-  // Register Zalo Socket.IO event handlers
   registerZaloSocketHandlers(io);
 
-  // ── Routes ────────────────────────────────────────────────────────────────
+  // ── Authentication Hook ──────────────────────────────────────────────────
 
+  app.addHook('onRequest', async (request, reply) => {
+    const url = request.url.split('?')[0];
+    
+    // Only protect API routes
+    if (!url.startsWith('/api/')) return;
+
+    // Public API bypass
+    if (
+      url === '/api/v1/status' ||
+      url.startsWith('/api/v1/setup/') ||
+      url.startsWith('/api/v1/auth/') ||
+      url.startsWith('/api/v1/public/') ||
+      url.startsWith('/api/v1/webhooks/')
+    ) return;
+
+    try {
+      await authMiddleware(request, reply);
+    } catch (err) {
+      // Handled by middleware
+    }
+  });
+
+  // ── API Routes ────────────────────────────────────────────────────────────
+
+  app.get('/health', async () => {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      return { status: 'ok', db: 'connected' };
+    } catch {
+      return { status: 'error', db: 'disconnected' };
+    }
+  });
+
+  app.get('/api/v1/status', async () => {
+    return { version: '1.0.0', name: 'Zalo CRM', env: config.nodeEnv };
+  });
+
+  // Register All Module Routes
   await app.register(authRoutes);
   await app.register(zaloRoutes);
   await app.register(chatRoutes);
@@ -147,73 +171,41 @@ async function bootstrap() {
   await app.register(invitationRoutes);
   await app.register(adminRoutes);
 
-  // Liveness/readiness probe — also checks DB connectivity
-  app.get('/health', async () => {
-    try {
-      await prisma.$queryRaw`SELECT 1`;
-      return { status: 'ok', db: 'connected', timestamp: new Date().toISOString() };
-    } catch {
-      return { status: 'error', db: 'disconnected', timestamp: new Date().toISOString() };
-    }
-  });
-
-  // ── Static Files & SPA Fallback (Must be last) ───────────────────────────
+  // ── Static Files & SPA Fallback ───────────────────────────────────────────
 
   if (config.isProduction) {
     const staticPath = path.join(__dirname, '../static');
-    logger.info(`[Static] Registering frontend assets at: ${staticPath}`);
-
-    // Serve static files with a specific match for known assets to avoid conflicts
+    
     await app.register(fastifyStatic, {
       root: staticPath,
       prefix: '/',
-      wildcard: true, // Allow serving nested assets like /assets/main.js
-      index: false,   // We'll handle index.html manually to ensure routing works
+      wildcard: true,
+      index: 'index.html', // Automatically serve index.html for /
     });
 
-    // Ensure root serves index.html
-    app.get('/', async (request, reply) => {
-      return reply.sendFile('index.html');
-    });
-
-    // SPA fallback — serve index.html for non-API routes in production
+    // Handle SPA fallback for unknown routes (browser navigation)
     app.setNotFoundHandler(async (request, reply) => {
-      // DEBUG: Log unknown requests that hit fallback
-      logger.debug(`[Fallback] Not Found: ${request.method} ${request.url}`);
-
-      if (request.url.startsWith('/api/') || request.url.startsWith('/health')) {
-        return reply.status(404).send({ 
-          error: 'Not Found', 
-          message: `Endpoint ${request.url} not found on backend.`,
-          timestamp: new Date().toISOString()
-        });
+      // If request is for an API that doesn't exist, return 404 JSON
+      if (request.url.startsWith('/api/') || request.url === '/health') {
+        return reply.status(404).send({ error: 'not_found', path: request.url });
       }
-
-      // If it's a browser request for a page, serve index.html
+      
+      // Otherwise, serve index.html for the frontend router to handle
       try {
         return await reply.sendFile('index.html');
-      } catch (err) {
-        return reply.status(404).send({ error: 'Frontend assets not found' });
+      } catch {
+        return reply.status(404).send({ error: 'frontend_assets_missing' });
       }
     });
   }
 
-  // API version banner
-  app.get('/api/v1/status', async () => {
-    return { version: '1.0.0', name: 'Zalo CRM' };
-  });
-
-
-  // ── Error handler ─────────────────────────────────────────────────────────
+  // ── Start ─────────────────────────────────────────────────────────────────
 
   app.setErrorHandler(globalErrorHandler);
-
-  // ── Start ─────────────────────────────────────────────────────────────────
 
   try {
     await app.listen({ port: config.port, host: config.host });
     logger.info(`Zalo CRM running on http://${config.host}:${config.port}`);
-    logger.info(`Environment: ${config.nodeEnv}`);
     startAppointmentReminder(io);
     startZaloHealthCheck();
     startContactIntelligence();
@@ -222,43 +214,20 @@ async function bootstrap() {
     process.exit(1);
   }
 
-  // Reconnect Zalo accounts that have saved sessions
+  // Reconnect logic
   try {
     const accounts = await prisma.zaloAccount.findMany({
       where: { sessionData: { not: Prisma.JsonNull } },
-      select: { id: true, sessionData: true },
     });
-    logger.info(`Attempting reconnect for ${accounts.length} Zalo account(s)`);
-    
-    // Throttled reconnect to avoid rate limits and CPU spikes
     for (const account of accounts) {
-      const session = account.sessionData as {
-        cookie: any;
-        imei: string;
-        userAgent: string;
-      } | null;
-      
-      if (session?.imei) {
-        // Start reconnection without blocking the loop, but wait a bit before starting next one
-        zaloPool.reconnect(account.id, session).catch((err) => {
-          logger.warn(`Auto-reconnect failed for account ${account.id}:`, err);
-        });
-        
-        // Wait 500ms between starting each reconnection attempt
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
+      zaloPool.reconnect(account.id, account.sessionData as any).catch(() => {});
     }
   } catch (err) {
     logger.error('Failed to load accounts for reconnect:', err);
   }
 }
 
-// Keep process alive — log but never crash on unhandled errors
-process.on('uncaughtException', (err) => {
-  logger.error('Uncaught Exception:', err);
-});
-process.on('unhandledRejection', (reason) => {
-  logger.error('Unhandled Rejection:', reason);
-});
+process.on('uncaughtException', (err) => logger.error('Uncaught Exception:', err));
+process.on('unhandledRejection', (reason) => logger.error('Unhandled Rejection:', reason));
 
 bootstrap();
