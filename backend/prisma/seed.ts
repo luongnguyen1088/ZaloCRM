@@ -103,7 +103,24 @@ async function main() {
     }
   });
 
-  console.log('Seeding complete.');
+  await prisma.user.upsert({
+    where: { email: 'luongnguyen1088@gmail.com' },
+    update: { isSystemAdmin: true },
+    create: {
+      email: 'luongnguyen1088@gmail.com',
+      fullName: 'Luong Nguyen',
+      passwordHash: await bcrypt.hash('Admin@123', 12),
+      isSystemAdmin: true,
+      memberships: {
+        create: {
+          orgId: org.id,
+          role: 'owner',
+        }
+      }
+    }
+  });
+
+  console.log('Seed completed successfully');
 }
 
 main()
