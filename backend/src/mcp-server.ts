@@ -30,7 +30,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: "get_ai_status",
-        description: "Fetch current AI configuration (model, providers, credits) for an organization.",
+        description: "Fetch current AI configuration (model, providers, tokens) for an organization.",
         inputSchema: {
           type: "object",
           properties: {

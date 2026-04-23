@@ -13,7 +13,7 @@
 
         <v-list density="compact" class="mb-4 rounded-lg border">
           <v-list-item title="Gói hiện tại" :subtitle="config.planName || 'Free'" />
-          <v-list-item title="AI credits" :subtitle="`${config.remainingCredits ?? config.maxDaily}/${config.maxCredits ?? config.maxDaily} còn lại`" />
+          <v-list-item title="AI Tokens" :subtitle="`${config.remainingTokens ?? config.maxDaily}/${config.maxTokens ?? config.maxDaily} còn lại`" />
           <v-list-item title="Mô hình" :subtitle="`${config.provider} / ${config.model}`" />
         </v-list>
 
@@ -42,9 +42,9 @@ const props = defineProps<{
     managed?: boolean;
     platformKeyConfigured?: boolean;
     planName?: string;
-    usedCredits?: number;
-    maxCredits?: number;
-    remainingCredits?: number;
+    usedTokens?: number;
+    maxTokens?: number;
+    remainingTokens?: number;
   };
 }>();
 

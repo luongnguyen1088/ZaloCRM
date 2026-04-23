@@ -128,9 +128,9 @@ export function useChat() {
         managed: res.data.managed,
         platformKeyConfigured: res.data.platformKeyConfigured,
         planName: res.data.planName,
-        usedTokens: res.data.usedCredits,
-        maxTokens: res.data.maxCredits,
-        remainingTokens: res.data.remainingCredits,
+        usedTokens: res.data.usedTokens,
+        maxTokens: res.data.maxTokens,
+        remainingTokens: res.data.remainingTokens,
       };
     } catch (err) {
       console.error('Failed to fetch AI config:', err);

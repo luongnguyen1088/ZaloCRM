@@ -50,8 +50,8 @@
                 <div class="info-value truncate">{{ aiConfig.model }}</div>
               </v-col>
               <v-col cols="6" sm="3">
-                <div class="info-label mb-1">AI credits</div>
-                <div class="info-value">{{ aiConfig.remainingCredits }} / {{ aiConfig.maxCredits }}</div>
+                <div class="info-label mb-1">AI Tokens</div>
+                <div class="info-value">{{ aiConfig.remainingTokens }} / {{ aiConfig.maxTokens }}</div>
               </v-col>
               <v-col cols="6" sm="3">
                 <div class="info-label mb-1">Vận hành</div>
@@ -219,9 +219,9 @@ type AiConfig = {
   managed: boolean;
   platformKeyConfigured: boolean;
   planName: string;
-  usedCredits: number;
-  maxCredits: number;
-  remainingCredits: number;
+  usedTokens: number;
+  maxTokens: number;
+  remainingTokens: number;
 };
 
 const apiKey = ref('');
@@ -240,9 +240,9 @@ const aiConfig = ref<AiConfig>({
   managed: true,
   platformKeyConfigured: false,
   planName: 'Free',
-  usedCredits: 0,
-  maxCredits: 500,
-  remainingCredits: 500,
+  usedTokens: 0,
+  maxTokens: 500000,
+  remainingTokens: 500000,
 });
 
 const mcpUrl = computed(() => {
@@ -257,19 +257,19 @@ function showSnack(text: string, color = 'success') {
 }
 
 function normalizeAiConfig(data: any): AiConfig {
-  const maxCredits = Number(data.maxCredits ?? data.maxDaily ?? 500);
-  const usedCredits = Number(data.usedCredits ?? data.usedToday ?? 0);
+  const maxTokens = Number(data.maxTokens ?? data.maxDaily ?? 500000);
+  const usedTokens = Number(data.usedTokens ?? data.usedToday ?? 0);
   return {
     provider: data.provider || 'platform',
     model: data.model || '',
-    maxDaily: maxCredits,
+    maxDaily: maxTokens,
     enabled: Boolean(data.enabled),
     managed: Boolean(data.managed ?? true),
     platformKeyConfigured: Boolean(data.platformKeyConfigured),
     planName: data.planName || 'Free',
-    usedCredits,
-    maxCredits,
-    remainingCredits: Number(data.remainingCredits ?? data.remaining ?? Math.max(0, maxCredits - usedCredits)),
+    usedTokens,
+    maxTokens,
+    remainingTokens: Number(data.remainingTokens ?? data.remaining ?? Math.max(0, maxTokens - usedTokens)),
   };
 }
 

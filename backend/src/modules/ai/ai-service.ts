@@ -60,15 +60,15 @@ async function getAiEntitlement(orgId: string) {
   const topupTokens = await getApprovedTopupTokensForWindow(orgId, periodStart, periodEnd);
   const totalTokens = maxTokens + topupTokens;
 
-  const aggregate = await prisma.aiCreditUsage.aggregate({
+  const aggregate = await prisma.aiTokenUsage.aggregate({
     where: {
       orgId,
       createdAt: { gte: periodStart, lt: periodEnd },
     },
-    _sum: { credits: true },
+    _sum: { tokens: true },
   });
 
-  const usedTokens = aggregate._sum.credits ?? 0;
+  const usedTokens = aggregate._sum.tokens ?? 0;
   return {
     planName: subscription?.plan.name ?? 'Free',
     periodStart,
@@ -114,13 +114,13 @@ async function recordAiTokenUsage(input: {
 }) {
   const tokens = calculateAiTokens(input.inputTokens || 0, input.outputTokens || 0);
 
-  return prisma.aiCreditUsage.create({
+  return prisma.aiTokenUsage.create({
     data: {
       orgId: input.orgId,
       feature: input.feature,
       provider: input.provider,
       model: input.model,
-      credits: tokens, // We use the credits column to store token count
+      tokens: tokens, // We use the tokens column to store token count
       inputTokens: input.inputTokens,
       outputTokens: input.outputTokens,
       inputChars: input.inputText?.length,
@@ -230,7 +230,7 @@ export async function getAiUsage(orgId: string) {
 }
 
 export async function getAiUsageHistory(orgId: string, limit = 50) {
-  return prisma.aiCreditUsage.findMany({
+  return prisma.aiTokenUsage.findMany({
     where: { orgId },
     orderBy: { createdAt: 'desc' },
     take: limit,

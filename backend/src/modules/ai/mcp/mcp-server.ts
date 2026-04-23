@@ -31,7 +31,7 @@ mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: "get_ai_status",
-        description: "Fetch current AI configuration (model, credits, status).",
+        description: "Fetch current AI configuration (model, tokens, status).",
         inputSchema: { type: "object", properties: {}, required: [] },
       },
       {

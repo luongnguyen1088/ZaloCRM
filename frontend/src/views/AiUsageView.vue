@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="d-flex align-center mb-6 flex-shrink-0">
       <div>
-        <h1 class="text-h4 font-weight-bold mb-1 gradient-text">Lịch sử AI Credit</h1>
-        <p class="text-medium-emphasis mb-0">Theo dõi chi tiết lượng token và credit đã tiêu thụ</p>
+        <h1 class="text-h4 font-weight-bold mb-1 gradient-text">Lịch sử AI Token</h1>
+        <p class="text-medium-emphasis mb-0">Theo dõi chi tiết lượng token đã tiêu thụ</p>
       </div>
       <v-spacer />
       <v-btn
@@ -32,8 +32,8 @@
             </v-avatar>
             <div>
               <div class="text-overline opacity-70">Số dư hiện tại</div>
-              <div class="text-h5 font-weight-bold primary--text">{{ usageData?.remainingCredits?.toFixed(2) || '0.00' }}</div>
-              <div class="text-caption">Đã dùng {{ usageData?.usedCredits?.toFixed(2) || '0' }} / {{ usageData?.maxCredits || '0' }}</div>
+              <div class="text-h5 font-weight-bold primary--text">{{ usageData?.remainingTokens?.toFixed(0) || '0' }}</div>
+              <div class="text-caption">Đã dùng {{ usageData?.usedTokens?.toFixed(0) || '0' }} / {{ usageData?.maxTokens || '0' }}</div>
             </div>
           </div>
         </v-card>
@@ -73,9 +73,9 @@
               <v-icon color="warning" size="24">mdi-trending-up</v-icon>
             </v-avatar>
             <div>
-              <div class="text-overline opacity-70">Hiệu suất Token</div>
-              <div class="text-h6 font-weight-bold warning--text">~{{ avgTokensPerCredit.toFixed(0) }} T/C</div>
-              <div class="text-caption">Trung bình tokens mỗi credit</div>
+              <div class="text-overline opacity-70">Tỉ lệ phản hồi</div>
+              <div class="text-h6 font-weight-bold warning--text">~{{ avgTokensPerResponse.toFixed(0) }} T/Msg</div>
+              <div class="text-caption">Trung bình tokens mỗi tin nhắn</div>
             </div>
           </div>
         </v-card>
@@ -91,7 +91,6 @@
             <v-spacer />
             <v-btn-toggle v-model="chartType" mandatory density="compact" color="primary" variant="tonal">
               <v-btn value="tokens" size="small">Tokens</v-btn>
-              <v-btn value="credits" size="small">Credits</v-btn>
             </v-btn-toggle>
           </div>
           <div class="chart-container" style="height: 200px;">
@@ -142,7 +141,6 @@
             Hiển thị <strong>{{ filteredHistory.length }}</strong> bản ghi
             <span v-if="filteredHistory.length > 0">
               - Tổng cộng <strong>{{ formatNumber(totalFilteredTokens) }}</strong> Tokens
-              và <strong>{{ totalFilteredCredits.toFixed(2) }}</strong> Credits
             </span>
           </div>
         </div>
@@ -169,7 +167,7 @@
             </v-chip>
           </template>
 
-          <template v-slot:item.tokens="{ item }">
+          <template v-slot:item.tokens_io="{ item }">
             <div class="text-caption">
               <div class="d-flex justify-space-between" style="width: 100px">
                 <span class="opacity-60">In:</span>
@@ -182,10 +180,10 @@
             </div>
           </template>
 
-          <template v-slot:item.credits="{ item }">
+          <template v-slot:item.tokens="{ item }">
             <div class="d-flex align-center font-weight-bold error--text">
-              -{{ item.credits?.toFixed(2) }}
-              <v-icon size="14" class="ml-1">mdi-coin</v-icon>
+              -{{ formatNumber(item.tokens) }}
+              <v-icon size="14" class="ml-1">mdi-token</v-icon>
             </div>
           </template>
 
@@ -239,7 +237,7 @@ interface AiUsageRecord {
   feature: string;
   provider: string;
   model: string;
-  credits: number;
+  tokens: number;
   inputTokens: number;
   outputTokens: number;
   createdAt: string;
@@ -252,15 +250,15 @@ const usageData = ref<any>(null);
 const headers = [
   { title: 'TÍNH NĂNG', key: 'feature', align: 'start' as const, width: '200px' },
   { title: 'MODEL', key: 'model', width: '250px' },
-  { title: 'TOKEN (IN/OUT)', key: 'tokens', sortable: false, width: '150px' },
-  { title: 'CREDIT', key: 'credits', align: 'end' as const, width: '120px' },
+  { title: 'TOKEN (IN/OUT)', key: 'tokens_io', sortable: false, width: '150px' },
+  { title: 'TIÊU THỤ', key: 'tokens', align: 'end' as const, width: '120px' },
   { title: 'THỜI GIAN', key: 'createdAt', align: 'end' as const, width: '180px' },
 ];
 
 const search = ref('');
 const filterFeature = ref('Tất cả');
 const filterModel = ref('Tất cả');
-const chartType = ref<'tokens' | 'credits'>('tokens');
+const chartType = ref<'tokens'>('tokens');
 
 // Computed filters
 const filteredHistory = computed(() => {
@@ -291,10 +289,6 @@ const totalFilteredTokens = computed(() =>
   filteredHistory.value.reduce((acc, curr) => acc + (curr.inputTokens || 0) + (curr.outputTokens || 0), 0)
 );
 
-const totalFilteredCredits = computed(() =>
-  filteredHistory.value.reduce((acc, curr) => acc + (curr.credits || 0), 0)
-);
-
 const monthlyTokens = computed(() =>
   history.value.reduce((acc, curr) => acc + (curr.inputTokens || 0) + (curr.outputTokens || 0), 0)
 );
@@ -307,10 +301,9 @@ const monthlyOutputTokens = computed(() =>
   history.value.reduce((acc, curr) => acc + (curr.outputTokens || 0), 0)
 );
 
-const avgTokensPerCredit = computed(() => {
-  const totalCredits = history.value.reduce((acc, curr) => acc + (curr.credits || 0), 0);
-  if (totalCredits === 0) return 0;
-  return monthlyTokens.value / totalCredits;
+const avgTokensPerResponse = computed(() => {
+  if (history.value.length === 0) return 0;
+  return monthlyTokens.value / history.value.length;
 });
 
 // Chart data
@@ -323,11 +316,7 @@ const chartData = computed(() => {
 
   const dataByDay = last7Days.map(date => {
     const items = history.value.filter(i => i.createdAt.startsWith(date));
-    if (chartType.value === 'tokens') {
-      return items.reduce((acc, curr) => acc + (curr.inputTokens || 0) + (curr.outputTokens || 0), 0);
-    } else {
-      return items.reduce((acc, curr) => acc + (curr.credits || 0), 0);
-    }
+    return items.reduce((acc, curr) => acc + (curr.inputTokens || 0) + (curr.outputTokens || 0), 0);
   });
 
   return {
@@ -336,7 +325,7 @@ const chartData = computed(() => {
       return `${parts[2]}/${parts[1]}`;
     }),
     datasets: [{
-      label: chartType.value === 'tokens' ? 'Tokens' : 'Credits',
+      label: 'Tokens',
       data: dataByDay,
       borderColor: '#6366f1',
       backgroundColor: 'rgba(99, 102, 241, 0.1)',
@@ -420,14 +409,14 @@ function formatNumber(num: number) {
 }
 
 function exportCSV() {
-  const headers = ['Tính năng', 'Model', 'Provider', 'Input Tokens', 'Output Tokens', 'Credits', 'Thời gian'];
+  const headers = ['Tính năng', 'Model', 'Provider', 'Input Tokens', 'Output Tokens', 'Tokens tiêu thụ', 'Thời gian'];
   const rows = filteredHistory.value.map(item => [
     formatFeature(item.feature),
     item.model,
     item.provider,
     item.inputTokens,
     item.outputTokens,
-    item.credits,
+    item.tokens,
     formatDateTime(item.createdAt)
   ]);
 

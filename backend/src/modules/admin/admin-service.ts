@@ -29,15 +29,15 @@ async function getOrganizationAiOverview(orgId: string, input?: {
   const topupTokens = await getApprovedTopupTokensForWindow(orgId, periodStart, periodEnd);
   const totalTokens = maxTokens + topupTokens;
 
-  const aggregate = await prisma.aiCreditUsage.aggregate({
+  const aggregate = await prisma.aiTokenUsage.aggregate({
     where: {
       orgId,
       createdAt: { gte: periodStart, lt: periodEnd },
     },
-    _sum: { credits: true },
+    _sum: { tokens: true },
   });
 
-  const usedTokens = Number(aggregate._sum.credits ?? 0);
+  const usedTokens = Number(aggregate._sum.tokens ?? 0);
   const remainingTokens = Math.max(0, totalTokens - usedTokens);
   const usagePercent = totalTokens > 0 ? Math.min(100, Math.round((usedTokens / totalTokens) * 100)) : 0;
 

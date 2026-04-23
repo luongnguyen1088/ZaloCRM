@@ -31,7 +31,7 @@ model Organization {
   messageTemplates MessageTemplate[]
   aiConfig      AiConfig?
   aiSuggestions AiSuggestion[]
-  aiCreditUsages AiCreditUsage[]
+  aiTokenUsages AiTokenUsage[]
   aiKnowledge   AiKnowledge[]
   subscription  Subscription?
   connections   OrganizationConnection[]
@@ -484,13 +484,13 @@ model AiSuggestion {
   @@map("ai_suggestions")
 }
 
-model AiCreditUsage {
+model AiTokenUsage {
   id          String   @id @default(uuid())
   orgId       String   @map("org_id")
   feature     String
   provider    String?
   model       String?
-  credits     Float    @default(1.0)
+  tokens      Float    @default(1.0)
   inputTokens Int?     @map("input_tokens")
   outputTokens Int?    @map("output_tokens")
   inputChars  Int?     @map("input_chars")
@@ -503,7 +503,7 @@ model AiCreditUsage {
   @@index([orgId, createdAt])
   @@index([orgId, feature, createdAt])
   @@schema("zalocrm")
-  @@map("ai_credit_usages")
+  @@map("ai_token_usages")
 }
 
 model SubscriptionPlan {
