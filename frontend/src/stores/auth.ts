@@ -118,6 +118,7 @@ export const useAuthStore = defineStore('auth', () => {
     needsSetup, 
     isAuthenticated, 
     isOwner, 
+    isSuperAdmin,
     isAdmin, 
     checkSetup, 
     setup, 
