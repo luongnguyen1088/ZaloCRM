@@ -10,7 +10,11 @@
       </v-btn>
     </div>
 
-    <v-row>
+    <v-alert v-if="error" type="error" variant="tonal" class="mb-6 rounded-lg">
+      {{ error }}
+    </v-alert>
+
+    <v-row v-if="!error">
       <v-col cols="12" md="4">
         <v-card class="stat-card glass-premium pa-6 mb-6">
           <div class="d-flex align-center">
@@ -143,6 +147,7 @@ import { api } from '@/api/index';
 const orgs = ref<any[]>([]);
 const plans = ref<any[]>([]);
 const loading = ref(false);
+const error = ref<string | null>(null);
 const submitting = ref(false);
 const upgradeDialog = ref(false);
 const selectedOrg = ref<any>(null);
@@ -166,6 +171,7 @@ const premiumOrgsCount = computed(() => {
 
 const fetchData = async () => {
   loading.value = true;
+  error.value = null;
   try {
     const [orgsRes, plansRes] = await Promise.all([
       api.get('/admin/organizations'),
@@ -173,8 +179,13 @@ const fetchData = async () => {
     ]);
     orgs.value = orgsRes.data;
     plans.value = plansRes.data;
-  } catch (err) {
+  } catch (err: any) {
     console.error('Admin fetch failed', err);
+    if (err.response?.status === 403) {
+      error.value = 'Bạn không có quyền truy cập dữ liệu quản trị. Vui lòng thử đăng xuất và đăng nhập lại.';
+    } else {
+      error.value = 'Không thể tải dữ liệu từ máy chủ. Vui lòng kiểm tra kết nối mạng hoặc thử lại sau.';
+    }
   } finally {
     loading.value = false;
   }
