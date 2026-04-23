@@ -12,6 +12,17 @@ import type {
 export type { AiSentiment, Message };
 
 export interface AiConfig {
+  provider: string;
+  model: string;
+  maxDaily: number;
+  enabled: boolean;
+  managed?: boolean;
+  platformKeyConfigured?: boolean;
+  planName?: string;
+  usedTokens?: number;
+  maxTokens?: number;
+  remainingTokens?: number;
+}
 
 export function useChat() {
   const conversations = ref<Conversation[]>([]);
