@@ -32,10 +32,19 @@ export async function chatRoutes(app: FastifyInstance) {
   // ── List conversations (paginated) ──────────────────────────────────────
   app.get('/api/v1/conversations', async (request: FastifyRequest, reply: FastifyReply) => {
     const user = request.user!;
-    const { page = '1', limit = '50', search = '', accountId = '' } = request.query as QueryParams;
+    const { page = '1', limit = '50', search = '', accountId = '', status = 'all' } = request.query as QueryParams;
 
     const where: any = { orgId: user.orgId };
     if (accountId) where.zaloAccountId = accountId;
+    
+    if (status === 'unread') {
+      where.unreadCount = { gt: 0 };
+    } else if (status === 'unreplied') {
+      where.isReplied = false;
+    } else if (status === 'ai_suggested') {
+      where.aiSuggestions = { some: { accepted: false } };
+    }
+
     if (search) {
       where.contact = {
         OR: [

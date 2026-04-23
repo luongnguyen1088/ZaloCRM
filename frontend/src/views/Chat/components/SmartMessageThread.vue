@@ -1,0 +1,345 @@
+
+<template>
+  <div class="message-thread d-flex flex-column h-100">
+    <!-- Messages Scroll Area -->
+    <div ref="scrollBox" class="messages-viewport flex-grow-1 overflow-y-auto pa-4 pa-md-6" @scroll="handleScroll">
+      <div v-if="loading" class="d-flex justify-center py-8">
+        <v-progress-circular indeterminate color="primary" />
+      </div>
+
+      <template v-else-if="messages.length">
+        <div v-for="(msg, index) in messages" :key="msg.id" class="message-wrapper" :class="{ 'message-self': msg.senderType === 'self' }">
+          <!-- Date Separator -->
+          <div v-if="shouldShowDate(index)" class="date-divider my-6 text-center">
+            <span>{{ formatDateLabel(msg.sentAt) }}</span>
+          </div>
+
+          <div class="message-bubble-row d-flex" :class="msg.senderType === 'self' ? 'justify-end' : 'justify-start'">
+            <div class="message-bubble-container">
+              <div class="message-bubble pa-3" :class="bubbleClass(msg)">
+                <div v-if="msg.senderType !== 'self'" class="sender-name">{{ msg.senderName || 'Khách hàng' }}</div>
+                
+                <div class="message-content">
+                  <template v-if="msg.contentType === 'text'">
+                    {{ msg.content }}
+                  </template>
+                  <template v-else-if="msg.contentType === 'image'">
+                    <v-img :src="msg.content" max-width="300" class="rounded-lg cursor-pointer" @click="openMedia(msg.content)" />
+                  </template>
+                  <template v-else>
+                    <div class="d-flex align-center ga-2 py-1">
+                      <v-icon size="20">mdi-paperclip</v-icon>
+                      <span>{{ msg.contentType }} content</span>
+                    </div>
+                  </template>
+                </div>
+                
+                <div class="message-meta d-flex align-center justify-end mt-1 ga-1">
+                  <span>{{ formatTime(msg.sentAt) }}</span>
+                  <v-icon v-if="msg.senderType === 'self'" :color="msg.zaloMsgId ? 'primary' : 'grey'" size="14">
+                    {{ msg.zaloMsgId ? 'mdi-check-all' : 'mdi-check' }}
+                  </v-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <div v-else class="h-100 d-flex flex-column align-center justify-center opacity-40">
+        <v-icon size="64" class="mb-4">mdi-message-text-outline</v-icon>
+        <p>Bắt đầu cuộc trò chuyện ngay bây giờ</p>
+      </div>
+    </div>
+
+    <!-- AI Workspace Layer -->
+    <div v-if="aiSuggestion" class="ai-workspace pa-4 animate__animated animate__slideInUp">
+      <v-card class="ai-card pa-4" rounded="xl">
+        <div class="d-flex align-center mb-3">
+          <v-icon color="primary" class="mr-2">mdi-robot-outline</v-icon>
+          <span class="font-weight-black text-primary">Gợi ý từ AI Assistant</span>
+          <v-spacer />
+          <v-btn icon="mdi-close" variant="text" size="x-small" @click="$emit('clear-ai')" />
+        </div>
+        
+        <div class="ai-content-box mb-3 pa-3">
+          {{ aiSuggestion }}
+        </div>
+
+        <div class="d-flex ga-2">
+          <v-btn 
+            color="primary" 
+            variant="flat" 
+            rounded="lg" 
+            size="small" 
+            prepend-icon="mdi-send"
+            @click="useAiSuggestion"
+          >
+            Sử dụng & Gửi
+          </v-btn>
+          <v-btn 
+            variant="tonal" 
+            rounded="lg" 
+            size="small" 
+            prepend-icon="mdi-auto-fix"
+            @click="isRefining = true"
+          >
+            Tinh chỉnh
+          </v-btn>
+        </div>
+      </v-card>
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-area pa-4">
+      <v-card class="input-card" rounded="xl" elevation="0">
+        <div class="d-flex align-end ga-2">
+          <v-btn icon="mdi-plus" variant="text" color="primary" />
+          
+          <v-textarea
+            v-model="inputContent"
+            placeholder="Nhập tin nhắn..."
+            rows="1"
+            max-rows="5"
+            auto-grow
+            density="compact"
+            variant="plain"
+            hide-details
+            class="message-input py-2"
+            @keydown.enter.exact.prevent="handleSend"
+          />
+
+          <div class="d-flex align-center pb-2 pr-1 ga-1">
+            <v-btn 
+              icon 
+              variant="tonal" 
+              color="primary" 
+              size="small" 
+              :loading="aiLoading"
+              @click="$emit('ask-ai')"
+            >
+              <v-icon>mdi-sparkles</v-icon>
+              <v-tooltip activator="parent">Tạo gợi ý AI</v-tooltip>
+            </v-btn>
+            <v-btn 
+              icon 
+              color="primary" 
+              variant="flat" 
+              size="small"
+              :disabled="!inputContent.trim() || sending"
+              :loading="sending"
+              @click="handleSend"
+            >
+              <v-icon>mdi-send</v-icon>
+            </v-btn>
+          </div>
+        </div>
+      </v-card>
+    </div>
+
+    <!-- Refine Dialog -->
+    <v-dialog v-model="isRefining" max-width="500">
+      <v-card rounded="xl" class="pa-4">
+        <h3 class="text-h6 font-weight-black mb-4">Tinh chỉnh với AI</h3>
+        <v-textarea
+          v-model="refineInstruction"
+          placeholder="Ví dụ: Làm cho câu trả lời lịch sự hơn, hoặc ngắn gọn hơn..."
+          variant="solo-filled"
+          flat
+          rounded="lg"
+          class="mb-4"
+        />
+        <div class="d-flex justify-end ga-2">
+          <v-btn variant="text" rounded="lg" @click="isRefining = false">Hủy</v-btn>
+          <v-btn color="primary" variant="flat" rounded="lg" @click="handleRefine">Cập nhật</v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted, nextTick } from 'vue';
+import type { Conversation, ConversationMessage } from '../types';
+
+const props = defineProps<{
+  conversation: Conversation | null;
+  messages: ConversationMessage[];
+  loading: boolean;
+  sending: boolean;
+  aiSuggestion: string;
+  aiLoading: boolean;
+}>();
+
+const emit = defineEmits<{
+  (e: 'send', content: string): void;
+  (e: 'ask-ai'): void;
+  (e: 'refine-ai', data: { content: string, instruction: string }): void;
+  (e: 'clear-ai'): void;
+}>();
+
+const inputContent = ref('');
+const scrollBox = ref<HTMLElement | null>(null);
+const isRefining = ref(false);
+const refineInstruction = ref('');
+
+function scrollToBottom() {
+  nextTick(() => {
+    if (scrollBox.value) {
+      scrollBox.value.scrollTop = scrollBox.value.scrollHeight;
+    }
+  });
+}
+
+function handleSend() {
+  if (!inputContent.value.trim() || props.sending) return;
+  emit('send', inputContent.value);
+  inputContent.value = '';
+  scrollToBottom();
+}
+
+function useAiSuggestion() {
+  emit('send', props.aiSuggestion);
+  emit('clear-ai');
+  scrollToBottom();
+}
+
+function handleRefine() {
+  emit('refine-ai', { content: props.aiSuggestion, instruction: refineInstruction.value });
+  refineInstruction.value = '';
+  isRefining.value = false;
+}
+
+function bubbleClass(msg: ConversationMessage) {
+  if (msg.senderType === 'self') return 'bubble-self';
+  return 'bubble-other';
+}
+
+function formatTime(dateStr: string) {
+  return new Date(dateStr).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatDateLabel(dateStr: string) {
+  const d = new Date(dateStr);
+  const today = new Date();
+  if (d.toDateString() === today.toDateString()) return 'Hôm nay';
+  return d.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit' });
+}
+
+function shouldShowDate(index: number) {
+  if (index === 0) return true;
+  const curr = new Date(props.messages[index].sentAt).toDateString();
+  const prev = new Date(props.messages[index - 1].sentAt).toDateString();
+  return curr !== prev;
+}
+
+function handleScroll() { /* Paginate if needed */ }
+function openMedia(url: string | null) { if (url) window.open(url, '_blank'); }
+
+onMounted(scrollToBottom);
+</script>
+
+<style scoped>
+.message-thread {
+  background: var(--color-canvas);
+  position: relative;
+}
+
+.messages-viewport {
+  background-image: 
+    radial-gradient(circle at 2px 2px, var(--color-border) 1px, transparent 0);
+  background-size: 32px 32px;
+}
+
+.message-bubble-container {
+  max-width: 80%;
+}
+
+.message-bubble {
+  border-radius: 20px;
+  position: relative;
+  box-shadow: var(--shadow-xs);
+}
+
+.bubble-self {
+  background: var(--color-primary);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.bubble-other {
+  background: var(--color-surface-elevated);
+  color: var(--color-text);
+  border-bottom-left-radius: 4px;
+  border: 1px solid var(--color-border);
+}
+
+.sender-name {
+  font-size: 0.75rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+  opacity: 0.8;
+}
+
+.message-meta {
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+.date-divider {
+  position: relative;
+}
+
+.date-divider span {
+  background: var(--color-canvas);
+  padding: 4px 16px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.input-area {
+  background: var(--color-surface-glass);
+  backdrop-filter: blur(14px);
+  border-top: 1px solid var(--color-border);
+}
+
+.input-card {
+  background: var(--color-surface-muted) !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+.message-input :deep(textarea) {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  padding-left: 12px;
+}
+
+.ai-workspace {
+  position: absolute;
+  bottom: 85px;
+  left: 0;
+  right: 0;
+  z-index: 5;
+}
+
+.ai-card {
+  border: 1px solid var(--color-primary-soft-strong) !important;
+  background: var(--color-surface-elevated) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.ai-content-box {
+  background: var(--color-primary-soft);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--color-primary-strong);
+}
+
+.animate__slideInUp {
+  animation-duration: 0.4s;
+}
+</style>

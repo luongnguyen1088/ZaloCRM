@@ -89,11 +89,18 @@ export function useChat() {
     aiSentiment.value = null;
   }
 
+  const statusFilter = ref<string>('all');
+
   async function fetchConversations() {
     loadingConvs.value = true;
     try {
       const res = await api.get('/conversations', {
-        params: { limit: 100, search: searchQuery.value, accountId: accountFilter.value || undefined },
+        params: { 
+          limit: 100, 
+          search: searchQuery.value, 
+          accountId: accountFilter.value || undefined,
+          status: statusFilter.value !== 'all' ? statusFilter.value : undefined
+        },
       });
       conversations.value = res.data.conversations;
     } catch (err) {
@@ -323,6 +330,7 @@ export function useChat() {
     sendingMsg,
     searchQuery,
     accountFilter,
+    statusFilter,
     aiSuggestion,
     aiSuggestionLoading,
     aiSuggestionError,

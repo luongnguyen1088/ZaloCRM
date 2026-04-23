@@ -1,90 +1,119 @@
+
 <template>
   <MobileChatView v-if="isMobile" />
-  <div v-else class="chat-container d-flex" style="height: calc(100vh - 64px);">
-    <!-- Conversation list — resizable -->
-    <div class="chat-panel-left" :style="{ width: leftWidth + 'px' }">
-      <ConversationList
+  
+  <div v-else class="chat-view-root d-flex">
+    <!-- Sidebar: Unified Conversation List -->
+    <aside class="chat-sidebar" :style="{ width: leftWidth + 'px' }">
+      <UnifiedConversationList
         :conversations="conversations"
         :selected-id="selectedConvId"
         :loading="loadingConvs"
         v-model:search="searchQuery"
+        v-model:status="statusFilter"
+        :accounts="zaloAccounts"
+        :active-status="statusFilter"
         @select="selectConversation"
         @filter-account="onFilterAccount"
       />
-      <!-- Resize handle -->
       <div class="resize-handle" @mousedown="startResize('left', $event)" />
-    </div>
+    </aside>
 
-    <!-- Message thread — flexible center -->
-    <MessageThread
-      :conversation="selectedConv"
-      :messages="messages"
-      :loading="loadingMsgs"
-      :sending="sendingMsg"
-      :ai-suggestion="aiSuggestion"
-      :ai-suggestion-loading="aiSuggestionLoading"
-      :ai-suggestion-error="aiSuggestionError"
-      @send="sendMessage"
-      @ask-ai="generateAiSuggestion"
-      @refine-ai="(data) => refineAiSuggestion(data.content, data.instruction)"
-      @clear-ai="clearAiState"
-      @toggle-contact-panel="showContactPanel = !showContactPanel"
-      :show-contact-panel="showContactPanel"
-      style="flex: 1; min-width: 300px;"
-    />
-
-    <!-- Contact panel — resizable -->
-    <div v-if="showContactPanel && selectedConv?.contact" class="chat-panel-right" :style="{ width: rightWidth + 'px' }">
-      <div class="resize-handle resize-handle-left" @mousedown="startResize('right', $event)" />
-      <ChatContactPanel
-        :contact-id="selectedConv.contact.id"
-        :contact="selectedConv.contact"
-        :ai-summary="aiSummary"
-        :ai-summary-loading="aiSummaryLoading"
-        :ai-sentiment="aiSentiment"
-        :ai-sentiment-loading="aiSentimentLoading"
-        @refresh-ai-summary="generateAiSummary"
-        @refresh-ai-sentiment="generateAiSentiment"
-        @close="showContactPanel = false"
-        @saved="fetchConversations()"
+    <!-- Main Content: Chat Area -->
+    <main class="chat-main d-flex flex-column flex-grow-1">
+      <ChatHeader
+        :conversation="selectedConv"
+        :show-contact-panel="showContactPanel"
+        @toggle-contact="showContactPanel = !showContactPanel"
       />
-    </div>
+
+      <div class="chat-body d-flex flex-grow-1 overflow-hidden">
+        <div class="message-thread-container flex-grow-1 h-100">
+          <SmartMessageThread
+            :conversation="selectedConv"
+            :messages="messages"
+            :loading="loadingMsgs"
+            :sending="sendingMsg"
+            :ai-suggestion="aiSuggestion"
+            :ai-loading="aiSuggestionLoading"
+            @send="sendMessage"
+            @ask-ai="generateAiSuggestion"
+            @refine-ai="(data) => refineAiSuggestion(data.content, data.instruction)"
+            @clear-ai="clearAiState"
+          />
+        </div>
+
+        <!-- Right Panel: Contact Details -->
+        <aside v-if="showContactPanel && selectedConv?.contact" class="contact-sidebar" :style="{ width: rightWidth + 'px' }">
+          <div class="resize-handle resize-handle-left" @mousedown="startResize('right', $event)" />
+          <ChatContactPanel
+            :contact-id="selectedConv.contact.id"
+            :contact="selectedConv.contact"
+            :ai-summary="aiSummary"
+            :ai-summary-loading="aiSummaryLoading"
+            :ai-sentiment="aiSentiment"
+            :ai-sentiment-loading="aiSentimentLoading"
+            @refresh-ai-summary="generateAiSummary"
+            @refresh-ai-sentiment="generateAiSentiment"
+            @close="showContactPanel = false"
+            @saved="fetchConversations()"
+          />
+        </aside>
+      </div>
+    </main>
+
+    <!-- AI Quota Modal -->
+    <AiQuotaModal v-model="isAiQuotaExceeded" />
   </div>
-  <AiQuotaModal v-model="isAiQuotaExceeded" />
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue';
-import ConversationList from '@/components/chat/ConversationList.vue';
-import MessageThread from '@/components/chat/MessageThread.vue';
-import ChatContactPanel from '@/components/chat/ChatContactPanel.vue';
+import { api } from '@/api/index';
 import { useChat } from '@/composables/use-chat';
-import MobileChatView from '@/views/MobileChatView.vue';
 import { useMobile } from '@/composables/use-mobile';
+
+// Sub-components
+import UnifiedConversationList from './Chat/components/UnifiedConversationList.vue';
+import ChatHeader from './Chat/components/ChatHeader.vue';
+import SmartMessageThread from './Chat/components/SmartMessageThread.vue';
+import ChatContactPanel from '@/components/chat/ChatContactPanel.vue';
 import AiQuotaModal from '@/components/ai/AiQuotaModal.vue';
+import MobileChatView from '@/views/MobileChatView.vue';
 
 const { isMobile } = useMobile();
-
 const {
   conversations, selectedConvId, selectedConv, messages,
-  loadingConvs, loadingMsgs, sendingMsg, searchQuery, accountFilter,
-  aiSuggestion, aiSuggestionLoading, aiSuggestionError,
-  aiSummary, aiSummaryLoading, aiSentiment, aiSentimentLoading,
+  loadingConvs, loadingMsgs, sendingMsg, searchQuery, accountFilter, statusFilter,
+  aiSuggestion, aiSuggestionLoading, aiSummary, aiSummaryLoading, aiSentiment, aiSentimentLoading,
   isAiQuotaExceeded,
   fetchConversations, fetchAiConfig, selectConversation, sendMessage,
   generateAiSuggestion, refineAiSuggestion, generateAiSummary, generateAiSentiment,
   clearAiState, initSocket, destroySocket,
 } = useChat();
 
+const zaloAccounts = ref([]);
+const showContactPanel = ref(localStorage.getItem('chat-show-contact') === 'true');
+
+async function fetchZaloAccounts() {
+  try {
+    const res = await api.get('/zalo-accounts');
+    zaloAccounts.value = Array.isArray(res.data) ? res.data : res.data.accounts || [];
+  } catch (err) {
+    console.error('Failed to fetch Zalo accounts', err);
+  }
+}
+
 function onFilterAccount(id: string | null) {
   accountFilter.value = id;
   fetchConversations();
 }
 
-const showContactPanel = ref(false);
+watch(statusFilter, () => fetchConversations());
+watch(showContactPanel, (val) => localStorage.setItem('chat-show-contact', String(val)));
 
-// Resizable panel widths (restored from localStorage)
-const leftWidth = ref(parseInt(localStorage.getItem('chat-left-width') || '320'));
+// Resizable panel widths
+const leftWidth = ref(parseInt(localStorage.getItem('chat-left-width') || '360'));
 const rightWidth = ref(parseInt(localStorage.getItem('chat-right-width') || '320'));
 
 let resizing: 'left' | 'right' | null = null;
@@ -105,7 +134,7 @@ function onResize(e: MouseEvent) {
   if (!resizing) return;
   const diff = e.clientX - startX;
   if (resizing === 'left') {
-    leftWidth.value = Math.max(200, Math.min(500, startWidth + diff));
+    leftWidth.value = Math.max(280, Math.min(500, startWidth + diff));
   } else {
     rightWidth.value = Math.max(250, Math.min(500, startWidth - diff));
   }
@@ -124,13 +153,21 @@ function stopResize() {
 }
 
 onMounted(() => {
-  if (!isMobile.value) { fetchConversations(); fetchAiConfig(); initSocket(); }
-});
-onUnmounted(() => {
-  if (!isMobile.value) { destroySocket(); }
+  if (!isMobile.value) {
+    fetchConversations();
+    fetchAiConfig();
+    fetchZaloAccounts();
+    initSocket();
+  }
 });
 
-let searchTimeout: ReturnType<typeof setTimeout>;
+onUnmounted(() => {
+  if (!isMobile.value) {
+    destroySocket();
+  }
+});
+
+let searchTimeout: any;
 watch(searchQuery, () => {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => fetchConversations(), 300);
@@ -138,31 +175,33 @@ watch(searchQuery, () => {
 </script>
 
 <style scoped>
-.chat-container {
+.chat-view-root {
+  height: calc(100vh - 64px);
   margin: -16px;
   background: var(--color-canvas);
   overflow: hidden;
 }
 
-.chat-panel-left {
+.chat-sidebar {
   position: relative;
   flex-shrink: 0;
-  min-width: 260px;
-  max-width: 500px;
-  z-index: 2;
-  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.02);
+  z-index: 5;
 }
 
-.chat-panel-right {
+.chat-main {
+  min-width: 0;
+  background: var(--color-canvas);
+}
+
+.contact-sidebar {
   position: relative;
   flex-shrink: 0;
-  min-width: 300px;
-  max-width: 500px;
-  z-index: 2;
-  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.02);
+  background: var(--color-surface-glass);
+  backdrop-filter: blur(14px);
+  border-left: 1px solid var(--color-border);
+  z-index: 5;
 }
 
-/* Resize handle — elegant vertical line */
 .resize-handle {
   position: absolute;
   top: 0;
@@ -172,7 +211,6 @@ watch(searchQuery, () => {
   cursor: col-resize;
   z-index: 100;
   background: transparent;
-  transition: all 0.3s;
 }
 
 .resize-handle:hover::after {
