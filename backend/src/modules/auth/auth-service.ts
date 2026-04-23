@@ -13,6 +13,7 @@ export interface JwtPayload {
   email: string;
   role: string;    // Role in current Org
   orgId: string;   // Current active Org ID
+  isSystemAdmin: boolean;
 }
 
 // Check if any users exist — true means first-run setup is needed
@@ -103,6 +104,7 @@ export async function register(
     email: result.user.email,
     role: result.membership.role,
     orgId: result.org.id,
+    isSystemAdmin: result.user.isSystemAdmin
   };
 }
 
@@ -144,7 +146,8 @@ export async function login(email: string, password: string): Promise<JwtPayload
     id: user.id, 
     email: user.email, 
     role: activeMembership.role, 
-    orgId: activeMembership.orgId 
+    orgId: activeMembership.orgId,
+    isSystemAdmin: user.isSystemAdmin
   };
 }
 
