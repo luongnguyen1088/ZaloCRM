@@ -102,6 +102,14 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function forgotPassword(email: string) {
+    return api.post('/auth/forgot-password', { email });
+  }
+
+  async function resetPassword(data: { token: string; password: string }) {
+    return api.post('/auth/reset-password', data);
+  }
+
   return { 
     user, 
     token, 
@@ -114,6 +122,8 @@ export const useAuthStore = defineStore('auth', () => {
     register, 
     login, 
     googleLogin, 
+    forgotPassword,
+    resetPassword,
     fetchProfile, 
     switchOrg,
     createOrg,

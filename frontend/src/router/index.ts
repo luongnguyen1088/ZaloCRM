@@ -21,6 +21,18 @@ const routes = [
     meta: { layout: 'auth' },
   },
   {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('@/views/ForgotPasswordView.vue'),
+    meta: { layout: 'auth' },
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: () => import('@/views/ResetPasswordView.vue'),
+    meta: { layout: 'auth' },
+  },
+  {
     path: '/accept-invite',
     name: 'AcceptInvite',
     component: () => import('@/views/AcceptInviteView.vue'),
@@ -127,7 +139,7 @@ router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore();
 
   // Skip guard for public pages
-  if (['Setup', 'Login', 'Register', 'AcceptInvite'].includes(to.name as string)) {
+  if (['Setup', 'Login', 'Register', 'AcceptInvite', 'ForgotPassword', 'ResetPassword'].includes(to.name as string)) {
     return next();
   }
 

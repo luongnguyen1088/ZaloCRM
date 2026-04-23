@@ -168,7 +168,7 @@
               <div class="login-assistance">
                 <div class="login-assistance__note">
                   <v-icon size="16" class="mr-2">mdi-shield-check-outline</v-icon>
-                  <span>Không truy cập được? Liên hệ quản trị viên workspace để cấp lại quyền.</span>
+                  <span>Không truy cập được? <router-link to="/forgot-password" class="assist-link">Quên mật khẩu?</router-link></span>
                 </div>
                 <router-link to="/register" class="assist-link">Tạo workspace mới</router-link>
               </div>

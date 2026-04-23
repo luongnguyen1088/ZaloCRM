@@ -236,3 +236,67 @@ export async function loginWithGoogle(idToken: string): Promise<JwtPayload> {
     orgId: activeMembership.orgId 
   };
 }
+
+/**
+ * Generates a reset token, saves it to the user, and returns it.
+ */
+export async function forgotPassword(email: string): Promise<{ token: string }> {
+  const normalizedEmail = email.toLowerCase().trim();
+  const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+
+  if (!user) {
+    // For security, we don't reveal if the email exists.
+    // In a real app, you might still return success but not send an email.
+    throw new Error('Nếu email tồn tại trong hệ thống, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu.');
+  }
+
+  // Generate a random token
+  const token = (await import('node:crypto')).randomBytes(32).toString('hex');
+  const expires = new Date();
+  expires.setHours(expires.getHours() + 1); // 1 hour expiry
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      resetPasswordToken: token,
+      resetPasswordExpires: expires,
+    },
+  });
+
+  // Here you would normally send an email with the link:
+  // const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+  // await sendEmail(email, 'Reset Password', `Click here: ${resetLink}`);
+  
+  logger.info(`Password reset requested for ${email}. Token generated.`);
+
+  return { token };
+}
+
+/**
+ * Verifies the token and updates the user's password.
+ */
+export async function resetPassword(token: string, newPassword: string): Promise<void> {
+  const user = await prisma.user.findFirst({
+    where: {
+      resetPasswordToken: token,
+      resetPasswordExpires: { gt: new Date() },
+    },
+  });
+
+  if (!user) {
+    throw new Error('Mã xác nhận không hợp lệ hoặc đã hết hạn.');
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      passwordHash,
+      resetPasswordToken: null,
+      resetPasswordExpires: null,
+    },
+  });
+
+  logger.info(`Password reset successful for user ${user.id}`);
+}

@@ -11,6 +11,8 @@ import {
   login,
   loginWithGoogle,
   getProfile,
+  forgotPassword,
+  resetPassword,
   JwtPayload
 } from './auth-service.js';
 
@@ -138,5 +140,32 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     const payload = await loginWithGoogle(idToken);
     const token = app.jwt.sign(payload, { expiresIn: '7d' });
     return { token, user: payload };
+  });
+
+  // POST /api/v1/auth/forgot-password
+  app.post<{ Body: { email: string } }>('/api/v1/auth/forgot-password', async (request, reply) => {
+    const { email } = request.body;
+    if (!email) return reply.status(400).send({ error: 'Email là bắt buộc' });
+    
+    try {
+      const { token } = await forgotPassword(email);
+      // In development, we return the token so the user can test without email setup
+      return { message: 'Yêu cầu đặt lại mật khẩu đã được ghi nhận', token };
+    } catch (err: any) {
+      return reply.status(200).send({ message: err.message });
+    }
+  });
+
+  // POST /api/v1/auth/reset-password
+  app.post<{ Body: { token: string; password: string } }>('/api/v1/auth/reset-password', async (request, reply) => {
+    const { token, password } = request.body;
+    if (!token || !password) return reply.status(400).send({ error: 'Thiếu thông tin xác thực' });
+
+    try {
+      await resetPassword(token, password);
+      return { message: 'Mật khẩu đã được cập nhật thành công' };
+    } catch (err: any) {
+      return reply.status(400).send({ error: err.message });
+    }
   });
 }
