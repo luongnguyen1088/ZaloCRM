@@ -23,6 +23,7 @@ import { chatRoutes } from './modules/chat/chat-routes.js';
 import { contactRoutes } from './modules/contacts/contact-routes.js';
 import { contactSubResourceRoutes } from './modules/contacts/contact-sub-resource-routes.js';
 import { appointmentRoutes } from './modules/contacts/appointment-routes.js';
+import { globalErrorHandler } from './shared/utils/error-handler.js';
 import { startAppointmentReminder } from './modules/contacts/appointment-reminder.js';
 import { dashboardRoutes } from './modules/dashboard/dashboard-routes.js';
 import { reportRoutes } from './modules/dashboard/report-routes.js';
@@ -181,12 +182,7 @@ async function bootstrap() {
 
   // ── Error handler ─────────────────────────────────────────────────────────
 
-  app.setErrorHandler((error: Error & { statusCode?: number }, _request, reply) => {
-    logger.error('Request error:', error.message);
-    reply.status(error.statusCode ?? 500).send({
-      error: error.message || 'Internal Server Error',
-    });
-  });
+  app.setErrorHandler(globalErrorHandler);
 
   // ── Start ─────────────────────────────────────────────────────────────────
 
@@ -209,16 +205,23 @@ async function bootstrap() {
       select: { id: true, sessionData: true },
     });
     logger.info(`Attempting reconnect for ${accounts.length} Zalo account(s)`);
+    
+    // Throttled reconnect to avoid rate limits and CPU spikes
     for (const account of accounts) {
       const session = account.sessionData as {
         cookie: any;
         imei: string;
         userAgent: string;
       } | null;
+      
       if (session?.imei) {
+        // Start reconnection without blocking the loop, but wait a bit before starting next one
         zaloPool.reconnect(account.id, session).catch((err) => {
           logger.warn(`Auto-reconnect failed for account ${account.id}:`, err);
         });
+        
+        // Wait 500ms between starting each reconnection attempt
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
   } catch (err) {
