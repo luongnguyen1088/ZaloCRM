@@ -72,6 +72,7 @@ export interface ListenerContext {
   io: Server | null;
   userInfoCache: Map<string, UserInfoCacheEntry>;
   onDisconnected: (accountId: string) => void;
+  onActivity: (accountId: string) => void;
 }
 
 /**
@@ -87,6 +88,7 @@ export function attachZaloListener(ctx: ListenerContext): void {
   });
 
   listener.on('message', async (message: any) => {
+    onActivity(accountId);
     try {
       // ThreadType in zca-js: 0 = User, 1 = Group
       const isGroup = message.type === 1;
@@ -139,6 +141,7 @@ export function attachZaloListener(ctx: ListenerContext): void {
   });
 
   listener.on('undo', async (data: any) => {
+    onActivity(accountId);
     const msgId = data.data?.msgId || data.msgId;
     if (msgId) {
       await handleMessageUndo(accountId, String(msgId));

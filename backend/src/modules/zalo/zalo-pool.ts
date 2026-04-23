@@ -12,6 +12,7 @@ import { prisma } from '../../shared/database/prisma-client.js';
 import { logger } from '../../shared/utils/logger.js';
 import { attachZaloListener, type UserInfoCacheEntry } from './zalo-listener-factory.js';
 import { emitWebhook } from '../api/webhook-service.js';
+import { zaloReconnectQueue } from './zalo-worker-queue.js';
 
 // zca-js has no reliable ESM type exports — load via CJS interop
 const require = createRequire(import.meta.url);
@@ -33,6 +34,7 @@ interface ZaloInstance {
   displayName?: string;
   zaloUid?: string;
   lastActivity: Date;
+  lastHeartbeat: Date;
 }
 
 class ZaloAccountPool {
@@ -42,9 +44,23 @@ class ZaloAccountPool {
   private userInfoCache = new Map<string, UserInfoCacheEntry>();
   // Circuit breaker: track disconnect timestamps per account
   private disconnectHistory = new Map<string, number[]>();
+  private monitorInterval: NodeJS.Timeout | null = null;
+
+  constructor() {
+    this.startSmartHeartbeat();
+  }
 
   setIO(io: Server): void {
     this.io = io;
+  }
+
+  // Activity tracking for Smart Heartbeat
+  markActivity(accountId: string): void {
+    const inst = this.instances.get(accountId);
+    if (inst) {
+      inst.lastActivity = new Date();
+      logger.debug(`[zalo:${accountId}] Activity detected, refreshing lastActivity`);
+    }
   }
 
   // Initiate QR-based login; emits QR events to frontend via Socket.IO
@@ -62,7 +78,13 @@ class ZaloAccountPool {
       }
     });
 
-    this.instances.set(accountId, { zalo, api: null, status: 'qr_pending', lastActivity: new Date() });
+    this.instances.set(accountId, { 
+      zalo, 
+      api: null, 
+      status: 'qr_pending', 
+      lastActivity: new Date(),
+      lastHeartbeat: new Date()
+    });
 
     try {
       const api = await zalo.loginQR({}, (event: any) => {
@@ -99,19 +121,6 @@ class ZaloAccountPool {
       const ownId = await api.getOwnId();
       instance.zaloUid = ownId;
 
-      // Fetch own profile info for avatar
-      try {
-        const userInfo = await api.getUserInfo(ownId);
-        const profiles = userInfo?.changed_profiles || {};
-        const profile = profiles[ownId] || profiles[`${ownId}_0`];
-        if (profile?.avatar) {
-          await prisma.zaloAccount.update({
-            where: { id: accountId },
-            data: { avatarUrl: profile.avatar, displayName: profile.zaloName || profile.zalo_name || profile.displayName || instance.displayName },
-          });
-        }
-      } catch {}
-
       this.attachListener(accountId, api);
       this.io?.emit('zalo:connected', { accountId, zaloUid: ownId });
       await this.updateAccountDB(accountId, 'connected', ownId);
@@ -142,7 +151,13 @@ class ZaloAccountPool {
       }
     });
 
-    this.instances.set(accountId, { zalo, api: null, status: 'connecting', lastActivity: new Date() });
+    this.instances.set(accountId, { 
+      zalo, 
+      api: null, 
+      status: 'connecting', 
+      lastActivity: new Date(),
+      lastHeartbeat: new Date()
+    });
 
     try {
       const api = await zalo.login({
@@ -159,19 +174,6 @@ class ZaloAccountPool {
       const ownId = await api.getOwnId();
       instance.zaloUid = ownId;
 
-      // Fetch own profile info for avatar
-      try {
-        const userInfo = await api.getUserInfo(ownId);
-        const profiles = userInfo?.changed_profiles || {};
-        const profile = profiles[ownId] || profiles[`${ownId}_0`];
-        if (profile?.avatar) {
-          await prisma.zaloAccount.update({
-            where: { id: accountId },
-            data: { avatarUrl: profile.avatar, displayName: profile.zaloName || profile.zalo_name || profile.displayName || instance.displayName },
-          });
-        }
-      } catch {}
-
       this.attachListener(accountId, api);
       await this.updateAccountDB(accountId, 'connected', ownId);
       this.io?.emit('zalo:connected', { accountId, zaloUid: ownId });
@@ -183,6 +185,7 @@ class ZaloAccountPool {
       if (instance) instance.status = 'disconnected';
       await this.updateAccountDB(accountId, 'qr_pending', null);
       this.io?.emit('zalo:reconnect-failed', { accountId, error: String(err) });
+      throw err; // Allow queue to handle retries
     }
   }
 
@@ -193,6 +196,7 @@ class ZaloAccountPool {
       api,
       io: this.io,
       userInfoCache: this.userInfoCache,
+      onActivity: (id) => this.markActivity(id),
       onDisconnected: (id) => {
         const inst = this.instances.get(id);
         if (inst) inst.status = 'disconnected';
@@ -211,31 +215,62 @@ class ZaloAccountPool {
 
         if (history.length >= 5) {
           // >5 disconnects in 5 min → stop reconnecting, require QR re-login
-          logger.error(`[zalo:${id}] Circuit breaker: ${history.length} disconnects in 5 min — stopping auto-reconnect. QR re-login required.`);
+          logger.error(`[zalo:${id}] Circuit breaker triggered. Stopped auto-reconnect.`);
           this.updateAccountDB(id, 'qr_pending', null);
-          this.io?.emit('zalo:reconnect-failed', { accountId: id, error: 'Session không ổn định, cần đăng nhập QR lại' });
+          this.io?.emit('zalo:reconnect-failed', { accountId: id, error: 'Session không ổn định, cần đăng nhập lại' });
           this.disconnectHistory.delete(key);
           return; // DON'T reconnect
         }
 
-        // Normal auto-reconnect after 5 seconds instead of 30
-        setTimeout(() => this.autoReconnect(id), 5_000);
+        // Use Worker Queue for reconnection
+        this.enqueueAutoReconnect(id);
       },
     });
+  }
 
-    // Start heartbeat to keep session alive
-    const heartbeatInterval = setInterval(async () => {
-      const currentInst = this.instances.get(accountId);
-      if (!currentInst || currentInst.status !== 'connected' || !currentInst.api) {
-        clearInterval(heartbeatInterval);
-        return;
+  // Smart Heartbeat Logic
+  private startSmartHeartbeat(): void {
+    if (this.monitorInterval) clearInterval(this.monitorInterval);
+    
+    this.monitorInterval = setInterval(async () => {
+      const now = Date.now();
+      for (const [id, inst] of this.instances) {
+        if (inst.status !== 'connected' || !inst.api) continue;
+
+        const sinceLastActivity = now - inst.lastActivity.getTime();
+        const sinceLastHeartbeat = now - inst.lastHeartbeat.getTime();
+
+        // If active in the last 2 minutes, skip heartbeat
+        if (sinceLastActivity < 120_000) continue;
+
+        // Ping if silent for > 2 minutes OR last heartbeat was > 5 minutes ago
+        if (sinceLastActivity > 120_000 || sinceLastHeartbeat > 300_000) {
+          try {
+            logger.debug(`[zalo:${id}] Smart Heartbeat: Pinging...`);
+            await inst.api.getOwnId();
+            inst.lastHeartbeat = new Date();
+          } catch (err) {
+            logger.warn(`[zalo:${id}] Smart Heartbeat: Ping failed. Account may be disconnected.`);
+            inst.status = 'disconnected';
+            this.enqueueAutoReconnect(id);
+          }
+        }
       }
-      try {
-        await currentInst.api.getOwnId(); // Light ping to Zalo
-      } catch (err) {
-        logger.warn(`[zalo:${accountId}] Heartbeat failed, connection might be unstable.`);
-      }
-    }, 60_000); // Every 1 minute
+    }, 30_000); // Check every 30 seconds
+  }
+
+  private async enqueueAutoReconnect(accountId: string): Promise<void> {
+    const account = await prisma.zaloAccount.findUnique({
+      where: { id: accountId },
+      select: { sessionData: true },
+    });
+    const session = account?.sessionData as ZaloCredentials | null;
+    
+    if (session?.imei) {
+      zaloReconnectQueue.enqueue(accountId, async () => {
+        await this.reconnect(accountId, session);
+      });
+    }
   }
 
   // Persist session credentials to DB
@@ -261,39 +296,11 @@ class ZaloAccountPool {
     }
   }
 
-  // Auto-reconnect using saved session from DB
-  private async autoReconnect(accountId: string): Promise<void> {
-    const inst = this.instances.get(accountId);
-    // Skip if already reconnected or manually disconnected
-    if (inst?.status === 'connected') return;
-
-    try {
-      const account = await prisma.zaloAccount.findUnique({
-        where: { id: accountId },
-        select: { sessionData: true },
-      });
-      const session = account?.sessionData as ZaloCredentials | null;
-      if (session?.imei) {
-        logger.info(`[zalo:${accountId}] Auto-reconnecting...`);
-        await this.reconnect(accountId, session);
-      } else {
-        logger.warn(`[zalo:${accountId}] No saved session, cannot auto-reconnect`);
-        this.io?.emit('zalo:reconnect-failed', { accountId, error: 'No saved session' });
-      }
-    } catch (err) {
-      logger.error(`[zalo:${accountId}] Auto-reconnect failed:`, err);
-      // Retry again in 2 minutes
-      setTimeout(() => this.autoReconnect(accountId), 120_000);
-    }
-  }
-
   // Stop listener and remove from pool
   disconnect(accountId: string): void {
     const instance = this.instances.get(accountId);
     if (instance?.api?.listener) {
-      try { instance.api.listener.stop(); } catch (err) {
-        logger.warn(`[zalo:${accountId}] Error stopping listener:`, err);
-      }
+      try { instance.api.listener.stop(); } catch (err) {}
     }
     this.instances.delete(accountId);
   }

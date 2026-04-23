@@ -1,13 +1,9 @@
-/**
- * zalo-health-check.ts — Cron-based health monitor for Zalo account connections.
- * Runs every 5 minutes to detect disconnected accounts and auto-reconnect them.
- * Also runs a daily session refresh at 04:00 UTC to keep cookies fresh.
- */
 import cron from 'node-cron';
 import { Prisma } from '@prisma/client';
 import { zaloPool } from './zalo-pool.js';
 import { prisma } from '../../shared/database/prisma-client.js';
 import { logger } from '../../shared/utils/logger.js';
+import { zaloReconnectQueue } from './zalo-worker-queue.js';
 
 export function startZaloHealthCheck(): void {
   // Every 5 minutes: check all accounts with saved sessions
@@ -23,9 +19,9 @@ export function startZaloHealthCheck(): void {
         if (status !== 'connected' && status !== 'connecting' && status !== 'qr_pending') {
           const session = acc.sessionData as any;
           if (session?.imei) {
-            logger.info(`[health-check] Reconnecting ${acc.displayName || acc.id}...`);
-            zaloPool.reconnect(acc.id, session).catch((err) => {
-              logger.warn(`[health-check] Reconnect failed for ${acc.id}:`, err);
+            logger.info(`[health-check] Enqueueing reconnect for ${acc.displayName || acc.id}...`);
+            zaloReconnectQueue.enqueue(acc.id, async () => {
+              await zaloPool.reconnect(acc.id, session);
             });
           }
         }
@@ -47,20 +43,18 @@ export function startZaloHealthCheck(): void {
       for (const acc of accounts) {
         const session = acc.sessionData as any;
         if (session?.imei) {
-          // Disconnect then reconnect to force cookie refresh
-          zaloPool.disconnect(acc.id);
-          await new Promise((r) => setTimeout(r, 5000));
-          zaloPool.reconnect(acc.id, session).catch((err) => {
-            logger.warn(`[health-check] Daily refresh failed for ${acc.id}:`, err);
+          zaloReconnectQueue.enqueue(acc.id, async () => {
+            logger.info(`[health-check] Refreshing session for ${acc.id}`);
+            zaloPool.disconnect(acc.id);
+            await new Promise((r) => setTimeout(r, 5000));
+            await zaloPool.reconnect(acc.id, session);
           });
         }
-        // Stagger reconnects by 10 seconds per account to avoid rate limits
-        await new Promise((r) => setTimeout(r, 10000));
       }
     } catch (err) {
       logger.error('[health-check] Error during daily refresh:', err);
     }
   });
 
-  logger.info('[health-check] Zalo health check started (every 5 min + daily refresh at 04:00 UTC)');
+  logger.info('[health-check] Zalo health check started (using Worker Queue)');
 }
