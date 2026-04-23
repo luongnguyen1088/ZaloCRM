@@ -160,6 +160,7 @@ export async function getProfile(userId: string) {
       email: true,
       fullName: true,
       avatarUrl: true,
+      isSystemAdmin: true,
       createdAt: true,
       memberships: {
         where: { isActive: true },
