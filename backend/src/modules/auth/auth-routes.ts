@@ -123,7 +123,8 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
         id: user.id,
         email: user.email,
         role: membership.role,
-        orgId: membership.orgId
+        orgId: membership.orgId,
+        isSystemAdmin: user.isSystemAdmin
       };
 
       const token = app.jwt.sign(payload, { expiresIn: '7d' });

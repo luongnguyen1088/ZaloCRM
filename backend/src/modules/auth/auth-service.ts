@@ -236,7 +236,8 @@ export async function loginWithGoogle(idToken: string): Promise<JwtPayload> {
     id: user.id, 
     email: user.email, 
     role: activeMembership.role, 
-    orgId: activeMembership.orgId 
+    orgId: activeMembership.orgId,
+    isSystemAdmin: user.isSystemAdmin
   };
 }
 
