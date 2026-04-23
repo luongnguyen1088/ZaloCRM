@@ -265,6 +265,67 @@
               </div>
             </div>
 
+            <div class="ai-insight-card mb-5">
+              <div class="ai-insight-card__head">
+                <div>
+                  <div class="eyebrow mb-2">AI Token</div>
+                  <div class="ai-insight-card__title">{{ formatToken(getAiRemainingTokens(org)) }} còn lại</div>
+                  <div class="ai-insight-card__subtitle">
+                    Đã dùng {{ formatToken(getAiUsedTokens(org)) }} / {{ formatToken(getAiMaxTokens(org)) }} trong chu kỳ hiện tại
+                  </div>
+                </div>
+
+                <div class="ai-insight-card__chips">
+                  <v-chip
+                    :color="getAiUsageStatus(org).color"
+                    variant="tonal"
+                    size="small"
+                    class="font-weight-bold"
+                  >
+                    <v-icon start size="14">{{ getAiUsageStatus(org).icon }}</v-icon>
+                    {{ getAiUsageStatus(org).label }}
+                  </v-chip>
+                  <v-chip
+                    :color="isAiEnabled(org) ? 'success' : 'secondary'"
+                    variant="flat"
+                    size="small"
+                    class="font-weight-bold"
+                  >
+                    {{ isAiEnabled(org) ? 'AI bật' : 'AI tắt' }}
+                  </v-chip>
+                </div>
+              </div>
+
+              <v-progress-linear
+                :model-value="getAiUsagePercent(org)"
+                :color="getAiUsageStatus(org).color"
+                bg-color="rgba(148, 163, 184, 0.18)"
+                rounded
+                height="10"
+                class="my-4"
+              />
+
+              <div class="ai-insight-card__grid">
+                <div class="ai-mini-stat">
+                  <span class="ai-mini-stat__label">Sử dụng</span>
+                  <strong class="ai-mini-stat__value">{{ getAiUsagePercent(org) }}%</strong>
+                </div>
+                <div class="ai-mini-stat">
+                  <span class="ai-mini-stat__label">Kế hoạch</span>
+                  <strong class="ai-mini-stat__value">{{ getAiPlanName(org) }}</strong>
+                </div>
+                <div class="ai-mini-stat">
+                  <span class="ai-mini-stat__label">Chu kỳ</span>
+                  <strong class="ai-mini-stat__value">{{ formatDate(getAiPeriodEnd(org), 'short') }}</strong>
+                </div>
+              </div>
+
+              <div class="ai-insight-card__note">
+                <v-icon size="16" color="primary">mdi-robot-outline</v-icon>
+                <span>{{ getAiRecommendation(org) }}</span>
+              </div>
+            </div>
+
             <div class="org-card__footer">
               <div class="org-card__footnote">
                 <v-icon size="16" color="primary">mdi-information-outline</v-icon>
@@ -356,6 +417,86 @@
               height="8"
               class="mt-2"
             />
+          </div>
+        </v-card>
+
+        <v-card class="surface-card pa-5 pa-md-6 mb-6">
+          <div class="section-head mb-4">
+            <div>
+              <div class="eyebrow mb-2">AI Control</div>
+              <h2 class="section-title">AI Token toàn hệ thống</h2>
+            </div>
+
+            <v-chip
+              :color="aiNearLimitCount > 0 ? 'warning' : 'success'"
+              variant="tonal"
+              size="small"
+              class="font-weight-bold"
+            >
+              {{ aiNearLimitCount > 0 ? `${aiNearLimitCount} org gần cạn quota` : 'Quota ổn định' }}
+            </v-chip>
+          </div>
+
+          <div class="ai-system-card mb-4">
+            <div class="ai-system-card__value">{{ formatToken(totalAiUsedTokens) }}</div>
+            <div class="ai-system-card__subtitle">
+              Đã dùng trên tổng {{ formatToken(totalAiQuota) }} quota tháng • còn {{ formatToken(totalAiRemainingTokens) }}
+            </div>
+
+            <v-progress-linear
+              :model-value="overallAiUsagePercent"
+              :color="overallAiUsagePercent >= 80 ? 'warning' : 'primary'"
+              bg-color="rgba(148, 163, 184, 0.18)"
+              rounded
+              height="10"
+              class="mt-4"
+            />
+          </div>
+
+          <div class="snapshot-grid">
+            <div class="snapshot-tile">
+              <span class="snapshot-tile__label">AI đang bật</span>
+              <strong class="snapshot-tile__value">{{ aiEnabledOrgsCount }}</strong>
+              <span class="snapshot-tile__hint">trên {{ orgs.length }} tổ chức</span>
+            </div>
+
+            <div class="snapshot-tile">
+              <span class="snapshot-tile__label">Gần hết quota</span>
+              <strong class="snapshot-tile__value">{{ aiNearLimitCount }}</strong>
+              <span class="snapshot-tile__hint">từ 80% usage trở lên</span>
+            </div>
+          </div>
+
+          <div class="dialog-section-head mt-5 mb-3">
+            <div>
+              <div class="eyebrow mb-2">Ưu tiên xử lý</div>
+              <h4 class="dialog-section-title">Tổ chức dùng AI nhiều nhất</h4>
+            </div>
+          </div>
+
+          <div v-if="topAiOrganizations.length" class="priority-list">
+            <button
+              v-for="org in topAiOrganizations"
+              :key="org.id"
+              type="button"
+              class="priority-item"
+              @click="openUpgradeDialog(org)"
+            >
+              <div>
+                <div class="priority-item__name">{{ org.name }}</div>
+                <div class="priority-item__meta">
+                  {{ formatToken(getAiUsedTokens(org)) }} / {{ formatToken(getAiMaxTokens(org)) }}
+                </div>
+              </div>
+              <v-chip :color="getAiUsageStatus(org).color" variant="tonal" size="small" class="font-weight-bold">
+                {{ getAiUsagePercent(org) }}%
+              </v-chip>
+            </button>
+          </div>
+
+          <div v-else class="notice-box notice-box--success mt-4">
+            <v-icon color="success" size="18">mdi-check-circle-outline</v-icon>
+            <span>Chưa có dữ liệu tiêu thụ AI đáng chú ý trong chu kỳ hiện tại.</span>
           </div>
         </v-card>
 
@@ -544,8 +685,8 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { api } from '@/api/index';
 
-type SortOption = 'Ưu tiên sắp hết hạn' | 'Mới tạo gần đây' | 'Nhiều thành viên nhất' | 'Tên A-Z';
-type StatusFilter = 'Tất cả trạng thái' | 'Sắp hết hạn' | 'Đã hết hạn' | 'Đang trả phí' | 'Free';
+type SortOption = 'Ưu tiên sắp hết hạn' | 'Mới tạo gần đây' | 'Nhiều thành viên nhất' | 'Dùng AI nhiều nhất' | 'Tên A-Z';
+type StatusFilter = 'Tất cả trạng thái' | 'Sắp hết hạn' | 'Đã hết hạn' | 'Đang trả phí' | 'Free' | 'AI gần hết quota';
 
 interface SubscriptionPlan {
   id: string;
@@ -571,12 +712,24 @@ interface Subscription {
   plan: SubscriptionPlan;
 }
 
+interface AiOverview {
+  enabled: boolean;
+  planName: string;
+  periodStart: string;
+  periodEnd: string;
+  maxTokens: number;
+  usedTokens: number;
+  remainingTokens: number;
+  usagePercent: number;
+}
+
 interface Organization {
   id: string;
   name: string;
   createdAt: string;
   members?: OrganizationMember[];
   subscription?: Subscription | null;
+  ai?: AiOverview | null;
 }
 
 const planFilterItems = ['Tất cả gói', 'Free', 'Pro', 'Enterprise'];
@@ -586,11 +739,13 @@ const statusFilterItems: StatusFilter[] = [
   'Đã hết hạn',
   'Đang trả phí',
   'Free',
+  'AI gần hết quota',
 ];
 const sortItems: SortOption[] = [
   'Ưu tiên sắp hết hạn',
   'Mới tạo gần đây',
   'Nhiều thành viên nhất',
+  'Dùng AI nhiều nhất',
   'Tên A-Z',
 ];
 const durationOptions = [
@@ -648,6 +803,31 @@ const monthlyRecurringRevenue = computed(() => {
 
 const expiringSoonCount = computed(() => {
   return orgs.value.filter((org) => isExpiringSoon(org.subscription?.currentPeriodEnd)).length;
+});
+
+const aiEnabledOrgsCount = computed(() => {
+  return orgs.value.filter((org) => isAiEnabled(org)).length;
+});
+
+const aiNearLimitCount = computed(() => {
+  return orgs.value.filter((org) => isAiNearLimit(org)).length;
+});
+
+const totalAiQuota = computed(() => {
+  return orgs.value.reduce((sum, org) => sum + getAiMaxTokens(org), 0);
+});
+
+const totalAiUsedTokens = computed(() => {
+  return orgs.value.reduce((sum, org) => sum + getAiUsedTokens(org), 0);
+});
+
+const totalAiRemainingTokens = computed(() => {
+  return orgs.value.reduce((sum, org) => sum + getAiRemainingTokens(org), 0);
+});
+
+const overallAiUsagePercent = computed(() => {
+  if (!totalAiQuota.value) return 0;
+  return Math.min(100, Math.round((totalAiUsedTokens.value / totalAiQuota.value) * 100));
 });
 
 const averageMembersPerOrg = computed(() => {
@@ -741,6 +921,13 @@ const priorityOrganizations = computed(() => {
   ).slice(0, 5);
 });
 
+const topAiOrganizations = computed(() => {
+  return sortOrganizations(
+    orgs.value.filter((org) => getAiMaxTokens(org) > 0),
+    'Dùng AI nhiều nhất',
+  ).slice(0, 5);
+});
+
 const planBreakdown = computed(() => {
   const allPlans = plans.value.length
     ? plans.value.map((plan) => plan.name)
@@ -769,6 +956,10 @@ const previewExpiryDate = computed(() => {
 });
 
 const systemRecommendation = computed(() => {
+  if (aiNearLimitCount.value > 0) {
+    return `Có ${aiNearLimitCount.value} tổ chức đang dùng trên 80% AI quota, nên rà soát để tránh chạm ngưỡng trước cuối chu kỳ.`;
+  }
+
   if (expiringSoonCount.value > 0) {
     return `Ưu tiên xử lý ${expiringSoonCount.value} tổ chức sắp hết hạn trước khi mở rộng upsell mới.`;
   }
@@ -869,6 +1060,71 @@ const getPlanDot = (name: string) => {
   return 'linear-gradient(135deg, #64748b, #94a3b8)';
 };
 
+const getAiOverview = (org: Organization) => {
+  return org.ai || {
+    enabled: true,
+    planName: getPlanName(org),
+    periodStart: org.subscription?.currentPeriodStart || new Date().toISOString(),
+    periodEnd: org.subscription?.currentPeriodEnd || new Date().toISOString(),
+    maxTokens: org.subscription?.plan?.maxAiTokens || 0,
+    usedTokens: 0,
+    remainingTokens: org.subscription?.plan?.maxAiTokens || 0,
+    usagePercent: 0,
+  };
+};
+
+const getAiPlanName = (org: Organization) => {
+  return getAiOverview(org).planName || getPlanName(org);
+};
+
+const getAiUsedTokens = (org: Organization) => {
+  return getAiOverview(org).usedTokens || 0;
+};
+
+const getAiMaxTokens = (org: Organization) => {
+  return getAiOverview(org).maxTokens || 0;
+};
+
+const getAiRemainingTokens = (org: Organization) => {
+  return getAiOverview(org).remainingTokens || 0;
+};
+
+const getAiUsagePercent = (org: Organization) => {
+  return getAiOverview(org).usagePercent || 0;
+};
+
+const getAiPeriodEnd = (org: Organization) => {
+  return getAiOverview(org).periodEnd || new Date().toISOString();
+};
+
+const isAiEnabled = (org: Organization) => {
+  return Boolean(getAiOverview(org).enabled);
+};
+
+const isAiNearLimit = (org: Organization) => {
+  return isAiEnabled(org) && getAiUsagePercent(org) >= 80;
+};
+
+const getAiUsageStatus = (org: Organization) => {
+  if (!isAiEnabled(org)) {
+    return { label: 'AI tắt', color: 'secondary', icon: 'mdi-power-standby' };
+  }
+
+  if (getAiMaxTokens(org) <= 0) {
+    return { label: 'Chưa có quota', color: 'secondary', icon: 'mdi-database-off-outline' };
+  }
+
+  if (getAiUsagePercent(org) >= 100) {
+    return { label: 'Đã chạm quota', color: 'error', icon: 'mdi-alert-octagon-outline' };
+  }
+
+  if (getAiUsagePercent(org) >= 80) {
+    return { label: 'Gần hết quota', color: 'warning', icon: 'mdi-fire-alert' };
+  }
+
+  return { label: 'Còn dư', color: 'success', icon: 'mdi-check-circle-outline' };
+};
+
 const getOwner = (org: Organization) => {
   const user = org.members?.[0]?.user;
   return {
@@ -925,8 +1181,18 @@ const getRecommendation = (org: Organization) => {
   if (!org.subscription) return 'Tổ chức chưa có gói trả phí, phù hợp để kích hoạt nhanh từ admin.';
   if (isExpired(org.subscription.currentPeriodEnd)) return 'Nên cập nhật subscription ngay để tránh gián đoạn sử dụng.';
   if (isExpiringSoon(org.subscription.currentPeriodEnd)) return 'Tổ chức này đang gần mốc hết hạn, nên ưu tiên gia hạn trước.';
+  if (isAiNearLimit(org)) return 'Quota AI đang cao, nên cân nhắc upsell hoặc nạp thêm token trước khi nhu cầu tăng đột biến.';
   if ((org.members?.length || 0) >= 5 && getPlanName(org) === 'Free') return 'Đội ngũ đã có quy mô sử dụng, đây là ứng viên upsell tốt.';
   return 'Subscription đang ổn định và không có tín hiệu rủi ro ngắn hạn.';
+};
+
+const getAiRecommendation = (org: Organization) => {
+  if (!isAiEnabled(org)) return 'AI đang bị tắt ở tổ chức này, quota hiện chưa được khai thác.';
+  if (getAiMaxTokens(org) <= 0) return 'Tổ chức chưa có quota AI hiệu lực trong chu kỳ hiện tại.';
+  if (getAiUsagePercent(org) >= 100) return 'Đã dùng hết quota AI, nên xử lý top-up hoặc nâng gói ngay.';
+  if (getAiUsagePercent(org) >= 80) return 'Đang ở vùng rủi ro cao, nên theo dõi sát trước ngày reset quota.';
+  if (getAiUsedTokens(org) === 0) return 'Quota AI chưa được dùng, có thể cần onboarding hoặc kích hoạt use case rõ hơn.';
+  return 'Mức tiêu thụ AI đang trong ngưỡng an toàn.';
 };
 
 const getOrgStatus = (org: Organization) => {
@@ -1019,6 +1285,14 @@ const sortOrganizations = (items: Organization[], option: SortOption) => {
     return sorted.sort((a, b) => (b.members?.length || 0) - (a.members?.length || 0));
   }
 
+  if (option === 'Dùng AI nhiều nhất') {
+    return sorted.sort((a, b) => {
+      const usageDiff = getAiUsagePercent(b) - getAiUsagePercent(a);
+      if (usageDiff !== 0) return usageDiff;
+      return getAiUsedTokens(b) - getAiUsedTokens(a);
+    });
+  }
+
   return sorted.sort((a, b) => getPriorityScore(a) - getPriorityScore(b));
 };
 
@@ -1033,6 +1307,7 @@ const matchesStatus = (org: Organization, status: StatusFilter) => {
   if (status === 'Đã hết hạn') return isExpired(org.subscription?.currentPeriodEnd);
   if (status === 'Đang trả phí') return getPlanName(org) !== 'Free';
   if (status === 'Free') return getPlanName(org) === 'Free';
+  if (status === 'AI gần hết quota') return isAiNearLimit(org);
   return true;
 };
 
@@ -1306,6 +1581,86 @@ onMounted(fetchData);
 .meta-tile__value {
   margin-top: 10px;
   font-size: 1.16rem;
+}
+
+.ai-insight-card,
+.ai-system-card {
+  padding: 18px 20px;
+  background: linear-gradient(180deg, var(--color-primary-soft), var(--color-overlay));
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
+}
+
+.ai-insight-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ai-insight-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ai-insight-card__title,
+.ai-system-card__value {
+  color: var(--color-text);
+  font-size: 1.35rem;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.ai-insight-card__subtitle,
+.ai-system-card__subtitle {
+  margin-top: 8px;
+  color: var(--color-text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.ai-insight-card__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ai-mini-stat {
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.42);
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+}
+
+.v-theme--dark .ai-mini-stat {
+  background: rgba(15, 23, 42, 0.28);
+}
+
+.ai-mini-stat__label {
+  display: block;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.ai-mini-stat__value {
+  display: block;
+  margin-top: 8px;
+  color: var(--color-text);
+  font-size: 1rem;
+  font-weight: 850;
+}
+
+.ai-insight-card__note {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 14px;
+  color: var(--color-text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.6;
 }
 
 .org-card__footer {
@@ -1638,6 +1993,10 @@ onMounted(fetchData);
   .org-meta-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .ai-insight-card__grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 1200px) {
@@ -1675,12 +2034,19 @@ onMounted(fetchData);
 
   .filters-grid,
   .org-meta-grid,
+  .ai-insight-card__grid,
   .snapshot-grid,
   .plan-grid,
   .duration-grid,
   .placeholder-grid,
   .upgrade-dialog__hero-meta {
     grid-template-columns: 1fr;
+  }
+
+  .ai-insight-card__head,
+  .ai-insight-card__chips {
+    align-items: flex-start;
+    justify-content: flex-start;
   }
 
   .org-card__actions,
