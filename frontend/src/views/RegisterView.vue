@@ -133,7 +133,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { z } from 'zod';
@@ -164,7 +164,7 @@ function validateField(field: string, value: any) {
     errors.value[field] = '';
   } catch (err: any) {
     if (err instanceof z.ZodError) {
-      errors.value[field] = err.errors[0].message;
+      errors.value[field] = err.issues[0].message;
     }
   }
 }
