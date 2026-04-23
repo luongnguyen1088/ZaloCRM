@@ -1,637 +1,1709 @@
 <template>
-  <v-container class="py-10 admin-shell">
-    <!-- Header Section -->
-    <div class="d-flex flex-column flex-md-row align-start align-md-center justify-space-between mb-10">
-      <div>
-        <h1 class="text-h3 font-weight-black text-gradient mb-2">Hệ thống Quản trị</h1>
-        <p class="text-subtitle-1 text-placeholder max-width-600">
-          Trung tâm điều hành ZaloCRM. Quản lý toàn bộ tổ chức, phê duyệt gói cước và theo dõi sự tăng trưởng của hệ thống.
-        </p>
-      </div>
-      <div class="mt-4 mt-md-0 d-flex gap-3">
-        <v-btn
-          variant="flat"
-          color="surface-variant"
-          prepend-icon="mdi-refresh"
-          @click="fetchData"
-          :loading="loading"
-          class="rounded-xl px-6"
-        >
-          Làm mới
-        </v-btn>
-      </div>
-    </div>
+  <v-container class="admin-page py-8 py-md-10">
+    <section class="hero-shell mb-8">
+      <div class="hero-shell__copy">
+        <div class="hero-badge mb-4">
+          <v-icon size="18" color="primary">mdi-shield-crown-outline</v-icon>
+          <span>Admin Console</span>
+        </div>
 
-    <!-- Error State -->
+        <h1 class="hero-title mb-4">Điều phối thuê bao và tăng trưởng toàn hệ thống</h1>
+        <p class="hero-description mb-6">
+          Một màn hình để rà soát tổ chức mới, phát hiện thuê bao sắp hết hạn và kích hoạt gói cước
+          nhanh hơn cho toàn bộ hệ thống ZaloCRM.
+        </p>
+
+        <div class="hero-actions">
+          <v-btn
+            color="primary"
+            variant="flat"
+            prepend-icon="mdi-refresh"
+            :loading="loading"
+            rounded="xl"
+            class="px-6"
+            @click="fetchData"
+          >
+            Làm mới dữ liệu
+          </v-btn>
+
+          <v-btn
+            variant="tonal"
+            color="primary"
+            prepend-icon="mdi-filter-variant"
+            rounded="xl"
+            class="px-6"
+            @click="resetFilters"
+          >
+            Xóa bộ lọc
+          </v-btn>
+        </div>
+      </div>
+
+      <v-card class="hero-panel pa-6 pa-md-7">
+        <div class="hero-panel__header mb-6">
+          <div>
+            <div class="eyebrow mb-2">Trạng thái vận hành</div>
+            <div class="hero-panel__title">Những gì cần ưu tiên hôm nay</div>
+          </div>
+
+          <v-chip
+            :color="expiringSoonCount > 0 ? 'warning' : 'success'"
+            variant="tonal"
+            size="small"
+            class="font-weight-bold"
+          >
+            {{ expiringSoonCount > 0 ? `${expiringSoonCount} gói cần theo dõi` : 'Ổn định' }}
+          </v-chip>
+        </div>
+
+        <div class="hero-metrics">
+          <div class="hero-metric">
+            <span class="hero-metric__label">MRR hiện tại</span>
+            <strong class="hero-metric__value">{{ formatCurrency(monthlyRecurringRevenue) }}</strong>
+            <span class="hero-metric__hint">{{ premiumOrgsCount }} tổ chức đang trả phí</span>
+          </div>
+
+          <div class="hero-metric">
+            <span class="hero-metric__label">Tỷ lệ trả phí</span>
+            <strong class="hero-metric__value">{{ paidAdoptionRate }}</strong>
+            <span class="hero-metric__hint">{{ freeOrgsCount }} tổ chức đang ở gói Free</span>
+          </div>
+
+          <div class="hero-metric">
+            <span class="hero-metric__label">Tăng trưởng hôm nay</span>
+            <strong class="hero-metric__value">+{{ newOrgsToday }}</strong>
+            <span class="hero-metric__hint">
+              {{ latestOrganization ? `Mới nhất: ${latestOrganization.name}` : 'Chưa có tổ chức mới' }}
+            </span>
+          </div>
+        </div>
+      </v-card>
+    </section>
+
     <v-alert
       v-if="error"
       type="error"
       variant="tonal"
-      class="mb-8 rounded-xl animate-fade-in"
       closable
+      class="mb-8 rounded-xl"
       @click:close="error = null"
     >
       {{ error }}
     </v-alert>
 
-    <!-- Stats Overview -->
-    <v-row v-if="!error" class="mb-8">
-      <v-col cols="12" sm="6" md="3">
-        <v-card class="stat-card glass-premium overflow-hidden">
-          <div class="pa-6">
-            <div class="d-flex justify-space-between align-center mb-4">
-              <v-avatar color="primary-lighten-4" size="48" rounded="lg">
-                <v-icon color="primary" size="24">mdi-domain</v-icon>
-              </v-avatar>
-              <v-chip size="x-small" color="success" class="font-weight-bold">+{{ newOrgsToday }} hôm nay</v-chip>
-            </div>
-            <div class="text-h3 font-weight-black text-white mb-1">{{ orgs.length }}</div>
-            <div class="text-caption font-weight-medium text-placeholder uppercase tracking-wider">Tổng tổ chức</div>
-          </div>
-          <div class="stat-gradient bg-primary"></div>
-        </v-card>
-      </v-col>
+    <v-row class="mb-6">
+      <v-col v-for="item in summaryCards" :key="item.label" cols="12" sm="6" xl="3">
+        <v-card class="summary-card pa-5 h-100">
+          <div class="summary-card__top mb-4">
+            <v-avatar :color="item.tint" size="46" rounded="lg">
+              <v-icon :color="item.color" size="22">{{ item.icon }}</v-icon>
+            </v-avatar>
 
-      <v-col cols="12" sm="6" md="3">
-        <v-card class="stat-card glass-premium overflow-hidden">
-          <div class="pa-6">
-            <div class="d-flex justify-space-between align-center mb-4">
-              <v-avatar color="info-lighten-4" size="48" rounded="lg">
-                <v-icon color="info" size="24">mdi-star-circle</v-icon>
-              </v-avatar>
-            </div>
-            <div class="text-h3 font-weight-black text-white mb-1">{{ premiumOrgsCount }}</div>
-            <div class="text-caption font-weight-medium text-placeholder uppercase tracking-wider">Gói trả phí</div>
+            <v-chip :color="item.color" variant="tonal" size="x-small" class="font-weight-bold">
+              {{ item.badge }}
+            </v-chip>
           </div>
-          <div class="stat-gradient bg-info"></div>
-        </v-card>
-      </v-col>
 
-      <v-col cols="12" sm="6" md="3">
-        <v-card class="stat-card glass-premium overflow-hidden">
-          <div class="pa-6">
-            <div class="d-flex justify-space-between align-center mb-4">
-              <v-avatar color="warning-lighten-4" size="48" rounded="lg">
-                <v-icon color="warning" size="24">mdi-account-group</v-icon>
-              </v-avatar>
-            </div>
-            <div class="text-h3 font-weight-black text-white mb-1">{{ totalUsersCount }}</div>
-            <div class="text-caption font-weight-medium text-placeholder uppercase tracking-wider">Tổng người dùng</div>
-          </div>
-          <div class="stat-gradient bg-warning"></div>
-        </v-card>
-      </v-col>
-
-      <v-col cols="12" sm="6" md="3">
-        <v-card class="stat-card glass-premium overflow-hidden">
-          <div class="pa-6">
-            <div class="d-flex justify-space-between align-center mb-4">
-              <v-avatar color="success-lighten-4" size="48" rounded="lg">
-                <v-icon color="success" size="24">mdi-currency-usd</v-icon>
-              </v-avatar>
-            </div>
-            <div class="text-h3 font-weight-black text-white mb-1">Active</div>
-            <div class="text-caption font-weight-medium text-placeholder uppercase tracking-wider">Trạng thái hệ thống</div>
-          </div>
-          <div class="stat-gradient bg-success"></div>
+          <div class="summary-card__value mb-1">{{ item.value }}</div>
+          <div class="summary-card__label mb-2">{{ item.label }}</div>
+          <div class="summary-card__hint">{{ item.hint }}</div>
         </v-card>
       </v-col>
     </v-row>
 
-    <!-- Main Content Area -->
-    <v-card class="glass-main-card overflow-hidden">
-      <!-- Toolbar -->
-      <div class="pa-6 border-bottom d-flex flex-column flex-sm-row align-center gap-4">
-        <v-text-field
-          v-model="searchQuery"
-          prepend-inner-icon="mdi-magnify"
-          label="Tìm kiếm tổ chức hoặc email..."
-          variant="solo"
-          flat
-          hide-details
-          class="search-bar flex-grow-1"
-          rounded="xl"
-          bg-color="rgba(255, 255, 255, 0.05)"
-        ></v-text-field>
-        
-        <v-select
-          v-model="filterPlan"
-          :items="['Tất cả gói', 'Free', 'Pro', 'Enterprise']"
-          variant="solo"
-          flat
-          hide-details
-          class="filter-select"
-          rounded="xl"
-          bg-color="rgba(255, 255, 255, 0.05)"
-          prefix="Gói:"
-        ></v-select>
-      </div>
-
-      <!-- Data Table -->
-      <v-data-table
-        :headers="headers"
-        :items="filteredOrgs"
-        :loading="loading"
-        class="bg-transparent premium-table"
-        hover
-      >
-        <!-- Custom Name Column -->
-        <template #[`item.name`]="{ item }">
-          <div class="d-flex align-center py-3">
-            <v-avatar color="primary-darken-1" class="mr-3 text-white font-weight-black" size="40">
-              {{ item.name.charAt(0).toUpperCase() }}
-            </v-avatar>
-            <div class="d-flex flex-column">
-              <span class="font-weight-bold text-white text-body-1">{{ item.name }}</span>
-              <span class="text-caption text-placeholder opacity-60">{{ item.id }}</span>
+    <v-row align="stretch">
+      <v-col cols="12" xl="8">
+        <v-card class="surface-card pa-4 pa-md-6 mb-6">
+          <div class="section-head mb-5">
+            <div>
+              <div class="eyebrow mb-2">Danh sách tổ chức</div>
+              <h2 class="section-title">
+                {{ filteredOrgs.length }} / {{ orgs.length }} tổ chức đang hiển thị
+              </h2>
             </div>
+
+            <v-chip color="primary" variant="tonal" size="small" class="font-weight-bold">
+              {{ searchQuery ? 'Đang lọc theo từ khóa' : 'Toàn bộ hệ thống' }}
+            </v-chip>
           </div>
-        </template>
 
-        <!-- Custom Subscription Column -->
-        <template #[`item.subscription`]="{ item }">
-          <v-chip
-            v-if="item.subscription"
-            :color="getPlanColor(item.subscription.plan.name)"
-            variant="flat"
-            size="small"
-            class="font-weight-black px-3"
-          >
-            {{ item.subscription.plan.name.toUpperCase() }}
-          </v-chip>
-          <v-chip v-else color="grey-darken-3" variant="flat" size="small" class="px-3">FREE</v-chip>
-        </template>
+          <div class="filters-grid">
+            <v-text-field
+              v-model="searchQuery"
+              variant="solo-filled"
+              flat
+              hide-details
+              clearable
+              rounded="xl"
+              prepend-inner-icon="mdi-magnify"
+              label="Tìm theo tên tổ chức, email, người phụ trách..."
+              class="filters-grid__search"
+            />
 
-        <!-- Custom Expiry Column -->
-        <template #[`item.expiry`]="{ item }">
-          <div v-if="item.subscription" class="d-flex flex-column">
-            <span :class="isExpiringSoon(item.subscription.currentPeriodEnd) ? 'text-warning' : 'text-body-2'">
-              {{ formatDate(item.subscription.currentPeriodEnd) }}
-            </span>
-            <span class="text-caption opacity-50">Ngày hết hạn</span>
+            <v-select
+              v-model="filterPlan"
+              :items="planFilterItems"
+              variant="solo-filled"
+              flat
+              hide-details
+              rounded="xl"
+              label="Gói cước"
+            />
+
+            <v-select
+              v-model="filterStatus"
+              :items="statusFilterItems"
+              variant="solo-filled"
+              flat
+              hide-details
+              rounded="xl"
+              label="Trạng thái"
+            />
+
+            <v-select
+              v-model="sortBy"
+              :items="sortItems"
+              variant="solo-filled"
+              flat
+              hide-details
+              rounded="xl"
+              label="Sắp xếp"
+            />
           </div>
-          <span v-else class="text-placeholder opacity-40">—</span>
-        </template>
+        </v-card>
 
-        <!-- Custom Owner Column -->
-        <template #[`item.members`]="{ item }">
-          <div class="d-flex flex-column">
-            <span class="text-body-2 font-weight-medium">{{ item.members?.[0]?.user?.fullName || 'Chưa có tên' }}</span>
-            <span class="text-caption text-placeholder">{{ item.members?.[0]?.user?.email || 'N/A' }}</span>
-          </div>
-        </template>
-
-        <!-- Custom Actions Column -->
-        <template #[`item.actions`]="{ item }">
-          <v-btn
-            size="small"
-            variant="tonal"
-            color="primary"
-            prepend-icon="mdi-rocket-launch"
-            @click="openUpgradeDialog(item)"
-            class="rounded-lg font-weight-bold"
-          >
-            Nâng cấp
-          </v-btn>
-        </template>
-
-        <!-- Loading & Empty States -->
-        <template #loading>
-          <div class="pa-10 text-center">
-            <v-progress-circular indeterminate color="primary" size="64" class="mb-4"></v-progress-circular>
-            <div class="text-subtitle-1 text-placeholder">Đang tải dữ liệu tổ chức...</div>
-          </div>
-        </template>
-
-        <template #no-data>
-          <div class="pa-10 text-center">
-            <v-icon size="64" color="grey-darken-3" class="mb-4">mdi-database-off</v-icon>
-            <div class="text-h6 text-placeholder">Không tìm thấy tổ chức nào</div>
-            <v-btn variant="text" color="primary" @click="fetchData" class="mt-2">Thử lại</v-btn>
-          </div>
-        </template>
-      </v-data-table>
-    </v-card>
-
-    <!-- Upgrade Dialog -->
-    <v-dialog v-model="upgradeDialog" max-width="600" persistent>
-      <v-card class="glass-premium pa-0 overflow-hidden">
-        <div class="pa-6 border-bottom d-flex align-center justify-space-between bg-primary-darken-1">
-          <div class="d-flex align-center">
-            <v-icon color="white" class="mr-3">mdi-rocket-launch</v-icon>
-            <h3 class="text-h5 font-weight-bold text-white">Kích hoạt Gói Cước</h3>
-          </div>
-          <v-btn icon="mdi-close" variant="text" color="white" @click="upgradeDialog = false" size="small"></v-btn>
+        <div v-if="loading && !orgs.length" class="org-list">
+          <v-card v-for="index in 3" :key="index" class="org-card org-card--placeholder pa-5 mb-4">
+            <div class="placeholder-line placeholder-line--lg mb-4"></div>
+            <div class="placeholder-grid mb-4">
+              <div class="placeholder-line"></div>
+              <div class="placeholder-line"></div>
+              <div class="placeholder-line"></div>
+            </div>
+            <div class="placeholder-line placeholder-line--sm"></div>
+          </v-card>
         </div>
 
-        <div class="pa-8">
-          <div class="mb-8 d-flex align-center pa-4 bg-white-opacity-5 rounded-xl">
-            <v-avatar color="primary" size="48" class="mr-4">
-              <span class="text-h6">{{ selectedOrg?.name.charAt(0).toUpperCase() }}</span>
-            </v-avatar>
-            <div>
-              <div class="text-h6 font-weight-bold text-white">{{ selectedOrg?.name }}</div>
-              <div class="text-caption text-placeholder">
-                Hiện tại: 
-                <v-chip size="x-small" :color="getPlanColor(selectedOrg?.subscription?.plan?.name || 'Free')" class="ml-1 font-weight-bold">
-                  {{ (selectedOrg?.subscription?.plan?.name || 'FREE').toUpperCase() }}
+        <div v-else-if="filteredOrgs.length" class="org-list">
+          <v-card
+            v-for="org in filteredOrgs"
+            :key="org.id"
+            class="org-card pa-5 pa-md-6 mb-4"
+          >
+            <div class="org-card__header">
+              <div class="org-card__identity">
+                <v-avatar size="52" rounded="xl" :color="getPlanTint(getPlanName(org))">
+                  <span class="org-card__initial">{{ getOrgInitial(org.name) }}</span>
+                </v-avatar>
+
+                <div class="org-card__identity-copy">
+                  <div class="org-card__title-row">
+                    <h3 class="org-card__name">{{ org.name }}</h3>
+                    <v-chip
+                      :color="getPlanColor(getPlanName(org))"
+                      variant="tonal"
+                      size="small"
+                      class="font-weight-bold"
+                    >
+                      {{ getPlanName(org) }}
+                    </v-chip>
+                    <v-chip
+                      :color="getOrgStatus(org).color"
+                      variant="tonal"
+                      size="small"
+                      class="font-weight-bold"
+                    >
+                      <v-icon start size="14">{{ getOrgStatus(org).icon }}</v-icon>
+                      {{ getOrgStatus(org).label }}
+                    </v-chip>
+                  </div>
+
+                  <div class="org-card__subtitle">
+                    <span>ID {{ org.id }}</span>
+                    <span>Tạo {{ formatDate(org.createdAt, 'short') }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="org-card__actions">
+                <v-btn
+                  color="primary"
+                  variant="flat"
+                  prepend-icon="mdi-rocket-launch-outline"
+                  rounded="xl"
+                  class="px-5"
+                  @click="openUpgradeDialog(org)"
+                >
+                  Kích hoạt gói
+                </v-btn>
+              </div>
+            </div>
+
+            <div class="org-meta-grid my-5">
+              <div class="meta-tile">
+                <span class="meta-tile__label">Người phụ trách</span>
+                <strong class="meta-tile__value">{{ getOwner(org).name }}</strong>
+                <span class="meta-tile__hint">{{ getOwner(org).email }}</span>
+              </div>
+
+              <div class="meta-tile">
+                <span class="meta-tile__label">Thành viên</span>
+                <strong class="meta-tile__value">{{ org.members?.length || 0 }}</strong>
+                <span class="meta-tile__hint">{{ getMemberSummary(org) }}</span>
+              </div>
+
+              <div class="meta-tile">
+                <span class="meta-tile__label">Gia hạn</span>
+                <strong class="meta-tile__value">{{ getRenewalText(org) }}</strong>
+                <span class="meta-tile__hint">{{ getRenewalHint(org) }}</span>
+              </div>
+
+              <div class="meta-tile">
+                <span class="meta-tile__label">Giá trị tháng</span>
+                <strong class="meta-tile__value">{{ formatCurrency(getMonthlyValue(org)) }}</strong>
+                <span class="meta-tile__hint">{{ getPlanSummary(org) }}</span>
+              </div>
+            </div>
+
+            <div class="org-card__footer">
+              <div class="org-card__footnote">
+                <v-icon size="16" color="primary">mdi-information-outline</v-icon>
+                <span>{{ getRecommendation(org) }}</span>
+              </div>
+
+              <div class="org-card__tags">
+                <v-chip size="small" variant="flat" class="tag-chip">
+                  {{ org.subscription ? 'Đã có subscription' : 'Chưa kích hoạt' }}
+                </v-chip>
+                <v-chip v-if="isExpiringSoon(org.subscription?.currentPeriodEnd)" size="small" color="warning" variant="tonal">
+                  Cần gia hạn sớm
                 </v-chip>
               </div>
             </div>
+          </v-card>
+        </div>
+
+        <v-card v-else class="surface-card empty-card pa-8 text-center">
+          <v-avatar size="72" color="primary-lighten-5" class="mx-auto mb-4">
+            <v-icon size="34" color="primary">mdi-database-search-outline</v-icon>
+          </v-avatar>
+          <h3 class="empty-card__title mb-2">Không tìm thấy tổ chức phù hợp</h3>
+          <p class="empty-card__body mb-5">
+            Hãy thử nới bộ lọc hoặc tìm bằng tên công ty, email quản trị viên hay trạng thái gói cước.
+          </p>
+          <v-btn color="primary" variant="flat" rounded="xl" @click="resetFilters">
+            Đặt lại bộ lọc
+          </v-btn>
+        </v-card>
+      </v-col>
+
+      <v-col cols="12" xl="4">
+        <v-card class="surface-card pa-5 pa-md-6 mb-6">
+          <div class="section-head mb-4">
+            <div>
+              <div class="eyebrow mb-2">Cần chú ý</div>
+              <h2 class="section-title">Thuê bao sắp hết hạn</h2>
+            </div>
           </div>
 
-          <!-- Plan Selection Cards -->
-          <div class="text-subtitle-1 font-weight-bold text-white mb-4">1. Chọn gói cước</div>
-          <v-row class="mb-8">
-            <v-col v-for="plan in plans" :key="plan.id" cols="12" sm="4">
-              <v-card
-                @click="upgradeForm.planId = plan.id"
-                :class="['plan-select-card text-center pa-4', upgradeForm.planId === plan.id ? 'active-plan' : '']"
-                variant="flat"
-              >
-                <v-icon :color="getPlanColor(plan.name)" size="32" class="mb-2">
-                  {{ plan.name === 'Enterprise' ? 'mdi-crown' : plan.name === 'Pro' ? 'mdi-star' : 'mdi-leaf' }}
-                </v-icon>
-                <div class="font-weight-black text-body-1">{{ plan.name }}</div>
-                <div class="text-caption opacity-60">{{ (plan.priceMonth / 1000).toLocaleString() }}k/tháng</div>
-                
-                <v-fade-transition>
-                  <v-icon v-if="upgradeForm.planId === plan.id" color="primary" class="check-badge" size="20">mdi-check-circle</v-icon>
-                </v-fade-transition>
-              </v-card>
-            </v-col>
-          </v-row>
-
-          <!-- Duration Selection -->
-          <div class="text-subtitle-1 font-weight-bold text-white mb-4">2. Thời hạn kích hoạt</div>
-          <v-btn-toggle
-            v-model="upgradeForm.months"
-            mandatory
-            color="primary"
-            class="duration-toggle mb-8 w-100"
-            rounded="xl"
-          >
-            <v-btn :value="1" class="flex-grow-1">1Th</v-btn>
-            <v-btn :value="3" class="flex-grow-1">3Th</v-btn>
-            <v-btn :value="6" class="flex-grow-1">6Th</v-btn>
-            <v-btn :value="12" class="flex-grow-1">12Th</v-btn>
-          </v-btn-toggle>
-
-          <!-- Expiry Preview -->
-          <v-card variant="tonal" color="primary" class="pa-4 rounded-xl mb-8 border-dashed">
-            <div class="d-flex align-center justify-space-between">
-              <div class="d-flex align-center">
-                <v-icon color="primary" class="mr-2">mdi-calendar-clock</v-icon>
-                <span class="text-body-2 text-white">Ngày hết hạn dự kiến:</span>
+          <div v-if="priorityOrganizations.length" class="priority-list">
+            <button
+              v-for="org in priorityOrganizations"
+              :key="org.id"
+              type="button"
+              class="priority-item"
+              @click="openUpgradeDialog(org)"
+            >
+              <div>
+                <div class="priority-item__name">{{ org.name }}</div>
+                <div class="priority-item__meta">
+                  {{ getPlanName(org) }} • {{ getOwner(org).name }}
+                </div>
               </div>
-              <div class="text-h6 font-weight-black text-primary">{{ previewExpiryDate }}</div>
-            </div>
-          </v-card>
+              <v-chip :color="getOrgStatus(org).color" variant="tonal" size="small" class="font-weight-bold">
+                {{ getRenewalText(org) }}
+              </v-chip>
+            </button>
+          </div>
 
-          <v-btn
-            block
-            size="x-large"
-            color="primary"
-            class="rounded-xl font-weight-black"
-            :loading="submitting"
-            @click="handleUpgrade"
-            elevation="8"
+          <div v-else class="notice-box notice-box--success">
+            <v-icon color="success" size="18">mdi-check-circle-outline</v-icon>
+            <span>Chưa có tổ chức nào nằm trong ngưỡng cần gia hạn gấp.</span>
+          </div>
+        </v-card>
+
+        <v-card class="surface-card pa-5 pa-md-6 mb-6">
+          <div class="section-head mb-4">
+            <div>
+              <div class="eyebrow mb-2">Cơ cấu gói</div>
+              <h2 class="section-title">Phân bổ theo plan</h2>
+            </div>
+          </div>
+
+          <div v-for="item in planBreakdown" :key="item.name" class="breakdown-row">
+            <div class="breakdown-row__head">
+              <div class="d-flex align-center ga-2">
+                <span class="breakdown-dot" :style="{ background: item.dot }"></span>
+                <span class="breakdown-row__name">{{ item.name }}</span>
+              </div>
+              <span class="breakdown-row__value">{{ item.count }}</span>
+            </div>
+            <v-progress-linear
+              :model-value="item.percent"
+              :color="item.color"
+              bg-color="rgba(148, 163, 184, 0.18)"
+              rounded
+              height="8"
+              class="mt-2"
+            />
+          </div>
+        </v-card>
+
+        <v-card class="surface-card pa-5 pa-md-6">
+          <div class="section-head mb-4">
+            <div>
+              <div class="eyebrow mb-2">Snapshot</div>
+              <h2 class="section-title">Sức khỏe hệ thống</h2>
+            </div>
+          </div>
+
+          <div class="snapshot-grid">
+            <div class="snapshot-tile">
+              <span class="snapshot-tile__label">Trung bình thành viên</span>
+              <strong class="snapshot-tile__value">{{ averageMembersPerOrg }}</strong>
+              <span class="snapshot-tile__hint">mỗi tổ chức</span>
+            </div>
+
+            <div class="snapshot-tile">
+              <span class="snapshot-tile__label">Gói Free</span>
+              <strong class="snapshot-tile__value">{{ freeOrgsCount }}</strong>
+              <span class="snapshot-tile__hint">cơ hội chuyển đổi</span>
+            </div>
+
+            <div class="snapshot-tile snapshot-tile--wide">
+              <span class="snapshot-tile__label">Khuyến nghị vận hành</span>
+              <strong class="snapshot-tile__value snapshot-tile__value--text">{{ systemRecommendation }}</strong>
+            </div>
+          </div>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <v-dialog v-model="upgradeDialog" max-width="920">
+      <v-card class="upgrade-dialog">
+        <div class="upgrade-dialog__hero pa-6 pa-md-7">
+          <div class="upgrade-dialog__hero-copy">
+            <div class="eyebrow eyebrow--light mb-2">Kích hoạt thuê bao</div>
+            <h3 class="upgrade-dialog__title mb-2">
+              {{ selectedOrg?.name || 'Chọn tổ chức' }}
+            </h3>
+            <p class="upgrade-dialog__subtitle">
+              Thay đổi gói cước và cập nhật thời hạn sử dụng ngay lập tức cho tổ chức được chọn.
+            </p>
+          </div>
+
+          <div v-if="selectedOrg" class="upgrade-dialog__hero-meta">
+            <div class="upgrade-stat">
+              <span class="upgrade-stat__label">Gói hiện tại</span>
+              <strong class="upgrade-stat__value">{{ getPlanName(selectedOrg) }}</strong>
+            </div>
+            <div class="upgrade-stat">
+              <span class="upgrade-stat__label">Gia hạn hiện tại</span>
+              <strong class="upgrade-stat__value">{{ getRenewalText(selectedOrg) }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="pa-6 pa-md-7">
+          <v-alert
+            v-if="dialogError"
+            type="error"
+            variant="tonal"
+            class="mb-5 rounded-xl"
           >
-            XÁC NHẬN KÍCH HOẠT
-          </v-btn>
+            {{ dialogError }}
+          </v-alert>
+
+          <div class="upgrade-layout">
+            <div>
+              <div class="dialog-section-head mb-4">
+                <div class="eyebrow mb-2">Bước 1</div>
+                <h4 class="dialog-section-title">Chọn gói cước áp dụng</h4>
+              </div>
+
+              <div class="plan-grid">
+                <button
+                  v-for="plan in plans"
+                  :key="plan.id"
+                  type="button"
+                  :class="['plan-option', { 'plan-option--active': upgradeForm.planId === plan.id }]"
+                  @click="upgradeForm.planId = plan.id"
+                >
+                  <div class="plan-option__top">
+                    <v-chip :color="getPlanColor(plan.name)" variant="tonal" size="small" class="font-weight-bold">
+                      {{ plan.name }}
+                    </v-chip>
+                    <v-icon v-if="upgradeForm.planId === plan.id" color="primary" size="20">
+                      mdi-check-circle
+                    </v-icon>
+                  </div>
+
+                  <strong class="plan-option__price">{{ formatCurrency(plan.priceMonth) }}</strong>
+                  <span class="plan-option__hint">{{ getPlanCapacity(plan) }}</span>
+                  <span class="plan-option__hint">{{ getTopFeature(plan) }}</span>
+                </button>
+              </div>
+
+              <div class="dialog-section-head mt-7 mb-4">
+                <div class="eyebrow mb-2">Bước 2</div>
+                <h4 class="dialog-section-title">Chọn thời gian gia hạn</h4>
+              </div>
+
+              <div class="duration-grid">
+                <button
+                  v-for="option in durationOptions"
+                  :key="option.value"
+                  type="button"
+                  :class="['duration-option', { 'duration-option--active': upgradeForm.months === option.value }]"
+                  @click="upgradeForm.months = option.value"
+                >
+                  <strong>{{ option.label }}</strong>
+                  <span>{{ option.hint }}</span>
+                </button>
+              </div>
+            </div>
+
+            <v-card class="upgrade-summary pa-5 pa-md-6" rounded="xl">
+              <div class="eyebrow mb-2">Tóm tắt cập nhật</div>
+              <h4 class="dialog-section-title mb-5">Subscription preview</h4>
+
+              <div class="summary-stack">
+                <div class="summary-row">
+                  <span>Tổ chức</span>
+                  <strong>{{ selectedOrg?.name || '—' }}</strong>
+                </div>
+                <div class="summary-row">
+                  <span>Gói mới</span>
+                  <strong>{{ selectedPlan?.name || '—' }}</strong>
+                </div>
+                <div class="summary-row">
+                  <span>Giá trị tháng</span>
+                  <strong>{{ formatCurrency(selectedPlan?.priceMonth || 0) }}</strong>
+                </div>
+                <div class="summary-row">
+                  <span>Gia hạn thêm</span>
+                  <strong>{{ upgradeForm.months }} tháng</strong>
+                </div>
+                <div class="summary-row">
+                  <span>Ngày hết hạn mới</span>
+                  <strong>{{ previewExpiryDate }}</strong>
+                </div>
+              </div>
+
+              <div v-if="selectedPlan" class="summary-callout mt-5">
+                <v-icon size="18" color="primary">mdi-sparkles</v-icon>
+                <span>{{ getPlanCapacity(selectedPlan) }} • {{ getTopFeature(selectedPlan) }}</span>
+              </div>
+
+              <v-btn
+                block
+                size="large"
+                color="primary"
+                variant="flat"
+                rounded="xl"
+                class="mt-6"
+                :loading="submitting"
+                :disabled="!selectedOrg || !upgradeForm.planId"
+                @click="handleUpgrade"
+              >
+                Xác nhận kích hoạt
+              </v-btn>
+
+              <v-btn
+                block
+                variant="text"
+                rounded="xl"
+                class="mt-3"
+                @click="upgradeDialog = false"
+              >
+                Đóng
+              </v-btn>
+            </v-card>
+          </div>
         </div>
       </v-card>
     </v-dialog>
+
+    <v-snackbar v-model="successSnackbar" color="success" timeout="3200" rounded="pill">
+      {{ successMessage }}
+    </v-snackbar>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { api } from '@/api/index';
 
-const orgs = ref<any[]>([]);
-const plans = ref<any[]>([]);
+type SortOption = 'Ưu tiên sắp hết hạn' | 'Mới tạo gần đây' | 'Nhiều thành viên nhất' | 'Tên A-Z';
+type StatusFilter = 'Tất cả trạng thái' | 'Sắp hết hạn' | 'Đã hết hạn' | 'Đang trả phí' | 'Free';
+
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  priceMonth: number;
+  maxZaloAcc?: number;
+  maxAiTokens?: number;
+  features?: string | string[];
+}
+
+interface OrganizationMember {
+  user?: {
+    email?: string;
+    fullName?: string;
+  };
+}
+
+interface Subscription {
+  planId: string;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  status?: string;
+  plan: SubscriptionPlan;
+}
+
+interface Organization {
+  id: string;
+  name: string;
+  createdAt: string;
+  members?: OrganizationMember[];
+  subscription?: Subscription | null;
+}
+
+const planFilterItems = ['Tất cả gói', 'Free', 'Pro', 'Enterprise'];
+const statusFilterItems: StatusFilter[] = [
+  'Tất cả trạng thái',
+  'Sắp hết hạn',
+  'Đã hết hạn',
+  'Đang trả phí',
+  'Free',
+];
+const sortItems: SortOption[] = [
+  'Ưu tiên sắp hết hạn',
+  'Mới tạo gần đây',
+  'Nhiều thành viên nhất',
+  'Tên A-Z',
+];
+const durationOptions = [
+  { value: 1, label: '1 tháng', hint: 'Kích hoạt nhanh' },
+  { value: 3, label: '3 tháng', hint: 'Chu kỳ ngắn' },
+  { value: 6, label: '6 tháng', hint: 'Ổn định hơn' },
+  { value: 12, label: '12 tháng', hint: 'Giảm tần suất gia hạn' },
+];
+
+const orgs = ref<Organization[]>([]);
+const plans = ref<SubscriptionPlan[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
+const dialogError = ref<string | null>(null);
 const submitting = ref(false);
 const upgradeDialog = ref(false);
-const selectedOrg = ref<any>(null);
+const successSnackbar = ref(false);
+const successMessage = ref('');
+const selectedOrg = ref<Organization | null>(null);
 
 const searchQuery = ref('');
 const filterPlan = ref('Tất cả gói');
+const filterStatus = ref<StatusFilter>('Tất cả trạng thái');
+const sortBy = ref<SortOption>('Ưu tiên sắp hết hạn');
 
 const upgradeForm = ref({
   planId: '',
-  months: 1
+  months: 1,
 });
 
-const headers = [
-  { title: 'Tổ chức', key: 'name', width: '300px' },
-  { title: 'Gói hiện tại', key: 'subscription', align: 'center' as const },
-  { title: 'Trạng thái gia hạn', key: 'expiry' },
-  { title: 'Chủ sở hữu', key: 'members' },
-  { title: 'Thao tác', key: 'actions', sortable: false, align: 'end' as const }
-];
+const selectedPlan = computed(() => {
+  return plans.value.find((plan) => plan.id === upgradeForm.value.planId) || null;
+});
+
+const freeOrgsCount = computed(() => {
+  return orgs.value.filter((org) => getPlanName(org) === 'Free').length;
+});
 
 const premiumOrgsCount = computed(() => {
-  return orgs.value.filter(o => o.subscription && o.subscription.plan.name !== 'Free').length;
+  return orgs.value.filter((org) => getPlanName(org) !== 'Free').length;
 });
 
 const totalUsersCount = computed(() => {
-  return orgs.value.reduce((acc, org) => acc + (org.members?.length || 0), 0);
+  return orgs.value.reduce((sum, org) => sum + (org.members?.length || 0), 0);
 });
 
 const newOrgsToday = computed(() => {
-  const today = new Date().toDateString();
-  return orgs.value.filter(o => new Date(o.createdAt).toDateString() === today).length;
+  const today = new Date();
+  return orgs.value.filter((org) => isSameDate(org.createdAt, today)).length;
+});
+
+const monthlyRecurringRevenue = computed(() => {
+  return orgs.value.reduce((sum, org) => sum + getMonthlyValue(org), 0);
+});
+
+const expiringSoonCount = computed(() => {
+  return orgs.value.filter((org) => isExpiringSoon(org.subscription?.currentPeriodEnd)).length;
+});
+
+const averageMembersPerOrg = computed(() => {
+  if (!orgs.value.length) return '0';
+  return (totalUsersCount.value / orgs.value.length).toFixed(totalUsersCount.value / orgs.value.length >= 10 ? 0 : 1);
+});
+
+const paidAdoptionRate = computed(() => {
+  if (!orgs.value.length) return '0%';
+  return `${Math.round((premiumOrgsCount.value / orgs.value.length) * 100)}%`;
+});
+
+const latestOrganization = computed(() => {
+  return [...orgs.value].sort((a, b) => toTime(b.createdAt) - toTime(a.createdAt))[0] || null;
+});
+
+const summaryCards = computed(() => {
+  return [
+    {
+      label: 'Tổ chức đang quản lý',
+      value: orgs.value.length.toString(),
+      hint: `${newOrgsToday.value} tổ chức mới được tạo trong ngày`,
+      badge: `+${newOrgsToday.value} hôm nay`,
+      icon: 'mdi-domain',
+      color: 'primary',
+      tint: 'primary-lighten-5',
+    },
+    {
+      label: 'Tổ chức trả phí',
+      value: premiumOrgsCount.value.toString(),
+      hint: `${paidAdoptionRate.value} tổng số tổ chức đã nâng cấp`,
+      badge: 'Doanh thu',
+      icon: 'mdi-crown-outline',
+      color: 'warning',
+      tint: 'warning-lighten-5',
+    },
+    {
+      label: 'Người dùng toàn hệ thống',
+      value: totalUsersCount.value.toString(),
+      hint: `${averageMembersPerOrg.value} thành viên trung bình mỗi tổ chức`,
+      badge: 'Seats',
+      icon: 'mdi-account-group-outline',
+      color: 'info',
+      tint: 'info-lighten-5',
+    },
+    {
+      label: 'Gia hạn cần xử lý',
+      value: expiringSoonCount.value.toString(),
+      hint: expiringSoonCount.value
+        ? 'Các gói dưới 7 ngày nên được rà soát ngay'
+        : 'Hiện chưa có gói nào nằm trong vùng rủi ro',
+      badge: expiringSoonCount.value ? 'Cảnh báo' : 'Ổn định',
+      icon: 'mdi-timer-sand',
+      color: expiringSoonCount.value ? 'warning' : 'success',
+      tint: expiringSoonCount.value ? 'warning-lighten-5' : 'success-lighten-5',
+    },
+  ];
+});
+
+const filteredOrgs = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase();
+  let result = [...orgs.value];
+
+  if (query) {
+    result = result.filter((org) => {
+      const owner = getOwner(org);
+      return (
+        org.name.toLowerCase().includes(query) ||
+        org.id.toLowerCase().includes(query) ||
+        owner.name.toLowerCase().includes(query) ||
+        owner.email.toLowerCase().includes(query)
+      );
+    });
+  }
+
+  if (filterPlan.value !== 'Tất cả gói') {
+    result = result.filter((org) => getPlanName(org) === filterPlan.value);
+  }
+
+  if (filterStatus.value !== 'Tất cả trạng thái') {
+    result = result.filter((org) => matchesStatus(org, filterStatus.value));
+  }
+
+  return sortOrganizations(result, sortBy.value);
+});
+
+const priorityOrganizations = computed(() => {
+  return sortOrganizations(
+    orgs.value.filter((org) => isExpired(org.subscription?.currentPeriodEnd) || isExpiringSoon(org.subscription?.currentPeriodEnd)),
+    'Ưu tiên sắp hết hạn',
+  ).slice(0, 5);
+});
+
+const planBreakdown = computed(() => {
+  const allPlans = plans.value.length
+    ? plans.value.map((plan) => plan.name)
+    : ['Free', 'Pro', 'Enterprise'];
+
+  return allPlans.map((name) => {
+    const count = orgs.value.filter((org) => getPlanName(org) === name).length;
+    return {
+      name,
+      count,
+      percent: orgs.value.length ? Math.round((count / orgs.value.length) * 100) : 0,
+      color: getPlanColor(name),
+      dot: getPlanDot(name),
+    };
+  });
 });
 
 const previewExpiryDate = computed(() => {
   if (!selectedOrg.value) return '—';
-  
-  const now = new Date();
-  // If already has active sub and it hasn't expired, extend from there
-  let startDate = now;
-  if (selectedOrg.value.subscription) {
-    const currentExpiry = new Date(selectedOrg.value.subscription.currentPeriodEnd);
-    if (currentExpiry > now) {
-      startDate = currentExpiry;
-    }
-  }
-  
+
+  const startDate = getSubscriptionStartDate(selectedOrg.value);
   const futureDate = new Date(startDate);
   futureDate.setMonth(futureDate.getMonth() + upgradeForm.value.months);
-  
-  return futureDate.toLocaleDateString('vi-VN', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+
+  return formatDate(futureDate.toISOString(), 'long');
 });
 
-const filteredOrgs = computed(() => {
-  let result = orgs.value;
-
-  // Search filter
-  if (searchQuery.value) {
-    const q = searchQuery.value.toLowerCase();
-    result = result.filter(o => 
-      o.name.toLowerCase().includes(q) || 
-      o.members?.some((m: any) => m.user?.email.toLowerCase().includes(q) || m.user?.fullName.toLowerCase().includes(q))
-    );
+const systemRecommendation = computed(() => {
+  if (expiringSoonCount.value > 0) {
+    return `Ưu tiên xử lý ${expiringSoonCount.value} tổ chức sắp hết hạn trước khi mở rộng upsell mới.`;
   }
 
-  // Plan filter
-  if (filterPlan.value !== 'Tất cả gói') {
-    result = result.filter(o => {
-      const planName = o.subscription?.plan.name || 'Free';
-      return planName === filterPlan.value;
-    });
+  if (freeOrgsCount.value > premiumOrgsCount.value) {
+    return 'Tỷ trọng Free còn cao, nên tập trung chuyển đổi các tổ chức đã có nhiều thành viên.';
   }
 
-  return result;
+  return 'Nhịp tăng trưởng đang ổn, có thể đẩy mạnh upsell cho các tổ chức mới tạo trong ngày.';
+});
+
+watch(upgradeDialog, (isOpen) => {
+  if (!isOpen) {
+    dialogError.value = null;
+  }
 });
 
 const fetchData = async () => {
   loading.value = true;
   error.value = null;
+
   try {
     const [orgsRes, plansRes] = await Promise.all([
       api.get('/admin/organizations'),
-      api.get('/admin/plans')
+      api.get('/admin/plans'),
     ]);
+
     orgs.value = orgsRes.data;
     plans.value = plansRes.data;
   } catch (err: any) {
     console.error('Admin fetch failed', err);
-    if (err.response?.status === 403) {
-      error.value = 'Bạn không có quyền truy cập dữ liệu quản trị. Vui lòng thử đăng xuất và đăng nhập lại.';
-    } else {
-      error.value = 'Không thể tải dữ liệu từ máy chủ. Vui lòng kiểm tra kết nối mạng hoặc thử lại sau.';
-    }
+    error.value = err.response?.status === 403
+      ? 'Bạn không có quyền truy cập khu vực quản trị. Vui lòng đăng xuất rồi đăng nhập lại bằng tài khoản phù hợp.'
+      : 'Không thể tải dữ liệu quản trị từ máy chủ. Hãy kiểm tra kết nối mạng hoặc thử lại sau.';
   } finally {
     loading.value = false;
   }
 };
 
-const openUpgradeDialog = (org: any) => {
+const resetFilters = () => {
+  searchQuery.value = '';
+  filterPlan.value = 'Tất cả gói';
+  filterStatus.value = 'Tất cả trạng thái';
+  sortBy.value = 'Ưu tiên sắp hết hạn';
+};
+
+const openUpgradeDialog = (org: Organization) => {
   selectedOrg.value = org;
   upgradeForm.value.planId = org.subscription?.planId || plans.value[0]?.id || '';
   upgradeForm.value.months = 1;
+  dialogError.value = null;
   upgradeDialog.value = true;
 };
 
 const handleUpgrade = async () => {
   if (!selectedOrg.value || !upgradeForm.value.planId) return;
-  
+
   submitting.value = true;
+  dialogError.value = null;
+
   try {
     await api.post(`/admin/organizations/${selectedOrg.value.id}/subscribe`, {
       planId: upgradeForm.value.planId,
-      months: upgradeForm.value.months
+      months: upgradeForm.value.months,
     });
+
+    successMessage.value = `Đã cập nhật gói ${selectedPlan.value?.name || ''} cho ${selectedOrg.value.name}.`;
+    successSnackbar.value = true;
     upgradeDialog.value = false;
-    fetchData(); // Refresh table
-  } catch (err) {
-    alert('Cập nhật thất bại. Vui lòng thử lại.');
+    await fetchData();
+  } catch (err: any) {
+    console.error('Subscription update failed', err);
+    dialogError.value = 'Cập nhật thuê bao thất bại. Vui lòng thử lại sau vài giây.';
   } finally {
     submitting.value = false;
   }
 };
 
-const getPlanColor = (name: string) => {
-  if (name === 'Enterprise') return 'purple-accent-3';
-  if (name === 'Pro') return 'blue-accent-3';
-  return 'grey-darken-1';
+const getPlanName = (org: Organization) => {
+  return org.subscription?.plan?.name || 'Free';
 };
 
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString('vi-VN', {
+const getPlanColor = (name: string) => {
+  if (name === 'Enterprise') return 'warning';
+  if (name === 'Pro') return 'primary';
+  return 'secondary';
+};
+
+const getPlanTint = (name: string) => {
+  if (name === 'Enterprise') return 'warning-lighten-5';
+  if (name === 'Pro') return 'primary-lighten-5';
+  return 'secondary-lighten-5';
+};
+
+const getPlanDot = (name: string) => {
+  if (name === 'Enterprise') return 'linear-gradient(135deg, #f59e0b, #f97316)';
+  if (name === 'Pro') return 'linear-gradient(135deg, #2563eb, #60a5fa)';
+  return 'linear-gradient(135deg, #64748b, #94a3b8)';
+};
+
+const getOwner = (org: Organization) => {
+  const user = org.members?.[0]?.user;
+  return {
+    name: user?.fullName || 'Chưa có người phụ trách',
+    email: user?.email || 'Chưa có email',
+  };
+};
+
+const getOrgInitial = (name: string) => {
+  return name.trim().charAt(0).toUpperCase();
+};
+
+const getMonthlyValue = (org: Organization) => {
+  return org.subscription?.plan?.priceMonth || 0;
+};
+
+const getMemberSummary = (org: Organization) => {
+  const count = org.members?.length || 0;
+  return count > 1 ? 'Bao gồm owner và cộng tác viên' : 'Hiện chỉ có 1 tài khoản quản trị';
+};
+
+const getPlanSummary = (org: Organization) => {
+  const plan = org.subscription?.plan;
+  if (!plan) return 'Chưa phát sinh doanh thu';
+  return `${plan.maxZaloAcc || 0} tài khoản Zalo • ${formatToken(plan.maxAiTokens || 0)} AI`;
+};
+
+const getPlanCapacity = (plan: SubscriptionPlan) => {
+  return `${plan.maxZaloAcc || 0} tài khoản Zalo • ${formatToken(plan.maxAiTokens || 0)} AI`;
+};
+
+const getTopFeature = (plan: SubscriptionPlan) => {
+  const feature = parseFeatures(plan.features)[0];
+  return feature || 'Gói cơ bản cho vận hành hằng ngày';
+};
+
+const getRenewalText = (org: Organization) => {
+  if (!org.subscription) return 'Chưa kích hoạt';
+  if (isExpired(org.subscription.currentPeriodEnd)) return 'Đã hết hạn';
+  if (isExpiringSoon(org.subscription.currentPeriodEnd)) {
+    return `${daysUntil(org.subscription.currentPeriodEnd)} ngày nữa`;
+  }
+  return formatDate(org.subscription.currentPeriodEnd, 'short');
+};
+
+const getRenewalHint = (org: Organization) => {
+  if (!org.subscription) return 'Nên kích hoạt gói đầu tiên';
+  if (isExpired(org.subscription.currentPeriodEnd)) return 'Subscription đã quá hạn';
+  if (isExpiringSoon(org.subscription.currentPeriodEnd)) return 'Nằm trong vùng cần gia hạn';
+  return 'Thời hạn vẫn an toàn';
+};
+
+const getRecommendation = (org: Organization) => {
+  if (!org.subscription) return 'Tổ chức chưa có gói trả phí, phù hợp để kích hoạt nhanh từ admin.';
+  if (isExpired(org.subscription.currentPeriodEnd)) return 'Nên cập nhật subscription ngay để tránh gián đoạn sử dụng.';
+  if (isExpiringSoon(org.subscription.currentPeriodEnd)) return 'Tổ chức này đang gần mốc hết hạn, nên ưu tiên gia hạn trước.';
+  if ((org.members?.length || 0) >= 5 && getPlanName(org) === 'Free') return 'Đội ngũ đã có quy mô sử dụng, đây là ứng viên upsell tốt.';
+  return 'Subscription đang ổn định và không có tín hiệu rủi ro ngắn hạn.';
+};
+
+const getOrgStatus = (org: Organization) => {
+  if (!org.subscription) {
+    return { label: 'Free', color: 'secondary', icon: 'mdi-seed-outline' };
+  }
+
+  if (isExpired(org.subscription.currentPeriodEnd)) {
+    return { label: 'Đã hết hạn', color: 'error', icon: 'mdi-alert-circle-outline' };
+  }
+
+  if (isExpiringSoon(org.subscription.currentPeriodEnd)) {
+    return { label: 'Sắp hết hạn', color: 'warning', icon: 'mdi-timer-sand' };
+  }
+
+  return { label: 'Đang hoạt động', color: 'success', icon: 'mdi-check-circle-outline' };
+};
+
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    maximumFractionDigits: 0,
+  }).format(value || 0);
+};
+
+const formatToken = (value: number) => {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(value % 1_000_000 === 0 ? 0 : 1)}M tokens`;
+  if (value >= 1_000) return `${Math.round(value / 1_000)}k tokens`;
+  return `${value} tokens`;
+};
+
+const formatDate = (date: string, style: 'short' | 'long' = 'short') => {
+  const parsed = new Date(date);
+  return parsed.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: style === 'long' ? 'long' : 'short',
     year: 'numeric',
-    month: 'short',
-    day: 'numeric'
   });
 };
 
-const isExpiringSoon = (date: string) => {
-  const expiry = new Date(date);
-  const now = new Date();
-  const diffDays = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  return diffDays > 0 && diffDays <= 7;
+const parseFeatures = (features?: string | string[]) => {
+  if (!features) return [];
+
+  if (Array.isArray(features)) return features;
+
+  try {
+    const parsed = JSON.parse(features);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
 };
+
+const isExpiringSoon = (date?: string) => {
+  if (!date) return false;
+  const days = daysUntil(date);
+  return days >= 0 && days <= 7;
+};
+
+const isExpired = (date?: string) => {
+  if (!date) return false;
+  return daysUntil(date) < 0;
+};
+
+const daysUntil = (date: string) => {
+  const end = new Date(date);
+  const now = new Date();
+  return Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+};
+
+const getSubscriptionStartDate = (org: Organization) => {
+  const now = new Date();
+  const currentEnd = org.subscription?.currentPeriodEnd ? new Date(org.subscription.currentPeriodEnd) : null;
+  return currentEnd && currentEnd > now ? currentEnd : now;
+};
+
+const sortOrganizations = (items: Organization[], option: SortOption) => {
+  const sorted = [...items];
+
+  if (option === 'Tên A-Z') {
+    return sorted.sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+  }
+
+  if (option === 'Mới tạo gần đây') {
+    return sorted.sort((a, b) => toTime(b.createdAt) - toTime(a.createdAt));
+  }
+
+  if (option === 'Nhiều thành viên nhất') {
+    return sorted.sort((a, b) => (b.members?.length || 0) - (a.members?.length || 0));
+  }
+
+  return sorted.sort((a, b) => getPriorityScore(a) - getPriorityScore(b));
+};
+
+const getPriorityScore = (org: Organization) => {
+  if (!org.subscription) return 9_999;
+  const remainingDays = daysUntil(org.subscription.currentPeriodEnd);
+  return remainingDays < 0 ? -1000 : remainingDays;
+};
+
+const matchesStatus = (org: Organization, status: StatusFilter) => {
+  if (status === 'Sắp hết hạn') return isExpiringSoon(org.subscription?.currentPeriodEnd);
+  if (status === 'Đã hết hạn') return isExpired(org.subscription?.currentPeriodEnd);
+  if (status === 'Đang trả phí') return getPlanName(org) !== 'Free';
+  if (status === 'Free') return getPlanName(org) === 'Free';
+  return true;
+};
+
+const isSameDate = (date: string, compare: Date) => {
+  const parsed = new Date(date);
+  return parsed.toDateString() === compare.toDateString();
+};
+
+const toTime = (date: string) => new Date(date).getTime();
 
 onMounted(fetchData);
 </script>
 
 <style scoped>
-.admin-shell {
-  min-height: 100vh;
+.admin-page {
+  max-width: 1440px;
 }
 
-.text-gradient {
-  background: linear-gradient(to right, #ffffff, #94a3b8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.hero-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.95fr);
+  gap: 24px;
+  align-items: stretch;
 }
 
-.max-width-600 {
-  max-width: 600px;
+.hero-shell__copy,
+.hero-panel,
+.surface-card,
+.org-card,
+.upgrade-summary {
+  border-radius: 28px !important;
+  border: 1px solid var(--color-border) !important;
 }
 
-.text-placeholder {
-  color: #94a3b8;
-}
-
-/* Stat Cards */
-.stat-card {
+.hero-shell__copy {
   position: relative;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  z-index: 1;
+  overflow: hidden;
+  padding: 36px;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.14), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(124, 58, 237, 0.1), transparent 30%),
+    var(--color-surface-elevated);
+  box-shadow: var(--shadow-md);
 }
 
-.stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-}
-
-.stat-gradient {
+.hero-shell__copy::after {
+  content: '';
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  opacity: 0.6;
+  inset: auto -90px -80px auto;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.09);
+  filter: blur(12px);
+  pointer-events: none;
 }
 
-/* Glassmorphism */
-.glass-premium {
-  background: rgba(30, 41, 59, 0.7) !important;
-  backdrop-filter: blur(16px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: 24px !important;
+.hero-badge,
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-primary-strong);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.glass-main-card {
-  background: rgba(15, 23, 42, 0.8) !important;
-  backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: 32px !important;
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5) !important;
+.hero-badge {
+  padding: 10px 14px;
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-soft-strong);
+  border-radius: 999px;
 }
 
-.border-bottom {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+.eyebrow--light {
+  color: rgba(255, 255, 255, 0.76);
 }
 
-/* Table Styling */
-.premium-table :deep(table) {
-  border-collapse: separate !important;
-  border-spacing: 0 4px !important;
+.hero-title,
+.section-title,
+.dialog-section-title,
+.upgrade-dialog__title {
+  margin: 0;
+  color: var(--color-text);
+  font-weight: 900;
+  letter-spacing: -0.03em;
 }
 
-.premium-table :deep(thead th) {
-  background: transparent !important;
-  color: #64748b !important;
-  font-weight: 700 !important;
-  font-size: 0.7rem !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.1em !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+.hero-title {
+  max-width: 760px;
+  font-size: clamp(2rem, 3vw, 3.4rem);
+  line-height: 1.02;
 }
 
-.premium-table :deep(tbody tr) {
-  transition: background 0.2s ease;
+.hero-description,
+.upgrade-dialog__subtitle,
+.empty-card__body {
+  max-width: 640px;
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  line-height: 1.75;
 }
 
-.premium-table :deep(tbody tr:hover) {
-  background: rgba(255, 255, 255, 0.02) !important;
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.premium-table :deep(td) {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
+.hero-panel {
+  background: linear-gradient(180deg, var(--color-surface-elevated), var(--color-surface-glass)) !important;
+  box-shadow: var(--shadow-md);
 }
 
-/* Form Elements */
-.search-bar :deep(.v-field) {
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  transition: border-color 0.3s ease;
+.hero-panel__header,
+.section-head,
+.org-card__header,
+.org-card__footer,
+.summary-card__top,
+.breakdown-row__head,
+.plan-option__top,
+.summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.search-bar :deep(.v-field--focused) {
-  border-color: rgba(var(--v-theme-primary), 0.5) !important;
+.hero-panel__title {
+  color: var(--color-text);
+  font-size: 1.35rem;
+  font-weight: 800;
 }
 
-.filter-select {
-  max-width: 200px;
+.hero-metrics {
+  display: grid;
+  gap: 16px;
 }
 
-/* Utilities */
-.gap-3 { gap: 12px; }
-.gap-4 { gap: 16px; }
-
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-out;
+.hero-metric {
+  padding: 18px 20px;
+  background: var(--color-overlay);
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.opacity-60 { opacity: 0.6; }
-.opacity-50 { opacity: 0.5; }
-.opacity-40 { opacity: 0.4; }
-
-.uppercase { text-transform: uppercase; }
-.tracking-wider { letter-spacing: 0.05em; }
-
-/* Plan Selection */
-.plan-select-card {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 16px !important;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-}
-
-.plan-select-card:hover {
-  background: rgba(255, 255, 255, 0.06) !important;
-  transform: scale(1.05);
-}
-
-.active-plan {
-  background: rgba(var(--v-theme-primary), 0.1) !important;
-  border: 2px solid rgba(var(--v-theme-primary), 0.8) !important;
-  transform: scale(1.05);
-}
-
-.check-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-}
-
-.bg-white-opacity-5 {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.border-dashed {
-  border: 1px dashed rgba(var(--v-theme-primary), 0.4) !important;
-}
-
-.duration-toggle {
-  height: 48px !important;
-}
-
-.duration-toggle :deep(.v-btn) {
-  border-radius: 0 !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+.hero-metric__label,
+.summary-card__label,
+.meta-tile__label,
+.snapshot-tile__label {
+  display: block;
+  color: var(--color-text-secondary);
+  font-size: 0.84rem;
   font-weight: 700;
 }
 
-.duration-toggle :deep(.v-btn--active) {
-  background: var(--v-theme-primary) !important;
-  color: white !important;
+.hero-metric__value,
+.summary-card__value,
+.meta-tile__value,
+.snapshot-tile__value {
+  display: block;
+  margin-top: 8px;
+  color: var(--color-text);
+  font-size: 1.75rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.hero-metric__hint,
+.summary-card__hint,
+.meta-tile__hint,
+.snapshot-tile__hint,
+.org-card__subtitle,
+.priority-item__meta {
+  display: block;
+  margin-top: 8px;
+  color: var(--color-text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.summary-card {
+  background: linear-gradient(180deg, var(--color-surface-elevated), var(--color-surface-glass)) !important;
+}
+
+.surface-card {
+  background: var(--color-surface-elevated) !important;
+}
+
+.section-title {
+  font-size: clamp(1.2rem, 2vw, 1.5rem);
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) repeat(3, minmax(180px, 0.8fr));
+  gap: 14px;
+}
+
+.filters-grid__search {
+  grid-column: span 1;
+}
+
+.org-list {
+  min-height: 200px;
+}
+
+.org-card {
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.08), transparent 24%),
+    var(--color-surface-elevated) !important;
+  box-shadow: var(--shadow-sm);
+}
+
+.org-card__header {
+  align-items: flex-start;
+}
+
+.org-card__identity {
+  display: flex;
+  gap: 16px;
+  min-width: 0;
+}
+
+.org-card__identity-copy {
+  min-width: 0;
+}
+
+.org-card__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.org-card__name {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 1.3rem;
+  font-weight: 850;
+}
+
+.org-card__subtitle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.org-card__initial {
+  color: var(--color-text);
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.org-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.meta-tile {
+  padding: 18px;
+  background: var(--color-overlay);
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
+}
+
+.meta-tile__value {
+  margin-top: 10px;
+  font-size: 1.16rem;
+}
+
+.org-card__footer {
+  align-items: flex-start;
+}
+
+.org-card__footnote {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 620px;
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.org-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.tag-chip {
+  background: var(--color-overlay) !important;
+  color: var(--color-text-secondary) !important;
+}
+
+.priority-list {
+  display: grid;
+  gap: 12px;
+}
+
+.priority-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 18px;
+  background: var(--color-overlay);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.priority-item:hover {
+  transform: translateY(-1px);
+  border-color: var(--color-primary-soft-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+.priority-item__name {
+  color: var(--color-text);
+  font-size: 0.98rem;
+  font-weight: 800;
+}
+
+.notice-box,
+.summary-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.notice-box--success {
+  background: var(--color-success-soft);
+  border: 1px solid var(--color-success-border);
+  color: var(--color-success);
+}
+
+.breakdown-row + .breakdown-row {
+  margin-top: 18px;
+}
+
+.breakdown-row__name,
+.breakdown-row__value {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.breakdown-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.snapshot-tile {
+  padding: 18px;
+  background: var(--color-overlay);
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
+}
+
+.snapshot-tile--wide {
+  grid-column: 1 / -1;
+}
+
+.snapshot-tile__value {
+  font-size: 1.35rem;
+}
+
+.snapshot-tile__value--text {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.empty-card {
+  border-radius: 28px !important;
+}
+
+.empty-card__title {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 1.32rem;
+  font-weight: 850;
+}
+
+.org-card--placeholder {
+  overflow: hidden;
+}
+
+.placeholder-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.placeholder-line {
+  height: 14px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(148, 163, 184, 0.12), rgba(148, 163, 184, 0.28), rgba(148, 163, 184, 0.12));
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.placeholder-line--lg {
+  width: min(320px, 60%);
+  height: 20px;
+}
+
+.placeholder-line--sm {
+  width: 40%;
+}
+
+.upgrade-dialog {
+  overflow: hidden;
+  border-radius: 32px !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+.upgrade-dialog__hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  background: linear-gradient(135deg, #0f172a, #13203b 58%, #1d4ed8);
+  color: #fff;
+}
+
+.upgrade-dialog__title {
+  color: #fff;
+  font-size: clamp(1.65rem, 3vw, 2.2rem);
+}
+
+.upgrade-dialog__subtitle {
+  max-width: 560px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.upgrade-dialog__hero-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(150px, 1fr));
+  gap: 12px;
+  width: min(360px, 100%);
+}
+
+.upgrade-stat {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  backdrop-filter: blur(14px);
+}
+
+.upgrade-stat__label {
+  display: block;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.upgrade-stat__value {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.08rem;
+  font-weight: 900;
+}
+
+.upgrade-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.95fr);
+  gap: 22px;
+}
+
+.plan-grid,
+.duration-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.plan-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.duration-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.plan-option,
+.duration-option {
+  padding: 18px;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.plan-option:hover,
+.duration-option:hover {
+  transform: translateY(-1px);
+  border-color: var(--color-primary-soft-strong);
+}
+
+.plan-option--active,
+.duration-option--active {
+  border-color: var(--color-primary) !important;
+  background: linear-gradient(180deg, var(--color-primary-soft), var(--color-surface-elevated));
+  box-shadow: 0 0 0 1px var(--color-primary-soft-strong);
+}
+
+.plan-option__price,
+.duration-option strong {
+  display: block;
+  color: var(--color-text);
+  font-size: 1.05rem;
+  font-weight: 850;
+}
+
+.plan-option__hint,
+.duration-option span {
+  display: block;
+  margin-top: 8px;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.upgrade-summary {
+  align-self: start;
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.1), transparent 36%),
+    var(--color-surface-elevated) !important;
+  box-shadow: var(--shadow-sm);
+}
+
+.summary-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.summary-row {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.summary-row span {
+  color: var(--color-text-secondary);
+  font-size: 0.92rem;
+}
+
+.summary-row strong {
+  color: var(--color-text);
+  font-size: 0.96rem;
+  font-weight: 850;
+  text-align: right;
+}
+
+.summary-callout {
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-soft-strong);
+  color: var(--color-primary-strong);
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 1360px) {
+  .filters-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .filters-grid__search {
+    grid-column: 1 / -1;
+  }
+
+  .org-meta-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1200px) {
+  .hero-shell,
+  .upgrade-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .admin-page {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .hero-shell__copy,
+  .hero-panel,
+  .surface-card,
+  .org-card,
+  .upgrade-dialog__hero {
+    padding: 22px !important;
+  }
+
+  .hero-panel__header,
+  .section-head,
+  .org-card__header,
+  .org-card__footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filters-grid,
+  .org-meta-grid,
+  .snapshot-grid,
+  .plan-grid,
+  .duration-grid,
+  .placeholder-grid,
+  .upgrade-dialog__hero-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .org-card__actions,
+  .org-card__actions .v-btn {
+    width: 100%;
+  }
+
+  .org-card__tags {
+    justify-content: flex-start;
+  }
+
+  .priority-item,
+  .summary-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .upgrade-dialog__title {
+    font-size: 1.5rem;
+  }
 }
 </style>
