@@ -46,6 +46,7 @@ import { automationRoutes } from './modules/automation/automation-routes.js';
 import { templateRoutes } from './modules/automation/template-routes.js';
 import { aiRoutes } from './modules/ai/ai-routes.js';
 import { subscriptionRoutes } from './modules/billing/subscription-routes.js';
+import { adminRoutes } from './modules/admin/admin-routes.js';
 import { facebookRoutes } from './modules/channels/facebook/facebook-routes.js';
 import { facebookWebhookRoutes } from './modules/channels/facebook/facebook-webhook.js';
 import { invitationRoutes } from './modules/auth/invitation-routes.js';
@@ -151,6 +152,7 @@ async function bootstrap() {
   await app.register(facebookRoutes);
   await app.register(facebookWebhookRoutes);
   await app.register(invitationRoutes);
+  await app.register(adminRoutes);
 
   // Liveness/readiness probe — also checks DB connectivity
   app.get('/health', async () => {

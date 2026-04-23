@@ -111,6 +111,12 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/admin',
+    name: 'AdminDashboard',
+    component: () => import('@/views/AdminDashboardView.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
+  {
     path: '/automation',
     name: 'Automation',
     component: () => import('@/views/AutomationView.vue'),
@@ -154,6 +160,11 @@ router.beforeEach(async (to, _from, next) => {
       if (!authStore.isAuthenticated) {
         return next('/login');
       }
+    }
+
+    // Check admin privilege if required
+    if (to.meta.requiresAdmin && !authStore.user?.isSystemAdmin) {
+      return next('/');
     }
   }
 

@@ -23,6 +23,7 @@ interface User {
   role: string; // Active role
   orgId: string; // Active org
   org?: Organization; // Active org details
+  isSystemAdmin: boolean;
   memberships: Membership[];
 }
 
@@ -33,6 +34,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!token.value && !!user.value);
   const isOwner = computed(() => user.value?.role === 'owner');
+  const isSuperAdmin = computed(() => user.value?.isSystemAdmin || false);
   const isAdmin = computed(() => ['owner', 'admin'].includes(user.value?.role || ''));
 
   async function checkSetup() {

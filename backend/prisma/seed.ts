@@ -79,7 +79,8 @@ async function main() {
           orgId: org.id,
           role: 'owner',
         }
-      }
+      },
+      isSystemAdmin: true
     },
   });
 

@@ -111,7 +111,7 @@
     <v-navigation-drawer v-model="drawer" :rail="rail" permanent @click="rail = false" color="background" class="border-right">
       <v-list density="compact" nav class="mt-2 sidebar-list">
         <v-list-item
-          v-for="item in menuItems"
+          v-for="item in computedMenuItems"
           :key="item.path"
           :to="item.path"
           :prepend-icon="item.icon"
@@ -144,7 +144,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useTheme } from 'vuetify';
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
@@ -198,6 +198,14 @@ const menuItems = [
   { title: 'Automation', icon: 'mdi-robot-outline', path: '/automation' },
   { title: 'Gói cước', icon: 'mdi-crown-outline', path: '/pricing' },
 ];
+
+const computedMenuItems = computed(() => {
+  const items = [...menuItems];
+  if (authStore.isSuperAdmin) {
+    items.push({ title: 'Hệ thống Quản trị', icon: 'mdi-shield-crown-outline', path: '/admin' });
+  }
+  return items;
+});
 
 function toggleTheme() {
   isDark.value = !isDark.value;
