@@ -17,20 +17,27 @@ RUN npm run build
 
 # ── Stage 3: Production image ────────────────────────────────────────────────
 FROM node:20-alpine
-RUN apk add --no-cache tini
+RUN apk add --no-cache tini curl
+
+# Create non-root user for security
+RUN addgroup -S zalocrm && adduser -S zalocrm -G zalocrm
+
 WORKDIR /app
 
 # Copy built artefacts
-COPY --from=backend-builder /app/backend/dist       /app/dist
-COPY --from=backend-builder /app/backend/node_modules /app/node_modules
-COPY --from=backend-builder /app/backend/prisma     /app/prisma
-COPY --from=backend-builder /app/backend/prisma.config.ts /app/prisma.config.ts
-COPY --from=backend-builder /app/backend/package.json /app/package.json
-COPY --from=frontend-builder /app/frontend/dist     /app/static
+COPY --from=backend-builder --chown=zalocrm:zalocrm /app/backend/dist       /app/dist
+COPY --from=backend-builder --chown=zalocrm:zalocrm /app/backend/node_modules /app/node_modules
+COPY --from=backend-builder --chown=zalocrm:zalocrm /app/backend/prisma     /app/prisma
+COPY --from=backend-builder --chown=zalocrm:zalocrm /app/backend/prisma.config.ts /app/prisma.config.ts
+COPY --from=backend-builder --chown=zalocrm:zalocrm /app/backend/package.json /app/package.json
+COPY --from=frontend-builder --chown=zalocrm:zalocrm /app/frontend/dist     /app/static
 
-RUN mkdir -p /var/lib/zalo-crm/files
+RUN mkdir -p /var/lib/zalo-crm/files && chown -R zalocrm:zalocrm /var/lib/zalo-crm/files
+
+USER zalocrm
 
 EXPOSE 3000
 ENTRYPOINT ["/sbin/tini", "--"]
-# Push schema and seed DB then start server
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss --url \"$DATABASE_URL\" && npm run db:seed && node dist/app.js"]
+
+# Run migrations and start server
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/app.js"]
