@@ -163,10 +163,12 @@ async function bootstrap() {
     const staticPath = path.join(__dirname, '../static');
     logger.info(`[Static] Registering frontend assets at: ${staticPath}`);
 
+    // Serve static files with a specific match for known assets to avoid conflicts
     await app.register(fastifyStatic, {
       root: staticPath,
       prefix: '/',
-      wildcard: false, // Don't let it swallow API 404s
+      wildcard: true, // Allow serving nested assets like /assets/main.js
+      index: false,   // We'll handle index.html manually to ensure routing works
     });
 
     // Ensure root serves index.html
@@ -176,10 +178,23 @@ async function bootstrap() {
 
     // SPA fallback — serve index.html for non-API routes in production
     app.setNotFoundHandler(async (request, reply) => {
-      if (request.url.startsWith('/api/')) {
-        return reply.status(404).send({ error: 'not_found' });
+      // DEBUG: Log unknown requests that hit fallback
+      logger.debug(`[Fallback] Not Found: ${request.method} ${request.url}`);
+
+      if (request.url.startsWith('/api/') || request.url.startsWith('/health')) {
+        return reply.status(404).send({ 
+          error: 'Not Found', 
+          message: `Endpoint ${request.url} not found on backend.`,
+          timestamp: new Date().toISOString()
+        });
       }
-      return reply.sendFile('index.html');
+
+      // If it's a browser request for a page, serve index.html
+      try {
+        return await reply.sendFile('index.html');
+      } catch (err) {
+        return reply.status(404).send({ error: 'Frontend assets not found' });
+      }
     });
   }
 
