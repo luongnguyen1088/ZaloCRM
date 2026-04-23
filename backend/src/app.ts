@@ -84,26 +84,7 @@ async function bootstrap() {
     },
   });
 
-  // Serve compiled frontend assets in production
-  if (config.isProduction) {
-    const staticPath = path.join(__dirname, '../static');
-    logger.info(`[Static] Serving frontend from: ${staticPath}`);
-    
-    await app.register(fastifyStatic, {
-      root: staticPath,
-      prefix: '/',
-      wildcard: true,
-    });
-    
-    // Ensure root serves index.html
-    app.get('/', async (request, reply) => {
-      return reply.sendFile('index.html');
-    });
-  } else {
-    logger.warn(`[Static] NODE_ENV is ${config.nodeEnv}, frontend will not be served by backend.`);
-  }
-
-  // Serve uploaded files (images, attachments)
+  // Serve uploaded files (images, attachments) - this is safe to keep here as it has a specific prefix
   await app.register(fastifyStatic, {
     root: path.join(__dirname, '../uploads'),
     prefix: '/uploads/',
@@ -176,21 +157,37 @@ async function bootstrap() {
     }
   });
 
+  // ── Static Files & SPA Fallback (Must be last) ───────────────────────────
+
+  if (config.isProduction) {
+    const staticPath = path.join(__dirname, '../static');
+    logger.info(`[Static] Registering frontend assets at: ${staticPath}`);
+
+    await app.register(fastifyStatic, {
+      root: staticPath,
+      prefix: '/',
+      wildcard: false, // Don't let it swallow API 404s
+    });
+
+    // Ensure root serves index.html
+    app.get('/', async (request, reply) => {
+      return reply.sendFile('index.html');
+    });
+
+    // SPA fallback — serve index.html for non-API routes in production
+    app.setNotFoundHandler(async (request, reply) => {
+      if (request.url.startsWith('/api/')) {
+        return reply.status(404).send({ error: 'not_found' });
+      }
+      return reply.sendFile('index.html');
+    });
+  }
+
   // API version banner
   app.get('/api/v1/status', async () => {
     return { version: '1.0.0', name: 'Zalo CRM' };
   });
 
-  // SPA fallback — serve index.html for non-API routes in production
-  if (config.isProduction) {
-    app.setNotFoundHandler(async (request, reply) => {
-      if (request.url.startsWith('/api/')) {
-        return reply.status(404).send({ error: 'not_found' });
-      }
-      logger.debug(`[SPA] Fallback to index.html for: ${request.url}`);
-      return reply.sendFile('index.html');
-    });
-  }
 
   // ── Error handler ─────────────────────────────────────────────────────────
 
