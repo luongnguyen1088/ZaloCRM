@@ -97,26 +97,42 @@ export async function getRelevantKnowledge(orgId: string, zaloAccountId?: string
 export async function searchSemanticKnowledge(orgId: string, query: string, zaloAccountId?: string, limit = 5) {
   const embedding = await generateEmbedding(query);
   
-  if (!embedding) {
-    console.log('[Knowledge Service] Embedding failed, falling back to simple retrieval');
-    return getRelevantKnowledge(orgId, zaloAccountId);
-  }
-
+  // Even if embedding fails, we can still do keyword search now!
   try {
-    const vectorStr = `[${embedding.join(',')}]`;
+    const vectorStr = embedding ? `[${embedding.join(',')}]` : null;
     
-    // Use pgvector cosine distance operator <=>
-    // 1 - distance = similarity
+    // Hybrid Search using Reciprocal Rank Fusion (RRF)
+    // We search Vector (if embedding exists) and Full-Text (Keyword)
     const results = await prisma.$queryRawUnsafe<any[]>(`
-      SELECT id, title, content
-      FROM "zalocrm"."ai_knowledge"
-      WHERE org_id = $1::uuid AND is_active = true
-      AND (zalo_account_id IS NULL OR zalo_account_id = $2::uuid)
-      ORDER BY embedding <=> $3::vector
-      LIMIT $4
-    `, orgId, zaloAccountId || null, vectorStr, limit);
+      WITH vector_search AS (
+        SELECT id, title, content,
+               ROW_NUMBER() OVER (ORDER BY embedding <=> $3::vector) as rank
+        FROM "zalocrm"."ai_knowledge"
+        WHERE org_id = $1::uuid AND is_active = true
+        AND (zalo_account_id IS NULL OR zalo_account_id = $2::uuid)
+        AND $3 IS NOT NULL -- Only run if we have a vector
+        LIMIT 20
+      ),
+      keyword_search AS (
+        SELECT id, title, content,
+               ROW_NUMBER() OVER (ORDER BY ts_rank_cd(fts_tokens, websearch_to_tsquery('simple', $4)) DESC) as rank
+        FROM "zalocrm"."ai_knowledge"
+        WHERE org_id = $1::uuid AND is_active = true
+        AND (zalo_account_id IS NULL OR zalo_account_id = $2::uuid)
+        AND fts_tokens @@ websearch_to_tsquery('simple', $4)
+        LIMIT 20
+      )
+      SELECT 
+        COALESCE(vs.id, ks.id) as id,
+        COALESCE(vs.title, ks.title) as title,
+        COALESCE(vs.content, ks.content) as content,
+        (COALESCE(1.0 / (60 + vs.rank), 0.0) + COALESCE(1.0 / (60 + ks.rank), 0.0)) as score
+      FROM vector_search vs
+      FULL OUTER JOIN keyword_search ks ON vs.id = ks.id
+      ORDER BY score DESC
+      LIMIT $5
+    `, orgId, zaloAccountId || null, vectorStr, query, limit);
 
-    // Track usage for analytics
     if (results.length > 0) {
       prisma.aiKnowledge.updateMany({
         where: { id: { in: results.map(r => r.id) } },
@@ -127,19 +143,12 @@ export async function searchSemanticKnowledge(orgId: string, query: string, zalo
     return results.map(r => ({
       id: r.id,
       title: r.title,
-      content: r.content
+      content: r.content,
+      score: r.score
     }));
   } catch (err: any) {
-    console.error('[Knowledge Service] Semantic search failed:', err.message || err);
-    // If it's a DB error, we might want to know why
-    if (err.code) console.error('[Knowledge Service] DB Error Code:', err.code);
-    
-    try {
-      return getRelevantKnowledge(orgId, zaloAccountId);
-    } catch (fallbackErr) {
-      console.error('[Knowledge Service] Fallback search also failed:', fallbackErr);
-      return [];
-    }
+    console.error('[Knowledge Service] Hybrid search failed:', err.message || err);
+    return getRelevantKnowledge(orgId, zaloAccountId);
   }
 }
 
