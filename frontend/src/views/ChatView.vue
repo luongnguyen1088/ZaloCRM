@@ -35,6 +35,7 @@
             :loading="loadingMsgs"
             :sending="sendingMsg"
             :ai-suggestion="aiSuggestion"
+            :ai-suggestion-sources="aiSuggestionSources"
             :ai-loading="aiSuggestionLoading"
             @send="sendMessage"
             @ask-ai="generateAiSuggestion"

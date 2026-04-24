@@ -63,7 +63,45 @@
         </div>
         
         <div class="ai-content-box mb-3 pa-3">
-          {{ aiSuggestion }}
+          <v-textarea
+            v-model="editableAiSuggestion"
+            variant="plain"
+            hide-details
+            auto-grow
+            rows="1"
+            class="ai-editable-textarea"
+          />
+        </div>
+
+        <div v-if="aiSuggestionSources?.length" class="ai-sources mb-3 px-1">
+          <div class="text-caption font-weight-bold mb-1 opacity-60">Nguồn tham khảo:</div>
+          <div class="d-flex flex-wrap ga-2">
+            <v-chip
+              v-for="source in aiSuggestionSources"
+              :key="source.id"
+              size="x-small"
+              variant="tonal"
+              color="primary"
+              label
+              class="px-2"
+            >
+              {{ source.title }}
+            </v-chip>
+          </div>
+        </div>
+
+        <div class="d-flex flex-wrap ga-2 mb-3">
+          <v-btn
+            v-for="cmd in quickRefines"
+            :key="cmd.value"
+            variant="tonal"
+            size="x-small"
+            rounded="pill"
+            color="secondary"
+            @click="handleQuickRefine(cmd.label)"
+          >
+            {{ cmd.label }}
+          </v-btn>
         </div>
 
         <div class="d-flex ga-2">
@@ -75,7 +113,7 @@
             prepend-icon="mdi-send"
             @click="useAiSuggestion"
           >
-            Sử dụng & Gửi
+            Gửi ngay
           </v-btn>
           <v-btn 
             variant="tonal" 
@@ -159,7 +197,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick, watch } from 'vue';
 import type { Conversation, ConversationMessage } from '../types';
 
 const props = defineProps<{
@@ -168,6 +206,7 @@ const props = defineProps<{
   loading: boolean;
   sending: boolean;
   aiSuggestion: string;
+  aiSuggestionSources: any[];
   aiLoading: boolean;
 }>();
 
@@ -182,6 +221,17 @@ const inputContent = ref('');
 const scrollBox = ref<HTMLElement | null>(null);
 const isRefining = ref(false);
 const refineInstruction = ref('');
+const editableAiSuggestion = ref('');
+
+const quickRefines = [
+  { label: 'Lịch sự hơn', value: 'polite' },
+  { label: 'Ngắn gọn hơn', value: 'shorter' },
+  { label: 'Chi tiết hơn', value: 'detailed' },
+];
+
+watch(() => props.aiSuggestion, (newVal) => {
+  editableAiSuggestion.value = newVal;
+}, { immediate: true });
 
 function scrollToBottom() {
   nextTick(() => {
@@ -199,9 +249,13 @@ function handleSend() {
 }
 
 function useAiSuggestion() {
-  emit('send', props.aiSuggestion);
+  emit('send', editableAiSuggestion.value);
   emit('clear-ai');
   scrollToBottom();
+}
+
+function handleQuickRefine(instruction: string) {
+  emit('refine-ai', { content: editableAiSuggestion.value, instruction });
 }
 
 function handleRefine() {
@@ -337,6 +391,18 @@ onMounted(scrollToBottom);
   font-size: 0.95rem;
   line-height: 1.6;
   color: var(--color-primary-strong);
+}
+
+.ai-editable-textarea :deep(textarea) {
+  font-size: 0.95rem !important;
+  line-height: 1.6 !important;
+  color: var(--color-primary-strong) !important;
+  padding: 0 !important;
+}
+
+.ai-sources {
+  border-top: 1px solid var(--color-primary-soft-strong);
+  padding-top: 8px;
 }
 
 .animate__slideInUp {

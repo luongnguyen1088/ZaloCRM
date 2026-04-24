@@ -315,7 +315,15 @@ async function generateText(provider: string, apiKey: string, model: string, sys
   }
 }
 
-async function saveSuggestion(input: { orgId: string; conversationId: string; messageId?: string; type: AiTaskType; content: string; confidence: number }) {
+async function saveSuggestion(input: { 
+  orgId: string; 
+  conversationId: string; 
+  messageId?: string; 
+  type: AiTaskType; 
+  content: string; 
+  confidence: number;
+  metadata?: any;
+}) {
   return prisma.aiSuggestion.create({
     data: {
       orgId: input.orgId,
@@ -324,6 +332,7 @@ async function saveSuggestion(input: { orgId: string; conversationId: string; me
       type: input.type,
       content: input.content,
       confidence: input.confidence,
+      metadata: input.metadata || {},
     },
   });
 }
@@ -464,6 +473,7 @@ export async function generateAiOutput(input: {
     type: input.type,
     content: text,
     confidence: 1.0,
+    metadata: { sources },
   });
   await recordAiTokenUsage({
     orgId: input.orgId,

@@ -32,6 +32,7 @@ export function useChat() {
   const searchQuery = ref('');
   const accountFilter = ref<string | null>(null);
   const aiSuggestion = ref('');
+  const aiSuggestionSources = ref<any[]>([]);
   const aiSuggestionLoading = ref(false);
   const aiSuggestionError = ref('');
   const aiSummary = ref('');
@@ -49,6 +50,7 @@ export function useChat() {
 
   function clearAiState() {
     aiSuggestion.value = '';
+    aiSuggestionSources.value = [];
     aiSuggestionError.value = '';
     aiSummary.value = '';
     aiSentiment.value = null;
@@ -152,6 +154,7 @@ export function useChat() {
         customPrompt: customPrompt
       });
       aiSuggestion.value = res.data.content || '';
+      aiSuggestionSources.value = res.data.sources || [];
       await fetchAiUsage();
     } catch (err: any) {
       if (err.response?.status === 429) {
@@ -174,6 +177,7 @@ export function useChat() {
         customPrompt: instruction
       });
       aiSuggestion.value = res.data.content || '';
+      aiSuggestionSources.value = res.data.sources || [];
       await fetchAiUsage();
     } catch (err: any) {
       aiSuggestionError.value = err.response?.data?.error || 'Không thể tinh chỉnh nội dung';
@@ -297,6 +301,7 @@ export function useChat() {
     accountFilter,
     statusFilter,
     aiSuggestion,
+    aiSuggestionSources,
     aiSuggestionLoading,
     aiSuggestionError,
     aiSummary,
