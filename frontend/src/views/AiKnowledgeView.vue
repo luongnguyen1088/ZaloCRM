@@ -530,7 +530,11 @@
             hide-details
             class="mb-2"
           />
-          <p class="text-xxs text-medium-emphasis">AI sẽ dựa vào câu trả lời này để đề xuất nội dung đào tạo mới.</p>
+          <div v-if="correctDialog.proposalReason" class="mt-2 pa-2 bg-primary-lighten-5 rounded border-s-4 border-primary">
+            <div class="text-xxs font-weight-bold primary--text mb-1">GỢI Ý TỪ AI:</div>
+            <div class="text-caption italic">{{ correctDialog.proposalReason }}</div>
+          </div>
+          <p v-else class="text-xxs text-medium-emphasis mt-1">AI sẽ dựa vào các tri thức cũ và câu trả lời mới để đề xuất cách sửa tối ưu nhất.</p>
         </v-card-text>
         <v-card-actions class="pa-6 pt-0">
           <v-spacer />
@@ -631,6 +635,8 @@ const correctDialog = ref({
   question: '',
   originalAnswer: '',
   desiredAnswer: '',
+  sourceIds: [] as string[],
+  proposalReason: '',
   index: -1
 });
 
@@ -764,6 +770,8 @@ function openCorrectDialog(msg: any, index: number) {
     question: msg.question || (index > 0 ? testMessages.value[index-1].content : 'Câu hỏi không xác định'),
     originalAnswer: msg.content,
     desiredAnswer: '',
+    sourceIds: msg.sources?.map((s: any) => s.id) || [],
+    proposalReason: '',
     index
   };
 }
@@ -774,25 +782,41 @@ async function proposeFix() {
     const res = await api.post('/ai/knowledge/propose-fix', {
       question: correctDialog.value.question,
       originalAnswer: correctDialog.value.originalAnswer,
-      desiredAnswer: correctDialog.value.desiredAnswer
+      desiredAnswer: correctDialog.value.desiredAnswer,
+      sourceIds: correctDialog.value.sourceIds
     });
+    
+    const proposal = res.data;
     
     // Close correct dialog and open edit dialog with proposal
     correctDialog.value.show = false;
+    
+    const isUpdate = proposal.action === 'update' && proposal.targetId;
+    
     editDialog.value = {
       show: true,
-      isEdit: false,
+      isEdit: !!isUpdate,
       valid: true,
       item: { 
-        id: '', 
-        title: res.data.title, 
-        content: res.data.content, 
-        category: res.data.category, 
+        id: proposal.targetId || '', 
+        title: proposal.title, 
+        content: proposal.content, 
+        category: proposal.category, 
         isActive: true, 
         zaloAccountId: simAccountId.value 
       }
     };
-    toast.value = { show: true, text: 'AI đã đề xuất nội dung sửa lỗi!', color: 'success', icon: 'mdi-sparkles' };
+    
+    const toastMsg = isUpdate 
+      ? `AI đề xuất CẬP NHẬT thẻ: ${proposal.title}` 
+      : 'AI đề xuất TẠO MỚI thẻ tri thức';
+      
+    toast.value = { 
+      show: true, 
+      text: toastMsg, 
+      color: isUpdate ? 'secondary' : 'success', 
+      icon: 'mdi-sparkles' 
+    };
   } catch (err) {
     toast.value = { show: true, text: 'Không thể tạo đề xuất sửa lỗi', color: 'error', icon: 'mdi-alert' };
   } finally {

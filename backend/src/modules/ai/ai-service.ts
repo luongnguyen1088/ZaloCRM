@@ -515,6 +515,201 @@ export async function categorizeKnowledge(orgId: string, content: string) {
     outputTokens: usage.outputTokens,
     inputText: content,
     outputText: raw,
+messageId?: string; 
+  type: AiTaskType; 
+  content: string; 
+  confidence: number;
+  metadata?: any;
+}) {
+  return prisma.aiSuggestion.create({
+    data: {
+      orgId: input.orgId,
+      conversationId: input.conversationId,
+      messageId: input.messageId,
+      type: input.type,
+      content: input.content,
+      confidence: input.confidence,
+      metadata: input.metadata || {},
+    },
+  });
+}
+
+export async function generateAiOutput(input: { 
+  orgId: string; 
+  conversationId: string; 
+  type: AiTaskType; 
+  messageId?: string;
+  customPrompt?: string;
+  originalContent?: string;
+  isAutoReply?: boolean;
+  history?: MessageContext[];
+}) {
+  const [currentConfig, conversation] = await Promise.all([
+    getAiConfig(input.orgId),
+    loadConversation(input.conversationId, input.orgId),
+  ]);
+
+  if (!currentConfig.enabled) throw new Error('AI is disabled for this organization');
+
+  await assertAiTokenAvailable(input.orgId);
+  const platform = getPlatformAiProvider({ requireKey: true });
+  const provider = platform.provider;
+  const apiKey = platform.apiKey;
+
+  // Determine which model to use based on the task and provider
+  let model = platform.model;
+  if (provider === 'openrouter') {
+    const modelKey = (input.type === 'reply_draft' && input.isAutoReply) ? 'auto_reply' : input.type;
+    model = OPENROUTER_HYBRID_MODELS[modelKey] || model;
+  }
+
+  const messages = input.history || conversation.messages;
+  const contextText = buildConversationContext(messages);
+  const language = detectLanguage(contextText);
+  const customerName = conversation.contact?.fullName || 'customer';
+  
+  let userPrompt = [
+    `<conversation_context>`,
+    `Customer: ${customerName}`,
+    contextText,
+    `</conversation_context>`,
+  ].join('\n');
+
+  if (input.originalContent) {
+    userPrompt += `\n\n<current_draft>\n${input.originalContent}\n</current_draft>\nRefine the above draft based on the instruction.`;
+  }
+
+  if (input.customPrompt) {
+    userPrompt += `\n\n<instruction>\n${input.customPrompt}\n</instruction>`;
+  }
+
+  // Fetch relevant knowledge if this is a reply draft
+  let knowledgeCtx = '';
+  let sources: any[] = [];
+  if (input.type === 'reply_draft') {
+    // Determine search query from last contact message or custom prompt
+    const lastContactMsg = [...messages].reverse().find(m => m.senderType === 'contact');
+    const searchQuery = lastContactMsg?.content || input.customPrompt || '';
+    
+    const knowledgeItems = searchQuery 
+      ? await searchSemanticKnowledge(input.orgId, searchQuery, conversation.zaloAccountId)
+      : await getRelevantKnowledge(input.orgId, conversation.zaloAccountId);
+
+    sources = knowledgeItems.map(k => ({ id: k.id, title: k.title }));
+    if (knowledgeItems.length > 0) {
+      knowledgeCtx = [
+        '\n<business_knowledge>',
+        ...knowledgeItems.map(k => `[${k.title}]: ${k.content}`),
+        '</business_knowledge>',
+      ].join('\n');
+    }
+  }
+
+  const systemBase = input.type === 'reply_draft'
+    ? buildReplyDraftPrompt(language)
+    : input.type === 'summary'
+      ? buildSummaryPrompt(language)
+      : buildSentimentPrompt(language);
+
+  const system = knowledgeCtx ? `${systemBase}\nUse the following business knowledge to answer accurately:\n${knowledgeCtx}` : systemBase;
+
+  const { text: raw, usage } = await generateText(provider, apiKey, model, system, userPrompt);
+
+  if (input.type === 'sentiment') {
+    let parsed: SentimentResult;
+    try {
+      parsed = JSON.parse(raw) as SentimentResult;
+    } catch {
+      parsed = { label: 'neutral', confidence: 0.4, reason: raw };
+    }
+    const normalized = {
+      label: ['positive', 'negative', 'neutral'].includes(parsed.label) ? parsed.label : 'neutral',
+      confidence: Number.isFinite(parsed.confidence) ? Math.max(0, Math.min(1, parsed.confidence)) : 0.4,
+      reason: parsed.reason || raw,
+    };
+    await saveSuggestion({
+      orgId: input.orgId,
+      conversationId: input.conversationId,
+      messageId: input.messageId,
+      type: 'sentiment',
+      content: JSON.stringify(normalized),
+      confidence: normalized.confidence,
+    });
+    await recordAiTokenUsage({
+      orgId: input.orgId,
+      feature: 'sentiment',
+      provider,
+      model,
+      inputTokens: usage.inputTokens,
+      outputTokens: usage.outputTokens,
+      inputText: userPrompt,
+      outputText: raw,
+      metadata: { conversationId: input.conversationId, messageId: input.messageId },
+    });
+    return normalized;
+  }
+
+  // Post-processing to strip markdown bold symbols (**, __)
+  const text = raw.trim().replace(/\*\*|__/g, '');
+
+  // Persist summary to conversation if type is summary
+  if (input.type === 'summary') {
+    await prisma.conversation.update({
+      where: { id: input.conversationId },
+      data: {
+        summary: text,
+        summaryUpdatedAt: new Date(),
+      },
+    });
+  }
+
+  await saveSuggestion({
+    orgId: input.orgId,
+    conversationId: input.conversationId,
+    messageId: input.messageId,
+    type: input.type,
+    content: text,
+    confidence: 1.0,
+    metadata: { sources },
+  });
+  await recordAiTokenUsage({
+    orgId: input.orgId,
+    feature: input.type,
+    provider,
+    model,
+    inputTokens: usage.inputTokens,
+    outputTokens: usage.outputTokens,
+    inputText: userPrompt,
+    outputText: text,
+    metadata: { conversationId: input.conversationId, messageId: input.messageId },
+  });
+  return { content: text, confidence: 1.0, sources };
+}
+
+export async function categorizeKnowledge(orgId: string, content: string) {
+  const currentConfig = await getAiConfig(orgId);
+  if (!currentConfig.enabled) throw new Error('AI is disabled for this organization');
+  await assertAiTokenAvailable(orgId);
+  const platform = getPlatformAiProvider({ requireKey: true });
+  const provider = platform.provider;
+  const apiKey = platform.apiKey;
+  let model = platform.model;
+
+  if (provider === 'openrouter') {
+    model = OPENROUTER_HYBRID_MODELS['categorize'] || model;
+  }
+
+  const system = buildCategorizePrompt();
+  const { text: raw, usage } = await generateText(provider, apiKey, model, system, content);
+  await recordAiTokenUsage({
+    orgId,
+    feature: 'categorize',
+    provider,
+    model,
+    inputTokens: usage.inputTokens,
+    outputTokens: usage.outputTokens,
+    inputText: content,
+    outputText: raw,
   });
 
   try {
@@ -524,17 +719,38 @@ export async function categorizeKnowledge(orgId: string, content: string) {
     return { title: content.substring(0, 30) + '...', category: 'Chung' };
   }
 }
-export async function proposeKnowledgeFix(orgId: string, input: { question: string; originalAnswer: string; desiredAnswer: string }) {
+
+export async function proposeKnowledgeFix(orgId: string, input: { 
+  question: string; 
+  originalAnswer: string; 
+  desiredAnswer: string;
+  sourceIds?: string[];
+}) {
   const currentConfig = await getAiConfig(orgId);
   if (!currentConfig.enabled) throw new Error('AI is disabled');
   await assertAiTokenAvailable(orgId);
+  
   const platform = getPlatformAiProvider({ requireKey: true });
   const provider = platform.provider;
   const apiKey = platform.apiKey;
   let model = platform.model;
 
   if (provider === 'openrouter') {
-    model = OPENROUTER_HYBRID_MODELS['categorize'] || model; // Use the same smart model as categorize
+    model = OPENROUTER_HYBRID_MODELS['categorize'] || model;
+  }
+
+  // Fetch actual content of sources used to provide context for the fix
+  let existingContext = '';
+  if (input.sourceIds && input.sourceIds.length > 0) {
+    try {
+      const sources = await prisma.aiKnowledge.findMany({
+        where: { id: { in: input.sourceIds }, orgId: orgId },
+        select: { id: true, title: true, content: true }
+      });
+      existingContext = sources.map(s => `[ID: ${s.id}] TITLE: ${s.title}\nCONTENT: ${s.content}`).join('\n\n');
+    } catch (dbErr) {
+      console.error('[AI Fix] DB Error fetching sources:', dbErr);
+    }
   }
 
   const system = buildProposeKnowledgeFixPrompt();
@@ -543,10 +759,14 @@ export async function proposeKnowledgeFix(orgId: string, input: { question: stri
     `FLAWED AI ANSWER: ${input.originalAnswer}`,
     `USER DESIRED ANSWER: ${input.desiredAnswer}`,
     '',
-    'Based on this, propose a knowledge base entry that fixes the error.',
+    '--- EXISTING SOURCES USED ---',
+    existingContext || 'None used/found.',
+    '',
+    'Task: Analyze the gap and propose a fix. If one of the existing sources is clearly responsible for the error, recommend UPDATING it by providing its ID. Otherwise, recommend CREATING a new source.',
   ].join('\n');
 
   const { text: raw, usage } = await generateText(provider, apiKey, model, system, userPrompt);
+  
   await recordAiTokenUsage({
     orgId,
     feature: 'categorize',
@@ -559,8 +779,21 @@ export async function proposeKnowledgeFix(orgId: string, input: { question: stri
   });
 
   try {
-    return JSON.parse(raw) as { title: string; content: string; category: string };
+    return JSON.parse(raw) as { 
+      title: string; 
+      content: string; 
+      category: string; 
+      action: 'create' | 'update'; 
+      targetId?: string;
+      reason: string;
+    };
   } catch (err) {
-    return { title: `Sửa lỗi: ${input.question.substring(0, 20)}`, content: input.desiredAnswer, category: 'Khác' };
+    return { 
+      title: `Sửa lỗi: ${input.question.substring(0, 20)}`, 
+      content: input.desiredAnswer, 
+      category: 'Khác',
+      action: 'create',
+      reason: 'Failed to parse AI proposal'
+    };
   }
 }

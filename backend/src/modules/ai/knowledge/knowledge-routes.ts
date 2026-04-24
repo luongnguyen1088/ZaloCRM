@@ -77,7 +77,7 @@ export async function knowledgeRoutes(fastify: FastifyInstance) {
 
   // RLHF: Propose knowledge fix based on desired answer
   fastify.post('/propose-fix', async (request: FastifyRequest, reply) => {
-    const body = request.body as { question: string; originalAnswer: string; desiredAnswer: string };
+    const body = request.body as { question: string; originalAnswer: string; desiredAnswer: string; sourceIds?: string[] };
     if (!body.desiredAnswer) return reply.status(400).send({ error: 'Vui lòng nhập câu trả lời mong muốn' });
     
     try {
@@ -85,6 +85,7 @@ export async function knowledgeRoutes(fastify: FastifyInstance) {
       const { proposeKnowledgeFix } = await import('../ai-service.js');
       return await proposeKnowledgeFix(orgId, body);
     } catch (err: any) {
+      console.error('[AI Propose Fix Error]:', err);
       return reply.status(500).send({ error: err.message });
     }
   });
