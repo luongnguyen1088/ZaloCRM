@@ -152,8 +152,8 @@ export async function getAiConfig(orgId: string) {
 
   return { 
     ...aiConfig, 
-    provider: platform.provider,
-    model: platform.model,
+    provider: aiConfig.provider || platform.provider,
+    model: aiConfig.model || platform.model,
     maxDaily: entitlement.maxTokens,
     managed: true,
     billingMode: 'platform_managed',
