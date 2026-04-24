@@ -82,9 +82,25 @@ async function getAiEntitlement(orgId: string) {
 }
 
 function getPlatformAiProvider(options: { requireKey?: boolean } = {}) {
-  const provider = config.aiDefaultProvider.toLowerCase();
-  const model = config.aiDefaultModel;
-  const providerDef = getProviderConfig(provider);
+  let provider = config.aiDefaultProvider.toLowerCase();
+  let model = config.aiDefaultModel;
+  let providerDef = getProviderConfig(provider);
+
+  // Fallback: If default provider is missing or has no key, find any available provider
+  if (!providerDef || (options.requireKey && !providerDef.authToken)) {
+    const available = getAvailableProviders();
+    if (available.length > 0) {
+      const first = available[0];
+      const fullDef = getProviderConfig(first.id);
+      if (fullDef) {
+        provider = first.id;
+        // Use the first model of the fallback provider
+        model = first.models[0]?.value || model;
+        providerDef = fullDef;
+      }
+    }
+  }
+
   if (!providerDef) throw new Error('Platform AI provider is not configured');
   if (options.requireKey && !providerDef.authToken) throw new Error('Platform AI provider key is not configured');
   if (!model) throw new Error('Platform AI model is not configured');
