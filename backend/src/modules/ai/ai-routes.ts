@@ -40,7 +40,8 @@ function getStatusFromError(err: unknown, fallback: string) {
 
 function sendHandledError(reply: FastifyReply, err: unknown, fallback: string) {
   const handled = getStatusFromError(err, fallback);
-  const safeMessage = handled.status === 500 ? fallback : handled.message;
+  // Temporarily exposing real error for debugging
+  const safeMessage = handled.message || fallback;
   return reply.status(handled.status).send({ error: safeMessage });
 }
 
