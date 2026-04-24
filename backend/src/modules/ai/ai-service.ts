@@ -11,6 +11,7 @@ import { buildSentimentPrompt } from './prompts/sentiment.js';
 import { buildCategorizePrompt } from './prompts/categorize.js';
 import { getRelevantKnowledge } from './knowledge/knowledge-service.js';
 import { getApprovedTopupTokensForWindow } from '../billing/payment-order-service.js';
+import { buildProposeKnowledgeFixPrompt } from './prompts/propose-knowledge-fix.js';
 
 export type AiTaskType = 'reply_draft' | 'summary' | 'sentiment' | 'categorize';
 
@@ -500,5 +501,45 @@ export async function categorizeKnowledge(orgId: string, content: string) {
   } catch (err) {
     console.error('[AI Categorize Error] Failed to parse JSON:', raw);
     return { title: content.substring(0, 30) + '...', category: 'Chung' };
+  }
+}
+export async function proposeKnowledgeFix(orgId: string, input: { question: string; originalAnswer: string; desiredAnswer: string }) {
+  const currentConfig = await getAiConfig(orgId);
+  if (!currentConfig.enabled) throw new Error('AI is disabled');
+  await assertAiTokenAvailable(orgId);
+  const platform = getPlatformAiProvider({ requireKey: true });
+  const provider = platform.provider;
+  const apiKey = platform.apiKey;
+  let model = platform.model;
+
+  if (provider === 'openrouter') {
+    model = OPENROUTER_HYBRID_MODELS['categorize'] || model; // Use the same smart model as categorize
+  }
+
+  const system = buildProposeKnowledgeFixPrompt();
+  const userPrompt = [
+    `USER QUESTION: ${input.question}`,
+    `FLAWED AI ANSWER: ${input.originalAnswer}`,
+    `USER DESIRED ANSWER: ${input.desiredAnswer}`,
+    '',
+    'Based on this, propose a knowledge base entry that fixes the error.',
+  ].join('\n');
+
+  const { text: raw, usage } = await generateText(provider, apiKey, model, system, userPrompt);
+  await recordAiTokenUsage({
+    orgId,
+    feature: 'categorize',
+    provider,
+    model,
+    inputTokens: usage.inputTokens,
+    outputTokens: usage.outputTokens,
+    inputText: userPrompt,
+    outputText: raw,
+  });
+
+  try {
+    return JSON.parse(raw) as { title: string; content: string; category: string };
+  } catch (err) {
+    return { title: `Sửa lỗi: ${input.question.substring(0, 20)}`, content: input.desiredAnswer, category: 'Khác' };
   }
 }

@@ -256,6 +256,20 @@
                     </v-chip>
                   </div>
                 </div>
+
+                <!-- RLHF Action -->
+                <div v-if="msg.role === 'ai'" class="mt-1">
+                  <v-btn 
+                    variant="text" 
+                    size="x-small" 
+                    color="primary" 
+                    prepend-icon="mdi-auto-fix" 
+                    class="px-1 opacity-60 hover-opacity-100"
+                    @click="openCorrectDialog(msg, i)"
+                  >
+                    Chưa hài lòng? Sửa câu trả lời
+                  </v-btn>
+                </div>
               </div>
             </div>
 
@@ -491,6 +505,49 @@
       </v-card>
     </v-dialog>
 
+    <!-- RLHF Correction Dialog -->
+    <v-dialog v-model="correctDialog.show" max-width="600">
+      <v-card class="form-dialog">
+        <v-toolbar color="secondary" density="comfortable">
+          <v-toolbar-title class="text-subtitle-1 font-weight-bold">Dạy AI trả lời đúng</v-toolbar-title>
+          <v-btn icon @click="correctDialog.show = false"><v-icon>mdi-close</v-icon></v-btn>
+        </v-toolbar>
+        <v-card-text class="pa-6">
+          <div class="mb-4">
+            <div class="text-caption font-weight-bold mb-1 opacity-60">CÂU HỎI CỦA KHÁCH:</div>
+            <div class="pa-3 bg-grey-lighten-4 rounded-lg text-body-2">{{ correctDialog.question }}</div>
+          </div>
+          <div class="mb-4">
+            <div class="text-caption font-weight-bold mb-1 opacity-60">AI ĐÃ TRẢ LỜI (CHƯA TỐT):</div>
+            <div class="pa-3 bg-grey-lighten-4 rounded-lg text-body-2 italic opacity-60">{{ correctDialog.originalAnswer }}</div>
+          </div>
+          <v-textarea
+            v-model="correctDialog.desiredAnswer"
+            label="Câu trả lời bạn mong muốn"
+            placeholder="Hãy viết cách bạn muốn AI trả lời trong trường hợp này..."
+            variant="outlined"
+            rows="4"
+            hide-details
+            class="mb-2"
+          />
+          <p class="text-xxs text-medium-emphasis">AI sẽ dựa vào câu trả lời này để đề xuất nội dung đào tạo mới.</p>
+        </v-card-text>
+        <v-card-actions class="pa-6 pt-0">
+          <v-spacer />
+          <v-btn variant="text" @click="correctDialog.show = false">Hủy</v-btn>
+          <v-btn 
+            color="primary" 
+            variant="flat" 
+            :loading="correctDialog.loading"
+            :disabled="!correctDialog.desiredAnswer.trim()"
+            @click="proposeFix"
+          >
+            Phân tích & Đề xuất
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <!-- Success Snackbar -->
     <v-snackbar v-model="toast.show" :color="toast.color" rounded="pill">
       <v-icon class="mr-2">{{ toast.icon }}</v-icon> {{ toast.text }}
@@ -566,6 +623,15 @@ const editDialog = ref({
   isEdit: false,
   valid: true,
   item: { id: '', title: '', content: '', category: 'Chung', isActive: true, zaloAccountId: null as string | null }
+});
+
+const correctDialog = ref({
+  show: false,
+  loading: false,
+  question: '',
+  originalAnswer: '',
+  desiredAnswer: '',
+  index: -1
 });
 
 const deleteDialog = ref({ show: false, item: null as any });
@@ -667,7 +733,8 @@ async function runTest() {
     testMessages.value.push({ 
       role: 'ai', 
       content: res.data.content,
-      sources: res.data.sources || [] 
+      sources: res.data.sources || [],
+      question: q // Store question for RLHF
     });
     loadData();
   } catch (err: any) {
@@ -675,6 +742,49 @@ async function runTest() {
   } finally {
     testing.value = false;
     scrollToBottom();
+  }
+}
+
+function openCorrectDialog(msg: any, index: number) {
+  correctDialog.value = {
+    show: true,
+    loading: false,
+    question: msg.question || (index > 0 ? testMessages.value[index-1].content : 'Câu hỏi không xác định'),
+    originalAnswer: msg.content,
+    desiredAnswer: '',
+    index
+  };
+}
+
+async function proposeFix() {
+  correctDialog.value.loading = true;
+  try {
+    const res = await api.post('/ai/knowledge/propose-fix', {
+      question: correctDialog.value.question,
+      originalAnswer: correctDialog.value.originalAnswer,
+      desiredAnswer: correctDialog.value.desiredAnswer
+    });
+    
+    // Close correct dialog and open edit dialog with proposal
+    correctDialog.value.show = false;
+    editDialog.value = {
+      show: true,
+      isEdit: false,
+      valid: true,
+      item: { 
+        id: '', 
+        title: res.data.title, 
+        content: res.data.content, 
+        category: res.data.category, 
+        isActive: true, 
+        zaloAccountId: simAccountId.value 
+      }
+    };
+    toast.value = { show: true, text: 'AI đã đề xuất nội dung sửa lỗi!', color: 'success', icon: 'mdi-sparkles' };
+  } catch (err) {
+    toast.value = { show: true, text: 'Không thể tạo đề xuất sửa lỗi', color: 'error', icon: 'mdi-alert' };
+  } finally {
+    correctDialog.value.loading = false;
   }
 }
 

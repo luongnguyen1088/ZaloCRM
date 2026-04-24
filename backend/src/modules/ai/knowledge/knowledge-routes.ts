@@ -73,4 +73,18 @@ export async function knowledgeRoutes(fastify: FastifyInstance) {
       return { title: 'Kiến thức mới', category: 'Chung' };
     }
   });
+
+  // RLHF: Propose knowledge fix based on desired answer
+  fastify.post('/propose-fix', async (request: FastifyRequest, reply) => {
+    const body = request.body as { question: string; originalAnswer: string; desiredAnswer: string };
+    if (!body.desiredAnswer) return reply.status(400).send({ error: 'Vui lòng nhập câu trả lời mong muốn' });
+    
+    try {
+      const orgId = request.user!.orgId;
+      const { proposeKnowledgeFix } = await import('../ai-service.js');
+      return await proposeKnowledgeFix(orgId, body);
+    } catch (err: any) {
+      return reply.status(500).send({ error: err.message });
+    }
+  });
 }
