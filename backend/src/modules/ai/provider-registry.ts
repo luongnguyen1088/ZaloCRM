@@ -80,9 +80,9 @@ function buildProviders(): ProviderDef[] {
       baseUrl: config.openrouterBaseUrl,
       authToken: config.openrouterAuthToken,
       models: [
-        m('Claude 3.5 Sonnet', config.openrouterDefaultModel),
+        m('Claude 3.7 Sonnet', config.openrouterDefaultModel),
+        m('Claude Sonnet 4.6', 'anthropic/claude-sonnet-4.6'),
         m('GPT-4o', 'openai/gpt-4o'),
-        m('Claude 3 Opus', 'anthropic/claude-3-opus'),
         m('Gemini Pro 1.5', 'google/gemini-pro-1.5'),
       ].filter(Boolean) as ProviderModel[],
     },

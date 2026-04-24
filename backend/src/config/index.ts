@@ -60,7 +60,7 @@ export const config = {
 
   openrouterBaseUrl: process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1',
   openrouterAuthToken: process.env.OPENROUTER_AUTH_TOKEN || process.env.OPENROUTER_API_KEY || '',
-  openrouterDefaultModel: process.env.OPENROUTER_DEFAULT_MODEL || 'anthropic/claude-3.5-sonnet',
+  openrouterDefaultModel: process.env.OPENROUTER_DEFAULT_MODEL || 'anthropic/claude-3.7-sonnet',
 
   isProduction: process.env.NODE_ENV === 'production',
 };

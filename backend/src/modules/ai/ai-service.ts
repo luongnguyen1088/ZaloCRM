@@ -166,10 +166,11 @@ export async function getAiConfig(orgId: string) {
     console.log(`[AI Settings] Found config in DB:`, JSON.stringify(aiConfig));
   }
 
+  const finalConfig = aiConfig as any;
   return { 
-    ...aiConfig, 
-    provider: aiConfig.provider || platform.provider,
-    model: aiConfig.model || platform.model,
+    ...finalConfig, 
+    provider: finalConfig.provider || platform.provider,
+    model: finalConfig.model || platform.model,
     maxDaily: entitlement.maxTokens,
     managed: true,
     billingMode: 'platform_managed',
