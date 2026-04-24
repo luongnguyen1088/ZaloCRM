@@ -110,8 +110,8 @@ export async function searchSemanticKnowledge(orgId: string, query: string, zalo
     const results = await prisma.$queryRawUnsafe<any[]>(`
       SELECT id, title, content
       FROM "zalocrm"."ai_knowledge"
-      WHERE org_id = $1 AND is_active = true
-      AND (zalo_account_id IS NULL OR zalo_account_id = $2)
+      WHERE org_id = $1::uuid AND is_active = true
+      AND (zalo_account_id IS NULL OR zalo_account_id = $2::uuid)
       ORDER BY embedding <=> $3::vector
       LIMIT $4
     `, orgId, zaloAccountId || null, vectorStr, limit);
@@ -129,9 +129,17 @@ export async function searchSemanticKnowledge(orgId: string, query: string, zalo
       title: r.title,
       content: r.content
     }));
-  } catch (err) {
-    console.error('[Knowledge Service] Semantic search failed:', err);
-    return getRelevantKnowledge(orgId, zaloAccountId);
+  } catch (err: any) {
+    console.error('[Knowledge Service] Semantic search failed:', err.message || err);
+    // If it's a DB error, we might want to know why
+    if (err.code) console.error('[Knowledge Service] DB Error Code:', err.code);
+    
+    try {
+      return getRelevantKnowledge(orgId, zaloAccountId);
+    } catch (fallbackErr) {
+      console.error('[Knowledge Service] Fallback search also failed:', fallbackErr);
+      return [];
+    }
   }
 }
 
