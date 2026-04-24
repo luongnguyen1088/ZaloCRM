@@ -14,6 +14,18 @@ import { getApprovedTopupTokensForWindow } from '../billing/payment-order-servic
 
 export type AiTaskType = 'reply_draft' | 'summary' | 'sentiment' | 'categorize';
 
+/**
+ * Hybrid model mapping for OpenRouter.
+ * We use specialized models for each task to balance speed, cost, and quality.
+ */
+const OPENROUTER_HYBRID_MODELS: Record<AiTaskType | 'auto_reply', string> = {
+  reply_draft: 'google/gemini-2.0-flash-001',   // Newest Flash for human suggestions
+  auto_reply: 'anthropic/claude-3.5-sonnet',   // High quality for automated chat
+  summary: 'google/gemini-2.0-flash-001',      // Large context, cheap for summaries
+  sentiment: 'openai/gpt-4o-mini',             // Fast & accurate for classification
+  categorize: 'openai/gpt-4o',                // Intelligent for knowledge structure
+};
+
 type MessageContext = { senderType: string; senderName: string | null; content: string | null; sentAt: Date };
 type SentimentResult = { label: 'positive' | 'neutral' | 'negative'; confidence: number; reason: string };
 
@@ -322,6 +334,7 @@ export async function generateAiOutput(input: {
   messageId?: string;
   customPrompt?: string;
   originalContent?: string;
+  isAutoReply?: boolean;
 }) {
   const [currentConfig, conversation] = await Promise.all([
     getAiConfig(input.orgId),
@@ -334,6 +347,13 @@ export async function generateAiOutput(input: {
   const platform = getPlatformAiProvider({ requireKey: true });
   const provider = platform.provider;
   const apiKey = platform.apiKey;
+
+  // Determine which model to use based on the task and provider
+  let model = platform.model;
+  if (provider === 'openrouter') {
+    const modelKey = (input.type === 'reply_draft' && input.isAutoReply) ? 'auto_reply' : input.type;
+    model = OPENROUTER_HYBRID_MODELS[modelKey] || model;
+  }
 
   const contextText = buildConversationContext(conversation.messages);
   const language = detectLanguage(contextText);
@@ -375,7 +395,6 @@ export async function generateAiOutput(input: {
 
   const system = knowledgeCtx ? `${systemBase}\nUse the following business knowledge to answer accurately:\n${knowledgeCtx}` : systemBase;
 
-  const model = platform.model;
   const { text: raw, usage } = await generateText(provider, apiKey, model, system, userPrompt);
 
   if (input.type === 'sentiment') {
@@ -455,7 +474,11 @@ export async function categorizeKnowledge(orgId: string, content: string) {
   const platform = getPlatformAiProvider({ requireKey: true });
   const provider = platform.provider;
   const apiKey = platform.apiKey;
-  const model = platform.model;
+  let model = platform.model;
+
+  if (provider === 'openrouter') {
+    model = OPENROUTER_HYBRID_MODELS['categorize'] || model;
+  }
 
   const system = buildCategorizePrompt();
   const { text: raw, usage } = await generateText(provider, apiKey, model, system, content);

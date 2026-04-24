@@ -21,6 +21,7 @@ export async function aiReplyAction(input: {
       orgId: input.orgId,
       conversationId: input.conversationId,
       type: 'reply_draft',
+      isAutoReply: true,
     });
 
     // 2. Check confidence threshold
