@@ -37,3 +37,21 @@ export async function generateWithGemini(baseUrl: string, apiKey: string, model:
     clearTimeout(timeout);
   }
 }
+
+export async function embedTextWithGemini(baseUrl: string, apiKey: string, text: string) {
+  const url = `${baseUrl}/v1beta/models/text-embedding-004:embedContent?key=${encodeURIComponent(apiKey)}`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      content: { parts: [{ text }] },
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Gemini embedding failed with status ${response.status}`);
+  }
+
+  const data = await response.json() as { embedding: { values: number[] } };
+  return data.embedding.values;
+}

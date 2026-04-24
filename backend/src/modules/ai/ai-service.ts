@@ -9,7 +9,7 @@ import { buildReplyDraftPrompt } from './prompts/reply-draft.js';
 import { buildSummaryPrompt } from './prompts/summary.js';
 import { buildSentimentPrompt } from './prompts/sentiment.js';
 import { buildCategorizePrompt } from './prompts/categorize.js';
-import { getRelevantKnowledge } from './knowledge/knowledge-service.js';
+import { getRelevantKnowledge, searchSemanticKnowledge } from './knowledge/knowledge-service.js';
 import { getApprovedTopupTokensForWindow } from '../billing/payment-order-service.js';
 import { buildProposeKnowledgeFixPrompt } from './prompts/propose-knowledge-fix.js';
 
@@ -381,7 +381,14 @@ export async function generateAiOutput(input: {
   let knowledgeCtx = '';
   let sources: any[] = [];
   if (input.type === 'reply_draft') {
-    const knowledgeItems = await getRelevantKnowledge(input.orgId, conversation.zaloAccountId);
+    // Determine search query from last contact message or custom prompt
+    const lastContactMsg = [...messages].reverse().find(m => m.senderType === 'contact');
+    const searchQuery = lastContactMsg?.content || input.customPrompt || '';
+    
+    const knowledgeItems = searchQuery 
+      ? await searchSemanticKnowledge(input.orgId, searchQuery, conversation.zaloAccountId)
+      : await getRelevantKnowledge(input.orgId, conversation.zaloAccountId);
+
     sources = knowledgeItems.map(k => ({ id: k.id, title: k.title }));
     if (knowledgeItems.length > 0) {
       knowledgeCtx = [

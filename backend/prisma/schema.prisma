@@ -585,6 +585,7 @@ model AiKnowledge {
   category  String?  @default("general")
   isActive  Boolean  @default(true) @map("is_active")
   useCount  Int      @default(0) @map("use_count")
+  embedding Unsupported("vector(768)")?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
