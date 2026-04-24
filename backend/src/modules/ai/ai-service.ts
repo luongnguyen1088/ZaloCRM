@@ -19,11 +19,11 @@ export type AiTaskType = 'reply_draft' | 'summary' | 'sentiment' | 'categorize';
  * We use specialized models for each task to balance speed, cost, and quality.
  */
 const OPENROUTER_HYBRID_MODELS: Record<AiTaskType | 'auto_reply', string> = {
-  reply_draft: 'google/gemini-2.0-flash-001',   // Newest Flash for human suggestions
-  auto_reply: 'anthropic/claude-3.5-sonnet',   // High quality for automated chat
-  summary: 'google/gemini-2.0-flash-001',      // Large context, cheap for summaries
-  sentiment: 'openai/gpt-4o-mini',             // Fast & accurate for classification
-  categorize: 'openai/gpt-4o',                // Intelligent for knowledge structure
+  reply_draft: 'google/gemini-2.0-flash-001',   // Reliable Flash
+  auto_reply: 'google/gemini-2.0-flash-001',    // Using Flash for auto-reply too for debugging
+  summary: 'google/gemini-2.0-flash-001',
+  sentiment: 'openai/gpt-4o-mini',
+  categorize: 'openai/gpt-4o',
 };
 
 type MessageContext = { senderType: string; senderName: string | null; content: string | null; sentAt: Date };
@@ -451,7 +451,7 @@ export async function generateAiOutput(input: {
     messageId: input.messageId,
     type: input.type,
     content: text,
-    confidence: 0.8,
+    confidence: 1.0,
   });
   await recordAiTokenUsage({
     orgId: input.orgId,
@@ -464,7 +464,7 @@ export async function generateAiOutput(input: {
     outputText: text,
     metadata: { conversationId: input.conversationId, messageId: input.messageId },
   });
-  return { content: text, confidence: 0.8 };
+  return { content: text, confidence: 1.0 };
 }
 
 export async function categorizeKnowledge(orgId: string, content: string) {

@@ -16,6 +16,7 @@ export async function aiReplyAction(input: {
   if (!input.threadId) return null;
 
   try {
+    logger.info(`[automation] Generating AI Reply for conv: ${input.conversationId}`);
     // 1. Generate response using AI Service (RAG)
     const result = await generateAiOutput({
       orgId: input.orgId,
@@ -23,6 +24,7 @@ export async function aiReplyAction(input: {
       type: 'reply_draft',
       isAutoReply: true,
     });
+    logger.info(`[automation] AI Result confidence: ${result.confidence}`);
 
     // 2. Check confidence threshold
     const threshold = input.confidenceThreshold ?? 0.8;
