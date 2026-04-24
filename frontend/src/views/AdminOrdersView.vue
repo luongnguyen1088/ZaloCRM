@@ -459,7 +459,11 @@ async function fetchOrders() {
     orders.value = res.data;
   } catch (err: any) {
     console.error('Failed to load payment orders', err);
-    error.value = 'Không thể tải danh sách đơn thanh toán. Vui lòng thử lại sau.';
+    if (err.response?.status === 403) {
+      error.value = 'Bạn không có quyền truy cập trang này. Nếu bạn vừa được cấp quyền Admin, hãy Đăng xuất và Đăng nhập lại để cập nhật phiên làm việc.';
+    } else {
+      error.value = 'Không thể tải danh sách đơn thanh toán. Lỗi: ' + (err.response?.data?.error || err.message);
+    }
   } finally {
     loading.value = false;
   }
