@@ -86,7 +86,7 @@ const { isMobile } = useMobile();
 const {
   conversations, selectedConvId, selectedConv, messages,
   loadingConvs, loadingMsgs, sendingMsg, searchQuery, accountFilter, statusFilter,
-  aiSuggestion, aiSuggestionLoading, aiSummary, aiSummaryLoading, aiSentiment, aiSentimentLoading,
+  aiSuggestion, aiSuggestionSources, aiSuggestionLoading, aiSummary, aiSummaryLoading, aiSentiment, aiSentimentLoading,
   isAiQuotaExceeded,
   fetchConversations, fetchAiConfig, selectConversation, sendMessage,
   generateAiSuggestion, refineAiSuggestion, generateAiSummary, generateAiSentiment,
