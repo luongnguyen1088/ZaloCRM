@@ -58,6 +58,7 @@ export async function knowledgeRoutes(fastify: FastifyInstance) {
       orgId,
       conversationId: recentConv.id,
       type: 'reply_draft',
+      history: (request.body as any).history,
       customPrompt: `Vào vai trợ lý phản hồi câu hỏi thử nghiệm của người dùng: "${question}". Hãy ưu tiên sử dụng kiến thức doanh nghiệp đã nạp.`
     });
   });

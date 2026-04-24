@@ -729,7 +729,19 @@ async function runTest() {
   testing.value = true;
   scrollToBottom();
   try {
-    const res = await api.post('/ai/knowledge/test', { question: q, zaloAccountId: simAccountId.value });
+    // Map existing messages to backend format for context
+    const history = testMessages.value.map(m => ({
+      senderType: m.role === 'user' ? 'other' : 'self',
+      senderName: m.role === 'user' ? 'customer' : 'AI Agent',
+      content: m.content,
+      sentAt: new Date()
+    }));
+
+    const res = await api.post('/ai/knowledge/test', { 
+      question: q, 
+      zaloAccountId: simAccountId.value,
+      history // Send the full history
+    });
     testMessages.value.push({ 
       role: 'ai', 
       content: res.data.content,

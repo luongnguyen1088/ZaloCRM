@@ -336,6 +336,7 @@ export async function generateAiOutput(input: {
   customPrompt?: string;
   originalContent?: string;
   isAutoReply?: boolean;
+  history?: MessageContext[];
 }) {
   const [currentConfig, conversation] = await Promise.all([
     getAiConfig(input.orgId),
@@ -356,7 +357,8 @@ export async function generateAiOutput(input: {
     model = OPENROUTER_HYBRID_MODELS[modelKey] || model;
   }
 
-  const contextText = buildConversationContext(conversation.messages);
+  const messages = input.history || conversation.messages;
+  const contextText = buildConversationContext(messages);
   const language = detectLanguage(contextText);
   const customerName = conversation.contact?.fullName || 'customer';
   
