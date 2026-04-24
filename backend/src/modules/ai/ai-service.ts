@@ -376,8 +376,10 @@ export async function generateAiOutput(input: {
 
   // Fetch relevant knowledge if this is a reply draft
   let knowledgeCtx = '';
+  let sources: any[] = [];
   if (input.type === 'reply_draft') {
     const knowledgeItems = await getRelevantKnowledge(input.orgId, conversation.zaloAccountId);
+    sources = knowledgeItems.map(k => ({ id: k.id, title: k.title }));
     if (knowledgeItems.length > 0) {
       knowledgeCtx = [
         '\n<business_knowledge>',
@@ -464,7 +466,7 @@ export async function generateAiOutput(input: {
     outputText: text,
     metadata: { conversationId: input.conversationId, messageId: input.messageId },
   });
-  return { content: text, confidence: 1.0 };
+  return { content: text, confidence: 1.0, sources };
 }
 
 export async function categorizeKnowledge(orgId: string, content: string) {

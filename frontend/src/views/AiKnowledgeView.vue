@@ -136,7 +136,7 @@
 
             <v-row v-else-if="filteredItems.length" dense>
               <v-col v-for="item in filteredItems" :key="item.id" cols="12">
-                <v-card class="knowledge-card mb-3" elevation="0" border>
+                <v-card :id="`knowledge-${item.id}`" class="knowledge-card mb-3" elevation="0" border>
                   <div class="d-flex pa-4">
                     <div class="mr-4 mt-1">
                       <v-avatar color="primary-lighten-4" size="40">
@@ -225,10 +225,37 @@
             </div>
             
             <div v-for="(msg, i) in testMessages" :key="i" 
-                 :class="['d-flex mb-4', msg.role === 'user' ? 'justify-end' : 'justify-start']">
-              <div :class="['message-bubble', msg.role === 'user' ? 'user-bubble' : 'ai-bubble']">
-                <div v-if="msg.role === 'ai'" class="text-caption font-weight-bold mb-1 primary--text">AI Agent ({{ currentSimAccountName }})</div>
-                {{ msg.content }}
+                 :class="['d-flex mb-4 fade-in', msg.role === 'user' ? 'justify-end' : 'justify-start']">
+              <div :class="['message-bubble-wrapper', msg.role === 'user' ? 'user-wrapper' : 'ai-wrapper']">
+                <div v-if="msg.role === 'ai'" class="text-caption font-weight-bold mb-1 primary--text d-flex align-center">
+                  <v-icon size="14" class="mr-1">mdi-robot-outline</v-icon>
+                  AI Agent ({{ currentSimAccountName }})
+                </div>
+                
+                <div :class="['message-bubble', msg.role === 'user' ? 'zalo-user-bubble' : 'zalo-ai-bubble']">
+                  {{ msg.content }}
+                </div>
+
+                <!-- Sources display -->
+                <div v-if="msg.sources && msg.sources.length" class="sources-container mt-2">
+                  <div class="text-xxs font-weight-bold opacity-60 mb-1 d-flex align-center">
+                    <v-icon size="10" class="mr-1">mdi-book-open-variant</v-icon> TRÍ THỨC ĐÃ DÙNG:
+                  </div>
+                  <div class="d-flex flex-wrap gap-1">
+                    <v-chip 
+                      v-for="src in msg.sources" 
+                      :key="src.id" 
+                      size="x-small" 
+                      variant="tonal" 
+                      color="secondary" 
+                      class="px-2 source-chip"
+                      @click="jumpToKnowledge(src.id)"
+                    >
+                      {{ src.title }}
+                      <v-icon end size="10" class="ml-1">mdi-arrow-right</v-icon>
+                    </v-chip>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -637,7 +664,11 @@ async function runTest() {
   scrollToBottom();
   try {
     const res = await api.post('/ai/knowledge/test', { question: q, zaloAccountId: simAccountId.value });
-    testMessages.value.push({ role: 'ai', content: res.data.content });
+    testMessages.value.push({ 
+      role: 'ai', 
+      content: res.data.content,
+      sources: res.data.sources || [] 
+    });
     loadData();
   } catch (err: any) {
     testMessages.value.push({ role: 'ai', content: 'Lỗi: ' + (err.response?.data?.error || 'Không tìm thấy ngữ cảnh') });
@@ -645,6 +676,28 @@ async function runTest() {
     testing.value = false;
     scrollToBottom();
   }
+}
+
+function jumpToKnowledge(id: string) {
+  search.value = '';
+  filterCategory.value = 'Tất cả';
+  filterAccount.value = 'Tất cả tài khoản';
+  
+  nextTick(() => {
+    const item = items.value.find(i => i.id === id);
+    if (item) {
+      // Highlight the item briefly
+      const el = document.getElementById(`knowledge-${id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('highlight-pulse');
+        setTimeout(() => el.classList.remove('highlight-pulse'), 2000);
+      } else {
+        // If not in DOM yet (e.g. filtered), edit it
+        editItem(item);
+      }
+    }
+  });
 }
 
 function scrollToBottom() {
@@ -726,24 +779,74 @@ onMounted(() => {
   backdrop-filter: blur(16px);
 }
 
-.message-bubble {
-  padding: 10px 16px;
-  border-radius: 18px;
+.message-bubble-wrapper {
   max-width: 85%;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-wrapper { align-items: flex-end; }
+.ai-wrapper { align-items: flex-start; }
+
+.message-bubble {
+  padding: 10px 14px;
   font-size: 14px;
+  line-height: 1.5;
+  position: relative;
 }
 
-.user-bubble {
-  background: var(--gradient-brand);
-  color: var(--color-text-inverse);
-  border-bottom-right-radius: 4px;
+.zalo-user-bubble {
+  background: #0068ff; /* Zalo Blue */
+  color: white;
+  border-radius: 18px 18px 4px 18px;
+  box-shadow: 0 2px 4px rgba(0, 104, 255, 0.2);
 }
 
-.ai-bubble {
-  background: var(--color-surface);
-  color: var(--color-text);
-  border-bottom-left-radius: 4px;
-  border: 1px solid var(--color-border);
+.zalo-ai-bubble {
+  background: white;
+  color: #1e1e1e;
+  border-radius: 18px 18px 18px 4px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.sources-container {
+  max-width: 100%;
+}
+
+.source-chip {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 10px !important;
+  background: rgba(var(--v-theme-secondary), 0.1) !important;
+}
+
+.source-chip:hover {
+  background: rgba(var(--v-theme-secondary), 0.2) !important;
+  transform: scale(1.05);
+}
+
+.text-xxs {
+  font-size: 9px;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.highlight-pulse {
+  animation: pulseHighlight 2s ease;
+}
+
+@keyframes pulseHighlight {
+  0% { border-color: var(--color-primary); box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0.4); }
+  50% { border-color: var(--color-primary); box-shadow: 0 0 0 10px rgba(var(--v-theme-primary), 0); }
+  100% { border-color: var(--color-border); }
 }
 
 .custom-scrollbar::-webkit-scrollbar {
