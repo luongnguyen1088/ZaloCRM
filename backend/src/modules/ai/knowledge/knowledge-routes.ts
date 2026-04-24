@@ -32,40 +32,35 @@ export async function knowledgeRoutes(fastify: FastifyInstance) {
 
   // Simulator: Test knowledge without a real conversation
   fastify.post('/test', async (request: FastifyRequest, reply) => {
-    try {
-      const { question, zaloAccountId } = request.body as { question: string; zaloAccountId?: string };
-      const orgId = request.user!.orgId;
+    const { question, zaloAccountId } = request.body as { question: string; zaloAccountId?: string };
+    const orgId = request.user!.orgId;
 
-      if (!question) return reply.status(400).send({ error: 'Vui lòng nhập câu hỏi' });
+    if (!question) return reply.status(400).send({ error: 'Vui lòng nhập câu hỏi' });
 
-      // Find conversation in this org, optionally filtered by Zalo account
-      const recentConv = await prisma.conversation.findFirst({
-        where: { 
-          orgId,
-          zaloAccountId: zaloAccountId || undefined
-        },
-        orderBy: { createdAt: 'desc' },
-        select: { id: true }
-      });
-
-      if (!recentConv) {
-        const errorMsg = zaloAccountId 
-          ? 'Không tìm thấy hội thoại mẫu cho tài khoản Zalo này. Hãy nhắn tin vào Zalo này trước.' 
-          : 'Cần ít nhất 1 cuộc hội thoại trong hệ thống để thử nghiệm';
-        return reply.status(400).send({ error: errorMsg });
-      }
-
-      return await generateAiOutput({
+    // Find conversation in this org, optionally filtered by Zalo account
+    const recentConv = await prisma.conversation.findFirst({
+      where: { 
         orgId,
-        conversationId: recentConv.id,
-        type: 'reply_draft',
-        history: (request.body as any).history,
-        customPrompt: `Vào vai trợ lý phản hồi câu hỏi thử nghiệm của người dùng: "${question}". Hãy ưu tiên sử dụng kiến thức doanh nghiệp đã nạp.`
-      });
-    } catch (err: any) {
-      console.error('[AI Test Route Error]:', err);
-      return reply.status(500).send({ error: `Backend Error: ${err.message}` });
+        zaloAccountId: zaloAccountId || undefined
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true }
+    });
+
+    if (!recentConv) {
+      const errorMsg = zaloAccountId 
+        ? 'Không tìm thấy hội thoại mẫu cho tài khoản Zalo này. Hãy nhắn tin vào Zalo này trước.' 
+        : 'Cần ít nhất 1 cuộc hội thoại trong hệ thống để thử nghiệm';
+      return reply.status(400).send({ error: errorMsg });
     }
+
+    return generateAiOutput({
+      orgId,
+      conversationId: recentConv.id,
+      type: 'reply_draft',
+      history: (request.body as any).history,
+      customPrompt: `Vào vai trợ lý phản hồi câu hỏi thử nghiệm của người dùng: "${question}". Hãy ưu tiên sử dụng kiến thức doanh nghiệp đã nạp.`
+    });
   });
 
   // AI Smart Add: Analyze and categorize content automatically

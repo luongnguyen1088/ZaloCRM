@@ -20,9 +20,9 @@ export type AiTaskType = 'reply_draft' | 'summary' | 'sentiment' | 'categorize';
  * We use specialized models for each task to balance speed, cost, and quality.
  */
 const OPENROUTER_HYBRID_MODELS: Record<AiTaskType | 'auto_reply', string> = {
-  reply_draft: 'google/gemini-2.0-flash-001',   // Reliable Flash
-  auto_reply: 'google/gemini-2.0-flash-001',    // Using Flash for auto-reply too for debugging
-  summary: 'google/gemini-2.0-flash-001',
+  reply_draft: 'anthropic/claude-3-haiku',        // Fast & Stable
+  auto_reply: 'anthropic/claude-3-haiku',
+  summary: 'anthropic/claude-3-haiku',
   sentiment: 'openai/gpt-4o-mini',
   categorize: 'openai/gpt-4o',
 };
