@@ -146,41 +146,74 @@ export function useChat() {
 
   async function generateAiSuggestion(customPrompt?: string) {
     if (!selectedConvId.value) return;
-    aiSuggestionLoading.value = true;
-    aiSuggestionError.value = '';
-    try {
-      const res = await api.post('/ai/suggest', { 
-        conversationId: selectedConvId.value,
-        customPrompt: customPrompt
-      });
-      aiSuggestion.value = res.data.content || '';
-      aiSuggestionSources.value = res.data.sources || [];
-      await fetchAiUsage();
-    } catch (err: any) {
-      if (err.response?.status === 429) {
-        isAiQuotaExceeded.value = true;
-      }
-      aiSuggestionError.value = err.response?.data?.error || 'Không thể tạo gợi ý AI';
-    } finally {
-      aiSuggestionLoading.value = false;
-    }
+    await streamAiSuggestion({ 
+      conversationId: selectedConvId.value,
+      customPrompt: customPrompt
+    });
   }
 
   async function refineAiSuggestion(content: string, instruction: string) {
     if (!selectedConvId.value) return;
+    await streamAiSuggestion({
+      conversationId: selectedConvId.value,
+      originalContent: content,
+      customPrompt: instruction
+    });
+  }
+
+  async function streamAiSuggestion(body: any) {
     aiSuggestionLoading.value = true;
+    aiSuggestion.value = '';
+    aiSuggestionSources.value = [];
     aiSuggestionError.value = '';
+
     try {
-      const res = await api.post('/ai/suggest', {
-        conversationId: selectedConvId.value,
-        originalContent: content,
-        customPrompt: instruction
+      const response = await fetch('/api/v1/ai/suggest/stream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(body)
       });
-      aiSuggestion.value = res.data.content || '';
-      aiSuggestionSources.value = res.data.sources || [];
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || 'Không thể tạo gợi ý AI');
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) return;
+
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed === 'data: [DONE]') continue;
+          if (trimmed.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(trimmed.slice(6));
+              if (data.chunk) {
+                aiSuggestion.value += data.chunk;
+              }
+              if (data.error) throw new Error(data.error);
+            } catch (e) { /* ignore */ }
+          }
+        }
+      }
       await fetchAiUsage();
     } catch (err: any) {
-      aiSuggestionError.value = err.response?.data?.error || 'Không thể tinh chỉnh nội dung';
+      aiSuggestionError.value = err.message || 'Lỗi kết nối AI';
+      if (err.message?.includes('quota')) isAiQuotaExceeded.value = true;
     } finally {
       aiSuggestionLoading.value = false;
     }

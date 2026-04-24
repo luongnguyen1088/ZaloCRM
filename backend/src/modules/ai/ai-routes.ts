@@ -2,7 +2,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { authMiddleware } from '../auth/auth-middleware.js';
 import { requireRole } from '../auth/role-middleware.js';
 import { requireZaloAccess } from '../zalo/zalo-access-middleware.js';
-import { getAiConfig, getAiUsage, getAiUsageHistory, updateAiConfig, generateAiOutput } from './ai-service.js';
+import { getAiConfig, getAiUsage, getAiUsageHistory, updateAiConfig, generateAiOutput, generateAiOutputStreaming } from './ai-service.js';
 import { getAvailableProviders } from './provider-registry.js';
 import { logger } from '../../shared/utils/logger.js';
 import { prisma } from '../../shared/database/prisma-client.js';

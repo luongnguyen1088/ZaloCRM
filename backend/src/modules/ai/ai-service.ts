@@ -4,7 +4,7 @@ import { config } from '../../config/index.js';
 import { getProviderConfig, getAvailableProviders } from './provider-registry.js';
 import { generateWithAnthropic } from './providers/anthropic.js';
 import { generateWithGemini } from './providers/gemini.js';
-import { generateWithOpenaiCompat } from './providers/openai-compat.js';
+import { generateWithOpenaiCompat, streamWithOpenaiCompat } from './providers/openai-compat.js';
 import { buildReplyDraftPrompt } from './prompts/reply-draft.js';
 import { buildSummaryPrompt } from './prompts/summary.js';
 import { buildSentimentPrompt } from './prompts/sentiment.js';
@@ -459,6 +459,120 @@ export async function generateAiOutput(input: {
     metadata: { conversationId: input.conversationId, messageId: input.messageId },
   });
   return { content: text, confidence: 1.0, sources };
+}
+
+export async function generateAiOutputStreaming(input: { 
+  orgId: string; 
+  conversationId: string; 
+  type: AiTaskType; 
+  messageId?: string;
+  customPrompt?: string;
+  originalContent?: string;
+  history?: MessageContext[];
+  onChunk: (text: string) => void;
+}) {
+  const [currentConfig, conversation] = await Promise.all([
+    getAiConfig(input.orgId),
+    loadConversation(input.conversationId, input.orgId),
+  ]);
+
+  if (!currentConfig.enabled) throw new Error('AI is disabled');
+  await assertAiTokenAvailable(input.orgId);
+  
+  const platform = getPlatformAiProvider({ requireKey: true });
+  const provider = platform.provider;
+  const apiKey = platform.apiKey;
+  let model = platform.model;
+
+  if (provider === 'openrouter') {
+    model = OPENROUTER_HYBRID_MODELS[input.type] || model;
+  }
+
+  const messages = input.history || conversation.messages;
+  const contextText = buildConversationContext(messages);
+  const language = detectLanguage(contextText);
+  const customerName = conversation.contact?.fullName || 'customer';
+  
+  let userPrompt = [
+    `<conversation_context>`,
+    `Customer: ${customerName}`,
+    contextText,
+    `</conversation_context>`,
+  ].join('\n');
+
+  if (input.originalContent) {
+    userPrompt += `\n\n<current_draft>\n${input.originalContent}\n</current_draft>\nRefine the above draft based on the instruction.`;
+  }
+
+  if (input.customPrompt) {
+    userPrompt += `\n\n<instruction>\n${input.customPrompt}\n</instruction>`;
+  }
+
+  let knowledgeCtx = '';
+  let sources: any[] = [];
+  if (input.type === 'reply_draft') {
+    const lastContactMsg = [...messages].reverse().find(m => m.senderType === 'contact');
+    const searchQuery = lastContactMsg?.content || input.customPrompt || '';
+    
+    const knowledgeItems = searchQuery 
+      ? await searchSemanticKnowledge(input.orgId, searchQuery, conversation.zaloAccountId)
+      : await getRelevantKnowledge(input.orgId, conversation.zaloAccountId);
+
+    sources = knowledgeItems.map(k => ({ id: k.id, title: k.title }));
+    if (knowledgeItems.length > 0) {
+      knowledgeCtx = [
+        '\n<business_knowledge>',
+        ...knowledgeItems.map(k => `[${k.title}]: ${k.content}`),
+        '</business_knowledge>',
+      ].join('\n');
+    }
+  }
+
+  const systemBase = input.type === 'reply_draft'
+    ? buildReplyDraftPrompt(language)
+    : input.type === 'summary'
+      ? buildSummaryPrompt(language)
+      : buildSentimentPrompt(language);
+
+  const system = knowledgeCtx ? `${systemBase}\nUse the following business knowledge to answer accurately:\n${knowledgeCtx}` : systemBase;
+
+  let fullText = '';
+  await streamWithOpenaiCompat(
+    provider === 'openrouter' ? 'https://openrouter.ai/api/v1/chat/completions' : getProviderConfig(provider)?.baseUrl + '/chat/completions',
+    apiKey,
+    model,
+    system,
+    userPrompt,
+    (chunk) => {
+      fullText += chunk;
+      input.onChunk(chunk);
+    }
+  );
+
+  const text = fullText.trim().replace(/\*\*|__/g, '');
+
+  // Post-stream cleanup and saving
+  await saveSuggestion({
+    orgId: input.orgId,
+    conversationId: input.conversationId,
+    messageId: input.messageId,
+    type: input.type,
+    content: text,
+    confidence: 1.0,
+    metadata: { sources },
+  });
+
+  await recordAiTokenUsage({
+    orgId: input.orgId,
+    feature: input.type,
+    provider,
+    model,
+    inputText: userPrompt,
+    outputText: text,
+    metadata: { conversationId: input.conversationId, messageId: input.messageId },
+  });
+
+  return { content: text, sources };
 }
 
 export async function categorizeKnowledge(orgId: string, content: string) {
