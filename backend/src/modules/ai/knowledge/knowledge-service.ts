@@ -1,6 +1,6 @@
 import { prisma } from '../../../shared/database/prisma-client.js';
 import { config } from '../../../config/index.js';
-import { embedTextWithGemini } from '../providers/gemini.js';
+import { embedWithOpenaiCompat } from '../providers/openai-compat.js';
 
 export async function getAiKnowledgeList(orgId: string) {
   return prisma.aiKnowledge.findMany({
@@ -135,12 +135,20 @@ export async function searchSemanticKnowledge(orgId: string, query: string, zalo
   }
 }
 
+/**
+ * Generate embedding for a given text using OpenRouter (OpenAI text-embedding-3-small)
+ */
 async function generateEmbedding(text: string) {
-  if (!config.geminiAuthToken || !text) return null;
+  if (!text) return null;
   try {
-    return await embedTextWithGemini(config.geminiBaseUrl, config.geminiAuthToken, text);
+    return await embedWithOpenaiCompat(
+      config.openrouterBaseUrl,
+      config.openrouterAuthToken,
+      'openai/text-embedding-3-small',
+      text
+    );
   } catch (err) {
-    console.error('[Knowledge Service] generateEmbedding error:', err);
+    console.error('[Knowledge Service] Embedding failed:', err);
     return null;
   }
 }

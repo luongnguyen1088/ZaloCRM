@@ -54,3 +54,27 @@ export async function generateWithOpenaiCompat(
     clearTimeout(timeout);
   }
 }
+
+export async function embedWithOpenaiCompat(baseUrl: string, apiKey: string, model: string, text: string) {
+  const url = `${baseUrl.replace(/\/$/, '')}/embeddings`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      input: text,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.text();
+    throw new Error(`OpenAI-compat embedding failed (${response.status}): ${errorData}`);
+  }
+
+  const data = await response.json() as { data: Array<{ embedding: number[] }> };
+  if (!data.data?.[0]?.embedding) throw new Error('OpenAI-compat returned no embedding data');
+  return data.data[0].embedding;
+}
