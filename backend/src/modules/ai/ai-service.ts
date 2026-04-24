@@ -45,7 +45,9 @@ function buildConversationContext(messages: MessageContext[]) {
     .map((msg) => {
       const author = msg.senderType === 'self' ? 'staff' : (msg.senderName || 'customer');
       const content = escapeXmlBoundary(msg.content || '(empty)');
-      return `[${msg.sentAt.toISOString()}] ${author}: ${content}`;
+      const sentAt = msg.sentAt instanceof Date ? msg.sentAt : new Date(msg.sentAt);
+      const timeStr = isNaN(sentAt.getTime()) ? 'Unknown' : sentAt.toISOString();
+      return `[${timeStr}] ${author}: ${content}`;
     })
     .join('\n');
 }
