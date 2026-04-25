@@ -293,14 +293,6 @@ const monthlyTokens = computed(() =>
   history.value.reduce((acc, curr) => acc + (curr.inputTokens || 0) + (curr.outputTokens || 0), 0)
 );
 
-const monthlyInputTokens = computed(() =>
-  history.value.reduce((acc, curr) => acc + (curr.inputTokens || 0), 0)
-);
-
-const monthlyOutputTokens = computed(() =>
-  history.value.reduce((acc, curr) => acc + (curr.outputTokens || 0), 0)
-);
-
 const avgTokensPerResponse = computed(() => {
   if (history.value.length === 0) return 0;
   return monthlyTokens.value / history.value.length;
