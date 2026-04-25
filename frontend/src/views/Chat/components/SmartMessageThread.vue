@@ -168,13 +168,14 @@
           <div class="d-flex align-center pb-2 pr-1 ga-1">
             <v-btn 
               icon 
-              variant="tonal" 
+              variant="flat" 
               color="primary" 
               size="small" 
+              class="ai-magic-btn"
               :loading="aiLoading"
               @click="$emit('ask-ai')"
             >
-              <v-icon>mdi-sparkles</v-icon>
+              <v-icon size="20">mdi-sparkles</v-icon>
               <v-tooltip activator="parent">Tạo gợi ý AI</v-tooltip>
             </v-btn>
             <v-btn 
@@ -425,6 +426,27 @@ onMounted(scrollToBottom);
 
 .animate__slideInUp {
   animation-duration: 0.4s;
+}
+
+.ai-magic-btn {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-strong) 100%) !important;
+  box-shadow: 0 4px 15px rgba(var(--v-theme-primary), 0.4) !important;
+  transition: all 0.3s ease !important;
+}
+
+.ai-magic-btn:hover {
+  transform: translateY(-2px) scale(1.1);
+  box-shadow: 0 6px 20px rgba(var(--v-theme-primary), 0.6) !important;
+}
+
+.ai-magic-btn :deep(.v-icon) {
+  animation: sparkle-rotate 3s linear infinite;
+}
+
+@keyframes sparkle-rotate {
+  0% { transform: rotate(0deg); opacity: 1; }
+  50% { transform: rotate(180deg); opacity: 0.8; }
+  100% { transform: rotate(360deg); opacity: 1; }
 }
 
 .empty-illustration-container {
