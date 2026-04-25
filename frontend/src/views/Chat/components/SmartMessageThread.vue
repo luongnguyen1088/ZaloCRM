@@ -190,15 +190,16 @@
 
           <div class="d-flex align-center pb-2 pr-1 ga-1">
             <v-btn 
-              icon 
               variant="flat" 
               color="primary" 
-              size="small" 
-              class="ai-magic-btn"
+              height="32"
+              rounded="pill"
+              class="ai-magic-btn px-4"
               :loading="aiLoading"
               @click="$emit('ask-ai')"
             >
-              <v-icon size="20">mdi-sparkles</v-icon>
+              <v-icon size="18" class="mr-1">mdi-sparkles</v-icon>
+              <span class="text-caption font-weight-black d-none d-sm-inline">Gợi ý AI</span>
               <v-tooltip activator="parent">Tạo gợi ý AI</v-tooltip>
             </v-btn>
             <v-btn 
@@ -540,27 +541,41 @@ onMounted(scrollToBottom);
 }
 
 .ai-magic-btn {
-  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%) !important;
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%) !important;
+  background-size: 200% auto !important;
   box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4) !important;
-  transition: all 0.3s ease !important;
-  color: white !important; /* Force text/icon color to white */
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  color: white !important;
+  text-transform: none !important;
+  border: none !important;
+  position: relative;
+  overflow: hidden;
+  animation: bg-shine 4s linear infinite;
+}
+
+@keyframes bg-shine {
+  to { background-position: 200% center; }
 }
 
 .ai-magic-btn:hover {
-  transform: translateY(-2px) scale(1.1);
-  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5) !important;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(168, 85, 247, 0.5) !important;
+}
+
+.ai-magic-btn:active {
+  transform: translateY(0) scale(0.95);
 }
 
 .ai-magic-btn :deep(.v-icon) {
   color: white !important;
-  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
-  animation: sparkle-rotate 3s linear infinite;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
+  animation: sparkle-rotate 3s ease-in-out infinite;
 }
 
 @keyframes sparkle-rotate {
-  0% { transform: rotate(0deg); scale: 1; }
-  50% { transform: rotate(180deg); scale: 1.2; }
-  100% { transform: rotate(360deg); scale: 1; }
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.25); }
+  100% { transform: rotate(360deg) scale(1); }
 }
 
 .empty-illustration-container {
