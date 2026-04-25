@@ -434,6 +434,7 @@ onMounted(scrollToBottom);
   background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%) !important;
   box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4) !important;
   transition: all 0.3s ease !important;
+  color: white !important; /* Force text/icon color to white */
 }
 
 .ai-magic-btn:hover {
@@ -442,13 +443,15 @@ onMounted(scrollToBottom);
 }
 
 .ai-magic-btn :deep(.v-icon) {
+  color: white !important;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
   animation: sparkle-rotate 3s linear infinite;
 }
 
 @keyframes sparkle-rotate {
-  0% { transform: rotate(0deg); opacity: 1; }
-  50% { transform: rotate(180deg); opacity: 0.8; }
-  100% { transform: rotate(360deg); opacity: 1; }
+  0% { transform: rotate(0deg); scale: 1; }
+  50% { transform: rotate(180deg); scale: 1.2; }
+  100% { transform: rotate(360deg); scale: 1; }
 }
 
 .empty-illustration-container {
