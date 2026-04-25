@@ -37,7 +37,7 @@
               <div class="ml-3">
                 <div class="text-caption font-weight-bold text-white uppercase">AI POWER</div>
                 <div class="text-h6 font-weight-black text-gradient-ai">
-                   {{ plan.maxAiTokens.toLocaleString() }} Tokens
+                   ~{{ Math.floor(plan.maxAiTokens / 1500).toLocaleString() }} lượt phản hồi ({{ plan.maxAiTokens.toLocaleString() }} tokens)
                 </div>
               </div>
             </div>
@@ -258,10 +258,10 @@ const feedbackColor = ref<'success' | 'error'>('success');
 const feedbackMessage = ref('');
 
 const aiPacks = ref([
-  { id: 'ai_100k', name: 'Gói Tiết kiệm', tokens: 100000, price: 50000 },
-  { id: 'ai_500k', name: 'Gói Phổ thông', tokens: 500000, price: 200000 },
-  { id: 'ai_1m', name: 'Gói Chuyên nghiệp', tokens: 1500000, price: 500000 },
-  { id: 'ai_5m', name: 'Gói Doanh nghiệp', tokens: 5000000, price: 1500000 },
+  { id: 'ai_200k', name: 'Gói Tiết kiệm', tokens: 200000, price: 50000 },
+  { id: 'ai_1m', name: 'Gói Phổ thông', tokens: 1000000, price: 200000 },
+  { id: 'ai_3m', name: 'Gói Chuyên nghiệp', tokens: 3000000, price: 500000 },
+  { id: 'ai_12m', name: 'Gói Doanh nghiệp', tokens: 12000000, price: 1500000 },
 ]);
 
 const fetchPlans = async () => {

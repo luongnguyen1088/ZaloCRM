@@ -21,22 +21,22 @@ async function main() {
       name: 'Free',
       priceMonth: 0,
       maxZaloAcc: 1,
-      maxAiTokens: 10000,
-      features: JSON.stringify(['CRM cơ bản', '1 tài khoản Zalo', 'AI Assistant cơ bản']),
+      maxAiTokens: 50000,
+      features: JSON.stringify(['CRM cơ bản', '1 tài khoản Zalo', 'AI Assistant (Model cơ bản)', '~30 lượt phản hồi AI/tháng']),
     },
     {
       name: 'Pro',
       priceMonth: 200000,
       maxZaloAcc: 5,
-      maxAiTokens: 200000,
-      features: JSON.stringify(['Đầy đủ CRM', '5 tài khoản Zalo', 'AI Assistant nâng cao', 'Automation']),
+      maxAiTokens: 1500000,
+      features: JSON.stringify(['Đầy đủ CRM', '5 tài khoản Zalo', 'AI Assistant (Tốc độ cao)', 'Automation', '~1,000 lượt phản hồi AI/tháng']),
     },
     {
       name: 'Enterprise',
       priceMonth: 1000000,
       maxZaloAcc: 50,
-      maxAiTokens: 1500000,
-      features: JSON.stringify(['Vô hạn CRM', '50 tài khoản Zalo', 'Ưu tiên hỗ trợ', 'Tích hợp API']),
+      maxAiTokens: 15000000,
+      features: JSON.stringify(['Vô hạn CRM', '50 tài khoản Zalo', 'AI Assistant (Claude 3.5 Sonnet)', 'Ưu tiên hỗ trợ', '~10,000 lượt phản hồi AI/tháng']),
     },
   ];
 

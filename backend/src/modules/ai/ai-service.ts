@@ -338,8 +338,12 @@ export async function generateAiOutput(input: {
 
   let model = platform.model;
   if (provider === 'openrouter') {
-    const modelKey = (input.type === 'reply_draft' && input.isAutoReply) ? 'auto_reply' : input.type;
-    model = OPENROUTER_HYBRID_MODELS[modelKey] || model;
+    if (currentConfig.planName === 'Enterprise' && input.type === 'reply_draft') {
+      model = 'anthropic/claude-3.5-sonnet';
+    } else {
+      const modelKey = (input.type === 'reply_draft' && input.isAutoReply) ? 'auto_reply' : input.type;
+      model = OPENROUTER_HYBRID_MODELS[modelKey] || model;
+    }
   }
 
   const messages = input.history || conversation.messages;
@@ -485,7 +489,11 @@ export async function generateAiOutputStreaming(input: {
   let model = platform.model;
 
   if (provider === 'openrouter') {
-    model = OPENROUTER_HYBRID_MODELS[input.type] || model;
+    if (currentConfig.planName === 'Enterprise' && input.type === 'reply_draft') {
+      model = 'anthropic/claude-3.5-sonnet';
+    } else {
+      model = OPENROUTER_HYBRID_MODELS[input.type] || model;
+    }
   }
 
   const messages = input.history || conversation.messages;
