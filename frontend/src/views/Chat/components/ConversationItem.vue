@@ -7,6 +7,9 @@
     @click="$emit('select', conv.id)"
     rounded="xl"
   >
+    <!-- Premium Active Indicator -->
+    <div v-if="active" class="active-indicator" />
+
     <template #prepend>
       <div class="avatar-wrapper mr-3">
         <v-avatar size="48" class="avatar-main">
@@ -72,9 +75,11 @@ const sentiment = computed(() => parseSentiment(props.conv));
 <style scoped>
 .conversation-item {
   padding: 12px 16px !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid transparent !important;
   background: transparent !important;
+  position: relative;
+  overflow: hidden;
 }
 
 .conversation-item:hover {
@@ -83,13 +88,26 @@ const sentiment = computed(() => parseSentiment(props.conv));
 }
 
 .item-active {
-  background: var(--color-primary-soft) !important;
+  background: var(--color-surface-elevated) !important;
   border-color: var(--color-primary-soft-strong) !important;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 
+    0 10px 15px -3px rgba(var(--v-theme-primary), 0.1),
+    0 4px 6px -2px rgba(var(--v-theme-primary), 0.05) !important;
+}
+
+.active-indicator {
+  position: absolute;
+  left: 0;
+  top: 15%;
+  height: 70%;
+  width: 4px;
+  background: linear-gradient(to bottom, var(--color-primary), var(--color-primary-strong));
+  border-radius: 0 4px 4px 0;
+  box-shadow: 2px 0 10px rgba(var(--v-theme-primary), 0.4);
 }
 
 .item-unread {
-  background: var(--color-surface-elevated) !important;
+  background: var(--color-primary-soft) !important;
 }
 
 .avatar-wrapper {
@@ -99,6 +117,12 @@ const sentiment = computed(() => parseSentiment(props.conv));
 .avatar-main {
   border: 2px solid var(--color-border);
   box-shadow: var(--shadow-sm);
+  transition: transform 0.3s ease;
+}
+
+.item-active .avatar-main {
+  border-color: var(--color-primary);
+  transform: scale(1.05);
 }
 
 .account-badge {

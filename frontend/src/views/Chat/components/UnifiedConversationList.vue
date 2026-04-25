@@ -59,7 +59,14 @@
 
     <!-- Scrollable List -->
     <v-list class="flex-grow-1 overflow-y-auto pa-0 list-root" density="compact">
-      <v-progress-linear v-if="loading" indeterminate color="primary" height="2" />
+      <div v-if="loading" class="pa-2">
+        <v-skeleton-loader
+          v-for="i in 6"
+          :key="i"
+          type="list-item-avatar-two-line"
+          class="bg-transparent mb-1"
+        />
+      </div>
 
       <div v-if="conversations.length > 0" class="py-2">
         <ConversationItem

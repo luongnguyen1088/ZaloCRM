@@ -3,8 +3,15 @@
   <div class="message-thread d-flex flex-column h-100">
     <!-- Messages Scroll Area -->
     <div ref="scrollBox" class="messages-viewport flex-grow-1 overflow-y-auto pa-4 pa-md-6" @scroll="handleScroll">
-      <div v-if="loading" class="d-flex justify-center py-8">
-        <v-progress-circular indeterminate color="primary" />
+      <!-- Skeleton Loading -->
+      <div v-if="loading" class="d-flex flex-column ga-6">
+        <div v-for="i in 4" :key="i" class="d-flex" :class="i % 2 === 0 ? 'justify-end' : 'justify-start'">
+          <v-skeleton-loader
+            :type="i % 2 === 0 ? 'list-item-avatar-three-line' : 'list-item-avatar-three-line'"
+            width="280"
+            class="rounded-xl bg-transparent"
+          />
+        </div>
       </div>
 
       <template v-else-if="messages.length">
@@ -46,9 +53,20 @@
         </div>
       </template>
 
-      <div v-else class="h-100 d-flex flex-column align-center justify-center opacity-40">
-        <v-icon size="64" class="mb-4">mdi-message-text-outline</v-icon>
-        <p>Bắt đầu cuộc trò chuyện ngay bây giờ</p>
+      <!-- Premium Empty State -->
+      <div v-else class="h-100 d-flex flex-column align-center justify-center text-center pa-8">
+        <div class="empty-illustration-container mb-6">
+          <v-img
+            src="/chat_empty_state_illustration_1777081798225.png"
+            width="280"
+            class="empty-image animate__animated animate__pulse animate__infinite animate__slower"
+          />
+          <div class="glow-effect" />
+        </div>
+        <h3 class="text-h5 font-weight-black mb-2 color-text">Sẵn sàng hỗ trợ khách hàng?</h3>
+        <p class="text-body-2 opacity-60 max-width-300">
+          Chọn một cuộc hội thoại từ danh sách bên trái để bắt đầu tư vấn với sự trợ giúp từ AI.
+        </p>
       </div>
     </div>
 
@@ -407,5 +425,36 @@ onMounted(scrollToBottom);
 
 .animate__slideInUp {
   animation-duration: 0.4s;
+}
+
+.empty-illustration-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.empty-image {
+  z-index: 2;
+  filter: drop-shadow(0 20px 30px rgba(var(--v-theme-primary), 0.2));
+}
+
+.glow-effect {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, var(--color-primary-soft) 0%, transparent 70%);
+  z-index: 1;
+  filter: blur(40px);
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.3); opacity: 0.8; }
+}
+
+.max-width-300 {
+  max-width: 300px;
 }
 </style>
