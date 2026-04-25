@@ -37,7 +37,7 @@
               <div class="ml-3">
                 <div class="text-caption font-weight-bold text-white uppercase">AI POWER</div>
                 <div class="text-h6 font-weight-black text-gradient-ai">
-                   ~{{ Math.floor(plan.maxAiTokens / 1500).toLocaleString() }} lượt phản hồi ({{ plan.maxAiTokens.toLocaleString() }} tokens)
+                   ~{{ Math.floor(plan.maxAiTokens / 1500).toLocaleString() }} lượt phản hồi
                 </div>
               </div>
             </div>
@@ -79,8 +79,8 @@
 
     <!-- AI Top-up Packs Section -->
     <div class="text-center mt-16 mb-10 entrance-animation">
-      <h2 class="text-h4 font-weight-black text-white mb-4">Gói bổ sung AI Token</h2>
-      <p class="text-body-1 text-placeholder">Bạn cần thêm Token để sử dụng trong tháng? Hãy mua thêm các gói lẻ bên dưới.</p>
+      <h2 class="text-h4 font-weight-black text-white mb-4">Gói bổ sung lượt AI</h2>
+      <p class="text-body-1 text-placeholder">Bạn cần thêm lượt phản hồi để sử dụng trong tháng? Hãy mua thêm các gói lẻ bên dưới.</p>
     </div>
 
     <v-row justify="center" class="mb-12">
@@ -91,7 +91,7 @@
           </div>
           <h3 class="text-h6 font-weight-bold mb-1">{{ pack.name }}</h3>
           <div class="text-h5 font-weight-black text-gradient-ai mb-4">
-            +{{ pack.tokens >= 1000000 ? (pack.tokens / 1000000) + 'M' : (pack.tokens / 1000).toLocaleString() + 'k' }} Tokens
+            +{{ Math.floor(pack.tokens / 1500).toLocaleString() }} lượt
           </div>
           <v-spacer />
           <div class="text-subtitle-1 font-weight-bold mb-4">{{ formatPrice(pack.price) }}</div>
@@ -205,7 +205,7 @@
 
               <div class="payment-note">
                 <v-icon size="18" color="primary">mdi-information-outline</v-icon>
-                <span>Đơn thanh toán sẽ được tạo sau khi bạn xác nhận, sau đó admin duyệt để kích hoạt gói hoặc cộng thêm AI Token.</span>
+                <span>Đơn thanh toán sẽ được tạo sau khi bạn xác nhận, sau đó admin duyệt để kích hoạt gói hoặc cộng thêm lượt phản hồi AI.</span>
               </div>
             </div>
           </div>
@@ -315,7 +315,7 @@ const selectPlan = (plan: any) => {
 
 const selectTopup = (pack: any) => {
   selectedPlan.value = {
-    name: pack.name + ' (+' + (pack.tokens >= 1000000 ? (pack.tokens / 1000000) + 'M' : (pack.tokens / 1000) + 'k') + ' Tokens)',
+    name: pack.name + ' (+' + Math.floor(pack.tokens / 1500).toLocaleString() + ' lượt phản hồi)',
     priceMonth: pack.price,
     tokenAmount: pack.tokens,
   };

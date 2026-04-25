@@ -3,8 +3,8 @@
     <!-- Header -->
     <div class="d-flex align-center mb-6 flex-shrink-0">
       <div>
-        <h1 class="text-h4 font-weight-bold mb-1 gradient-text">Lịch sử AI Token</h1>
-        <p class="text-medium-emphasis mb-0">Theo dõi chi tiết lượng token đã tiêu thụ</p>
+        <h1 class="text-h4 font-weight-bold mb-1 gradient-text">Lịch sử phản hồi AI</h1>
+        <p class="text-medium-emphasis mb-0">Theo dõi chi tiết số lượt đã sử dụng</p>
       </div>
       <v-spacer />
       <v-btn
@@ -31,9 +31,9 @@
               <v-icon color="primary" size="24">mdi-coin</v-icon>
             </v-avatar>
             <div>
-              <div class="text-overline opacity-70">Số dư hiện tại</div>
-              <div class="text-h5 font-weight-bold primary--text">{{ usageData?.remainingTokens?.toFixed(0) || '0' }}</div>
-              <div class="text-caption">Đã dùng {{ usageData?.usedTokens?.toFixed(0) || '0' }} / {{ usageData?.maxTokens || '0' }}</div>
+              <div class="text-overline opacity-70">Số lượt còn lại</div>
+              <div class="text-h5 font-weight-bold primary--text">{{ Math.floor((usageData?.remainingTokens || 0) / 1500) }}</div>
+              <div class="text-caption">Đã dùng {{ ((usageData?.usedTokens || 0) / 1500).toFixed(1) }} / {{ Math.floor((usageData?.maxTokens || 0) / 1500) }}</div>
             </div>
           </div>
         </v-card>
@@ -45,9 +45,9 @@
               <v-icon color="info" size="24">mdi-text-box-multiple-outline</v-icon>
             </v-avatar>
             <div>
-              <div class="text-overline opacity-70">Tổng Token (Tháng)</div>
-              <div class="text-h5 font-weight-bold info--text">{{ formatNumber(monthlyTokens) }}</div>
-              <div class="text-caption">{{ formatNumber(monthlyInputTokens) }} In / {{ formatNumber(monthlyOutputTokens) }} Out</div>
+              <div class="text-overline opacity-70">Tổng lượt (Tháng)</div>
+              <div class="text-h5 font-weight-bold info--text">~{{ Math.floor(monthlyTokens / 1500) }} lượt</div>
+              <div class="text-caption">{{ formatNumber(monthlyTokens) }} tokens tiêu thụ</div>
             </div>
           </div>
         </v-card>
@@ -90,7 +90,7 @@
             <span class="text-subtitle-1 font-weight-bold">Biểu đồ tiêu thụ (7 ngày qua)</span>
             <v-spacer />
             <v-btn-toggle v-model="chartType" mandatory density="compact" color="primary" variant="tonal">
-              <v-btn value="tokens" size="small">Tokens</v-btn>
+              <v-btn value="tokens" size="small">Lượt</v-btn>
             </v-btn-toggle>
           </div>
           <div class="chart-container" style="height: 200px;">
@@ -140,7 +140,7 @@
           <div class="text-subtitle-2 opacity-70">
             Hiển thị <strong>{{ filteredHistory.length }}</strong> bản ghi
             <span v-if="filteredHistory.length > 0">
-              - Tổng cộng <strong>{{ formatNumber(totalFilteredTokens) }}</strong> Tokens
+              - Tổng cộng <strong>{{ formatNumber(totalFilteredTokens) }}</strong> tokens
             </span>
           </div>
         </div>
@@ -182,8 +182,8 @@
 
           <template v-slot:item.tokens="{ item }">
             <div class="d-flex align-center font-weight-bold error--text">
-              -{{ formatNumber(item.tokens) }}
-              <v-icon size="14" class="ml-1">mdi-token</v-icon>
+              -{{ (item.tokens / 1500).toFixed(2) }} lượt
+              <v-icon size="14" class="ml-1">mdi-lightning-bolt</v-icon>
             </div>
           </template>
 

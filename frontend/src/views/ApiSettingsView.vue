@@ -50,8 +50,8 @@
                 <div class="info-value truncate">{{ aiConfig.model }}</div>
               </v-col>
               <v-col cols="6" sm="3">
-                <div class="info-label mb-1">AI Tokens</div>
-                <div class="info-value">{{ aiConfig.remainingTokens }} / {{ aiConfig.maxTokens }}</div>
+                <div class="info-label mb-1">Hạn mức AI</div>
+                <div class="info-value">{{ Math.floor(aiConfig.remainingTokens / 1500) }} / {{ Math.floor(aiConfig.maxTokens / 1500) }} lượt</div>
               </v-col>
               <v-col cols="6" sm="3">
                 <div class="info-label mb-1">Vận hành</div>

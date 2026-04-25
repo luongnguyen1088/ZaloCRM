@@ -13,7 +13,7 @@
 
         <v-list density="compact" class="mb-4 rounded-lg border">
           <v-list-item title="Gói hiện tại" :subtitle="config.planName || 'Free'" />
-          <v-list-item title="AI Tokens" :subtitle="`${config.remainingTokens ?? config.maxDaily}/${config.maxTokens ?? config.maxDaily} còn lại`" />
+          <v-list-item title="Lượt phản hồi còn lại" :subtitle="`${Math.floor((config.remainingTokens ?? 0) / 1500)} / ${Math.floor((config.maxTokens ?? 0) / 1500)} lượt`" />
           <v-list-item title="Mô hình" :subtitle="`${config.provider} / ${config.model}`" />
         </v-list>
 
