@@ -90,6 +90,46 @@ export async function aiRoutes(app: FastifyInstance) {
     }
   });
 
+  app.post('/api/v1/ai/suggest/stream', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const body = request.body as { conversationId?: string; messageId?: string; customPrompt?: string; originalContent?: string };
+      if (!body.conversationId) return reply.status(400).send({ error: 'conversationId is required' });
+
+      const access = await assertConversationReadAccess(request, reply, body.conversationId);
+      if (!access) return;
+
+      // Set headers for Server-Sent Events (SSE)
+      reply.raw.setHeader('Content-Type', 'text/event-stream');
+      reply.raw.setHeader('Cache-Control', 'no-cache');
+      reply.raw.setHeader('Connection', 'keep-alive');
+      reply.raw.flushHeaders();
+
+      await generateAiOutputStreaming({
+        orgId: request.user!.orgId,
+        conversationId: body.conversationId,
+        messageId: body.messageId,
+        type: 'reply_draft',
+        customPrompt: body.customPrompt,
+        originalContent: body.originalContent,
+        onChunk: (chunk) => {
+          reply.raw.write(`data: ${JSON.stringify({ chunk })}\n\n`);
+        }
+      });
+      reply.raw.write('data: [DONE]\n\n');
+      reply.raw.end();
+    } catch (err) {
+      logger.error('[ai] Streaming error:', err);
+      // If we already started the stream, we send the error as a data event
+      const handled = getStatusFromError(err, 'Streaming failed');
+      try {
+        if (!reply.raw.writableEnded) {
+          reply.raw.write(`data: ${JSON.stringify({ error: handled.message })}\n\n`);
+          reply.raw.end();
+        }
+      } catch (e) { /* ignore */ }
+    }
+  });
+
   app.post('/api/v1/ai/suggest', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const body = request.body as { conversationId?: string; messageId?: string; customPrompt?: string; originalContent?: string };
