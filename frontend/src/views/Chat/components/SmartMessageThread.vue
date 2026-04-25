@@ -72,12 +72,34 @@
 
     <!-- AI Workspace Layer -->
     <div v-if="aiSuggestion" class="ai-workspace pa-4 animate__animated animate__slideInUp">
-      <v-card class="ai-card pa-4" rounded="xl">
+      <v-card class="ai-card pa-4" :class="{ 'ai-card-thinking': aiLoading }" rounded="xl">
         <div class="d-flex align-center mb-3">
-          <v-icon color="primary" class="mr-2">mdi-robot-outline</v-icon>
-          <span class="font-weight-black text-primary">Gợi ý từ AI Assistant</span>
+          <v-icon color="primary" class="mr-2" :class="{ 'ai-icon-pulse': aiLoading }">mdi-robot-outline</v-icon>
+          <span class="font-weight-black text-primary">AI Assistant</span>
+          
           <v-spacer />
-          <v-btn icon="mdi-close" variant="text" size="x-small" @click="$emit('clear-ai')" />
+          
+          <div class="d-flex ga-1">
+            <v-btn
+              :icon="isCopying ? 'mdi-check' : 'mdi-content-copy'"
+              variant="text"
+              size="x-small"
+              :color="isCopying ? 'success' : 'grey'"
+              @click="copyToClipboard"
+            >
+              <v-tooltip activator="parent">{{ isCopying ? 'Đã sao chép' : 'Sao chép' }}</v-tooltip>
+            </v-btn>
+            <v-btn
+              icon="mdi-tray-arrow-down"
+              variant="text"
+              size="x-small"
+              color="primary"
+              @click="insertToInput"
+            >
+              <v-tooltip activator="parent">Chèn vào ô chat</v-tooltip>
+            </v-btn>
+            <v-btn icon="mdi-close" variant="text" size="x-small" color="grey" @click="$emit('clear-ai')" />
+          </div>
         </div>
         
         <div class="ai-content-box mb-3 pa-3">
@@ -89,6 +111,7 @@
             rows="1"
             class="ai-editable-textarea"
           />
+          <span v-if="aiLoading" class="typing-cursor">|</span>
         </div>
 
         <div v-if="aiSuggestionSources?.length" class="ai-sources mb-3 px-1">
@@ -234,6 +257,7 @@ const emit = defineEmits<{
   (e: 'ask-ai'): void;
   (e: 'refine-ai', data: { content: string, instruction: string }): void;
   (e: 'clear-ai'): void;
+  (e: 'insert-ai', content: string): void;
 }>();
 
 const inputContent = ref('');
@@ -241,6 +265,23 @@ const scrollBox = ref<HTMLElement | null>(null);
 const isRefining = ref(false);
 const refineInstruction = ref('');
 const editableAiSuggestion = ref('');
+
+const isCopying = ref(false);
+
+async function copyToClipboard() {
+  try {
+    await navigator.clipboard.writeText(editableAiSuggestion.value);
+    isCopying.value = true;
+    setTimeout(() => isCopying.value = false, 2000);
+  } catch (err) {
+    console.error('Failed to copy', err);
+  }
+}
+
+function insertToInput() {
+  inputContent.value = editableAiSuggestion.value;
+  emit('clear-ai');
+}
 
 const quickRefines = [
   { label: 'Lịch sự hơn', value: 'polite' },
@@ -404,6 +445,73 @@ onMounted(scrollToBottom);
   border: 1px solid var(--color-primary-soft-strong) !important;
   background: var(--color-surface-elevated) !important;
   box-shadow: var(--shadow-lg) !important;
+  transition: all 0.5s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-card-thinking {
+  border-color: transparent !important;
+}
+
+.ai-card-thinking::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    transparent, 
+    var(--color-primary), 
+    #a855f7, 
+    transparent 30%
+  );
+  animation: rotate-glow 4s linear infinite;
+  z-index: 0;
+}
+
+.ai-card-thinking::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: var(--color-surface-elevated);
+  border-radius: inherit;
+  z-index: 1;
+}
+
+.ai-card > * {
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes rotate-glow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.ai-icon-pulse {
+  animation: ai-pulse 2s ease-in-out infinite;
+}
+
+@keyframes ai-pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; color: #a855f7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.typing-cursor {
+  display: inline-block;
+  width: 2px;
+  color: var(--color-primary);
+  font-weight: bold;
+  animation: blink 1s step-end infinite;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  from, to { opacity: 1; }
+  50% { opacity: 0; }
 }
 
 .ai-content-box {
@@ -412,6 +520,7 @@ onMounted(scrollToBottom);
   font-size: 0.95rem;
   line-height: 1.6;
   color: var(--color-primary-strong);
+  position: relative;
 }
 
 .ai-editable-textarea :deep(textarea) {
