@@ -331,27 +331,29 @@ onMounted(scrollToBottom);
 .message-bubble {
   border-radius: 20px;
   position: relative;
-  box-shadow: var(--shadow-xs);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .bubble-self {
-  background: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-strong) 100%);
   color: white;
   border-bottom-right-radius: 4px;
 }
 
 .bubble-other {
-  background: var(--color-surface-elevated);
+  background: white !important;
   color: var(--color-text);
   border-bottom-left-radius: 4px;
-  border: 1px solid var(--color-border);
+  border: 1px solid rgba(0,0,0,0.05) !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
 }
 
 .sender-name {
   font-size: 0.75rem;
   font-weight: 800;
   margin-bottom: 4px;
-  opacity: 0.8;
+  color: var(--color-primary);
+  opacity: 1;
 }
 
 .message-meta {
@@ -429,14 +431,14 @@ onMounted(scrollToBottom);
 }
 
 .ai-magic-btn {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-strong) 100%) !important;
-  box-shadow: 0 4px 15px rgba(var(--v-theme-primary), 0.4) !important;
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%) !important;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4) !important;
   transition: all 0.3s ease !important;
 }
 
 .ai-magic-btn:hover {
   transform: translateY(-2px) scale(1.1);
-  box-shadow: 0 6px 20px rgba(var(--v-theme-primary), 0.6) !important;
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5) !important;
 }
 
 .ai-magic-btn :deep(.v-icon) {
