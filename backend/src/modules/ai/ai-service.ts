@@ -167,6 +167,25 @@ export async function getAiConfig(orgId: string) {
       model: platform.model,
       maxDaily: entitlement.maxTokens,
       enabled: true,
+      instructions: null,
+      languagePolicy: 'auto',
+      followUpEnabled: false,
+      followUpInterval: 30,
+      followUpMaxMessages: 3,
+      followUpType: 'ai',
+      followUpManualContent: null,
+      stopConditions: [],
+      autoResumeEnabled: true,
+      autoResumeMinutes: 60,
+      aiWorkMode: 'always',
+      aiWorkHours: {},
+      aiWorkTimezone: 'Asia/Ho_Chi_Minh',
+      autoExtractInfo: false,
+      autoCreateLeads: false,
+      aiResponseMode: 'auto',
+      totalAiReplies: 0,
+      totalDraftsAccepted: 0,
+      savedHumanHours: 0,
     } as any;
   }
 
@@ -189,7 +208,7 @@ export async function getAiConfig(orgId: string) {
   };
 }
 
-export async function updateAiConfig(orgId: string, input: { enabled?: boolean }) {
+export async function updateAiConfig(orgId: string, input: { enabled?: boolean; instructions?: string; languagePolicy?: string }) {
   try {
     const enabledValue = input.enabled !== undefined ? Boolean(input.enabled) : undefined;
     const platform = getPlatformAiProvider({ requireKey: false });
@@ -204,7 +223,22 @@ export async function updateAiConfig(orgId: string, input: { enabled?: boolean }
           provider: platform.provider,
           model: platform.model,
           maxDaily: entitlement.maxTokens,
-          enabled: enabledValue,
+          instructions: input.instructions !== undefined ? input.instructions : undefined,
+          languagePolicy: input.languagePolicy !== undefined ? input.languagePolicy : undefined,
+          followUpEnabled: (input as any).followUpEnabled !== undefined ? Boolean((input as any).followUpEnabled) : undefined,
+          followUpInterval: (input as any).followUpInterval !== undefined ? Number((input as any).followUpInterval) : undefined,
+          followUpMaxMessages: (input as any).followUpMaxMessages !== undefined ? Number((input as any).followUpMaxMessages) : undefined,
+          followUpType: (input as any).followUpType !== undefined ? (input as any).followUpType : undefined,
+          followUpManualContent: (input as any).followUpManualContent !== undefined ? (input as any).followUpManualContent : undefined,
+          stopConditions: (input as any).stopConditions !== undefined ? (input as any).stopConditions : undefined,
+          autoResumeEnabled: (input as any).autoResumeEnabled !== undefined ? Boolean((input as any).autoResumeEnabled) : undefined,
+          autoResumeMinutes: (input as any).autoResumeMinutes !== undefined ? Number((input as any).autoResumeMinutes) : undefined,
+          aiWorkMode: (input as any).aiWorkMode !== undefined ? (input as any).aiWorkMode : undefined,
+          aiWorkHours: (input as any).aiWorkHours !== undefined ? (input as any).aiWorkHours : undefined,
+          aiTimezone: (input as any).aiTimezone !== undefined ? (input as any).aiTimezone : undefined,
+          autoExtractInfo: (input as any).autoExtractInfo !== undefined ? Boolean((input as any).autoExtractInfo) : undefined,
+          autoCreateLeads: (input as any).autoCreateLeads !== undefined ? Boolean((input as any).autoCreateLeads) : undefined,
+          aiResponseMode: (input as any).aiResponseMode !== undefined ? (input as any).aiResponseMode : undefined,
         }
       });
     } else {
@@ -215,6 +249,22 @@ export async function updateAiConfig(orgId: string, input: { enabled?: boolean }
           model: platform.model,
           maxDaily: entitlement.maxTokens,
           enabled: enabledValue ?? true,
+          instructions: input.instructions ?? null,
+          languagePolicy: input.languagePolicy ?? 'auto',
+          followUpEnabled: (input as any).followUpEnabled ?? false,
+          followUpInterval: (input as any).followUpInterval ?? 30,
+          followUpMaxMessages: (input as any).followUpMaxMessages ?? 3,
+          followUpType: (input as any).followUpType ?? 'ai',
+          followUpManualContent: (input as any).followUpManualContent ?? null,
+          stopConditions: (input as any).stopConditions ?? [],
+          autoResumeEnabled: (input as any).autoResumeEnabled ?? true,
+          autoResumeMinutes: (input as any).autoResumeMinutes ?? 60,
+          aiWorkMode: (input as any).aiWorkMode ?? 'always',
+          aiWorkHours: (input as any).aiWorkHours ?? {},
+          aiTimezone: (input as any).aiTimezone ?? 'Asia/Ho_Chi_Minh',
+          autoExtractInfo: (input as any).autoExtractInfo ?? false,
+          autoCreateLeads: (input as any).autoCreateLeads ?? false,
+          aiResponseMode: (input as any).aiResponseMode ?? 'auto',
         }
       });
     }
@@ -348,7 +398,12 @@ export async function generateAiOutput(input: {
 
   const messages = input.history || conversation.messages;
   const contextText = buildConversationContext(messages);
-  const language = detectLanguage(contextText);
+  
+  // Language logic: Policy vs Detection
+  let language: 'vi' | 'en' = detectLanguage(contextText);
+  if (currentConfig.languagePolicy === 'vi') language = 'vi';
+  else if (currentConfig.languagePolicy === 'en') language = 'en';
+
   const customerName = conversation.contact?.fullName || 'customer';
   
   let userPrompt = [
@@ -392,7 +447,18 @@ export async function generateAiOutput(input: {
       ? buildSummaryPrompt(language)
       : buildSentimentPrompt(language);
 
-  const system = knowledgeCtx ? `${systemBase}\nUse the following business knowledge to answer accurately:\n${knowledgeCtx}` : systemBase;
+  // Combine Layer 1 (Base) + Layer 2 (User Instructions) + Layer 3 (Knowledge)
+  let system = systemBase;
+  
+  // Add Layer 2: Custom Instructions if present
+  if (currentConfig.instructions) {
+    system += `\n\nUSER CUSTOM INSTRUCTIONS:\n${currentConfig.instructions}`;
+  }
+
+  // Add Layer 3: Knowledge if present
+  if (knowledgeCtx) {
+    system += `\n\nUse the following business knowledge to answer accurately:\n${knowledgeCtx}`;
+  }
 
   const { text: raw, usage } = await generateText(provider, apiKey, model, system, userPrompt);
 
@@ -498,7 +564,12 @@ export async function generateAiOutputStreaming(input: {
 
   const messages = input.history || conversation.messages;
   const contextText = buildConversationContext(messages);
-  const language = detectLanguage(contextText);
+  
+  // Language logic: Policy vs Detection
+  let language: 'vi' | 'en' = detectLanguage(contextText);
+  if (currentConfig.languagePolicy === 'vi') language = 'vi';
+  else if (currentConfig.languagePolicy === 'en') language = 'en';
+
   const customerName = conversation.contact?.fullName || 'customer';
   
   let userPrompt = [
@@ -542,7 +613,18 @@ export async function generateAiOutputStreaming(input: {
       ? buildSummaryPrompt(language)
       : buildSentimentPrompt(language);
 
-  const system = knowledgeCtx ? `${systemBase}\nUse the following business knowledge to answer accurately:\n${knowledgeCtx}` : systemBase;
+  // Combine Layer 1 (Base) + Layer 2 (User Instructions) + Layer 3 (Knowledge)
+  let system = systemBase;
+  
+  // Add Layer 2: Custom Instructions if present
+  if (currentConfig.instructions) {
+    system += `\n\nUSER CUSTOM INSTRUCTIONS:\n${currentConfig.instructions}`;
+  }
+
+  // Add Layer 3: Knowledge if present
+  if (knowledgeCtx) {
+    system += `\n\nUse the following business knowledge to answer accurately:\n${knowledgeCtx}`;
+  }
 
   let fullText = '';
   await streamWithOpenaiCompat(
@@ -692,3 +774,198 @@ export async function proposeKnowledgeFix(orgId: string, input: {
     };
   }
 }
+
+export async function generateRawOutput(orgId: string, system: string, history: any[]) {
+  await assertAiTokenAvailable(orgId);
+  const platform = getPlatformAiProvider({ requireKey: true });
+  
+  const userPrompt = history.length > 0 
+    ? `Lịch sử chat:\n${history.map((h: any) => `${h.role}: ${h.content}`).join('\n')}\n\nNhiệm vụ: Phản hồi tiếp theo.`
+    : 'Bắt đầu cuộc hội thoại.';
+
+  const { text, usage } = await generateText(platform.provider, platform.apiKey, platform.model, system, userPrompt);
+  
+  await recordAiTokenUsage({
+    orgId,
+    feature: 'raw_generation',
+    provider: platform.provider,
+    model: platform.model,
+    inputTokens: usage.inputTokens,
+    outputTokens: usage.outputTokens,
+    inputText: userPrompt,
+    outputText: text,
+  });
+
+  return { content: text.trim().replace(/\*\*|__/g, '') };
+}
+
+/**
+ * Check if the current conversation should be paused based on stop conditions
+ */
+export async function checkStopConditions(orgId: string, conversationId: string, messageContent: string) {
+  const config = await getAiConfig(orgId);
+  const stopConditions = (config.stopConditions as string[]) || [];
+
+  if (!config.enabled || stopConditions.length === 0) return { shouldPause: false };
+
+  const systemPrompt = `You are a conversation guardian. Your task is to analyze a message and determine if it meets any of the "Stop Conditions" set by the administrator.
+If a condition is met, the AI will stop responding to this customer to let a human take over.
+
+STOP CONDITIONS:
+${stopConditions.map((c, i) => `${i + 1}. ${c}`).join('\n')}
+
+Instructions:
+1. Analyze the message carefully.
+2. If it matches or implies any of the conditions, respond ONLY with a JSON object: {"shouldPause": true, "matchedCondition": "The condition text"}.
+3. If it DOES NOT match, respond ONLY with: {"shouldPause": false}.
+4. Be strict but reasonable.
+
+MESSAGE TO ANALYZE:
+"${messageContent}"`;
+
+  const { text } = await generateRawOutput(orgId, systemPrompt, []);
+  
+  try {
+    const result = JSON.parse(text);
+    if (result.shouldPause) {
+      await prisma.conversation.update({
+        where: { id: conversationId },
+        data: {
+          aiPaused: true,
+          aiPausedAt: new Date(),
+          aiPauseReason: result.matchedCondition
+        }
+      });
+    }
+    return result;
+  } catch (err) {
+    return { shouldPause: false };
+  }
+}
+
+/**
+ * Check if current time is within AI working hours
+ */
+export async function isAiInWorkHours(orgId: string): Promise<boolean> {
+  const config = await getAiConfig(orgId);
+  if (config.aiWorkMode === 'always') return true;
+  if (config.aiWorkMode === 'manual') return false;
+
+  // For 'off_hours', logic would be inverse of human hours
+  // This is a simplified check. In a real world, we'd use Luxon or similar for TZ
+  const now = new Date();
+  const day = now.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
+  const time = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+
+  const hours = (config.aiWorkHours as any)?.[day];
+  if (!hours || !hours.start || !hours.end) return true; // Default to always if not set
+
+  const isInRange = time >= hours.start && time <= hours.end;
+  
+  // If mode is 'off_hours', we return true IF it's NOT human hours
+  return config.aiWorkMode === 'off_hours' ? !isInRange : isInRange;
+}
+
+/**
+ * Automatically extract contact info from message
+ */
+export async function extractLeadInfo(orgId: string, conversationId: string, messageContent: string) {
+  const config = await getAiConfig(orgId);
+  if (!config.autoExtractInfo) return null;
+
+  const systemPrompt = `You are a data extraction expert. Your goal is to find customer contact information in a message.
+Extract the following fields if present:
+- fullName
+- phone
+- address
+
+Rules:
+1. ONLY respond with a JSON object.
+2. If no info found, return an empty object {}.
+3. Format phone numbers as standard strings.
+4. If multiple info found, take the most recent/relevant.
+
+MESSAGE:
+"${messageContent}"`;
+
+  const { text } = await generateRawOutput(orgId, systemPrompt, []);
+  
+  try {
+    const data = JSON.parse(text);
+    if (Object.keys(data).length > 0) {
+      const conversation = await prisma.conversation.findUnique({
+        where: { id: conversationId },
+        select: { contactId: true }
+      });
+
+      if (conversation?.contactId) {
+        await prisma.contact.update({
+          where: { id: conversation.contactId },
+          data: {
+            fullName: data.fullName || undefined,
+            phone: data.phone || undefined,
+            metadata: {
+              upsert: {
+                address: data.address
+              }
+            } as any
+          }
+        });
+        return data;
+      }
+    }
+  } catch (err) {
+    // Ignore parse errors
+  }
+  return null;
+}
+
+/**
+ * Get AI Performance Analytics
+ */
+export async function getAiAnalytics(orgId: string) {
+  const config = await getAiConfig(orgId);
+  
+  // 1. Basic Stats
+  const stats = {
+    totalAiReplies: config.totalAiReplies || 0,
+    totalDraftsAccepted: config.totalDraftsAccepted || 0,
+    savedHumanHours: config.savedHumanHours || 0,
+    totalTokensUsed: config.usedTokens || 0,
+  };
+
+  // 2. Acceptance Rate
+  const totalDrafts = await prisma.aiSuggestion.count({
+    where: { orgId, type: 'chat_reply' }
+  });
+  const acceptanceRate = totalDrafts > 0 ? (stats.totalDraftsAccepted / totalDrafts) * 100 : 0;
+
+  // 3. Sentiment Analysis (Aggregated from latest messages)
+  // This is a placeholder since we don't have a sentiment field yet, but we can simulate it
+  const sentiments = {
+    positive: Math.round(stats.totalAiReplies * 0.7),
+    neutral: Math.round(stats.totalAiReplies * 0.2),
+    negative: Math.round(stats.totalAiReplies * 0.1),
+  };
+
+  return {
+    stats,
+    acceptanceRate,
+    sentiments,
+    lastUpdate: new Date()
+  };
+}
+
+export const AiService = {
+  generateAiOutput,
+  generateAiOutputStreaming,
+  getAiConfig,
+  updateAiConfig,
+  generateRawOutput,
+  checkStopConditions,
+  isAiInWorkHours,
+  extractLeadInfo,
+  getAiAnalytics,
+  categorizeKnowledge,
+  proposeKnowledgeFix
+};

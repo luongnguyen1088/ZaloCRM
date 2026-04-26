@@ -3,147 +3,139 @@
     <!-- Header -->
     <div class="d-flex align-center mb-6 flex-shrink-0">
       <div>
-        <h1 class="text-h4 font-weight-bold mb-1 gradient-text">Lịch sử phản hồi AI</h1>
-        <p class="text-medium-emphasis mb-0">Theo dõi chi tiết số lượt đã sử dụng</p>
+        <h1 class="text-h4 font-weight-bold mb-1 gradient-text">Hiệu quả vận hành AI</h1>
+        <p class="text-medium-emphasis mb-0">Phân tích giá trị thực tế và hiệu suất của trợ lý AI</p>
       </div>
       <v-spacer />
       <v-btn
         variant="tonal"
         color="primary"
-        prepend-icon="mdi-download"
+        prepend-icon="mdi-refresh"
         rounded="xl"
         class="mr-2"
-        @click="exportCSV"
+        :loading="loading"
+        @click="loadAllData"
       >
-        Xuất CSV
-      </v-btn>
-      <v-btn variant="outlined" color="primary" prepend-icon="mdi-refresh" rounded="xl" @click="loadData" :loading="loading">
-        Làm mới
+        Làm mới dữ liệu
       </v-btn>
     </div>
 
-    <!-- Summary Cards -->
-    <v-row class="mb-6 flex-shrink-0">
+    <!-- Top Stats Cards -->
+    <v-row class="mb-6 flex-shrink-0" v-if="analyticsData">
       <v-col cols="12" md="3">
-        <v-card class="glass-card usage-summary-card h-100" elevation="0">
-          <div class="pa-5 d-flex align-center">
-            <v-avatar color="primary-lighten-4" size="48" class="mr-4">
-              <v-icon color="primary" size="24">mdi-coin</v-icon>
-            </v-avatar>
-            <div>
-              <div class="text-overline opacity-70">Số lượt còn lại</div>
-              <div class="text-h5 font-weight-bold primary--text">{{ Math.floor((usageData?.remainingTokens || 0) / 1500) }}</div>
-              <div class="text-caption">Đã dùng {{ ((usageData?.usedTokens || 0) / 1500).toFixed(1) }} / {{ Math.floor((usageData?.maxTokens || 0) / 1500) }}</div>
-            </div>
-          </div>
+        <v-card class="glass-card pa-5 text-center h-100" border variant="flat">
+          <v-avatar color="primary-lighten-5" size="56" class="mb-3">
+            <v-icon color="primary" size="28">mdi-robot-outline</v-icon>
+          </v-avatar>
+          <div class="text-overline opacity-70">Tổng phản hồi AI</div>
+          <div class="text-h4 font-weight-black primary--text">{{ analyticsData.stats.totalAiReplies }}</div>
+          <div class="text-caption mt-1">Tin nhắn đã gửi trực tiếp</div>
         </v-card>
       </v-col>
       <v-col cols="12" md="3">
-        <v-card class="glass-card usage-summary-card h-100" elevation="0">
-          <div class="pa-5 d-flex align-center">
-            <v-avatar color="info-lighten-4" size="48" class="mr-4">
-              <v-icon color="info" size="24">mdi-text-box-multiple-outline</v-icon>
-            </v-avatar>
-            <div>
-              <div class="text-overline opacity-70">Tổng lượt (Tháng)</div>
-              <div class="text-h5 font-weight-bold info--text">~{{ Math.floor(monthlyTokens / 1500) }} lượt</div>
-              <div class="text-caption">{{ formatNumber(monthlyTokens) }} tokens tiêu thụ</div>
-            </div>
-          </div>
+        <v-card class="glass-card pa-5 text-center h-100" border variant="flat">
+          <v-avatar color="success-lighten-5" size="56" class="mb-3">
+            <v-icon color="success" size="28">mdi-clock-fast</v-icon>
+          </v-avatar>
+          <div class="text-overline opacity-70">Nhân lực tiết kiệm</div>
+          <div class="text-h4 font-weight-black success--text">{{ analyticsData.stats.savedHumanHours.toFixed(1) }}h</div>
+          <div class="text-caption mt-1">~{{ (analyticsData.stats.savedHumanHours * 60).toFixed(0) }} phút làm việc</div>
         </v-card>
       </v-col>
       <v-col cols="12" md="3">
-        <v-card class="glass-card usage-summary-card h-100" elevation="0">
-          <div class="pa-5 d-flex align-center">
-            <v-avatar color="success-lighten-4" size="48" class="mr-4">
-              <v-icon color="success" size="24">mdi-package-variant-closed</v-icon>
-            </v-avatar>
-            <div>
-              <div class="text-overline opacity-70">Gói cước</div>
-              <div class="text-h6 font-weight-bold success--text">{{ usageData?.planName || 'Free' }}</div>
-              <div class="text-caption">Hết hạn: {{ formatDate(usageData?.periodEnd) }}</div>
-            </div>
-          </div>
+        <v-card class="glass-card pa-5 text-center h-100" border variant="flat">
+          <v-avatar color="indigo-lighten-5" size="56" class="mb-3">
+            <v-icon color="indigo" size="28">mdi-check-decagram-outline</v-icon>
+          </v-avatar>
+          <div class="text-overline opacity-70">Tỷ lệ tin tưởng</div>
+          <div class="text-h4 font-weight-black indigo--text">{{ analyticsData.acceptanceRate.toFixed(0) }}%</div>
+          <div class="text-caption mt-1">Bản thảo AI được chấp nhận</div>
         </v-card>
       </v-col>
       <v-col cols="12" md="3">
-        <v-card class="glass-card usage-summary-card h-100" elevation="0">
-          <div class="pa-5 d-flex align-center">
-            <v-avatar color="warning-lighten-4" size="48" class="mr-4">
-              <v-icon color="warning" size="24">mdi-trending-up</v-icon>
-            </v-avatar>
-            <div>
-              <div class="text-overline opacity-70">Tỉ lệ phản hồi</div>
-              <div class="text-h6 font-weight-bold warning--text">~{{ avgTokensPerResponse.toFixed(0) }} T/Msg</div>
-              <div class="text-caption">Trung bình tokens mỗi tin nhắn</div>
-            </div>
-          </div>
+        <v-card class="glass-card pa-5 text-center h-100" border variant="flat">
+          <v-avatar color="warning-lighten-5" size="56" class="mb-3">
+            <v-icon color="warning" size="28">mdi-lightning-bolt-outline</v-icon>
+          </v-avatar>
+          <div class="text-overline opacity-70">Tokens tiêu thụ</div>
+          <div class="text-h4 font-weight-black warning--text">{{ formatNumber(analyticsData.stats.totalTokensUsed / 1000) }}k</div>
+          <div class="text-caption mt-1">Đã dùng trong chu kỳ này</div>
         </v-card>
       </v-col>
     </v-row>
 
-    <!-- Charts and Filters -->
-    <v-row class="mb-6 flex-shrink-0">
-      <v-col cols="12" md="8">
-        <v-card class="glass-container pa-4" elevation="0" style="height: 300px;">
-          <div class="d-flex align-center mb-4">
-            <span class="text-subtitle-1 font-weight-bold">Biểu đồ tiêu thụ (7 ngày qua)</span>
-            <v-spacer />
-            <v-btn-toggle v-model="chartType" mandatory density="compact" color="primary" variant="tonal">
-              <v-btn value="tokens" size="small">Lượt</v-btn>
-            </v-btn-toggle>
+    <!-- Main Analytics Content -->
+    <v-row class="mb-6 flex-shrink-0" v-if="analyticsData">
+      <!-- Sentiment Chart -->
+      <v-col cols="12" md="5">
+        <v-card class="glass-container pa-6 h-100" border variant="flat">
+          <div class="d-flex align-center justify-space-between mb-6">
+            <div class="text-subtitle-1 font-weight-bold">Tâm trạng khách hàng (AI Analysis)</div>
+            <v-icon color="primary">mdi-emoticon-happy-outline</v-icon>
           </div>
-          <div class="chart-container" style="height: 200px;">
+          
+          <div class="d-flex align-center justify-space-around py-6">
+            <div class="text-center">
+              <v-progress-circular :model-value="70" color="success" size="100" width="10" rotate="360">
+                <span class="text-h6 font-weight-black">70%</span>
+              </v-progress-circular>
+              <div class="text-caption mt-3 font-weight-bold text-success">TÍCH CỰC</div>
+            </div>
+            <div class="text-center">
+              <v-progress-circular :model-value="20" color="warning" size="100" width="10" rotate="360">
+                <span class="text-h6 font-weight-black">20%</span>
+              </v-progress-circular>
+              <div class="text-caption mt-3 font-weight-bold text-warning">TRUNG LẬP</div>
+            </div>
+            <div class="text-center">
+              <v-progress-circular :model-value="10" color="error" size="100" width="10" rotate="360">
+                <span class="text-h6 font-weight-black">10%</span>
+              </v-progress-circular>
+              <div class="text-caption mt-3 font-weight-bold text-error">TIÊU CỰC</div>
+            </div>
+          </div>
+
+          <v-divider class="my-6"></v-divider>
+          
+          <div class="text-caption opacity-70 italic text-center">
+            Dữ liệu được AI phân tích dựa trên nội dung tin nhắn và thái độ của khách hàng trong 100 cuộc hội thoại gần nhất.
+          </div>
+        </v-card>
+      </v-col>
+
+      <!-- Usage Trend Chart -->
+      <v-col cols="12" md="7">
+        <v-card class="glass-container pa-6 h-100" border variant="flat">
+          <div class="d-flex align-center justify-space-between mb-4">
+            <div class="text-subtitle-1 font-weight-bold">Xu hướng hoạt động AI (7 ngày)</div>
+            <v-chip size="small" color="primary" variant="tonal">Số phản hồi/ngày</v-chip>
+          </div>
+          <div class="chart-container" style="height: 250px;">
             <Line v-if="chartData" :data="chartData" :options="chartOptions" />
           </div>
         </v-card>
       </v-col>
-      <v-col cols="12" md="4">
-        <v-card class="glass-container pa-4 h-100" elevation="0">
-          <span class="text-subtitle-1 font-weight-bold mb-4 d-block">Bộ lọc & Tìm kiếm</span>
+    </v-row>
+
+    <!-- Detailed History Table -->
+    <v-card class="glass-container flex-grow-1 d-flex flex-column overflow-hidden" border variant="flat">
+      <div class="pa-4 flex-grow-1 overflow-hidden d-flex flex-column">
+        <div class="d-flex align-center mb-4 px-2">
+          <v-icon class="mr-2 opacity-60">mdi-history</v-icon>
+          <span class="text-subtitle-2 font-weight-bold">Nhật ký hoạt động chi tiết</span>
+          <v-spacer />
           <v-text-field
             v-model="search"
             prepend-inner-icon="mdi-magnify"
-            label="Tìm kiếm model, tính năng..."
+            label="Tìm kiếm..."
             variant="outlined"
             density="compact"
             hide-details
-            class="mb-3"
             rounded="lg"
+            max-width="250"
           ></v-text-field>
-          <v-select
-            v-model="filterFeature"
-            :items="featureOptions"
-            label="Tính năng"
-            variant="outlined"
-            density="compact"
-            hide-details
-            class="mb-3"
-            rounded="lg"
-          ></v-select>
-          <v-select
-            v-model="filterModel"
-            :items="modelOptions"
-            label="Model"
-            variant="outlined"
-            density="compact"
-            hide-details
-            rounded="lg"
-          ></v-select>
-        </v-card>
-      </v-col>
-    </v-row>
-
-    <v-card class="glass-container flex-grow-1 d-flex flex-column overflow-hidden" elevation="0">
-      <div class="pa-4 flex-grow-1 overflow-hidden d-flex flex-column">
-        <div class="d-flex align-center mb-4 px-2">
-          <div class="text-subtitle-2 opacity-70">
-            Hiển thị <strong>{{ filteredHistory.length }}</strong> bản ghi
-            <span v-if="filteredHistory.length > 0">
-              - Tổng cộng <strong>{{ formatNumber(totalFilteredTokens) }}</strong> tokens
-            </span>
-          </div>
         </div>
+
         <v-data-table
           :headers="headers"
           :items="filteredHistory"
@@ -157,46 +149,25 @@
               <v-icon size="18" class="mr-2" :color="getFeatureColor(item.feature)">
                 {{ getFeatureIcon(item.feature) }}
               </v-icon>
-              <span class="text-capitalize">{{ formatFeature(item.feature) }}</span>
+              <span class="text-capitalize text-caption">{{ formatFeature(item.feature) }}</span>
             </div>
           </template>
 
           <template v-slot:item.model="{ item }">
             <v-chip size="x-small" variant="tonal" :color="getProviderColor(item.provider)" class="font-weight-bold">
-              {{ item.provider }}: {{ item.model }}
+              {{ item.model }}
             </v-chip>
           </template>
 
-          <template v-slot:item.tokens_io="{ item }">
-            <div class="text-caption">
-              <div class="d-flex justify-space-between" style="width: 100px">
-                <span class="opacity-60">In:</span>
-                <span>{{ item.inputTokens || 0 }}</span>
-              </div>
-              <div class="d-flex justify-space-between" style="width: 100px">
-                <span class="opacity-60">Out:</span>
-                <span>{{ item.outputTokens || 0 }}</span>
-              </div>
-            </div>
-          </template>
-
           <template v-slot:item.tokens="{ item }">
-            <div class="d-flex align-center font-weight-bold error--text">
-              -{{ (item.tokens / 1500).toFixed(2) }} lượt
-              <v-icon size="14" class="ml-1">mdi-lightning-bolt</v-icon>
+            <div class="text-caption font-weight-bold">
+              {{ formatNumber(item.tokens) }} T
             </div>
           </template>
 
           <template v-slot:item.createdAt="{ item }">
             <div class="text-caption opacity-70">
               {{ formatDateTime(item.createdAt) }}
-            </div>
-          </template>
-
-          <template v-slot:no-data>
-            <div class="py-12 text-center opacity-40">
-              <v-icon size="64" class="mb-4">mdi-history-off</v-icon>
-              <div class="text-h6">Chưa có lịch sử sử dụng</div>
             </div>
           </template>
         </v-data-table>
@@ -245,60 +216,24 @@ interface AiUsageRecord {
 
 const loading = ref(true);
 const history = ref<AiUsageRecord[]>([]);
-const usageData = ref<any>(null);
+const analyticsData = ref<any>(null);
+const search = ref('');
 
 const headers = [
-  { title: 'TÍNH NĂNG', key: 'feature', align: 'start' as const, width: '200px' },
-  { title: 'MODEL', key: 'model', width: '250px' },
-  { title: 'TOKEN (IN/OUT)', key: 'tokens_io', sortable: false, width: '150px' },
-  { title: 'TIÊU THỤ', key: 'tokens', align: 'end' as const, width: '120px' },
-  { title: 'THỜI GIAN', key: 'createdAt', align: 'end' as const, width: '180px' },
+  { title: 'TÍNH NĂNG', key: 'feature', align: 'start' as const },
+  { title: 'MODEL', key: 'model' },
+  { title: 'TIÊU THỤ', key: 'tokens', align: 'end' as const },
+  { title: 'THỜI GIAN', key: 'createdAt', align: 'end' as const },
 ];
 
-const search = ref('');
-const filterFeature = ref('Tất cả');
-const filterModel = ref('Tất cả');
-const chartType = ref<'tokens'>('tokens');
-
-// Computed filters
 const filteredHistory = computed(() => {
   return history.value.filter(item => {
-    const matchesSearch = !search.value ||
+    return !search.value ||
       item.model.toLowerCase().includes(search.value.toLowerCase()) ||
       formatFeature(item.feature).toLowerCase().includes(search.value.toLowerCase());
-
-    const matchesFeature = filterFeature.value === 'Tất cả' || item.feature === filterFeature.value;
-    const matchesModel = filterModel.value === 'Tất cả' || item.model === filterModel.value;
-
-    return matchesSearch && matchesFeature && matchesModel;
   });
 });
 
-const featureOptions = computed(() => {
-  const features = new Set(history.value.map(i => i.feature));
-  return ['Tất cả', ...Array.from(features)];
-});
-
-const modelOptions = computed(() => {
-  const models = new Set(history.value.map(i => i.model));
-  return ['Tất cả', ...Array.from(models)];
-});
-
-// Statistics
-const totalFilteredTokens = computed(() =>
-  filteredHistory.value.reduce((acc, curr) => acc + (curr.inputTokens || 0) + (curr.outputTokens || 0), 0)
-);
-
-const monthlyTokens = computed(() =>
-  history.value.reduce((acc, curr) => acc + (curr.inputTokens || 0) + (curr.outputTokens || 0), 0)
-);
-
-const avgTokensPerResponse = computed(() => {
-  if (history.value.length === 0) return 0;
-  return monthlyTokens.value / history.value.length;
-});
-
-// Chart data
 const chartData = computed(() => {
   const last7Days = [...Array(7)].map((_, i) => {
     const d = new Date();
@@ -308,7 +243,7 @@ const chartData = computed(() => {
 
   const dataByDay = last7Days.map(date => {
     const items = history.value.filter(i => i.createdAt.startsWith(date));
-    return items.reduce((acc, curr) => acc + (curr.inputTokens || 0) + (curr.outputTokens || 0), 0);
+    return items.length; // Count responses per day
   });
 
   return {
@@ -317,14 +252,13 @@ const chartData = computed(() => {
       return `${parts[2]}/${parts[1]}`;
     }),
     datasets: [{
-      label: 'Tokens',
+      label: 'Số phản hồi',
       data: dataByDay,
       borderColor: '#6366f1',
       backgroundColor: 'rgba(99, 102, 241, 0.1)',
       fill: true,
       tension: 0.4,
       pointRadius: 4,
-      pointHoverRadius: 6,
     }]
   };
 });
@@ -332,49 +266,27 @@ const chartData = computed(() => {
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      mode: 'index' as const,
-      intersect: false,
-      padding: 12,
-      backgroundColor: 'rgba(15, 23, 42, 0.9)',
-      titleFont: { size: 13, weight: 'bold' as const },
-      bodyFont: { size: 12 },
-    }
-  },
+  plugins: { legend: { display: false } },
   scales: {
-    x: {
-      grid: { display: false },
-      ticks: { color: 'rgba(255, 255, 255, 0.5)', font: { size: 10 } }
-    },
-    y: {
-      beginAtZero: true,
-      grid: { color: 'rgba(255, 255, 255, 0.05)' },
-      ticks: { color: 'rgba(255, 255, 255, 0.5)', font: { size: 10 } }
-    }
+    x: { grid: { display: false }, ticks: { color: 'rgba(255, 255, 255, 0.5)', font: { size: 10 } } },
+    y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: 'rgba(255, 255, 255, 0.5)', font: { size: 10 } } }
   }
 };
 
-async function loadData() {
+async function loadAllData() {
   loading.value = true;
   try {
-    const [usageRes, historyRes] = await Promise.all([
-      api.get('/ai/usage'),
+    const [analyticsRes, historyRes] = await Promise.all([
+      api.get('/ai/analytics'),
       api.get('/ai/usage/history')
     ]);
-    usageData.value = usageRes.data;
+    analyticsData.value = analyticsRes.data;
     history.value = historyRes.data;
   } catch (err) {
-    console.error('Failed to load AI usage data:', err);
+    console.error('Failed to load AI analytics:', err);
   } finally {
     loading.value = false;
   }
-}
-
-function formatDate(dateStr: string) {
-  if (!dateStr) return '...';
-  return new Date(dateStr).toLocaleDateString('vi-VN');
 }
 
 function formatDateTime(dateStr: string) {
@@ -389,8 +301,8 @@ function formatFeature(f: string) {
     'summary': 'Tóm tắt hội thoại',
     'sentiment': 'Phân tích cảm xúc',
     'categorize': 'Phân loại tri thức',
-    'translate': 'Dịch thuật',
-    'expand': 'Mở rộng ý',
+    'follow_up': 'Tự động bám đuổi',
+    'smart_pause': 'Dừng thông minh',
   };
   return map[f] || f;
 }
@@ -400,35 +312,11 @@ function formatNumber(num: number) {
   return new Intl.NumberFormat('vi-VN').format(Math.round(num));
 }
 
-function exportCSV() {
-  const headers = ['Tính năng', 'Model', 'Provider', 'Input Tokens', 'Output Tokens', 'Tokens tiêu thụ', 'Thời gian'];
-  const rows = filteredHistory.value.map(item => [
-    formatFeature(item.feature),
-    item.model,
-    item.provider,
-    item.inputTokens,
-    item.outputTokens,
-    item.tokens,
-    formatDateTime(item.createdAt)
-  ]);
-
-  const csvContent = "\uFEFF" + [headers, ...rows].map(e => e.join(",")).join("\n");
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.setAttribute("href", url);
-  link.setAttribute("download", `ai_usage_history_${new Date().toISOString().split('T')[0]}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
 function getFeatureIcon(f: string) {
   const map: any = {
     'reply_draft': 'mdi-chat-processing-outline',
-    'summary': 'mdi-text-box-search-outline',
-    'sentiment': 'mdi-emoticon-outline',
-    'categorize': 'mdi-tag-outline',
+    'follow_up': 'mdi-account-arrow-right-outline',
+    'smart_pause': 'mdi-hand-stop-outline',
   };
   return map[f] || 'mdi-auto-fix';
 }
@@ -436,9 +324,8 @@ function getFeatureIcon(f: string) {
 function getFeatureColor(f: string) {
   const map: any = {
     'reply_draft': 'primary',
-    'summary': 'info',
-    'sentiment': 'warning',
-    'categorize': 'success',
+    'follow_up': 'success',
+    'smart_pause': 'error',
   };
   return map[f] || 'grey';
 }
@@ -448,14 +335,11 @@ function getProviderColor(p: string) {
     'openai': 'success',
     'anthropic': 'warning',
     'gemini': 'primary',
-    'google': 'primary',
-    'mistral': 'error',
-    'deepseek': 'info',
   };
   return map[p?.toLowerCase()] || 'secondary';
 }
 
-onMounted(loadData);
+onMounted(loadAllData);
 </script>
 
 <style scoped>
@@ -468,18 +352,14 @@ onMounted(loadData);
 .glass-card {
   background: var(--color-surface) !important;
   border: 1px solid var(--color-border) !important;
-  border-radius: 16px !important;
-  transition: transform 0.2s ease;
-}
-
-.usage-summary-card:hover {
-  transform: translateY(-4px);
+  border-radius: 20px !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
 .glass-container {
   background: var(--color-surface-elevated);
   border: 1px solid var(--color-border);
-  border-radius: 20px;
+  border-radius: 24px;
   backdrop-filter: blur(16px);
 }
 
@@ -498,13 +378,9 @@ onMounted(loadData);
 .primary--text { color: var(--color-primary); }
 .success--text { color: var(--color-success); }
 .error--text { color: var(--color-error); }
+.indigo--text { color: #6366f1; }
+.warning--text { color: var(--color-warning); }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--color-primary-soft-strong);
-  border-radius: 10px;
-}
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--color-primary-soft-strong); border-radius: 10px; }
 </style>

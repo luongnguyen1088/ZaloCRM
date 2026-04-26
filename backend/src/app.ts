@@ -52,6 +52,7 @@ import { facebookRoutes } from './modules/channels/facebook/facebook-routes.js';
 import { facebookWebhookRoutes } from './modules/channels/facebook/facebook-webhook.js';
 import { invitationRoutes } from './modules/auth/invitation-routes.js';
 import { authMiddleware } from './modules/auth/auth-middleware.js';
+import { FollowUpService } from './modules/ai/follow-up-service.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -209,6 +210,7 @@ async function bootstrap() {
     startAppointmentReminder(io);
     startZaloHealthCheck();
     startContactIntelligence();
+    FollowUpService.start();
   } catch (err) {
     logger.error('Failed to start server:', err);
     process.exit(1);

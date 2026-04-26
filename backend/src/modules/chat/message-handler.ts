@@ -7,6 +7,7 @@ import { logger } from '../../shared/utils/logger.js';
 import { randomUUID } from 'node:crypto';
 import { emitWebhook } from '../api/webhook-service.js';
 import { runAutomationRules } from '../automation/automation-service.js';
+import { AiService } from '../ai/ai-service.js';
 
 export interface IncomingMessage {
   accountId: string;
@@ -135,6 +136,12 @@ export async function handleIncomingMessage(
           : null,
         message: { id: message.id, content: message.content, contentType: message.contentType, senderType: message.senderType },
       });
+
+      // Run Smart Pause check
+      void AiService.checkStopConditions(account.orgId, conversation.id, msg.content);
+
+      // Run Lead Extraction check
+      void AiService.extractLeadInfo(account.orgId, conversation.id, msg.content);
     }
 
     return {
@@ -255,6 +262,9 @@ async function updateConversationAfterMessage(
   } else {
     updateData.unreadCount = { increment: 1 };
     updateData.isReplied = false;
+    // Reset follow-up tracking when customer messages
+    updateData.followUpCount = 0;
+    updateData.lastFollowUpAt = null;
   }
   await prisma.conversation.update({ where: { id: conversationId }, data: updateData });
 }

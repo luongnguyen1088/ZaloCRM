@@ -29,9 +29,9 @@
                 </div>
               </div>
               <v-spacer />
-              <v-btn color="primary" variant="flat" rounded="lg" @click="showAiConfig = true" class="px-6">
-                <v-icon start>mdi-cog-sync</v-icon>
-                Cấu hình
+              <v-btn color="primary" variant="flat" rounded="lg" to="/ai-training" class="px-6">
+                <v-icon start>mdi-brain</v-icon>
+                Đào tạo & Cấu hình
               </v-btn>
             </div>
 
@@ -206,19 +206,12 @@ POST /api/public/messages/send</pre>
       </div>
     </v-snackbar>
 
-    <AiConfigDialog
-      v-model="showAiConfig"
-      :loading="aiSaving"
-      :config="aiConfig"
-      @save="saveAiConfig"
-    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { api } from '@/api';
-import AiConfigDialog from '@/components/ai/ai-config-dialog.vue';
 
 type AiConfig = {
   provider: string;
@@ -373,19 +366,6 @@ async function testWebhook() {
   }
 }
 
-async function saveAiConfig(value: { enabled: boolean }) {
-  aiSaving.value = true;
-  try {
-    const res = await api.put('/ai/config', value);
-    aiConfig.value = normalizeAiConfig(res.data);
-    showAiConfig.value = false;
-    showSnack('Đã lưu cấu hình AI');
-  } catch {
-    showSnack('Lưu cấu hình AI thất bại', 'error');
-  } finally {
-    aiSaving.value = false;
-  }
-}
 
 onMounted(async () => {
   await Promise.all([loadApiKey(), loadWebhook(), loadAiConfig()]);

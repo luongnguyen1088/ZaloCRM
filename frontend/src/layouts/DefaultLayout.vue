@@ -189,11 +189,11 @@ const menuItems = [
   { title: 'Tài khoản Zalo', icon: 'mdi-cellphone-link', path: '/zalo-accounts' },
   { title: 'Lịch hẹn', icon: 'mdi-calendar-clock-outline', path: '/appointments' },
   { title: 'Báo cáo', icon: 'mdi-chart-arc', path: '/reports' },
-  { title: 'Phân tích', icon: 'mdi-chart-timeline-variant-shimmer', path: '/analytics' },
+  { title: 'Phân tích kinh doanh', icon: 'mdi-chart-timeline-variant-shimmer', path: '/analytics' },
   { title: 'Nhân sự & Phân quyền', icon: 'mdi-account-cog-outline', path: '/settings' },
   { title: 'Kết nối & Hạn mức AI', icon: 'mdi-cog-outline', path: '/api-settings' },
   { title: 'Đào tạo AI', icon: 'mdi-school-outline', path: '/ai-training' },
-  { title: 'Lịch sử phản hồi', icon: 'mdi-history', path: '/ai-usage' },
+  { title: 'Hiệu quả AI', icon: 'mdi-chart-line', path: '/ai-usage' },
   { title: 'Tích hợp', icon: 'mdi-connection', path: '/integrations' },
   { title: 'Automation', icon: 'mdi-robot-outline', path: '/automation' },
   { title: 'Gói cước', icon: 'mdi-crown-outline', path: '/pricing' },
@@ -264,9 +264,12 @@ function logout() {
   box-shadow: 0 0 0 4px var(--color-success-soft);
 }
 
-.status-chip__label {
-  color: var(--color-success);
-  letter-spacing: 0.5px;
-  font-size: 0.65rem !important;
+.brand-title {
+  overflow: visible !important;
+}
+
+.sidebar-list :deep(.v-list-item--active) {
+  background: var(--gradient-brand-soft) !important;
+  color: var(--color-primary) !important;
 }
 </style>

@@ -2,7 +2,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { authMiddleware } from '../auth/auth-middleware.js';
 import { requireRole } from '../auth/role-middleware.js';
 import { requireZaloAccess } from '../zalo/zalo-access-middleware.js';
-import { getAiConfig, getAiUsage, getAiUsageHistory, updateAiConfig, generateAiOutput, generateAiOutputStreaming } from './ai-service.js';
+import { getAiConfig, getAiUsage, getAiUsageHistory, updateAiConfig, generateAiOutput, generateAiOutputStreaming, getAiAnalytics } from './ai-service.js';
 import { getAvailableProviders } from './provider-registry.js';
 import { logger } from '../../shared/utils/logger.js';
 import { prisma } from '../../shared/database/prisma-client.js';
@@ -63,7 +63,7 @@ export async function aiRoutes(app: FastifyInstance) {
 
   app.put('/api/v1/ai/config', { preHandler: requireRole('owner', 'admin') }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const body = request.body as { enabled?: boolean };
+      const body = request.body as any;
       return await updateAiConfig(request.user!.orgId, body);
     } catch (err) {
       logger.error('[ai] Update config error:', err);
@@ -87,6 +87,15 @@ export async function aiRoutes(app: FastifyInstance) {
     } catch (err) {
       logger.error('[ai] Usage history error:', err);
       return reply.status(500).send({ error: 'Failed to fetch AI usage history' });
+    }
+  });
+
+  app.get('/api/v1/ai/analytics', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      return await getAiAnalytics(request.user!.orgId);
+    } catch (err) {
+      logger.error('[ai] Analytics error:', err);
+      return reply.status(500).send({ error: 'Failed to fetch AI analytics' });
     }
   });
 

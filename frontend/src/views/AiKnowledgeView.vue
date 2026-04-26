@@ -17,11 +17,481 @@
 
     <!-- Main Content Area -->
     <v-row class="flex-grow-1 overflow-hidden">
-      <!-- Left Side: Knowledge Management -->
+      <!-- Left Side: Training & Management -->
       <v-col cols="12" md="7" class="d-flex flex-column h-100 overflow-hidden">
         
-        <!-- Magic Add Console -->
-        <v-card class="magic-console mb-6 pa-1 flex-shrink-0" elevation="12">
+        <!-- Tab Navigation -->
+        <v-tabs v-model="activeTab" color="primary" class="mb-4 flex-shrink-0" align-tabs="start">
+          <v-tab :value="0" class="text-none font-weight-bold">
+            <v-icon start>mdi-robot-confused-outline</v-icon>
+            Chỉ dẫn & Cá tính
+          </v-tab>
+          <v-tab :value="1" class="text-none font-weight-bold">
+            <v-icon start>mdi-database-outline</v-icon>
+            Kho tri thức
+          </v-tab>
+          <v-tab :value="2" class="text-none font-weight-bold">
+            <v-icon start>mdi-account-arrow-right-outline</v-icon>
+            Tự động bám đuổi
+          </v-tab>
+          <v-tab :value="3" class="text-none font-weight-bold">
+            <v-icon start>mdi-hand-stop-outline</v-icon>
+            Dừng/Tiếp tục AI
+          </v-tab>
+          <v-tab :value="4" class="text-none font-weight-bold">
+            <v-icon start>mdi-cog-outline</v-icon>
+            Nâng cao
+          </v-tab>
+        </v-tabs>
+
+        <v-window v-model="activeTab" class="flex-grow-1 overflow-hidden">
+          <!-- Tab 1: Instructions & Persona -->
+          <v-window-item :value="0" class="h-100 overflow-y-auto pr-2 custom-scrollbar">
+            <v-card class="glass-container pa-6 mb-4" border variant="flat">
+              <div class="d-flex align-center mb-6">
+                <v-icon color="primary" size="32" class="mr-4">mdi-comment-quote-outline</v-icon>
+                <div>
+                  <h3 class="text-h6 font-weight-bold">Tầng 2: Hành vi phản hồi</h3>
+                  <p class="text-caption text-medium-emphasis mb-0">Cài đặt phong cách, cách xưng hô và ngôn ngữ của AI.</p>
+                </div>
+              </div>
+
+              <v-select
+                v-model="aiConfig.languagePolicy"
+                :items="languageOptions"
+                label="Chính sách ngôn ngữ"
+                variant="outlined"
+                density="comfortable"
+                rounded="lg"
+                class="mb-4"
+                prepend-inner-icon="mdi-translate"
+              />
+
+              <div class="text-caption font-weight-bold mb-2 opacity-70">GỢI Ý MẪU CÁ TÍNH:</div>
+              <v-row dense class="mb-4">
+                <v-col v-for="t in personaTemplates" :key="t.name" cols="12" sm="6">
+                  <v-card 
+                    variant="outlined" 
+                    class="persona-template-card pa-3 h-100" 
+                    @click="applyPersona(t)"
+                    hover
+                  >
+                    <div class="d-flex align-center">
+                      <v-icon color="primary" class="mr-3">{{ t.icon }}</v-icon>
+                      <div class="overflow-hidden">
+                        <div class="text-caption font-weight-bold text-truncate">{{ t.name }}</div>
+                        <div class="text-xxs text-medium-emphasis text-truncate">{{ t.description }}</div>
+                      </div>
+                    </div>
+                  </v-card>
+                </v-col>
+              </v-row>
+
+              <v-textarea
+                v-model="aiConfig.instructions"
+                label="Chỉ dẫn cá tính & Cách trả lời"
+                placeholder="Ví dụ: Luôn gọi khách là 'anh/chị', xưng là 'em'. Luôn sử dụng icon 🌸 và văn phong chuyên nghiệp..."
+                variant="outlined"
+                rows="10"
+                rounded="lg"
+                persistent-hint
+                class="mb-6"
+              >
+                <template #prepend-inner>
+                  <v-icon color="primary" class="mt-1">mdi-robot-outline</v-icon>
+                </template>
+              </v-textarea>
+
+              <div class="d-flex align-center justify-space-between pt-4 border-top">
+                <v-switch
+                  v-model="aiConfig.enabled"
+                  label="Kích hoạt trợ lý AI"
+                  color="success"
+                  hide-details
+                  inset
+                />
+                <v-btn 
+                  color="primary" 
+                  variant="flat" 
+                  rounded="lg" 
+                  size="large" 
+                  class="px-10"
+                  :loading="aiSaving"
+                  @click="saveAiConfig"
+                >
+                  Lưu thay đổi
+                </v-btn>
+              </div>
+            </v-card>
+
+            <!-- Usage Info Card -->
+            <v-card class="glass-container pa-4 border-dashed" variant="flat">
+              <div class="d-flex align-center justify-space-between">
+                <div class="d-flex align-center">
+                  <v-icon color="secondary" class="mr-2">mdi-shield-check-outline</v-icon>
+                  <span class="text-caption font-weight-bold opacity-70">QUY TẮC HỆ THỐNG (TẦNG 1): ĐANG KÍCH HOẠT</span>
+                </div>
+                <v-chip size="x-small" color="secondary" variant="flat">{{ aiConfig.planName }} Plan</v-chip>
+              </div>
+              <p class="text-xxs text-medium-emphasis mt-2 mb-0">
+                Hệ thống luôn tự động áp dụng các quy tắc bảo mật, cấm lộ thông tin và cấm sử dụng định dạng Markdown để đảm bảo AI hoạt động an toàn.
+              </p>
+            </v-card>
+          </v-window-item>
+
+          <!-- Tab 3: Auto Follow-up -->
+          <v-window-item :value="2" class="h-100 overflow-y-auto pr-2 custom-scrollbar">
+            <v-card class="glass-container pa-6 mb-4" border variant="flat">
+              <div class="d-flex align-center mb-6">
+                <v-icon color="secondary" size="32" class="mr-4">mdi-bullseye-arrow</v-icon>
+                <div>
+                  <h3 class="text-h6 font-weight-bold">Chiến dịch Bám đuổi tự động</h3>
+                  <p class="text-caption text-medium-emphasis mb-0">Tự động gửi tin nhắn nhắc nhở khi khách hàng im lặng.</p>
+                </div>
+              </div>
+
+              <v-alert
+                type="info"
+                variant="tonal"
+                density="compact"
+                class="mb-6 rounded-lg text-caption"
+              >
+                Hệ thống sẽ kiểm tra định kỳ mỗi phút. Nếu khách hàng không phản hồi sau thời gian thiết lập, AI sẽ gửi tin nhắn theo dõi.
+              </v-alert>
+
+              <v-row>
+                <v-col cols="12" sm="6">
+                  <v-select
+                    v-model="aiConfig.followUpInterval"
+                    :items="intervalOptions"
+                    label="Gửi tin nhắn sau khi khách im lặng"
+                    variant="outlined"
+                    density="comfortable"
+                    rounded="lg"
+                    prepend-inner-icon="mdi-clock-outline"
+                  />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <v-select
+                    v-model="aiConfig.followUpMaxMessages"
+                    :items="[1, 2, 3, 4, 5]"
+                    label="Số lượng tin nhắc tối đa"
+                    variant="outlined"
+                    density="comfortable"
+                    rounded="lg"
+                    prepend-inner-icon="mdi-numeric"
+                  />
+                </v-col>
+              </v-row>
+
+              <div class="text-subtitle-2 font-weight-bold mb-3">Nội dung tin nhắn bám đuổi:</div>
+              <v-radio-group v-model="aiConfig.followUpType" inline class="mb-4">
+                <v-radio label="Tự động bằng AI (Khuyên dùng)" value="ai" color="primary"></v-radio>
+                <v-radio label="Dùng mẫu cố định" value="manual" color="secondary"></v-radio>
+              </v-radio-group>
+
+              <v-textarea
+                v-if="aiConfig.followUpType === 'manual'"
+                v-model="aiConfig.followUpManualContent"
+                label="Nội dung mẫu cố định"
+                placeholder="Ví dụ: Dạ Anh/Chị có cần em tư vấn thêm gì về sản phẩm không ạ?"
+                variant="outlined"
+                rows="4"
+                rounded="lg"
+                class="mb-6"
+              />
+              
+              <v-card v-else variant="tonal" color="primary" class="pa-4 mb-6 rounded-lg">
+                <div class="d-flex align-center mb-2">
+                  <v-icon size="18" class="mr-2">mdi-robot-outline</v-icon>
+                  <span class="text-caption font-weight-bold">LOGIC AI BÁM ĐUỔI:</span>
+                </div>
+                <p class="text-xxs mb-0 opacity-80">
+                  AI sẽ đọc lại toàn bộ lịch sử trò chuyện gần nhất để viết một câu nhắc nhở "tinh tế" và "đúng ngữ cảnh" nhất, tránh tạo cảm giác spam cho khách hàng.
+                </p>
+              </v-card>
+
+              <div class="d-flex align-center justify-space-between pt-4 border-top">
+                <v-switch
+                  v-model="aiConfig.followUpEnabled"
+                  label="Kích hoạt Bám đuổi"
+                  color="success"
+                  hide-details
+                  inset
+                />
+                <v-btn 
+                  color="primary" 
+                  variant="flat" 
+                  rounded="lg" 
+                  size="large" 
+                  class="px-10"
+                  :loading="aiSaving"
+                  @click="saveAiConfig"
+                >
+                  Lưu thiết lập
+                </v-btn>
+              </div>
+            </v-card>
+          </v-window-item>
+
+          <!-- Tab 4: Smart Pause -->
+          <v-window-item :value="3" class="h-100 overflow-y-auto pr-2 custom-scrollbar">
+            <v-card class="glass-container pa-6 mb-4" border variant="flat">
+              <div class="d-flex align-center mb-6">
+                <v-icon color="error" size="32" class="mr-4">mdi-shield-alert-outline</v-icon>
+                <div>
+                  <h3 class="text-h6 font-weight-bold">Cấu hình Dừng/Tiếp tục thông minh</h3>
+                  <p class="text-caption text-medium-emphasis mb-0">Tự động nhường quyền cho nhân viên khi gặp điều kiện nhạy cảm.</p>
+                </div>
+              </div>
+
+              <div class="text-subtitle-2 font-weight-bold mb-4">Các điều kiện để AI ngừng phản hồi:</div>
+              
+              <div v-if="!aiConfig.stopConditions || aiConfig.stopConditions.length === 0" class="text-center pa-8 border rounded-lg border-dashed mb-4">
+                <v-icon color="medium-emphasis" size="48" class="mb-2">mdi-text-box-search-outline</v-icon>
+                <div class="text-caption text-medium-emphasis">Chưa có điều kiện dừng nào được thiết lập.</div>
+              </div>
+
+              <div v-else class="mb-4">
+                <div v-for="(condition, index) in aiConfig.stopConditions" :key="index" class="d-flex align-center mb-2">
+                  <v-text-field
+                    v-model="aiConfig.stopConditions[index]"
+                    placeholder="Ví dụ: Khách hàng hỏi về giá sỉ..."
+                    variant="outlined"
+                    density="compact"
+                    rounded="lg"
+                    hide-details
+                    prepend-inner-icon="mdi-circle-medium"
+                  >
+                    <template v-slot:append>
+                      <v-btn icon="mdi-delete-outline" variant="text" color="error" size="small" @click="removeStopCondition(index)"></v-btn>
+                    </template>
+                  </v-text-field>
+                </div>
+              </div>
+
+              <v-btn 
+                variant="outlined" 
+                color="primary" 
+                rounded="lg" 
+                prepend-icon="mdi-plus" 
+                class="mb-8"
+                @click="addStopCondition"
+              >
+                Thêm điều kiện mới
+              </v-btn>
+
+              <div class="text-caption font-weight-bold opacity-60 mb-3">MẪU GỢI Ý (BẤM ĐỂ THÊM NHANH):</div>
+              <div class="d-flex flex-wrap ga-2 mb-8">
+                <v-chip
+                  v-for="t in stopTemplates"
+                  :key="t.title"
+                  size="small"
+                  variant="tonal"
+                  :color="t.color"
+                  class="px-3"
+                  @click="addStopFromTemplate(t.content)"
+                >
+                  <v-icon start size="14">{{ t.icon }}</v-icon>
+                  {{ t.title }}
+                </v-chip>
+              </div>
+
+              <v-divider class="mb-6"></v-divider>
+
+              <div class="text-subtitle-2 font-weight-bold mb-4">Cấu hình Tiếp tục phản hồi:</div>
+              
+              <v-switch
+                v-model="aiConfig.autoResumeEnabled"
+                label="Tự động tiếp tục phản hồi (Resume)"
+                color="primary"
+                hide-details
+                inset
+                class="mb-2"
+              />
+              
+              <v-expand-transition>
+                <div v-if="aiConfig.autoResumeEnabled" class="pl-14">
+                  <v-row align="center">
+                    <v-col cols="auto" class="text-caption">Tiếp tục sau:</v-col>
+                    <v-col cols="4">
+                      <v-select
+                        v-model="aiConfig.autoResumeMinutes"
+                        :items="resumeIntervalOptions"
+                        variant="outlined"
+                        density="compact"
+                        rounded="lg"
+                        hide-details
+                      />
+                    </v-col>
+                  </v-row>
+                </div>
+              </v-expand-transition>
+
+              <div class="d-flex justify-end pt-8 mt-4 border-top">
+                <v-btn 
+                  color="primary" 
+                  variant="flat" 
+                  rounded="lg" 
+                  size="large" 
+                  class="px-10"
+                  :loading="aiSaving"
+                  @click="saveAiConfig"
+                >
+                  Lưu thiết lập
+                </v-btn>
+              </div>
+            </v-card>
+          </v-window-item>
+
+          <!-- Tab 5: Advanced -->
+          <v-window-item :value="4" class="h-100 overflow-y-auto pr-2 custom-scrollbar">
+            <v-card class="glass-container pa-6 mb-4" border variant="flat">
+              <div class="d-flex align-center mb-6">
+                <v-icon color="indigo" size="32" class="mr-4">mdi-auto-fix</v-icon>
+                <div>
+                  <h3 class="text-h6 font-weight-bold">Cấu hình Nâng cao</h3>
+                  <p class="text-caption text-medium-emphasis mb-0">Tự động hóa sâu hơn và tối ưu hóa thời gian vận hành AI.</p>
+                </div>
+              </div>
+
+              <!-- AI Scheduling -->
+              <div class="text-subtitle-2 font-weight-bold mb-4 d-flex align-center">
+                <v-icon size="18" class="mr-2" color="indigo">mdi-clock-check-outline</v-icon>
+                Giờ làm việc của AI
+              </div>
+              
+              <v-radio-group v-model="aiConfig.aiWorkMode" class="mb-4">
+                <v-radio label="Luôn luôn hoạt động (24/7)" value="always" color="indigo"></v-radio>
+                <v-radio label="Chỉ hoạt động ngoài giờ hành chính (Human off-hours)" value="off_hours" color="indigo"></v-radio>
+                <v-radio label="Chỉ hoạt động trong giờ hành chính (Human on-hours)" value="on_hours" color="indigo"></v-radio>
+                <v-radio label="Tạm tắt hoàn toàn (Chỉ dùng thủ công)" value="manual" color="indigo"></v-radio>
+              </v-radio-group>
+
+              <v-divider class="my-6"></v-divider>
+
+              <div class="text-subtitle-2 font-weight-bold mb-4 d-flex align-center">
+                <v-icon size="18" class="mr-2" color="indigo">mdi-robot-excited-outline</v-icon>
+                Chế độ phản hồi (Hybrid vs Auto)
+              </div>
+              
+              <v-radio-group v-model="aiConfig.aiResponseMode" class="mb-4">
+                <v-radio value="auto" color="indigo">
+                  <template v-slot:label>
+                    <div>
+                      <div class="text-body-2 font-weight-bold">Tự động hoàn toàn (Auto Mode)</div>
+                      <div class="text-caption">AI sẽ trực tiếp gửi tin nhắn cho khách hàng mà không cần duyệt.</div>
+                    </div>
+                  </template>
+                </v-radio>
+                <v-radio value="hybrid" color="indigo" class="mt-2">
+                  <template v-slot:label>
+                    <div>
+                      <div class="text-body-2 font-weight-bold">Chế độ Hỗ trợ (Hybrid Mode)</div>
+                      <div class="text-caption">AI sẽ soạn sẵn câu trả lời dưới dạng bản thảo (Draft). Nhân viên nhấn "Gửi" để hoàn tất.</div>
+                    </div>
+                  </template>
+                </v-radio>
+              </v-radio-group>
+
+              <v-alert
+                v-if="aiConfig.aiWorkMode === 'off_hours' || aiConfig.aiWorkMode === 'on_hours'"
+                type="info"
+                variant="tonal"
+                density="compact"
+                class="mb-6 rounded-lg text-caption"
+              >
+                AI sẽ tự động kiểm tra giờ hệ thống để quyết định có phản hồi hay không. 
+                Giờ hành chính mặc định: 08:00 - 18:00 (Thứ 2 - Thứ 7).
+              </v-alert>
+
+              <v-divider class="my-6"></v-divider>
+
+              <!-- Lead Extraction -->
+              <div class="text-subtitle-2 font-weight-bold mb-4 d-flex align-center">
+                <v-icon size="18" class="mr-2" color="success">mdi-database-import-outline</v-icon>
+                Tự động trích xuất thông tin (Lead Extraction)
+              </div>
+              
+              <v-list bg-color="transparent" class="pa-0">
+                <v-list-item class="pa-0 mb-2">
+                  <template v-slot:prepend>
+                    <v-icon color="success">mdi-account-details-outline</v-icon>
+                  </template>
+                  <v-list-item-title class="text-body-2">Tự động lấy SĐT và Địa chỉ</v-list-item-title>
+                  <v-list-item-subtitle class="text-xxs">AI sẽ quét tin nhắn khách gửi để cập nhật vào CRM.</v-list-item-subtitle>
+                  <template v-slot:append>
+                    <v-switch v-model="aiConfig.autoExtractInfo" color="success" hide-details inset density="compact" />
+                  </template>
+                </v-list-item>
+
+                <v-list-item class="pa-0">
+                  <template v-slot:prepend>
+                    <v-icon color="success">mdi-lightning-bolt-outline</v-icon>
+                  </template>
+                  <v-list-item-title class="text-body-2">Tự động phân loại Tiềm năng (Leads)</v-list-item-title>
+                  <v-list-item-subtitle class="text-xxs">Đánh dấu khách hàng là "Tiềm năng" khi có đủ thông tin liên hệ.</v-list-item-subtitle>
+                  <template v-slot:append>
+                    <v-switch v-model="aiConfig.autoCreateLeads" color="success" hide-details inset density="compact" />
+                  </template>
+                </v-list-item>
+              </v-list>
+
+              <div class="d-flex justify-end pt-8 mt-4 border-top">
+                <v-btn 
+                  color="indigo" 
+                  variant="flat" 
+                  rounded="lg" 
+                  size="large" 
+                  class="px-10"
+                  :loading="aiSaving"
+                  @click="saveAiConfig"
+                >
+                  Lưu thiết lập
+                </v-btn>
+              </div>
+            </v-card>
+          </v-window-item>
+
+          <!-- Tab 2: Knowledge Base -->
+          <v-window-item :value="1" class="h-100 d-flex flex-column overflow-hidden">
+            <div class="d-flex align-center justify-space-between mb-2">
+              <div class="text-caption font-weight-bold opacity-70">GỢI Ý NỘI DUNG NÊN NẠP:</div>
+              <div class="d-flex ga-1">
+                <v-chip size="x-small" variant="flat" color="primary" class="px-2">Thông tin</v-chip>
+                <v-chip size="x-small" variant="flat" color="secondary" class="px-2">Bán hàng</v-chip>
+              </div>
+            </div>
+            
+            <v-slide-group
+              show-arrows
+              class="mb-2"
+            >
+              <v-slide-group-item
+                v-for="t in knowledgeTemplates"
+                :key="t.name"
+              >
+                <v-card 
+                  variant="outlined" 
+                  :class="['persona-template-card pa-2 ma-1 text-center', t.group === 'Bán hàng' ? 'border-secondary-light' : '']" 
+                  @click="applyKnowledgeTemplate(t)"
+                  width="105"
+                  min-height="85"
+                  hover
+                >
+                  <v-icon :color="t.group === 'Bán hàng' ? 'secondary' : 'primary'" size="16" class="mb-1">{{ t.icon }}</v-icon>
+                  <div class="text-xxs font-weight-bold truncate-2" style="line-height: 1.1; min-height: 2.2em">{{ t.name }}</div>
+                  <div 
+                    :class="['mt-1 px-1 rounded-pill text-xxxxs font-weight-bold text-uppercase', t.group === 'Bán hàng' ? 'bg-secondary-soft secondary--text' : 'bg-primary-soft primary--text']"
+                  >
+                    {{ t.group }}
+                  </div>
+                </v-card>
+              </v-slide-group-item>
+            </v-slide-group>
+
+            <!-- Magic Add Console -->
+            <v-card class="magic-console mb-6 pa-1 flex-shrink-0" elevation="12">
           <div class="d-flex align-center pa-2 px-4 justify-space-between">
             <div class="d-flex align-center">
               <v-icon color="primary" class="mr-2 animate-sparkle">mdi-sparkles</v-icon>
@@ -190,9 +660,11 @@
               <v-icon size="64" class="mb-4">mdi-brain-outline</v-icon>
               <div class="text-h6">Không tìm thấy kiến thức phù hợp</div>
             </div>
+            </div>
           </div>
-        </div>
-      </v-col>
+        </v-window-item>
+      </v-window>
+    </v-col>
 
       <!-- Right Side: simulator -->
       <v-col cols="12" md="5" class="d-flex flex-column h-100 overflow-hidden">
@@ -568,15 +1040,30 @@ const { accounts, fetchAccounts } = useZaloAccounts();
 
 
 const showGuide = ref(false);
-const loading = ref(true);
-const saving = ref(false);
-const deleting = ref(false);
-const testing = ref(false);
-const savingMagic = ref(false);
-const search = ref('');
-const filterCategory = ref('Tất cả');
-const filterAccount = ref('Tất cả tài khoản');
 const items = ref<any[]>([]);
+const aiConfig = ref<any>({
+  enabled: true,
+  instructions: '',
+  languagePolicy: 'auto',
+  usedTokens: 0,
+  maxTokens: 500000,
+  remainingTokens: 500000,
+  followUpEnabled: false,
+  followUpInterval: 30,
+  followUpMaxMessages: 3,
+  followUpType: 'ai',
+  followUpManualContent: '',
+  stopConditions: [],
+  autoResumeEnabled: true,
+  autoResumeMinutes: 60,
+  aiWorkMode: 'always',
+  aiWorkHours: {},
+  aiTimezone: 'Asia/Ho_Chi_Minh',
+  autoExtractInfo: false,
+  autoCreateLeads: false,
+});
+const activeTab = ref(0);
+const aiSaving = ref(false);
 
 // Accounts logic
 const accountOptions = computed(() => {
@@ -589,12 +1076,27 @@ const currentSimAccountName = computed(() => {
   return acc ? acc.title : '...';
 });
 
-// Templates
-const templates = [
-  { name: 'Chính sách vận chuyển', icon: 'mdi-truck-delivery', content: 'Shop mình [miễn phí ship] cho đơn hàng từ [XXX k].' },
-  { name: 'Bảng giá', icon: 'mdi-currency-usd', content: 'Sản phẩm A: [Giá]. Sản phẩm B: [Giá].' },
-  { name: 'Chuyển khoản', icon: 'mdi-bank', content: 'CÔNG TY TNHH CLARO VIỆT NAM\nMB Bank\nSTK: 6386365999\nNội dung: [Họ tên] [SĐT] thanh toán đơn hàng' }
+// Knowledge Templates
+const knowledgeTemplates = [
+  // Nhóm 1: Thông tin cơ bản
+  { group: 'Cơ bản', name: '🚚 Vận chuyển', icon: 'mdi-truck-delivery', content: 'Shop mình miễn phí ship cho đơn hàng từ 500k. Với đơn dưới 500k, phí ship nội thành là 20k, ngoại thành là 30k. Thời gian giao hàng: Nội thành 1-2 ngày, Ngoại thành 3-5 ngày.' },
+  { group: 'Cơ bản', name: '💰 Thanh toán', icon: 'mdi-bank', content: 'Thông tin chuyển khoản:\n- Chủ TK: NGUYEN VAN A\n- Số TK: 123456789\n- Ngân hàng: Vietcombank\n- Nội dung: [Họ tên] [Số điện thoại]' },
+  { group: 'Cơ bản', name: '🏢 Thông tin Shop', icon: 'mdi-store-marker', content: 'Địa chỉ: 123 Đường ABC, Quận X, TP. Hồ Chí Minh.\nGiờ làm việc: 8h00 - 21h00 (Tất cả các ngày trong tuần).\nChi nhánh 2: 456 Đường XYZ, Quận Y, Hà Nội.' },
+  { group: 'Cơ bản', name: '📞 Liên hệ', icon: 'mdi-phone-in-talk', content: 'Hotline hỗ trợ: 0901.234.567\nEmail: contact@claro.vn\nWebsite: www.claro.vn\nZalo hỗ trợ kỹ thuật: 0908.765.432' },
+  { group: 'Cơ bản', name: '🏷️ Bảng giá', icon: 'mdi-tag-text-outline', content: 'Bảng giá sản phẩm hiện tại:\n1. Sản phẩm A: 200.000đ\n2. Sản phẩm B: 350.000đ\nƯu đãi: Mua từ 2 sản phẩm giảm ngay 10%.' },
+  
+  // Nhóm 2: Marketing & Bán hàng
+  { group: 'Bán hàng', name: '🚀 Chốt đơn', icon: 'mdi-cart-arrow-right', content: 'Kịch bản chốt đơn: Khi khách đã ưng ý, hãy phản hồi: "Dạ sản phẩm này đang rất hot và chỉ còn vài chiếc cuối cùng trong kho thôi ạ. Anh/Chị cho em xin [Số điện thoại] và [Địa chỉ] để em giữ hàng và lên đơn gửi đi ngay cho mình trong chiều nay nhé!"' },
+  { group: 'Bán hàng', name: '💎 Xử lý giá cao', icon: 'mdi-diamond-stone', content: 'Xử lý khi khách chê giá cao: "Dạ em hiểu băn khoăn của mình ạ. Tuy nhiên sản phẩm bên em là hàng [Loại 1/Chính hãng], đường may/chất liệu rất cao cấp và có bảo hành lên đến [12 tháng]. Đầu tư một lần dùng bền lâu và an tâm vẫn là kinh tế nhất Anh/Chị ạ!"' },
+  { group: 'Bán hàng', name: '🎁 Ưu đãi Upsell', icon: 'mdi-gift-outline', content: 'Kịch bản Upsell: "Dạ hiện tại shop đang có chương trình: Mua thêm 1 sản phẩm bất kỳ sẽ được [Giảm 10% tổng đơn] và [Miễn phí vận chuyển] toàn quốc ạ. Anh/Chị có muốn xem thêm mẫu nào để nhận ưu đãi này không ạ?"' },
+  { group: 'Bán hàng', name: '🛡️ Cam kết uy tín', icon: 'mdi-shield-check-outline', content: 'Cam kết bán hàng: Shop cam kết hàng chính hãng 100%, phát hiện hàng giả đền gấp 10 lần. Đặc biệt, shop cho phép Anh/Chị [Kiểm tra hàng thoải mái] trước khi thanh toán, đúng mẫu đúng chất lượng mới cần nhận hàng ạ.' },
+  { group: 'Bán hàng', name: '🔄 Đổi trả', icon: 'mdi-cached', content: 'Chính sách đổi trả: Shop hỗ trợ đổi size/mẫu trong vòng 7 ngày kể từ khi nhận hàng. Yêu cầu sản phẩm còn nguyên tem mác và chưa qua sử dụng.' }
 ];
+
+function applyKnowledgeTemplate(t: any) {
+  magicInput.value = t.content;
+  toast.value = { show: true, text: `Đã dán mẫu: ${t.name}`, color: 'info', icon: 'mdi-content-paste' };
+}
 
 // Simulator & Magic State
 const magicInput = ref('');
@@ -645,14 +1147,119 @@ const deleteDialog = ref({ show: false, item: null as any });
 async function loadData() {
   loading.value = true;
   try {
-    const res = await api.get('/ai/knowledge');
-    items.value = res.data;
+    const [knowledgeRes, configRes] = await Promise.all([
+      api.get('/ai/knowledge'),
+      api.get('/ai/config')
+    ]);
+    items.value = knowledgeRes.data;
+    aiConfig.value = configRes.data;
   } catch (err) {
-    console.error('Failed to load knowledge:', err);
+    console.error('Failed to load data:', err);
   } finally {
     loading.value = false;
   }
 }
+
+async function saveAiConfig() {
+  aiSaving.value = true;
+  try {
+    const configToSave = {
+      ...aiConfig.value,
+      stopConditions: (aiConfig.value.stopConditions || []).filter((c: string) => c && c.trim())
+    };
+    const res = await api.put('/ai/config', configToSave);
+    aiConfig.value = res.data;
+    toast.value = { show: true, text: 'Đã lưu cấu hình AI', color: 'success', icon: 'mdi-check-circle' };
+  } catch (err) {
+    toast.value = { show: true, text: 'Lưu cấu hình thất bại', color: 'error', icon: 'mdi-alert' };
+  } finally {
+    aiSaving.value = false;
+  }
+}
+
+const addStopCondition = () => {
+  if (!aiConfig.value.stopConditions) aiConfig.value.stopConditions = [];
+  aiConfig.value.stopConditions.push('');
+};
+
+const removeStopCondition = (index: number) => {
+  aiConfig.value.stopConditions.splice(index, 1);
+};
+
+const languageOptions = [
+  { title: 'Tự động nhận diện (Khuyên dùng)', value: 'auto' },
+  { title: 'Luôn dùng Tiếng Việt', value: 'vi' },
+  { title: 'Luôn dùng Tiếng Anh', value: 'en' },
+];
+
+const intervalOptions = [
+  { title: '5 phút', value: 5 },
+  { title: '15 phút', value: 15 },
+  { title: '30 phút', value: 30 },
+  { title: '1 giờ', value: 60 },
+  { title: '2 giờ', value: 120 },
+  { title: '4 giờ', value: 240 },
+  { title: '12 giờ', value: 720 },
+  { title: '24 giờ (1 ngày)', value: 1440 },
+];
+
+const resumeIntervalOptions = [
+  { title: '30 phút', value: 30 },
+  { title: '1 giờ', value: 60 },
+  { title: '2 giờ', value: 120 },
+  { title: '4 giờ', value: 240 },
+  { title: '12 giờ', value: 720 },
+  { title: '24 giờ (1 ngày)', value: 1440 },
+];
+
+const personaTemplates = [
+  {
+    name: '🌸 Shop Thời trang/Mỹ phẩm',
+    description: 'Trẻ trung, dùng "bạn yêu", nhiều icon',
+    icon: 'mdi-sparkles',
+    content: "Bạn là một trợ lý bán hàng cực kỳ dễ thương và năng động của shop thời trang/mỹ phẩm.\n- Cách xưng hô: Gọi khách là 'bạn yêu', 'nàng', 'mỹ nhân'. Xưng là 'mình' hoặc 'shop'.\n- Phong cách: Luôn sử dụng icon (🌸, ✨, 💖) ở cuối mỗi câu. Trả lời ngọt ngào, khen ngợi khách hàng khi có thể.\n- Luôn kết thúc bằng một câu hỏi gợi mở để chốt đơn."
+  },
+  {
+    name: '💼 Chuyên nghiệp & Lịch sự',
+    description: 'Phù hợp BĐS, Tài chính, Dịch vụ B2B',
+    icon: 'mdi-briefcase-outline',
+    content: "Bạn là một chuyên viên tư vấn chuyên nghiệp, lịch thiệp và đáng tin cậy.\n- Cách xưng hô: Gọi khách là 'Anh/Chị'. Xưng là 'Em'.\n- Phong cách: Luôn có từ 'Dạ' ở đầu câu. Ngôn ngữ trang trọng, điềm đạm. Không dùng quá nhiều icon, chỉ dùng các icon tối giản như (✅, 📍).\n- Tập trung vào việc cung cấp thông tin chính xác và hẹn lịch tư vấn."
+  },
+  {
+    name: '🛠️ Kỹ thuật & Gia dụng',
+    description: 'Rõ ràng, chi tiết, dùng Bullet points',
+    icon: 'mdi-tools',
+    content: "Bạn là chuyên gia hỗ trợ kỹ thuật và tư vấn thiết bị gia dụng.\n- Cách xưng hô: Gọi khách là 'Anh/Chị'. Xưng là 'Shop'.\n- Phong cách: Trả lời thẳng vào vấn đề, sử dụng gạch đầu dòng (bullet points) để liệt kê thông số kỹ thuật hoặc quy trình bảo hành.\n- Ngôn ngữ rõ ràng, trung thực, tránh dùng từ hoa mỹ."
+  },
+  {
+    name: '🏥 Tận tâm & Thấu hiểu',
+    description: 'Phù hợp Y tế, Spa, Giáo dục',
+    icon: 'mdi-heart-pulse',
+    content: "Bạn là một tư vấn viên tận tâm, luôn lắng nghe và thấu hiểu khách hàng.\n- Cách xưng hô: Gọi khách là 'Anh/Chị'. Xưng là 'Em' hoặc 'Tư vấn viên'.\n- Phong cách: Nhẹ nhàng, ân cần. Thường xuyên đặt các câu hỏi quan tâm đến tình trạng của khách trước khi tư vấn sản phẩm.\n- Giải thích cặn kẽ lý do tại sao sản phẩm/dịch vụ này phù hợp với họ."
+  }
+];
+
+function applyPersona(template: any) {
+  aiConfig.value.instructions = template.content;
+  toast.value = { show: true, text: `Đã áp dụng mẫu: ${template.name}`, color: 'info', icon: 'mdi-cached' };
+}
+
+const stopTemplates = [
+  { title: 'Bán sỉ/Đại lý', icon: 'mdi-handshake-outline', color: 'primary', content: 'Khách hỏi về giá sỉ, mua số lượng lớn hoặc muốn làm đại lý/nhà phân phối.' },
+  { title: 'Khiếu nại/Căng thẳng', icon: 'mdi-alert-octagon-outline', color: 'error', content: 'Khách hàng đang phàn nàn, mắng chửi, thái độ tiêu cực hoặc đòi trả hàng/hoàn tiền.' },
+  { title: 'Yêu cầu gặp người', icon: 'mdi-account-voice', color: 'secondary', content: 'Khách yêu cầu gặp nhân viên tư vấn, gọi điện trực tiếp hoặc đòi gặp quản lý/chủ shop.' },
+  { title: 'Thông tin nhạy cảm', icon: 'mdi-lock-outline', color: 'warning', content: 'Khách hỏi các vấn đề bảo mật, thông tin cá nhân hoặc các yêu cầu nằm ngoài quy định của shop.' },
+  { title: 'Mặc cả quá sâu', icon: 'mdi-tag-remove-outline', color: 'info', content: 'Khách hàng mặc cả, đòi giảm giá quá mức so với các chương trình khuyến mãi hiện có.' }
+];
+
+const addStopFromTemplate = (content: string) => {
+  if (!aiConfig.value.stopConditions) aiConfig.value.stopConditions = [];
+  // Tránh thêm trùng
+  if (!aiConfig.value.stopConditions.includes(content)) {
+    aiConfig.value.stopConditions.push(content);
+    toast.value = { show: true, text: 'Đã thêm mẫu điều kiện dừng', color: 'success', icon: 'mdi-plus-circle' };
+  }
+};
 
 function applyTemplate(t: any) {
   magicInput.value = t.content;
@@ -1104,5 +1711,54 @@ onMounted(() => {
 
 .text-slate-600 {
   color: var(--color-text-secondary);
+}
+.persona-template-card {
+  border-radius: 12px;
+  background: var(--color-surface);
+  transition: all 0.3s ease;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.persona-template-card:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  transform: translateY(-2px);
+}
+
+.border-secondary-light {
+  border-color: rgba(var(--v-theme-secondary), 0.3) !important;
+}
+
+.v-slide-group__content {
+  padding: 4px 0;
+}
+
+.text-xxs {
+  font-size: 0.65rem;
+}
+
+.text-xxxxs {
+  font-size: 0.55rem;
+  letter-spacing: 0.05em;
+}
+
+.truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bg-primary-soft {
+  background: var(--color-primary-soft) !important;
+}
+
+.bg-secondary-soft {
+  background: var(--color-secondary-soft) !important;
 }
 </style>
