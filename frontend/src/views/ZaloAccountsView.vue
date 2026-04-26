@@ -153,8 +153,8 @@
               <p class="text-body-2 text-medium-emphasis mb-4">Nhập tên để gợi nhớ tài khoản Zalo này.</p>
               <v-text-field
                 v-model="newAccountName"
-                label="Tên hiển thị"
-                placeholder="VD: Zalo CSKH 01"
+                label="Tên hiển thị (Tùy chọn)"
+                placeholder="VD: Zalo CSKH 01 (Để trống để lấy tên Zalo)"
                 variant="outlined"
                 rounded="lg"
                 @keyup.enter="handleAddAccount"

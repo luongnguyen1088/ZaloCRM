@@ -32,6 +32,7 @@ interface ZaloInstance {
   api: any;
   status: 'connected' | 'disconnected' | 'qr_pending' | 'connecting';
   displayName?: string;
+  avatarUrl?: string;
   zaloUid?: string;
   lastActivity: Date;
   lastHeartbeat: Date;
@@ -102,6 +103,12 @@ class ZaloAccountPool {
               displayName: event.data.display_name,
               avatar: event.data.avatar,
             });
+            // Cập nhật thông tin profile vào instance tạm thời
+            const inst = this.instances.get(accountId);
+            if (inst) {
+              inst.displayName = event.data.display_name;
+              inst.avatarUrl = event.data.avatar;
+            }
             break;
           case 4: // GotLoginInfo
             this.saveCredentials(accountId, {
@@ -123,7 +130,14 @@ class ZaloAccountPool {
 
       this.attachListener(accountId, api);
       this.io?.emit('zalo:connected', { accountId, zaloUid: ownId });
-      await this.updateAccountDB(accountId, 'connected', ownId);
+      const currentInst = this.instances.get(accountId);
+      await this.updateAccountDB(
+        accountId, 
+        'connected', 
+        ownId, 
+        currentInst?.displayName, 
+        currentInst?.avatarUrl
+      );
       // Emit webhook (orgId lookup is async, fire-and-forget)
       prisma.zaloAccount.findUnique({ where: { id: accountId }, select: { orgId: true } })
         .then((rec) => rec && emitWebhook(rec.orgId, 'zalo.connected', { accountId }))
@@ -281,13 +295,21 @@ class ZaloAccountPool {
   }
 
   // Sync account status and zaloUid to DB
-  private async updateAccountDB(accountId: string, status: string, zaloUid: string | null): Promise<void> {
+  private async updateAccountDB(
+    accountId: string, 
+    status: string, 
+    zaloUid: string | null,
+    displayName?: string,
+    avatarUrl?: string
+  ): Promise<void> {
     try {
       await prisma.zaloAccount.update({
         where: { id: accountId },
         data: {
           status,
           ...(zaloUid !== null ? { zaloUid } : {}),
+          ...(displayName ? { displayName } : {}),
+          ...(avatarUrl ? { avatarUrl } : {}),
           ...(status === 'connected' ? { lastConnectedAt: new Date() } : {}),
         },
       });
