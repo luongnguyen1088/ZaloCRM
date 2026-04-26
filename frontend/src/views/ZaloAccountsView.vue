@@ -261,9 +261,21 @@
                         </div>
                       </div>
 
-                      <div v-else class="py-12">
-                        <v-progress-circular indeterminate color="primary" size="64" width="6" />
-                        <p class="mt-4 text-body-1 font-weight-medium">Đang khởi tạo...</p>
+                      <div v-else class="py-12 d-flex flex-column align-center">
+                        <v-avatar size="100" color="blue-lighten-5" class="mb-6">
+                          <v-icon color="primary" size="48">mdi-qrcode-scan</v-icon>
+                        </v-avatar>
+                        <v-btn
+                          color="primary"
+                          size="large"
+                          rounded="pill"
+                          class="px-10 font-weight-bold"
+                          :loading="isAutoAddingZalo"
+                          @click="startZaloAdd"
+                        >
+                          Bắt đầu kết nối
+                        </v-btn>
+                        <p class="mt-4 text-caption text-medium-emphasis">Hệ thống sẽ tạo mã QR đăng nhập cho bạn</p>
                       </div>
                     </div>
 
@@ -785,24 +797,58 @@ function resetZaloAdd() {
   });
 }
 
-// Tự động kích hoạt luồng quét mã Zalo khi chọn tab Zalo trong Dialog thêm mới
-watch([showAddDialog, addType], async ([newShow, newType]) => {
-  if (newShow && newType === 'zalo' && !isAutoAddingZalo.value) {
-    isAutoAddingZalo.value = true;
-    try {
-      const resp = await api.post('/zalo-accounts', { displayName: 'Đang kết nối...' });
-      const newAcc = resp.data;
-      await fetchAccounts();
-      loginAccount(newAcc.id, true); // silent = true
-    } catch (err: any) {
-      qrError.value = err.response?.data?.error || 'Không thể khởi tạo kết nối Zalo';
-    }
-  } else if (!newShow) {
-    qrImage.value = '';
-    qrScanned.value = false;
-    scannedName.value = '';
-    qrError.value = '';
+const currentDraftId = ref<string | null>(null);
+
+async function startZaloAdd() {
+  isAutoAddingZalo.value = true;
+  qrError.value = '';
+  try {
+    const resp = await api.post('/zalo-accounts', { displayName: 'Đang kết nối...' });
+    const newAcc = resp.data;
+    currentDraftId.value = newAcc.id;
+    // Không fetchAccounts ở đây để tránh hiện "rác" ở danh sách ngoài
+    loginAccount(newAcc.id, true); // silent = true
+  } catch (err: any) {
+    qrError.value = err.response?.data?.error || 'Không thể khởi tạo kết nối Zalo';
     isAutoAddingZalo.value = false;
+  }
+}
+
+async function cleanupDraft() {
+  if (currentDraftId.value && !qrScanned.value) {
+    try {
+      await api.delete(`/zalo-accounts/${currentDraftId.value}`);
+      currentDraftId.value = null;
+    } catch (e) {
+      console.error('Lỗi dọn dẹp bản ghi nháp:', e);
+    }
+  }
+}
+
+function resetZaloAdd() {
+  cleanupDraft();
+  qrImage.value = '';
+  qrScanned.value = false;
+  scannedName.value = '';
+  qrAvatar.value = '';
+  qrError.value = '';
+  isAutoAddingZalo.value = false;
+}
+
+// Theo dõi khi đóng dialog để dọn dẹp
+watch(showAddDialog, async (newVal) => {
+  if (!newVal) {
+    await cleanupDraft();
+    resetZaloAdd();
+  }
+});
+
+// Reset trạng thái khi chuyển tab trong dialog
+watch(addType, () => {
+  if (addType.value !== 'zalo') {
+    cleanupDraft();
+    isAutoAddingZalo.value = false;
+    qrImage.value = '';
   }
 });
 
