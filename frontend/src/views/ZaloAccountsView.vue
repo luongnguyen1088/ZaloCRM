@@ -599,6 +599,15 @@ const linkingPageId = ref<string | null>(null);
 const addType = ref('zalo');
 const deleteTarget = ref<ZaloAccount | null>(null);
 const accessTarget = ref<ZaloAccount | null>(null);
+const facebookOauthPopup = ref<Window | null>(null);
+
+type FacebookOAuthMessage = {
+  source: 'facebook-oauth-callback';
+  code?: string;
+  state?: string | null;
+  error?: string | null;
+  errorDescription?: string | null;
+};
 
 const filteredFbPages = computed(() => {
   if (!fbPageSearch.value) return fbPages.value;
@@ -623,18 +632,109 @@ async function loadFbPages(token: string) {
 }
 
 async function handleFacebookLogin() {
-  if (!(window as any).FB) {
-    alert('Facebook SDK chưa sẵn sàng. Vui lòng thử lại sau vài giây.');
-    return;
-  }
+  adding.value = true;
 
-  (window as any).FB.login((response: any) => {
-    if (response.authResponse) {
-      loadFbPages(response.authResponse.accessToken);
-    } else {
-      console.log('User cancelled login or did not fully authorize.');
+  try {
+    const redirectUri = `${window.location.origin}/facebook/callback`;
+    const state = window.crypto.randomUUID();
+    const configRes = await api.get('/facebook/oauth/config');
+    const { appId, apiVersion } = configRes.data as { appId: string; apiVersion: string };
+    const scopes = [
+      'pages_messaging',
+      'pages_show_list',
+      'pages_manage_metadata',
+      'pages_read_engagement',
+    ].join(',');
+
+    const oauthUrl = new URL(`https://www.facebook.com/${apiVersion}/dialog/oauth`);
+    oauthUrl.search = new URLSearchParams({
+      client_id: appId,
+      redirect_uri: redirectUri,
+      response_type: 'code',
+      scope: scopes,
+      state,
+    }).toString();
+
+    const popup = window.open(
+      oauthUrl.toString(),
+      'facebook-login',
+      'width=640,height=760,menubar=no,toolbar=no,status=no'
+    );
+
+    if (!popup) {
+      throw new Error('Trinh duyet da chan popup dang nhap Facebook.');
     }
-  }, { scope: 'pages_messaging,pages_show_list,pages_manage_metadata,pages_read_engagement' });
+
+    facebookOauthPopup.value = popup;
+    const code = await waitForFacebookOauthCode(state, popup);
+    const exchangeRes = await api.post('/facebook/oauth/exchange-code', {
+      code,
+      redirectUri,
+    });
+
+    await loadFbPages(exchangeRes.data.accessToken);
+  } catch (err: any) {
+    alert(err.response?.data?.error || err.message || 'Loi ket noi Facebook Fanpage');
+  } finally {
+    facebookOauthPopup.value?.close();
+    facebookOauthPopup.value = null;
+    adding.value = false;
+  }
+}
+
+function waitForFacebookOauthCode(expectedState: string, popup: Window) {
+  return new Promise<string>((resolve, reject) => {
+    let settled = false;
+
+    const cleanup = () => {
+      window.clearTimeout(timeout);
+      window.clearInterval(popupWatch);
+      window.removeEventListener('message', onMessage);
+    };
+
+    const finish = (handler: () => void) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      handler();
+    };
+
+    const timeout = window.setTimeout(() => {
+      finish(() => reject(new Error('Het thoi gian dang nhap Facebook. Vui long thu lai.')));
+    }, 120000);
+
+    const popupWatch = window.setInterval(() => {
+      if (popup.closed) {
+        finish(() => reject(new Error('Ban da dong cua so dang nhap Facebook.')));
+      }
+    }, 400);
+
+    const onMessage = (event: MessageEvent<FacebookOAuthMessage>) => {
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.source !== 'facebook-oauth-callback') return;
+
+      finish(() => {
+        if (event.data.state !== expectedState) {
+          reject(new Error('OAuth state khong hop le.'));
+          return;
+        }
+
+        if (event.data.error) {
+          reject(new Error(event.data.errorDescription || event.data.error));
+          return;
+        }
+
+        if (!event.data.code) {
+          reject(new Error('Facebook khong tra ve ma xac thuc.'));
+          return;
+        }
+
+        resolve(event.data.code);
+      });
+    };
+
+    window.addEventListener('message', onMessage);
+  });
 }
 
 async function handleLinkFbPage(page: any) {
@@ -702,26 +802,5 @@ async function handleDeleteAccount() {
 onMounted(() => {
   fetchAccounts();
   setupSocket();
-
-  // Load Facebook SDK
-  if (!(window as any).FB) {
-    (window as any).fbAsyncInit = function() {
-      (window as any).FB.init({
-        appId      : '27615587728030130',
-        cookie     : true,
-        xfbml      : true,
-        version    : 'v19.0'
-      });
-    };
-
-    (function(d, s, id) {
-      var js, fjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) return;
-      js = d.createElement(s) as HTMLScriptElement; 
-      js.id = id;
-      js.src = "https://connect.facebook.net/en_US/sdk.js";
-      fjs.parentNode?.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));
-  }
 });
 </script>

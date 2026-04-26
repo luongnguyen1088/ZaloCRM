@@ -39,6 +39,12 @@ const routes = [
     meta: { layout: 'auth' },
   },
   {
+    path: '/facebook/callback',
+    name: 'FacebookOAuthCallback',
+    component: () => import('@/views/FacebookOAuthCallbackView.vue'),
+    meta: { layout: 'auth' },
+  },
+  {
     path: '/',
     name: 'Dashboard',
     component: () => import('@/views/DashboardView.vue'),
@@ -151,7 +157,7 @@ router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore();
 
   // Skip guard for public pages
-  if (['Setup', 'Login', 'Register', 'AcceptInvite', 'ForgotPassword', 'ResetPassword'].includes(to.name as string)) {
+  if (['Setup', 'Login', 'Register', 'AcceptInvite', 'ForgotPassword', 'ResetPassword', 'FacebookOAuthCallback'].includes(to.name as string)) {
     return next();
   }
 
