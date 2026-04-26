@@ -253,7 +253,7 @@
               </div>
 
               <div v-else class="mb-4">
-                <div v-for="(condition, index) in aiConfig.stopConditions" :key="index" class="d-flex align-center mb-2">
+                <div v-for="(_, index) in aiConfig.stopConditions" :key="index" class="d-flex align-center mb-2">
                   <v-text-field
                     v-model="aiConfig.stopConditions[index]"
                     placeholder="Ví dụ: Khách hàng hỏi về giá sỉ..."
@@ -264,7 +264,7 @@
                     prepend-inner-icon="mdi-circle-medium"
                   >
                     <template v-slot:append>
-                      <v-btn icon="mdi-delete-outline" variant="text" color="error" size="small" @click="removeStopCondition(index)"></v-btn>
+                      <v-btn icon="mdi-delete-outline" variant="text" color="error" size="small" @click="removeStopCondition(Number(index))"></v-btn>
                     </template>
                   </v-text-field>
                 </div>
@@ -507,7 +507,7 @@
                   </v-btn>
                 </template>
                 <v-list class="glass-list" density="compact">
-                  <v-list-item v-for="(t, i) in templates" :key="i" :title="t.name" @click="applyTemplate(t)">
+                  <v-list-item v-for="(t, i) in knowledgeTemplates" :key="i" :title="t.name" @click="applyTemplate(t)">
                     <template v-slot:prepend><v-icon size="small">{{ t.icon }}</v-icon></template>
                   </v-list-item>
                 </v-list>
@@ -1064,6 +1064,16 @@ const aiConfig = ref<any>({
 });
 const activeTab = ref(0);
 const aiSaving = ref(false);
+
+// State missing from previous refactor
+const search = ref('');
+const filterCategory = ref('Tất cả');
+const filterAccount = ref('Tất cả tài khoản');
+const loading = ref(false);
+const saving = ref(false);
+const deleting = ref(false);
+const testing = ref(false);
+const savingMagic = ref(false);
 
 // Accounts logic
 const accountOptions = computed(() => {

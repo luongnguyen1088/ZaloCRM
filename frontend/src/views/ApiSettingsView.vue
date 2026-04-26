@@ -213,39 +213,12 @@ POST /api/public/messages/send</pre>
 import { ref, onMounted } from 'vue';
 import { api } from '@/api';
 
-type AiConfig = {
-  provider: string;
-  model: string;
-  maxDaily: number;
-  enabled: boolean;
-  managed: boolean;
-  platformKeyConfigured: boolean;
-  planName: string;
-  usedTokens: number;
-  maxTokens: number;
-  remainingTokens: number;
-};
-
 const apiKey = ref('');
 const generatingKey = ref(false);
 const webhookUrl = ref('');
 const webhookSecret = ref('');
 const saving = ref(false);
 const testing = ref(false);
-const showAiConfig = ref(false);
-const aiSaving = ref(false);
-const aiConfig = ref<AiConfig>({
-  provider: 'anthropic',
-  model: 'claude-sonnet-4-6',
-  maxDaily: 500,
-  enabled: true,
-  managed: true,
-  platformKeyConfigured: false,
-  planName: 'Free',
-  usedTokens: 0,
-  maxTokens: 500000,
-  remainingTokens: 500000,
-});
 
 const mcpUrl = ref('');
 const generatingTicket = ref(false);
