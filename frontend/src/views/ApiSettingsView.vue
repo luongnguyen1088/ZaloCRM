@@ -15,59 +15,26 @@
         <v-card class="glass-card ai-control-card mb-6 overflow-hidden" elevation="0">
           <div class="card-glow"></div>
           <v-card-text class="pa-6">
-            <div class="d-flex align-center mb-6">
+            <div class="d-flex align-center mb-0">
               <v-avatar color="primary" variant="tonal" size="48" class="mr-4">
                 <v-icon color="primary">mdi-robot-happy</v-icon>
               </v-avatar>
               <div>
-                <h2 class="text-h5 font-weight-bold outfit-font mb-0">AI Assistant</h2>
-                <div class="d-flex align-center">
-                  <span :class="['status-orb mr-2', aiConfig.enabled ? 'active' : 'inactive']"></span>
-                  <span class="text-caption font-weight-medium uppercase tracking-wider">
-                    {{ aiConfig.enabled ? 'Đang hoạt động' : 'Đang tắt' }}
-                  </span>
-                </div>
+                <h2 class="text-h5 font-weight-bold outfit-font mb-0">AI Hub</h2>
+                <p class="text-caption text-medium-emphasis mb-0">Quản lý tri thức và hiệu quả vận hành AI</p>
               </div>
               <v-spacer />
-              <v-btn color="primary" variant="flat" rounded="lg" to="/ai-training" class="px-6">
-                <v-icon start>mdi-brain</v-icon>
-                Đào tạo & Cấu hình
-              </v-btn>
+              <div class="d-flex ga-2">
+                <v-btn color="secondary" variant="tonal" rounded="lg" to="/ai-usage">
+                  <v-icon start>mdi-chart-line</v-icon>
+                  Hiệu quả AI
+                </v-btn>
+                <v-btn color="primary" variant="flat" rounded="lg" to="/ai-training">
+                  <v-icon start>mdi-brain</v-icon>
+                  Đào tạo AI
+                </v-btn>
+              </div>
             </div>
-
-            <v-divider class="mb-6 border-opacity-25" />
-
-            <v-row>
-              <v-col cols="6" sm="3">
-                <div class="info-label mb-1">Gói</div>
-                <div class="info-value d-flex align-center">
-                  <v-icon size="20" class="mr-2" color="primary">mdi-shield-crown-outline</v-icon>
-                  {{ aiConfig.planName || 'Free' }}
-                </div>
-              </v-col>
-              <v-col cols="6" sm="3">
-                <div class="info-label mb-1">Mô hình</div>
-                <div class="info-value truncate">{{ aiConfig.model }}</div>
-              </v-col>
-              <v-col cols="6" sm="3">
-                <div class="info-label mb-1">Hạn mức AI</div>
-                <div class="info-value">{{ Math.floor(aiConfig.remainingTokens / 1500) }} / {{ Math.floor(aiConfig.maxTokens / 1500) }} lượt</div>
-              </v-col>
-              <v-col cols="6" sm="3">
-                <div class="info-label mb-1">Vận hành</div>
-                <div class="info-value">
-                  <v-chip
-                    size="x-small"
-                    :color="aiConfig.platformKeyConfigured ? 'success' : 'warning'"
-                    variant="tonal"
-                    label
-                    class="font-weight-bold"
-                  >
-                    {{ aiConfig.platformKeyConfigured ? 'PLATFORM AI' : 'CẦN CẤU HÌNH ENV' }}
-                  </v-chip>
-                </div>
-              </v-col>
-            </v-row>
           </v-card-text>
         </v-card>
 
@@ -246,22 +213,6 @@ function showSnack(text: string, color = 'success') {
   snack.value = { show: true, text, color };
 }
 
-function normalizeAiConfig(data: any): AiConfig {
-  const maxTokens = Number(data.maxTokens ?? data.maxDaily ?? 500000);
-  const usedTokens = Number(data.usedTokens ?? data.usedToday ?? 0);
-  return {
-    provider: data.provider || 'platform',
-    model: data.model || '',
-    maxDaily: maxTokens,
-    enabled: Boolean(data.enabled),
-    managed: Boolean(data.managed ?? true),
-    platformKeyConfigured: Boolean(data.platformKeyConfigured),
-    planName: data.planName || 'Free',
-    usedTokens,
-    maxTokens,
-    remainingTokens: Number(data.remainingTokens ?? data.remaining ?? Math.max(0, maxTokens - usedTokens)),
-  };
-}
 
 async function loadApiKey() {
   try {
@@ -283,14 +234,6 @@ async function loadWebhook() {
   }
 }
 
-async function loadAiConfig() {
-  try {
-    const res = await api.get(`/ai/config?t=${Date.now()}`);
-    aiConfig.value = normalizeAiConfig(res.data);
-  } catch (err) {
-    console.error('[AI Settings] Failed to load config:', err);
-  }
-}
 
 async function generateKey() {
   generatingKey.value = true;
@@ -341,7 +284,7 @@ async function testWebhook() {
 
 
 onMounted(async () => {
-  await Promise.all([loadApiKey(), loadWebhook(), loadAiConfig()]);
+  await Promise.all([loadApiKey(), loadWebhook()]);
 });
 </script>
 
