@@ -784,18 +784,7 @@ const accessTarget = ref<ZaloAccount | null>(null);
 const facebookOauthPopup = ref<Window | null>(null);
 const isAutoAddingZalo = ref(false);
 
-function resetZaloAdd() {
-  qrImage.value = '';
-  qrScanned.value = false;
-  scannedName.value = '';
-  qrError.value = '';
-  isAutoAddingZalo.value = false;
-  const currentType = addType.value;
-  addType.value = '';
-  nextTick(() => {
-    addType.value = currentType;
-  });
-}
+
 
 const currentDraftId = ref<string | null>(null);
 
