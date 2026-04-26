@@ -593,7 +593,6 @@ const syncing = ref<string | null>(null);
 const showDeleteDialog = ref(false);
 const showAccessDialog = ref(false);
 const newAccountName = ref('');
-const fbUserToken = ref('');
 const fbPages = ref<any[]>([]);
 const fbPageSearch = ref('');
 const linkingPageId = ref<string | null>(null);
@@ -718,7 +717,8 @@ onMounted(() => {
     (function(d, s, id) {
       var js, fjs = d.getElementsByTagName(s)[0];
       if (d.getElementById(id)) return;
-      js = d.createElement(s); js.id = id;
+      js = d.createElement(s) as HTMLScriptElement; 
+      js.id = id;
       js.src = "https://connect.facebook.net/en_US/sdk.js";
       fjs.parentNode?.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
