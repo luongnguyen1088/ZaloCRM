@@ -627,7 +627,7 @@ import { api } from '@/api/index';
 
 const {
   accounts, loading, adding, deleting,
-  showQRDialog, qrImage, qrScanned, scannedName, qrError,
+  showQRDialog, qrImage, qrScanned, scannedName, qrAvatar, qrError,
   getAccountStatus, isRealtimeZaloAccount, statusColor, statusText,
   fetchAccounts, addAccount, loginAccount, reconnectAccount, deleteAccount,
   cancelQR, setupSocket,

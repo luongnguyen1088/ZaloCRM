@@ -36,6 +36,7 @@ export function useZaloAccounts() {
   const qrImage = ref('');
   const qrScanned = ref(false);
   const scannedName = ref('');
+  const qrAvatar = ref('');
   const qrError = ref('');
   const currentLoginAccountId = ref('');
 
@@ -97,6 +98,7 @@ export function useZaloAccounts() {
     qrImage.value = '';
     qrScanned.value = false;
     scannedName.value = '';
+    qrAvatar.value = '';
     qrError.value = '';
     if (!silent) showQRDialog.value = true;
     socket?.emit('zalo:subscribe', { accountId });
@@ -142,11 +144,12 @@ export function useZaloAccounts() {
       if (data.accountId === currentLoginAccountId.value) qrImage.value = data.qrImage;
     });
 
-    socket.on('zalo:scanned', (data: { accountId: string; displayName: string }) => {
+    socket.on('zalo:scanned', (data: { accountId: string; displayName: string; avatar?: string }) => {
       if (data.accountId === currentLoginAccountId.value) {
         qrImage.value = '';
         qrScanned.value = true;
         scannedName.value = data.displayName;
+        if (data.avatar) qrAvatar.value = data.avatar;
       }
     });
 
@@ -176,7 +179,7 @@ export function useZaloAccounts() {
 
   return {
     accounts, loading, adding, deleting,
-    showQRDialog, qrImage, qrScanned, scannedName, qrError,
+    showQRDialog, qrImage, qrScanned, scannedName, qrAvatar, qrError,
     getAccountStatus, isRealtimeZaloAccount, statusColor, statusText,
     fetchAccounts, addAccount, loginAccount, reconnectAccount, deleteAccount,
     cancelQR, setupSocket,
