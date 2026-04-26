@@ -1,0 +1,339 @@
+- generic:
+  - generic:
+    - generic:
+      - iframe
+    - generic:
+      - iframe
+    - generic:
+      - iframe
+    - generic:
+      - iframe
+    - generic [ref=e1]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - link "Meta logo" [ref=e7] [cursor=pointer]:
+            - /url: /?no_redirect=true
+            - img "Meta logo" [ref=e9]
+          - tablist [ref=e18]:
+            - link "My Apps" [ref=e19] [cursor=pointer]:
+              - /url: /apps/
+              - generic [ref=e22]: My Apps
+            - link "Required actions" [ref=e23] [cursor=pointer]:
+              - /url: /required-actions/
+              - generic [ref=e26]: Required actions
+            - tab "Docs" [ref=e27] [cursor=pointer]:
+              - generic [ref=e30]: Docs
+            - tab "Tools" [ref=e32] [cursor=pointer]:
+              - generic [ref=e35]: Tools
+            - tab "Support" [ref=e37] [cursor=pointer]:
+              - generic [ref=e40]: Support
+        - generic [ref=e42]:
+          - generic [ref=e43]:
+            - generic [ref=e49]: Search input
+            - textbox "Search input" [ref=e60]:
+              - /placeholder: Search...
+          - link [ref=e63] [cursor=pointer]:
+            - /url: "#"
+          - link "Facebook" [ref=e68] [cursor=pointer]:
+            - /url: "#"
+            - img "Facebook" [ref=e73]
+      - generic [ref=e74]:
+        - generic [ref=e155]:
+          - generic [ref=e158]:
+            - generic [ref=e161]:
+              - generic [ref=e167]: Searchable selector for all apps
+              - combobox "Searchable selector for all apps CRM-Connect" [ref=e172] [cursor=pointer]:
+                - generic [ref=e182]: CRM-Connect
+            - navigation [ref=e185]:
+              - list [ref=e186]:
+                - listitem [ref=e187]:
+                  - button "Dashboard" [ref=e189] [cursor=pointer]
+                  - generic:
+                    - listitem:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Dashboard
+                - listitem [ref=e195]:
+                  - button "Required actions" [ref=e197] [cursor=pointer]
+                  - generic:
+                    - listitem:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Required actions
+                - listitem [ref=e203]:
+                  - button "Use cases" [ref=e205] [cursor=pointer]
+                  - generic:
+                    - listitem:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Use cases
+                - listitem [ref=e211]:
+                  - generic [ref=e212]:
+                    - button "Facebook Login for Business" [ref=e214] [cursor=pointer]
+                    - generic:
+                      - listitem:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: Facebook Login for Business
+                          - button "Toggle group" [ref=e220] [cursor=pointer]:
+                            - generic [ref=e223]: Toggle group
+                  - list [ref=e226]:
+                    - generic [ref=e227]:
+                      - button "Settings" [ref=e229] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Settings
+                    - generic [ref=e234]:
+                      - button "Quickstart" [ref=e236] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Quickstart
+                    - generic [ref=e241]:
+                      - button "Configurations" [ref=e243] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Configurations
+                    - generic [ref=e248]:
+                      - button "Templates" [ref=e250] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Templates
+                - listitem [ref=e255]:
+                  - button "Testing" [ref=e257] [cursor=pointer]
+                  - generic:
+                    - listitem:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Testing
+                - listitem [ref=e263]:
+                  - button "Publish" [ref=e265] [cursor=pointer]:
+                    - generic [ref=e268]:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Unpublished
+                          - status: App Publish Status
+                  - generic:
+                    - listitem:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Publish
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: Unpublished
+                            - status: App Publish Status
+          - generic [ref=e271]:
+            - navigation [ref=e272]:
+              - list [ref=e273]:
+                - listitem [ref=e274]:
+                  - generic [ref=e275]:
+                    - button "App settings" [ref=e277] [cursor=pointer]
+                    - generic:
+                      - listitem:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: App settings
+                          - button "Toggle group" [ref=e283] [cursor=pointer]:
+                            - generic [ref=e286]: Toggle group
+                  - list [ref=e289]:
+                    - generic [ref=e290]:
+                      - button "Basic" [ref=e292] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Basic
+                    - generic [ref=e297]:
+                      - button "Advanced" [ref=e299] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Advanced
+                - listitem [ref=e304]:
+                  - generic [ref=e305]:
+                    - button "App roles" [ref=e307] [cursor=pointer]
+                    - generic:
+                      - listitem:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: App roles
+                          - button "Toggle group" [ref=e313] [cursor=pointer]:
+                            - generic [ref=e316]: Toggle group
+                  - list [ref=e319]:
+                    - generic [ref=e320]:
+                      - button "Roles" [ref=e322] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Roles
+                    - generic [ref=e327]:
+                      - button "Test users" [ref=e329] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Test users
+                - listitem [ref=e334]:
+                  - button "Alert Inbox" [ref=e336] [cursor=pointer]
+                  - generic:
+                    - listitem:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Alert Inbox
+            - separator [ref=e342]
+            - generic [ref=e343]:
+              - button "Activity Log" [ref=e344] [cursor=pointer]:
+                - generic [ref=e347]: Activity Log
+              - button "Help" [ref=e351] [cursor=pointer]:
+                - generic [ref=e354]: Help
+              - button "Open/close side nav" [ref=e359] [cursor=pointer]:
+                - generic [ref=e362]: Open/close side nav
+        - generic [ref=e366]:
+          - generic [ref=e368]:
+            - generic [ref=e370]: Dashboard
+            - button "Add use cases" [ref=e372] [cursor=pointer]:
+              - generic [ref=e377]: Add use cases
+          - generic [ref=e381]:
+            - heading "App customization and requirements" [level=2] [ref=e383]
+            - generic [ref=e384]:
+              - generic [ref=e385]:
+                - generic [ref=e389]:
+                  - generic [ref=e393]: Customize the Engage with customers on Messenger from Meta use case
+                  - link [ref=e394] [cursor=pointer]:
+                    - /url: /apps/27615587728030130/use_cases/customize/?use_case_enum=FACEBOOK_MESSAGING
+                - generic [ref=e404]:
+                  - generic [ref=e408]: Customize the Manage everything on your Page use case
+                  - link [ref=e409] [cursor=pointer]:
+                    - /url: /apps/27615587728030130/use_cases/customize/?use_case_enum=PAGES_API
+              - generic [ref=e420]:
+                - generic [ref=e424]: Test use cases
+                - link [ref=e425] [cursor=pointer]:
+                  - /url: /apps/27615587728030130/test/
+              - generic [ref=e435]:
+                - generic [ref=e439]: Check that all requirements are met, then publish your app.
+                - link [ref=e440] [cursor=pointer]:
+                  - /url: /apps/27615587728030130/go_live/
+          - generic [ref=e449]:
+            - heading "Become a Tech Provider" [level=4] [ref=e457]
+            - generic [ref=e460]:
+              - generic [ref=e461]: Become a Tech Provider to submit to App Review and request access to user data and data from other businesses. You’ll be required to complete access verification.
+              - link "Become a Tech Provider" [ref=e463] [cursor=pointer]:
+                - /url: "#"
+  - dialog "Add more use cases" [ref=e466]:
+    - generic "Add more use cases" [ref=e467]:
+      - generic [ref=e468]:
+        - generic [ref=e469]:
+          - generic [ref=e471]:
+            - heading "Add more use cases" [level=3] [ref=e472]
+            - generic [ref=e473]: You can add use cases from multiple categories, but not all use cases can be added to the same app. Create a new app if use cases you want to add aren’t available.
+          - button "Close" [active] [ref=e476] [cursor=pointer]:
+            - generic [ref=e479]: Close
+        - generic [ref=e487]:
+          - generic [ref=e488]:
+            - heading "Filter by" [level=3] [ref=e490]
+            - grid [ref=e492]:
+              - row "Featured (4)" [ref=e493]:
+                - gridcell "Featured (4)" [selected] [ref=e494] [cursor=pointer]:
+                  - generic [ref=e496]:
+                    - radio "Featured (4)" [checked] [ref=e501]
+                    - generic [ref=e506]: Featured (4)
+              - row "All (12)" [ref=e507]:
+                - gridcell "All (12)" [ref=e508] [cursor=pointer]:
+                  - generic [ref=e510]:
+                    - radio "All (12)" [ref=e515]
+                    - generic [ref=e518]: All (12)
+              - row "Ads and monetization (6)" [ref=e519]:
+                - gridcell "Ads and monetization (6)" [ref=e520] [cursor=pointer]:
+                  - generic [ref=e522]:
+                    - radio "Ads and monetization (6)" [ref=e527]
+                    - generic [ref=e530]: Ads and monetization (6)
+              - row "Content management (4)" [ref=e531]:
+                - gridcell "Content management (4)" [ref=e532] [cursor=pointer]:
+                  - generic [ref=e534]:
+                    - radio "Content management (4)" [ref=e539]
+                    - generic [ref=e542]: Content management (4)
+              - row "Business messaging (2)" [ref=e543]:
+                - gridcell "Business messaging (2)" [ref=e544] [cursor=pointer]:
+                  - generic [ref=e546]:
+                    - radio "Business messaging (2)" [ref=e551]
+                    - generic [ref=e554]: Business messaging (2)
+              - row "Others (1)" [ref=e555]:
+                - gridcell "Others (1)" [ref=e556] [cursor=pointer]:
+                  - generic [ref=e558]:
+                    - radio "Others (1)" [ref=e563]
+                    - generic [ref=e566]: Others (1)
+          - generic [ref=e569]:
+            - button "Create & manage ads with Marketing API" [ref=e571] [cursor=pointer]:
+              - generic [ref=e572]:
+                - generic [ref=e575]:
+                  - generic:
+                    - img
+                - generic [ref=e579]:
+                  - heading "Create & manage ads with Marketing API" [level=3] [ref=e583]
+                  - generic [ref=e584]:
+                    - text: Create, manage and optimize ad campaigns across Meta technologies. Programmatically extend, stop or update ad campaigns and more.
+                    - link "About the Marketing API" [ref=e585]:
+                      - /url: /docs/development/create-an-app/marketing-api-use-cases/
+            - button "Create & manage app ads with Meta Ads Manager" [ref=e587] [cursor=pointer]:
+              - generic [ref=e588]:
+                - generic [ref=e591]:
+                  - generic:
+                    - img
+                - generic [ref=e595]:
+                  - heading "Create & manage app ads with Meta Ads Manager" [level=3] [ref=e599]
+                  - generic [ref=e600]:
+                    - text: Promote your mobile app and drive installs. Create and manage campaigns that encourage users to download and install your app. Does not include access to Marketing API.
+                    - link "About app install ads" [ref=e601]:
+                      - /url: /docs/development/create-an-app/app_install_ads_use_case/
+            - button "Access the Threads API" [ref=e603] [cursor=pointer]:
+              - generic [ref=e604]:
+                - generic [ref=e607]:
+                  - generic:
+                    - img
+                - generic [ref=e611]:
+                  - heading "Access the Threads API" [level=3] [ref=e615]
+                  - generic [ref=e616]:
+                    - text: Use the Threads API and choose to authenticate users, retrieve user information, post threads, reply to threads, manage reply settings and/or gather insights for a Threads profile you own or manage on behalf of others.
+                    - link "About the Threads API" [ref=e617]:
+                      - /url: /docs/development/create-an-app/threads-use-case/
+            - button "Connect with customers through WhatsApp" [ref=e619] [cursor=pointer]:
+              - generic [ref=e620]:
+                - generic [ref=e623]:
+                  - generic:
+                    - img
+                - generic [ref=e627]:
+                  - heading "Connect with customers through WhatsApp" [level=3] [ref=e631]
+                  - generic [ref=e632]:
+                    - text: Start a WhatsApp conversation, send notifications, create ads that click-to-WhatsApp and provide support. Business portfolio required.
+                    - link "About WhatsApp Business Platform" [ref=e633]:
+                      - /url: /docs/development/create-an-app/whatsapp-use-case/
+        - button "Save" [disabled] [ref=e636]:
+          - generic [ref=e640]: Save
