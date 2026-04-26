@@ -19,14 +19,18 @@ export async function zaloRoutes(app: FastifyInstance): Promise<void> {
       where: { orgId: user.orgId },
       select: {
         id: true,
+        channelType: true,
         zaloUid: true,
+        fbPageId: true,
         displayName: true,
         avatarUrl: true,
         phone: true,
         status: true,
         sessionData: true,
+        platformConfig: true,
         lastConnectedAt: true,
         createdAt: true,
+        ownerUserId: true,
         owner: { select: { id: true, fullName: true, email: true } },
       },
       orderBy: { createdAt: 'asc' },
@@ -34,11 +38,18 @@ export async function zaloRoutes(app: FastifyInstance): Promise<void> {
 
     // Merge live status from pool and check if session exists (hide raw sessionData)
     return accounts.map((a: any) => {
-      const { sessionData, ...rest } = a;
+      const { sessionData, platformConfig, owner, channelType, ...rest } = a;
+      const isFacebook = channelType === 'facebook';
+
       return {
         ...rest,
-        liveStatus: zaloPool.getStatus(a.id),
-        hasSession: !!sessionData
+        channelType,
+        type: isFacebook ? 'facebook_page' : 'zalo_personal',
+        ownerUserId: owner?.id ?? a.ownerUserId,
+        owner,
+        platformConfig,
+        liveStatus: isFacebook ? a.status : zaloPool.getStatus(a.id),
+        hasSession: isFacebook ? !!platformConfig?.accessToken : !!sessionData,
       };
     });
   });

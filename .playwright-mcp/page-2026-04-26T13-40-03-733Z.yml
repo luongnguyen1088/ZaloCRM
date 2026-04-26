@@ -1,0 +1,104 @@
+- generic [ref=e1]:
+  - generic [ref=e141]:
+    - banner [ref=e142]
+    - navigation [ref=e143]:
+      - list [ref=e145]:
+        - link "Dashboard" [ref=e146] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e148]: 󰨝
+          - generic [ref=e150]: Dashboard
+        - link "Tin nhắn" [ref=e151] [cursor=pointer]:
+          - /url: /chat
+          - generic [ref=e153]: 󰍪
+          - generic [ref=e155]: Tin nhắn
+        - link "Khách hàng" [ref=e156] [cursor=pointer]:
+          - /url: /contacts
+          - generic [ref=e158]: 󰭘
+          - generic [ref=e160]: Khách hàng
+        - link "Tài khoản Zalo" [ref=e161] [cursor=pointer]:
+          - /url: /zalo-accounts
+          - generic [ref=e163]: 󰄡
+          - generic [ref=e165]: Tài khoản Zalo
+        - link "Lịch hẹn" [ref=e166] [cursor=pointer]:
+          - /url: /appointments
+          - generic [ref=e168]: 󱛡
+          - generic [ref=e170]: Lịch hẹn
+        - link "Báo cáo" [ref=e171] [cursor=pointer]:
+          - /url: /reports
+          - generic [ref=e173]: 󰄦
+          - generic [ref=e175]: Báo cáo
+        - link "Phân tích kinh doanh" [ref=e176] [cursor=pointer]:
+          - /url: /analytics
+          - generic [ref=e178]: 󱖶
+          - generic [ref=e180]: Phân tích kinh doanh
+        - link "Nhân sự & Phân quyền" [ref=e181] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e183]: 󱍱
+          - generic [ref=e185]: Nhân sự & Phân quyền
+        - link "Kết nối & Hạn mức AI" [ref=e186] [cursor=pointer]:
+          - /url: /api-settings
+          - generic [ref=e188]: 󰢻
+          - generic [ref=e190]: Kết nối & Hạn mức AI
+        - link "Đào tạo AI" [ref=e191] [cursor=pointer]:
+          - /url: /ai-training
+          - generic [ref=e193]: 󱆀
+          - generic [ref=e195]: Đào tạo AI
+        - link "Hiệu quả AI" [ref=e196] [cursor=pointer]:
+          - /url: /ai-usage
+          - generic [ref=e198]: 󰄪
+          - generic [ref=e200]: Hiệu quả AI
+        - link "Tích hợp" [ref=e201] [cursor=pointer]:
+          - /url: /integrations
+          - generic [ref=e203]: 󱘖
+          - generic [ref=e205]: Tích hợp
+        - link "Automation" [ref=e206] [cursor=pointer]:
+          - /url: /automation
+          - generic [ref=e208]: 󱙺
+          - generic [ref=e210]: Automation
+        - link "Gói cước" [ref=e211] [cursor=pointer]:
+          - /url: /pricing
+          - generic [ref=e213]: 󱇐
+          - generic [ref=e215]: Gói cước
+      - list [ref=e217]:
+        - listitem [ref=e218] [cursor=pointer]:
+          - generic [ref=e220]: 󰅁
+          - generic [ref=e222]: Thu gọn
+    - main [ref=e223]:
+      - generic [ref=e322]:
+        - generic [ref=e323]:
+          - generic [ref=e324]:
+            - heading "Kết nối đa kênh" [level=1] [ref=e325]
+            - paragraph [ref=e326]: Quản lý các tài khoản Zalo cá nhân và Facebook Fanpage
+          - button "Thêm tài khoản" [ref=e327] [cursor=pointer]:
+            - generic [ref=e329]: 󰐕
+            - generic [ref=e330]: Thêm tài khoản
+        - generic [ref=e331]:
+          - generic [ref=e333]: 󰄢
+          - heading "Chưa có tài khoản nào" [level=2] [ref=e334]
+          - paragraph [ref=e335]: Hãy thêm tài khoản Zalo đầu tiên để bắt đầu quản lý
+          - button "Thêm ngay" [ref=e336] [cursor=pointer]:
+            - generic [ref=e337]: Thêm ngay
+  - generic:
+    - dialog:
+      - generic [ref=e340]:
+        - generic [ref=e342]: Thêm kết nối mới
+        - generic [ref=e343]:
+          - tablist [ref=e344]:
+            - generic [ref=e346]:
+              - tab "Zalo Cá nhân" [selected] [ref=e347] [cursor=pointer]:
+                - generic [ref=e348]: Zalo Cá nhân
+              - tab "Facebook Fanpage" [ref=e349] [cursor=pointer]:
+                - generic [ref=e350]: Facebook Fanpage
+          - generic [ref=e353]:
+            - paragraph [ref=e354]: Nhập tên để gợi nhớ tài khoản Zalo này.
+            - generic [ref=e355]:
+              - generic [ref=e358]:
+                - generic: Tên hiển thị
+                - textbox "Tên hiển thị" [ref=e359]:
+                  - /placeholder: "VD: Zalo CSKH 01"
+              - alert [ref=e360]
+        - generic [ref=e362]:
+          - button "Hủy" [ref=e363] [cursor=pointer]:
+            - generic [ref=e364]: Hủy
+          - button "Bắt đầu kết nối" [ref=e365] [cursor=pointer]:
+            - generic [ref=e366]: Bắt đầu kết nối

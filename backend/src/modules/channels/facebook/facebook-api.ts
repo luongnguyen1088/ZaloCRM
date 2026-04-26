@@ -46,9 +46,9 @@ export class FacebookApi {
   /**
    * Helper to get Page info using the token.
    */
-  async getPageInfo() {
+  async getPageInfo(pageId = 'me') {
     try {
-      const response = await fetch(`${this.baseUrl}/${this.version}/me?fields=id,name,picture&access_token=${this.pageAccessToken}`);
+      const response = await fetch(`${this.baseUrl}/${this.version}/${pageId}?fields=id,name,picture&access_token=${this.pageAccessToken}`);
       if (!response.ok) throw new Error('Failed to fetch page info');
       return await response.json();
     } catch (err: any) {

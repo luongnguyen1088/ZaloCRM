@@ -29,7 +29,7 @@
     <v-row v-else-if="accounts.length">
       <v-col v-for="item in accounts" :key="item.id" cols="12" md="4" lg="3">
         <v-card class="glass-card account-card h-100" elevation="0">
-          <div class="status-indicator" :class="statusColor(item.liveStatus || item.status)"></div>
+          <div class="status-indicator" :class="statusColor(getAccountStatus(item))"></div>
           
           <v-card-text class="pa-6">
             <div class="d-flex align-center mb-4">
@@ -48,20 +48,20 @@
                 <div class="text-h6 font-weight-bold text-truncate">{{ item.displayName || 'Chưa đặt tên' }}</div>
                 <div class="text-caption text-medium-emphasis">
                   <v-icon size="12" class="mr-1">{{ item.type === 'facebook_page' ? 'mdi-facebook' : 'mdi-message-text' }}</v-icon>
-                  {{ item.phone || item.zaloUid || 'Đang cập nhật...' }}
+                  {{ item.phone || item.zaloUid || item.fbPageId || 'Đang cập nhật...' }}
                 </div>
               </div>
             </div>
 
             <div class="d-flex align-center justify-space-between mb-4">
               <v-chip
-                :color="statusColor(item.liveStatus || item.status)"
+                :color="statusColor(getAccountStatus(item))"
                 size="x-small"
                 variant="flat"
                 class="font-weight-bold text-uppercase"
                 style="letter-spacing: 1px;"
               >
-                {{ statusText(item.liveStatus || item.status) }}
+                {{ statusText(getAccountStatus(item)) }}
               </v-chip>
               <span class="text-caption text-disabled">ID: {{ item.id.substring(0, 8) }}</span>
             </div>
@@ -71,7 +71,7 @@
           
           <v-card-actions class="pa-3 bg-black-opacity">
             <v-btn
-              v-if="item.liveStatus !== 'connected'"
+              v-if="isRealtimeZaloAccount(item) && getAccountStatus(item) !== 'connected'"
               icon
               size="small"
               class="action-btn primary"
@@ -81,12 +81,12 @@
               <v-icon size="18">mdi-qrcode-scan</v-icon>
             </v-btn>
             <v-btn
-              v-if="item.hasSession"
+              v-if="isRealtimeZaloAccount(item) && item.hasSession"
               icon
               size="small"
               class="action-btn info"
               @click="reconnectAccount(item.id)"
-              :title="item.liveStatus === 'connected' ? 'Làm mới kết nối' : 'Kết nối lại nhanh'"
+              :title="getAccountStatus(item) === 'connected' ? 'Làm mới kết nối' : 'Kết nối lại nhanh'"
             >
               <v-icon size="18">mdi-sync</v-icon>
             </v-btn>
@@ -581,7 +581,7 @@ import { api } from '@/api/index';
 const {
   accounts, loading, adding, deleting,
   showQRDialog, qrImage, qrScanned, scannedName, qrError,
-  statusColor, statusText,
+  getAccountStatus, isRealtimeZaloAccount, statusColor, statusText,
   fetchAccounts, addAccount, loginAccount, reconnectAccount, deleteAccount,
   cancelQR, setupSocket,
 } = useZaloAccounts();

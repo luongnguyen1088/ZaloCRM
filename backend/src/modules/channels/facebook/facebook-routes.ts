@@ -115,8 +115,8 @@ export async function facebookRoutes(app: FastifyInstance) {
 
       try {
         const fb = new FacebookApi(accessToken);
-        const resolvedPageId = pageId || (await fb.getPageInfo()).id;
-        const pageInfo = pageId ? { id: pageId, name: 'Fanpage (Manual)', picture: null } : await fb.getPageInfo();
+        const pageInfo = await fb.getPageInfo(pageId || 'me');
+        const resolvedPageId = pageInfo.id;
 
         const account = await prisma.zaloAccount.upsert({
           where: { fbPageId: resolvedPageId },

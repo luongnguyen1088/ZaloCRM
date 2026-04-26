@@ -41,6 +41,14 @@ export function useZaloAccounts() {
 
   let socket: Socket | null = null;
 
+  function getAccountStatus(account: ZaloAccount) {
+    return account.channelType === 'facebook' ? account.status : (account.liveStatus || account.status);
+  }
+
+  function isRealtimeZaloAccount(account: ZaloAccount) {
+    return account.channelType !== 'facebook';
+  }
+
   function statusColor(status: string) {
     switch (status) {
       case 'connected': return 'success';
@@ -169,7 +177,7 @@ export function useZaloAccounts() {
   return {
     accounts, loading, adding, deleting,
     showQRDialog, qrImage, qrScanned, scannedName, qrError,
-    statusColor, statusText,
+    getAccountStatus, isRealtimeZaloAccount, statusColor, statusText,
     fetchAccounts, addAccount, loginAccount, reconnectAccount, deleteAccount,
     cancelQR, setupSocket,
   };
