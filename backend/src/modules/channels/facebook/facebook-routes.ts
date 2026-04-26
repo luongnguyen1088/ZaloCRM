@@ -104,6 +104,56 @@ export async function facebookRoutes(app: FastifyInstance) {
     }
   );
 
+  app.post<{ Params: { id: string } }>(
+    '/api/v1/facebook/accounts/:id/subscribe-webhooks',
+    async (request, reply) => {
+      const { id } = request.params;
+      const user = request.user!;
+
+      const account = await prisma.zaloAccount.findFirst({
+        where: {
+          id,
+          orgId: user.orgId,
+          channelType: 'facebook',
+        },
+        select: {
+          id: true,
+          fbPageId: true,
+          platformConfig: true,
+        },
+      });
+
+      if (!account) {
+        return reply.status(404).send({ error: 'Khong tim thay Fanpage da ket noi' });
+      }
+
+      const pageId = account.fbPageId;
+      const accessToken = (account.platformConfig as any)?.accessToken;
+
+      if (!pageId || !accessToken) {
+        return reply.status(400).send({ error: 'Fanpage nay chua co du token hoac pageId de dong bo webhook' });
+      }
+
+      try {
+        const fb = new FacebookApi(accessToken);
+        await fb.subscribeAppToPage(pageId);
+
+        await prisma.zaloAccount.update({
+          where: { id: account.id },
+          data: {
+            status: 'connected',
+            lastConnectedAt: new Date(),
+          },
+        });
+
+        return { success: true, pageId };
+      } catch (err: any) {
+        logger.error('[facebook] Re-subscribe page webhook error:', err);
+        return reply.status(400).send({ error: 'Khong the dong bo lai webhook Fanpage. Vui long ket noi lai trang.' });
+      }
+    }
+  );
+
   // POST /api/v1/facebook/link-page — link a page using a token
   app.post<{ Body: { accessToken: string; pageId?: string; pageName?: string; avatarUrl?: string } }>(
     '/api/v1/facebook/link-page',
@@ -123,6 +173,8 @@ export async function facebookRoutes(app: FastifyInstance) {
         const resolvedPageId = pageId || (await fb.getPageInfo()).id;
         const resolvedPageName = pageName?.trim() || 'Facebook Fanpage';
         const resolvedAvatarUrl = avatarUrl || 'https://www.facebook.com/images/fb_icon_325x325.png';
+
+        await fb.subscribeAppToPage(resolvedPageId);
 
         const account = await prisma.zaloAccount.upsert({
           where: { fbPageId: resolvedPageId },

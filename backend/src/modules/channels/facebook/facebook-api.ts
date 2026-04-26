@@ -56,4 +56,31 @@ export class FacebookApi {
       throw err;
     }
   }
+
+  /**
+   * Subscribe the current app to receive webhook events from a Page.
+   */
+  async subscribeAppToPage(pageId: string, subscribedFields = ['messages', 'messaging_postbacks', 'message_reads', 'message_deliveries']) {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/${this.version}/${pageId}/subscribed_apps?access_token=${this.pageAccessToken}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscribed_fields: subscribedFields.join(',') }),
+        }
+      );
+
+      const data = await response.json() as any;
+      if (!response.ok || data?.success !== true) {
+        logger.error('[facebook-api] Subscribe page webhook error:', data?.error || data || response.statusText);
+        throw new Error(data?.error?.message || 'Failed to subscribe app to Facebook Page webhooks');
+      }
+
+      return data;
+    } catch (err: any) {
+      logger.error('[facebook-api] Subscribe page webhook exception:', err.message);
+      throw err;
+    }
+  }
 }

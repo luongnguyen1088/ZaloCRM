@@ -764,6 +764,15 @@ async function handleUniversalAdd() {
 async function syncContacts(accountId: string) {
   syncing.value = accountId;
   try {
+    const account = accounts.value.find(item => item.id === accountId);
+
+    if (account?.channelType === 'facebook') {
+      await api.post(`/facebook/accounts/${accountId}/subscribe-webhooks`);
+      await fetchAccounts();
+      alert('Đã đồng bộ lại webhook Fanpage. Hãy thử nhắn tin vào trang thêm một lần nữa.');
+      return;
+    }
+
     const res = await api.post(`/zalo-accounts/${accountId}/sync-contacts`);
     alert(`Đồng bộ thành công: ${res.data.created} mới, ${res.data.updated} cập nhật`);
   } catch (err: any) {
