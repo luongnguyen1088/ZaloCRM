@@ -168,7 +168,7 @@ export async function chatRoutes(app: FastifyInstance) {
       const threadId = conversation.externalThreadId || '';
       
       // Handle Facebook Page Message
-      if (conversation.zaloAccount.type === 'facebook_page') {
+      if (conversation.zaloAccount.channelType === 'facebook') {
         const config = conversation.zaloAccount.platformConfig as { accessToken?: string };
         if (!config?.accessToken) return reply.status(400).send({ error: 'Facebook configuration error' });
 
