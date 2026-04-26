@@ -754,7 +754,7 @@
 </style>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, nextTick } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useZaloAccounts, type ZaloAccount } from '@/composables/use-zalo-accounts';
 import { useAuthStore } from '@/stores/auth';
 import ZaloAccessDialog from '@/components/settings/ZaloAccessDialog.vue';
