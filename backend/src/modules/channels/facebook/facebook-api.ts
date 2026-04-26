@@ -58,6 +58,58 @@ export class FacebookApi {
   }
 
   /**
+   * Resolve a Messenger user's basic profile from a Page-scoped ID.
+   */
+  async getUserProfile(psid: string) {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/${this.version}/${psid}?fields=first_name,last_name,profile_pic&access_token=${this.pageAccessToken}`
+      );
+      const data = await response.json() as any;
+
+      if (!response.ok) {
+        logger.warn('[facebook-api] Get user profile by PSID failed:', data?.error || response.statusText);
+        return null;
+      }
+
+      return {
+        firstName: data?.first_name || null,
+        lastName: data?.last_name || null,
+        fullName: [data?.first_name, data?.last_name].filter(Boolean).join(' ').trim() || null,
+        avatarUrl: data?.profile_pic || null,
+      };
+    } catch (err: any) {
+      logger.warn('[facebook-api] Get user profile by PSID exception:', err.message);
+      return null;
+    }
+  }
+
+  /**
+   * Fallback lookup via message id when PSID profile access is unavailable.
+   */
+  async getMessageSenderProfile(messageId: string) {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/${this.version}/${messageId}?fields=from&access_token=${this.pageAccessToken}`
+      );
+      const data = await response.json() as any;
+
+      if (!response.ok) {
+        logger.warn('[facebook-api] Get user profile by message id failed:', data?.error || response.statusText);
+        return null;
+      }
+
+      return {
+        fullName: data?.from?.name || null,
+        avatarUrl: null,
+      };
+    } catch (err: any) {
+      logger.warn('[facebook-api] Get user profile by message id exception:', err.message);
+      return null;
+    }
+  }
+
+  /**
    * Subscribe the current app to receive webhook events from a Page.
    */
   async subscribeAppToPage(pageId: string, subscribedFields = ['messages', 'messaging_postbacks', 'message_reads', 'message_deliveries']) {

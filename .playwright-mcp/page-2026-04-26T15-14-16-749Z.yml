@@ -1,0 +1,162 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - banner [ref=e5]:
+      - generic [ref=e6]:
+        - button [ref=e7] [cursor=pointer]:
+          - generic [ref=e9]: 󰍜
+        - generic [ref=e10]:
+          - generic [ref=e12]: 󰧑
+          - generic [ref=e14]:
+            - generic [ref=e15]: Zalo
+            - generic [ref=e16]: CRM
+        - button "Claro VN Workspace" [ref=e17] [cursor=pointer]:
+          - generic [ref=e18]:
+            - generic [ref=e19]: 󰇗
+            - text: Claro VN Workspace
+            - generic [ref=e20]: 󰅀
+        - generic [ref=e24]:
+          - generic [ref=e26]: 󰍉
+          - textbox "Tìm kiếm..." [ref=e28]
+          - text: 󰅙
+        - generic [ref=e31]: ONLINE
+        - generic [ref=e32]: Admin Claro
+        - button "Badge" [ref=e33] [cursor=pointer]:
+          - generic [ref=e36]:
+            - generic [ref=e37]: 󰂜
+            - status "Badge" [ref=e38]: "1"
+        - link [ref=e39] [cursor=pointer]:
+          - /url: /api-settings
+          - generic [ref=e41]: 󰢻
+        - button [ref=e42] [cursor=pointer]:
+          - generic [ref=e44]: 󰖔
+        - button [ref=e45] [cursor=pointer]:
+          - generic [ref=e47]: 󰍃
+    - navigation [ref=e48]:
+      - list [ref=e50]:
+        - link "Dashboard" [ref=e51] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e53]: 󰨝
+          - generic [ref=e55]: Dashboard
+        - link "Tin nhắn" [ref=e56] [cursor=pointer]:
+          - /url: /chat
+          - generic [ref=e58]: 󰍪
+          - generic [ref=e60]: Tin nhắn
+        - link "Khách hàng" [ref=e61] [cursor=pointer]:
+          - /url: /contacts
+          - generic [ref=e63]: 󰭘
+          - generic [ref=e65]: Khách hàng
+        - link "Tài khoản Zalo" [ref=e66] [cursor=pointer]:
+          - /url: /zalo-accounts
+          - generic [ref=e68]: 󰄡
+          - generic [ref=e70]: Tài khoản Zalo
+        - link "Lịch hẹn" [ref=e71] [cursor=pointer]:
+          - /url: /appointments
+          - generic [ref=e73]: 󱛡
+          - generic [ref=e75]: Lịch hẹn
+        - link "Báo cáo" [ref=e76] [cursor=pointer]:
+          - /url: /reports
+          - generic [ref=e78]: 󰄦
+          - generic [ref=e80]: Báo cáo
+        - link "Phân tích kinh doanh" [ref=e81] [cursor=pointer]:
+          - /url: /analytics
+          - generic [ref=e83]: 󱖶
+          - generic [ref=e85]: Phân tích kinh doanh
+        - link "Nhân sự & Phân quyền" [ref=e86] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e88]: 󱍱
+          - generic [ref=e90]: Nhân sự & Phân quyền
+        - link "Kết nối & Hạn mức AI" [ref=e91] [cursor=pointer]:
+          - /url: /api-settings
+          - generic [ref=e93]: 󰢻
+          - generic [ref=e95]: Kết nối & Hạn mức AI
+        - link "Đào tạo AI" [ref=e96] [cursor=pointer]:
+          - /url: /ai-training
+          - generic [ref=e98]: 󱆀
+          - generic [ref=e100]: Đào tạo AI
+        - link "Hiệu quả AI" [ref=e101] [cursor=pointer]:
+          - /url: /ai-usage
+          - generic [ref=e103]: 󰄪
+          - generic [ref=e105]: Hiệu quả AI
+        - link "Tích hợp" [ref=e106] [cursor=pointer]:
+          - /url: /integrations
+          - generic [ref=e108]: 󱘖
+          - generic [ref=e110]: Tích hợp
+        - link "Automation" [ref=e111] [cursor=pointer]:
+          - /url: /automation
+          - generic [ref=e113]: 󱙺
+          - generic [ref=e115]: Automation
+        - link "Gói cước" [ref=e116] [cursor=pointer]:
+          - /url: /pricing
+          - generic [ref=e118]: 󱇐
+          - generic [ref=e120]: Gói cước
+      - list [ref=e122]:
+        - listitem [ref=e123] [cursor=pointer]:
+          - generic [ref=e125]: 󰅁
+          - generic [ref=e127]: Thu gọn
+    - main [ref=e128]:
+      - generic [ref=e130]:
+        - complementary [ref=e131]:
+          - generic [ref=e132]:
+            - generic [ref=e133]:
+              - generic [ref=e134]:
+                - heading "Hội thoại" [level=2] [ref=e135]
+                - button [ref=e136] [cursor=pointer]:
+                  - generic [ref=e138]: 󰐕
+              - generic [ref=e141]:
+                - generic [ref=e143]: 󰍉
+                - textbox "Tìm tên khách hàng, nội dung..." [ref=e145]
+                - text: 󰅙
+              - generic [ref=e146]:
+                - generic [ref=e148] [cursor=pointer]: Tất cả
+                - generic [ref=e150] [cursor=pointer]: Chưa đọc
+                - generic [ref=e152] [cursor=pointer]: Chưa rep
+                - generic [ref=e154] [cursor=pointer]: AI suggest
+            - combobox [ref=e158] [cursor=pointer]:
+              - generic [ref=e160]: 󰓋
+              - generic [ref=e162]:
+                - combobox "Tất cả tài khoản Zalo"
+              - text: 󰅙
+              - generic [ref=e164]: 󰍝
+            - list [ref=e165]:
+              - generic [ref=e166]:
+                - alert "Loading..." [ref=e167]
+                - alert "Loading..." [ref=e173]
+                - alert "Loading..." [ref=e179]
+                - alert "Loading..." [ref=e185]
+                - alert "Loading..." [ref=e191]
+                - alert "Loading..." [ref=e197]
+        - main [ref=e204]:
+          - generic [ref=e205]:
+            - generic [ref=e207]: 󰀄
+            - generic [ref=e208]:
+              - heading "Hội thoại" [level=3] [ref=e209]
+              - generic [ref=e210]:
+                - generic [ref=e211]: Hội thoại Zalo
+                - separator [ref=e212]
+                - generic [ref=e213]: 󰀓
+                - generic [ref=e214]: Unknown
+            - generic [ref=e215]:
+              - button [ref=e216] [cursor=pointer]:
+                - generic [ref=e218]: 󰍉
+              - button [ref=e219] [cursor=pointer]:
+                - generic [ref=e221]: 󰷰
+              - button [ref=e222] [cursor=pointer]:
+                - generic [ref=e224]: 󰯜
+              - button [ref=e225] [cursor=pointer]:
+                - generic [ref=e227]: 󰋼
+          - generic [ref=e230]:
+            - generic [ref=e232]:
+              - heading "Sẵn sàng hỗ trợ khách hàng?" [level=3] [ref=e234]
+              - paragraph [ref=e235]: Chọn một cuộc hội thoại từ danh sách bên trái để bắt đầu tư vấn với sự trợ giúp từ AI.
+            - generic [ref=e238]:
+              - button [ref=e239] [cursor=pointer]:
+                - generic [ref=e241]: 󰐕
+              - textbox "Nhập tin nhắn..." [ref=e246]
+              - generic [ref=e247]:
+                - button "Gợi ý AI" [ref=e248] [cursor=pointer]:
+                  - generic [ref=e251]: Gợi ý AI
+                - button [disabled]:
+                  - generic:
+                    - generic: 󰒊
+  - generic:
+    - tooltip
