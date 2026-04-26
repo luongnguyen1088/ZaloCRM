@@ -741,7 +741,9 @@ async function handleLinkFbPage(page: any) {
   try {
     await api.post('/facebook/link-page', { 
       accessToken: page.accessToken,
-      pageId: page.id
+      pageId: page.id,
+      pageName: page.name,
+      avatarUrl: page.avatarUrl,
     });
     await fetchAccounts();
   } catch (err: any) {

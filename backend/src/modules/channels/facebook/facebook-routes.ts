@@ -105,18 +105,24 @@ export async function facebookRoutes(app: FastifyInstance) {
   );
 
   // POST /api/v1/facebook/link-page — link a page using a token
-  app.post<{ Body: { accessToken: string, pageId?: string } }>(
+  app.post<{ Body: { accessToken: string; pageId?: string; pageName?: string; avatarUrl?: string } }>(
     '/api/v1/facebook/link-page',
     async (request, reply) => {
-      const { accessToken, pageId } = request.body as { accessToken: string, pageId?: string };
+      const { accessToken, pageId, pageName, avatarUrl } = request.body as {
+        accessToken: string;
+        pageId?: string;
+        pageName?: string;
+        avatarUrl?: string;
+      };
       const user = request.user!;
 
       if (!accessToken) return reply.status(400).send({ error: 'Access token is required' });
 
       try {
         const fb = new FacebookApi(accessToken);
-        const pageInfo = await fb.getPageInfo(pageId || 'me');
-        const resolvedPageId = pageInfo.id;
+        const resolvedPageId = pageId || (await fb.getPageInfo()).id;
+        const resolvedPageName = pageName?.trim() || 'Facebook Fanpage';
+        const resolvedAvatarUrl = avatarUrl || 'https://www.facebook.com/images/fb_icon_325x325.png';
 
         const account = await prisma.zaloAccount.upsert({
           where: { fbPageId: resolvedPageId },
@@ -124,8 +130,8 @@ export async function facebookRoutes(app: FastifyInstance) {
             orgId: user.orgId,
             ownerUserId: user.id,
             channelType: 'facebook',
-            displayName: pageInfo.name,
-            avatarUrl: pageInfo.picture?.data?.url || 'https://www.facebook.com/images/fb_icon_325x325.png',
+            displayName: resolvedPageName,
+            avatarUrl: resolvedAvatarUrl,
             status: 'connected',
             platformConfig: { accessToken },
             lastConnectedAt: new Date(),
@@ -135,8 +141,8 @@ export async function facebookRoutes(app: FastifyInstance) {
             ownerUserId: user.id,
             channelType: 'facebook',
             fbPageId: resolvedPageId,
-            displayName: pageInfo.name,
-            avatarUrl: pageInfo.picture?.data?.url || 'https://www.facebook.com/images/fb_icon_325x325.png',
+            displayName: resolvedPageName,
+            avatarUrl: resolvedAvatarUrl,
             status: 'connected',
             platformConfig: { accessToken },
             lastConnectedAt: new Date(),
