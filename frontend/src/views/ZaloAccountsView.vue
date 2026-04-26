@@ -752,7 +752,7 @@ const {
   accounts, loading, adding, deleting,
   showQRDialog, qrImage, qrScanned, scannedName, qrAvatar, qrError,
   getAccountStatus, isRealtimeZaloAccount, statusColor, statusText,
-  fetchAccounts, addAccount, loginAccount, reconnectAccount, deleteAccount,
+  fetchAccounts, loginAccount, reconnectAccount, deleteAccount,
   cancelQR, setupSocket,
 } = useZaloAccounts();
 
@@ -762,7 +762,7 @@ const showAddDialog = ref(false);
 const syncing = ref<string | null>(null);
 const showDeleteDialog = ref(false);
 const showAccessDialog = ref(false);
-const newAccountName = ref('');
+
 const fbPages = ref<any[]>([]);
 const fbPageSearch = ref('');
 const linkingPageId = ref<string | null>(null);
@@ -965,13 +965,7 @@ async function handleLinkFbPage(page: any) {
   }
 }
 
-async function handleUniversalAdd() {
-  if (addType.value === 'zalo') {
-    await handleAddAccount();
-  } else {
-    // Facebook uses inline activation from list
-  }
-}
+
 
 async function syncContacts(accountId: string) {
   syncing.value = accountId;
@@ -994,13 +988,7 @@ async function syncContacts(accountId: string) {
   }
 }
 
-async function handleAddAccount() {
-  const ok = await addAccount(newAccountName.value);
-  if (ok) {
-    showAddDialog.value = false;
-    newAccountName.value = '';
-  }
-}
+
 
 function confirmDelete(account: ZaloAccount) {
   deleteTarget.value = account;
