@@ -643,7 +643,6 @@ async function handleFacebookLogin() {
       'pages_messaging',
       'pages_show_list',
       'pages_manage_metadata',
-      'pages_read_engagement',
     ].join(',');
 
     const oauthUrl = new URL(`https://www.facebook.com/${apiVersion}/dialog/oauth`);
