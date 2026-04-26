@@ -162,17 +162,78 @@
             </v-window-item>
 
             <v-window-item value="facebook">
-              <v-alert type="info" variant="tonal" density="compact" class="mb-4 text-caption">
-                Vui lòng cung cấp Page Access Token. Bạn có thể tạo token này từ trang Meta for Developers.
-              </v-alert>
-              <v-text-field
-                v-model="fbAccessToken"
-                label="Page Access Token"
-                placeholder="EAAG...."
-                variant="outlined"
-                rounded="lg"
-                type="password"
-              />
+              <div v-if="!fbPages.length" class="text-center py-8">
+                <v-icon size="64" color="#1877F2" class="mb-4">mdi-facebook</v-icon>
+                <h3 class="text-h6 font-weight-bold mb-2">Kết nối nhanh Fanpage</h3>
+                <p class="text-body-2 text-medium-emphasis mb-6">
+                  Đăng nhập Facebook để tự động liệt kê tất cả các trang bạn đang quản lý.
+                </p>
+                
+                <v-btn
+                  color="#1877F2"
+                  size="large"
+                  rounded="pill"
+                  class="px-8 text-white font-weight-bold"
+                  prepend-icon="mdi-facebook"
+                  :loading="adding"
+                  @click="handleFacebookLogin"
+                >
+                  Tiếp tục với Facebook
+                </v-btn>
+
+                <div class="mt-4 text-caption text-disabled">
+                  Không cần copy mã Token, an toàn và bảo mật 100%.
+                </div>
+              </div>
+
+              <div v-else>
+                <!-- Danh sách trang (giống như Botcake) -->
+                <div class="d-flex align-center justify-space-between mb-4">
+                  <div class="text-subtitle-2 font-weight-bold text-primary">
+                    <v-icon size="18" class="mr-1">mdi-check-circle</v-icon>
+                    Chúng tôi tìm thấy {{ fbPages.length }} trang bạn đang quản lý
+                  </div>
+                  <v-btn variant="text" size="x-small" color="primary" @click="fbPages = []">Đổi tài khoản</v-btn>
+                </div>
+                
+                <v-text-field
+                  v-model="fbPageSearch"
+                  placeholder="Tìm kiếm trang..."
+                  variant="outlined"
+                  density="compact"
+                  rounded="lg"
+                  prepend-inner-icon="mdi-magnify"
+                  class="mb-4"
+                  hide-details
+                />
+
+                <v-list class="pa-0 fb-page-list border rounded-lg overflow-y-auto" style="max-height: 300px">
+                  <v-list-item
+                    v-for="page in filteredFbPages"
+                    :key="page.id"
+                    :prepend-avatar="page.avatarUrl"
+                    class="py-3"
+                  >
+                    <v-list-item-title class="font-weight-bold">{{ page.name }}</v-list-item-title>
+                    <v-list-item-subtitle>ID: {{ page.id }}</v-list-item-subtitle>
+                    
+                    <template #append>
+                      <v-btn
+                        v-if="!isPageConnected(page.id)"
+                        color="primary"
+                        size="small"
+                        rounded="lg"
+                        variant="flat"
+                        :loading="linkingPageId === page.id"
+                        @click="handleLinkFbPage(page)"
+                      >
+                        Kích hoạt
+                      </v-btn>
+                      <v-chip v-else color="success" size="small" variant="tonal" prepend-icon="mdi-check">Đã kết nối</v-chip>
+                    </template>
+                  </v-list-item>
+                </v-list>
+              </div>
             </v-window-item>
           </v-window>
         </v-card-text>
@@ -511,7 +572,7 @@
 </style>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useZaloAccounts, type ZaloAccount } from '@/composables/use-zalo-accounts';
 import { useAuthStore } from '@/stores/auth';
 import ZaloAccessDialog from '@/components/settings/ZaloAccessDialog.vue';
@@ -532,31 +593,71 @@ const syncing = ref<string | null>(null);
 const showDeleteDialog = ref(false);
 const showAccessDialog = ref(false);
 const newAccountName = ref('');
-const fbAccessToken = ref('');
+const fbUserToken = ref('');
+const fbPages = ref<any[]>([]);
+const fbPageSearch = ref('');
+const linkingPageId = ref<string | null>(null);
 const addType = ref('zalo');
 const deleteTarget = ref<ZaloAccount | null>(null);
 const accessTarget = ref<ZaloAccount | null>(null);
+
+const filteredFbPages = computed(() => {
+  if (!fbPageSearch.value) return fbPages.value;
+  const s = fbPageSearch.value.toLowerCase();
+  return fbPages.value.filter(p => p.name.toLowerCase().includes(s) || p.id.includes(s));
+});
+
+function isPageConnected(pageId: string) {
+  return accounts.value.some(a => a.fbPageId === pageId);
+}
+
+async function loadFbPages(token: string) {
+  adding.value = true;
+  try {
+    const res = await api.get('/facebook/list-pages', { params: { userToken: token } });
+    fbPages.value = res.data;
+  } catch (err: any) {
+    alert(err.response?.data?.error || 'Lỗi lấy danh sách Fanpage');
+  } finally {
+    adding.value = false;
+  }
+}
+
+async function handleFacebookLogin() {
+  if (!(window as any).FB) {
+    alert('Facebook SDK chưa sẵn sàng. Vui lòng thử lại sau vài giây.');
+    return;
+  }
+
+  (window as any).FB.login((response: any) => {
+    if (response.authResponse) {
+      loadFbPages(response.authResponse.accessToken);
+    } else {
+      console.log('User cancelled login or did not fully authorize.');
+    }
+  }, { scope: 'pages_messaging,pages_show_list,pages_manage_metadata,pages_read_engagement' });
+}
+
+async function handleLinkFbPage(page: any) {
+  linkingPageId.value = page.id;
+  try {
+    await api.post('/facebook/link-page', { 
+      accessToken: page.accessToken,
+      pageId: page.id
+    });
+    await fetchAccounts();
+  } catch (err: any) {
+    alert(err.response?.data?.error || 'Lỗi kết nối Fanpage');
+  } finally {
+    linkingPageId.value = null;
+  }
+}
 
 async function handleUniversalAdd() {
   if (addType.value === 'zalo') {
     await handleAddAccount();
   } else {
-    await handleAddFacebook();
-  }
-}
-
-async function handleAddFacebook() {
-  if (!fbAccessToken.value) return alert('Vui lòng nhập Access Token');
-  adding.value = true;
-  try {
-    await api.post('/facebook/link-page', { accessToken: fbAccessToken.value });
-    showAddDialog.value = false;
-    fbAccessToken.value = '';
-    await fetchAccounts();
-  } catch (err: any) {
-    alert(err.response?.data?.error || 'Lỗi kết nối Fanpage');
-  } finally {
-    adding.value = false;
+    // Facebook uses inline activation from list
   }
 }
 
@@ -602,5 +703,25 @@ async function handleDeleteAccount() {
 onMounted(() => {
   fetchAccounts();
   setupSocket();
+
+  // Load Facebook SDK
+  if (!(window as any).FB) {
+    (window as any).fbAsyncInit = function() {
+      (window as any).FB.init({
+        appId      : '27615587728030130',
+        cookie     : true,
+        xfbml      : true,
+        version    : 'v19.0'
+      });
+    };
+
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "https://connect.facebook.net/en_US/sdk.js";
+      fjs.parentNode?.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  }
 });
 </script>

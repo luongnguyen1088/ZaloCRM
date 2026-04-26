@@ -3,18 +3,19 @@ import { prisma } from '../../../shared/database/prisma-client.js';
 import { logger } from '../../../shared/utils/logger.js';
 import { randomUUID } from 'node:crypto';
 import { runAutomationRules } from '../../automation/automation-service.js';
+import { config } from '../../../config/index.js';
 import type { Server } from 'socket.io';
 
 export async function facebookWebhookRoutes(app: FastifyInstance) {
   // Verification Endpoint (GET)
-  app.get('/api/webhooks/facebook', async (request: FastifyRequest, reply: FastifyReply) => {
+  app.get('/api/v1/webhooks/facebook', async (request: FastifyRequest, reply: FastifyReply) => {
     const query = request.query as any;
     const mode = query['hub.mode'];
     const token = query['hub.verify_token'];
     const challenge = query['hub.challenge'];
 
-    // You should set this in your environment variables
-    const VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN || 'zalocrm_fb_secret';
+    // Use configured verify token
+    const VERIFY_TOKEN = config.fbVerifyToken;
 
     if (mode === 'subscribe' && token === VERIFY_TOKEN) {
       logger.info('[facebook] Webhook verified');
@@ -25,7 +26,7 @@ export async function facebookWebhookRoutes(app: FastifyInstance) {
   });
 
   // Message Handler (POST)
-  app.post('/api/webhooks/facebook', async (request: FastifyRequest, reply: FastifyReply) => {
+  app.post('/api/v1/webhooks/facebook', async (request: FastifyRequest, reply: FastifyReply) => {
     const body = request.body as any;
 
     if (body.object === 'page') {
@@ -52,7 +53,7 @@ async function handleIncomingMessage(app: FastifyInstance, event: any, pageId: s
   try {
     // 1. Find the Page in our database
     const channelAccount = await prisma.zaloAccount.findFirst({
-      where: { zaloUid: pageId, type: 'facebook_page' }
+      where: { fbPageId: pageId, channelType: 'facebook' }
     });
 
     if (!channelAccount) {
@@ -63,18 +64,17 @@ async function handleIncomingMessage(app: FastifyInstance, event: any, pageId: s
     const orgId = channelAccount.orgId;
 
     // 2. Upsert Contact
-    // In a real app, you would fetch profile from FB Graph API if not known
     let contact = await prisma.contact.findFirst({
-      where: { orgId, zaloUid: senderId }
+      where: { orgId, facebookPsid: senderId }
     });
 
     if (!contact) {
       contact = await prisma.contact.create({
         data: {
           orgId,
-          zaloUid: senderId,
-          fullName: `FB User ${senderId.slice(-4)}`, // Placeholder
-          source: 'facebook_fanpage',
+          facebookPsid: senderId,
+          fullName: `Khách Facebook ${senderId.slice(-4)}`,
+          source: 'facebook',
           status: 'new'
         }
       });

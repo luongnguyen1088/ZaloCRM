@@ -6,6 +6,8 @@ export interface ZaloAccount {
   displayName: string | null;
   avatarUrl?: string | null;
   zaloUid?: string | null;
+  fbPageId?: string | null;
+  channelType?: 'zalo' | 'facebook';
 }
 
 export interface AiSentiment {

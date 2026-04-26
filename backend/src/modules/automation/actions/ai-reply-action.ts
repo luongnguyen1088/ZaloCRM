@@ -40,17 +40,32 @@ export async function aiReplyAction(input: {
     const content = (result.content as string).trim();
     if (!content) return null;
 
-    // 3. Send through Zalo
-    const instance = zaloPool.getInstance(input.zaloAccountId);
-    if (!instance?.api) return null;
+    // 3. Send through appropriate channel
+    const account = await prisma.zaloAccount.findUnique({
+      where: { id: input.zaloAccountId },
+      select: { channelType: true, platformConfig: true }
+    });
 
-    const limits = zaloRateLimiter.checkLimits(input.zaloAccountId);
-    if (!limits.allowed) return null;
+    if (!account) return null;
 
-    zaloRateLimiter.recordSend(input.zaloAccountId);
-    const threadType = input.threadType === 'group' ? 1 : 0;
-    
-    await instance.api.sendMessage({ msg: content }, input.threadId, threadType);
+    if (account.channelType === 'facebook') {
+      const config = account.platformConfig as { accessToken?: string };
+      if (!config?.accessToken) return null;
+
+      const { FacebookApi } = await import('../../channels/facebook/facebook-api.js');
+      const fb = new FacebookApi(config.accessToken);
+      await fb.sendTextMessage(input.threadId, content);
+    } else {
+      const instance = zaloPool.getInstance(input.zaloAccountId);
+      if (!instance?.api) return null;
+
+      const limits = zaloRateLimiter.checkLimits(input.zaloAccountId);
+      if (!limits.allowed) return null;
+
+      zaloRateLimiter.recordSend(input.zaloAccountId);
+      const threadType = input.threadType === 'group' ? 1 : 0;
+      await instance.api.sendMessage({ msg: content }, input.threadId, threadType);
+    }
 
     // 4. Save to DB
     return await prisma.message.create({

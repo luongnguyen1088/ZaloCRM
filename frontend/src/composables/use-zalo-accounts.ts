@@ -13,6 +13,8 @@ export interface ZaloAccount {
   avatarUrl: string | null;
   zaloUid: string | null;
   type: 'zalo_personal' | 'facebook_page' | 'zalo_oa';
+  channelType: 'zalo' | 'facebook';
+  fbPageId?: string | null;
   status: string;
   liveStatus?: string;
   hasSession?: boolean;

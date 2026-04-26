@@ -17,12 +17,13 @@
           <v-icon v-else :icon="conv.threadType === 'group' ? 'mdi-account-group' : 'mdi-account'" />
         </v-avatar>
         
-        <!-- Zalo Account Badge -->
+        <!-- Channel Account Badge -->
         <v-avatar size="20" class="account-badge" color="surface">
           <v-img v-if="conv.zaloAccount?.avatarUrl" :src="conv.zaloAccount.avatarUrl" />
+          <v-icon v-else-if="conv.zaloAccount?.channelType === 'facebook'" size="12" color="#1877F2">mdi-facebook</v-icon>
           <v-icon v-else size="12" color="primary">mdi-zalo</v-icon>
           <v-tooltip activator="parent" location="bottom">
-            {{ conv.zaloAccount?.displayName || 'Zalo Account' }}
+            {{ conv.zaloAccount?.displayName || 'Tài khoản' }}
           </v-tooltip>
         </v-avatar>
       </div>

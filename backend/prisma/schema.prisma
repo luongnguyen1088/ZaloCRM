@@ -146,8 +146,9 @@ model ZaloAccount {
   id              String    @id @default(uuid())
   orgId           String    @map("org_id")
   ownerUserId     String    @map("owner_user_id")
-  type            String    @default("zalo_personal")
+  channelType     String    @default("zalo") @map("channel_type") // zalo, facebook
   zaloUid         String?   @unique @map("zalo_uid")
+  fbPageId        String?   @unique @map("fb_page_id")
   displayName     String?   @map("display_name")
   avatarUrl       String?   @map("avatar_url")
   phone           String?
@@ -189,6 +190,7 @@ model Contact {
   id               String    @id @default(uuid())
   orgId            String    @map("org_id")
   zaloUid          String?   @map("zalo_uid")
+  facebookPsid     String?   @map("facebook_psid")
   phone            String?
   email            String?   @map("email")
   fullName         String?   @map("full_name")
@@ -217,6 +219,7 @@ model Contact {
 
   @@index([orgId, phone])
   @@index([orgId, zaloUid])
+  @@index([orgId, facebookPsid])
   @@index([orgId, mergedInto])
   @@schema("zalocrm")
   @@map("contacts")

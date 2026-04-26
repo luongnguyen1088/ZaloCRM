@@ -62,5 +62,10 @@ export const config = {
   openrouterAuthToken: process.env.OPENROUTER_AUTH_TOKEN || process.env.OPENROUTER_API_KEY || '',
   openrouterDefaultModel: process.env.OPENROUTER_DEFAULT_MODEL || 'anthropic/claude-3.7-sonnet',
 
+  /* --- Facebook Integration --- */
+  fbAppId: process.env.FB_APP_ID || '27615587728030130',
+  fbAppSecret: process.env.FB_APP_SECRET || '52c864365363fc6dd7efb5ccce02676f',
+  fbVerifyToken: process.env.FB_VERIFY_TOKEN || 'zalocrm_fb_webhook_secret_2026',
+
   isProduction: process.env.NODE_ENV === 'production',
 };
