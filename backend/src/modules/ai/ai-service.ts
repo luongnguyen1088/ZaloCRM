@@ -823,10 +823,10 @@ Instructions:
 MESSAGE TO ANALYZE:
 "${messageContent}"`;
 
-  const { text } = await generateRawOutput(orgId, systemPrompt, []);
+  const { content } = await generateRawOutput(orgId, systemPrompt, []);
   
   try {
-    const result = JSON.parse(text);
+    const result = JSON.parse(content);
     if (result.shouldPause) {
       await prisma.conversation.update({
         where: { id: conversationId },
@@ -888,10 +888,10 @@ Rules:
 MESSAGE:
 "${messageContent}"`;
 
-  const { text } = await generateRawOutput(orgId, systemPrompt, []);
+  const { content } = await generateRawOutput(orgId, systemPrompt, []);
   
   try {
-    const data = JSON.parse(text);
+    const data = JSON.parse(content);
     if (Object.keys(data).length > 0) {
       const conversation = await prisma.conversation.findUnique({
         where: { id: conversationId },
