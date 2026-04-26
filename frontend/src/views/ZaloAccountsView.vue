@@ -127,10 +127,280 @@
     </v-row>
 
     <!-- Empty State -->
-          >
-            Bắt đầu kết nối
-          </v-btn>
-        </v-card-actions>
+    <div v-else class="text-center py-16">
+      <div class="empty-state-icon mb-6">
+        <v-icon size="80" color="disabled">mdi-connection</v-icon>
+      </div>
+      <h2 class="text-h5 text-disabled mb-2">Chưa có kết nối nào</h2>
+      <p class="text-body-1 text-medium-emphasis mb-6">Hãy thêm kênh kết nối đầu tiên để bắt đầu quản lý</p>
+      <v-btn color="primary" rounded="lg" class="px-8" @click="showAddDialog = true">Thêm ngay</v-btn>
+    </div>
+
+    <!-- Add Dialog (Pancake Style) -->
+    <v-dialog v-model="showAddDialog" max-width="900" persistent>
+      <v-card class="add-connection-card overflow-hidden" elevation="24">
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          size="small"
+          class="close-btn"
+          @click="showAddDialog = false"
+        ></v-btn>
+
+        <div class="d-flex h-100 flex-column flex-sm-row">
+          <!-- Sidebar trái -->
+          <div class="sidebar-add-connection pa-4 bg-grey-lighten-4 border-right">
+            <div class="text-overline font-weight-bold mb-4 px-2 text-grey">KÊNH KẾT NỐI</div>
+            
+            <v-list density="comfortable" nav class="bg-transparent pa-0">
+              <v-list-item
+                :active="addType === 'zalo'"
+                active-color="primary"
+                rounded="lg"
+                class="mb-2 sidebar-item"
+                @click="addType = 'zalo'"
+              >
+                <template v-slot:prepend>
+                  <v-avatar size="32" class="mr-3" color="white" elevation="1">
+                    <v-img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg" />
+                  </v-avatar>
+                </template>
+                <v-list-item-title class="font-weight-bold">Zalo</v-list-item-title>
+              </v-list-item>
+
+              <v-list-item
+                :active="addType === 'facebook'"
+                active-color="blue-darken-2"
+                rounded="lg"
+                class="mb-2 sidebar-item"
+                @click="addType = 'facebook'"
+              >
+                <template v-slot:prepend>
+                  <v-avatar size="32" class="mr-3" color="blue-lighten-5">
+                    <v-icon color="blue-darken-2">mdi-facebook</v-icon>
+                  </v-avatar>
+                </template>
+                <v-list-item-title class="font-weight-bold">Facebook</v-list-item-title>
+              </v-list-item>
+
+              <v-divider class="my-3" />
+
+              <v-list-item
+                v-for="item in ['Instagram', 'TikTok', 'WhatsApp', 'Telegram']"
+                :key="item"
+                disabled
+                rounded="lg"
+                class="mb-2 opacity-50"
+              >
+                <template v-slot:prepend>
+                  <v-avatar size="32" class="mr-3" color="grey-lighten-3">
+                    <v-icon color="grey-darken-1" size="20">
+                      {{ 
+                        item === 'Instagram' ? 'mdi-instagram' : 
+                        item === 'TikTok' ? 'mdi-music-note' : 
+                        item === 'WhatsApp' ? 'mdi-whatsapp' : 'mdi-telegram'
+                      }}
+                    </v-icon>
+                  </v-avatar>
+                </template>
+                <v-list-item-title>{{ item }}</v-list-item-title>
+                <template v-slot:append>
+                  <v-chip size="x-small" color="orange" variant="flat">Beta</v-chip>
+                </template>
+              </v-list-item>
+            </v-list>
+          </div>
+
+          <!-- Nội dung phải -->
+          <div class="flex-grow-1 d-flex flex-column bg-white content-area">
+            <div class="pa-6 border-bottom header-section">
+              <div class="d-flex align-center mb-1">
+                <v-icon :color="addType === 'zalo' ? 'primary' : 'blue-darken-2'" class="mr-2">
+                  {{ addType === 'zalo' ? 'mdi-chat' : 'mdi-facebook' }}
+                </v-icon>
+                <div class="text-h6 font-weight-bold">Kết nối {{ addType === 'zalo' ? 'Zalo' : 'Facebook' }}</div>
+              </div>
+              <div class="text-body-2 text-medium-emphasis">Quản lý tập trung tin nhắn và sử dụng AI trợ lý cho {{ addType === 'zalo' ? 'Zalo' : 'Fanpage' }} của bạn.</div>
+            </div>
+
+            <div class="pa-8 flex-grow-1 overflow-y-auto">
+              <v-window v-model="addType" touchless>
+                <!-- Zalo Content -->
+                <v-window-item value="zalo">
+                  <div class="d-flex flex-column flex-md-row align-center align-md-start justify-center gap-10">
+                    <div class="text-center" style="width: 280px">
+                      <div v-if="qrError" class="py-4">
+                        <v-alert type="error" variant="tonal" class="mb-4 text-left text-caption">{{ qrError }}</v-alert>
+                        <v-btn color="primary" variant="flat" rounded="lg" block @click="resetZaloAdd">Thử lại</v-btn>
+                      </div>
+                      
+                      <div v-else-if="qrScanned" class="py-8 scale-in">
+                        <div class="avatar-wrapper mb-6">
+                          <v-avatar size="120" class="border-gold elevation-10">
+                            <v-img :src="qrAvatar || '/default-avatar.png'" />
+                          </v-avatar>
+                          <div class="scanned-badge">
+                            <v-icon size="20" color="white">mdi-check</v-icon>
+                          </div>
+                        </div>
+                        <div class="text-h6 font-weight-bold mb-1">{{ scannedName }}</div>
+                        <div class="text-body-2 text-success font-weight-bold">QUÉT THÀNH CÔNG!</div>
+                        <p class="text-caption text-medium-emphasis mt-4 px-4">
+                          Bấm <strong>Xác nhận</strong> trên điện thoại để hoàn tất.
+                        </p>
+                        <v-progress-linear indeterminate color="success" rounded height="6" class="mt-6 mx-auto" style="width: 150px" />
+                      </div>
+
+                      <div v-else-if="qrImage" class="scale-in">
+                        <div class="qr-frame pa-2 mb-4 bg-white rounded-xl d-inline-block border elevation-4">
+                          <v-img :src="'data:image/png;base64,' + qrImage" width="240" height="240" aspect-ratio="1" />
+                        </div>
+                        <div class="text-caption text-medium-emphasis d-flex align-center justify-center">
+                          <v-icon size="14" class="mr-1">mdi-update</v-icon>
+                          Mã QR sẽ tự động cập nhật
+                        </div>
+                      </div>
+
+                      <div v-else class="py-12">
+                        <v-progress-circular indeterminate color="primary" size="64" width="6" />
+                        <p class="mt-4 text-body-1 font-weight-medium">Đang khởi tạo...</p>
+                      </div>
+                    </div>
+
+                    <div class="flex-grow-1 ml-md-10 mt-10 mt-md-0" style="max-width: 400px">
+                      <div class="text-subtitle-1 font-weight-bold mb-6 color-cyan">HƯỚNG DẪN KẾT NỐI</div>
+                      
+                      <div class="instruction-steps">
+                        <div class="step-item d-flex align-start mb-6">
+                          <div class="step-num mr-4">1</div>
+                          <div>
+                            <div class="text-body-2 font-weight-bold mb-1">Mở ứng dụng Zalo</div>
+                            <div class="text-caption text-medium-emphasis">Mở ứng dụng Zalo trên điện thoại di động của bạn</div>
+                          </div>
+                        </div>
+                        
+                        <div class="step-item d-flex align-start mb-6">
+                          <div class="step-num mr-4">2</div>
+                          <div>
+                            <div class="text-body-2 font-weight-bold mb-1">Chọn quét mã QR</div>
+                            <div class="text-caption text-medium-emphasis">Nhấn vào biểu tượng <strong>Quét mã QR</strong> ở góc trên bên phải màn hình.</div>
+                          </div>
+                        </div>
+                        
+                        <div class="step-item d-flex align-start">
+                          <div class="step-num mr-4">3</div>
+                          <div>
+                            <div class="text-body-2 font-weight-bold mb-1">Xác nhận đăng nhập</div>
+                            <div class="text-caption text-medium-emphasis">Hướng camera vào mã QR và nhấn <strong>Đăng nhập</strong> trên điện thoại.</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <v-divider class="my-8" />
+                      
+                      <v-alert
+                        icon="mdi-shield-lock-outline"
+                        color="green-lighten-5"
+                        class="text-caption text-green-darken-3 border-success-subtle"
+                        variant="flat"
+                        rounded="lg"
+                      >
+                        Kết nối an toàn qua giao thức mã hóa Zalo. Chúng tôi không lưu trữ mật khẩu của bạn.
+                      </v-alert>
+                    </div>
+                  </div>
+                </v-window-item>
+
+                <!-- Facebook Content -->
+                <v-window-item value="facebook">
+                  <div v-if="!fbPages.length" class="text-center py-12 px-6">
+                    <v-avatar size="100" color="blue-lighten-5" class="mb-6 elevation-2">
+                      <v-icon color="blue-darken-2" size="48">mdi-facebook</v-icon>
+                    </v-avatar>
+                    <div class="text-h5 font-weight-bold mb-2">Facebook Messenger</div>
+                    <p class="text-body-2 text-medium-emphasis mb-10 mx-auto" style="max-width: 450px">
+                      Kết nối các Fanpage bạn đang quản lý để tự động hóa trả lời tin nhắn, bình luận và phân loại khách hàng bằng AI.
+                    </p>
+                    
+                    <v-btn
+                      size="x-large"
+                      rounded="pill"
+                      color="blue-darken-2"
+                      class="px-12 text-white font-weight-bold elevation-6"
+                      prepend-icon="mdi-facebook"
+                      :loading="adding"
+                      @click="handleFacebookLogin"
+                    >
+                      Kết nối ngay
+                    </v-btn>
+
+                    <div class="mt-8 text-caption text-disabled d-flex align-center justify-center">
+                      <v-icon size="14" class="mr-1 text-success">mdi-check-decagram</v-icon>
+                      Chính thức qua Meta Graph API
+                    </div>
+                  </div>
+
+                  <div v-else class="scale-in">
+                    <div class="d-flex align-center justify-space-between mb-6">
+                      <div>
+                        <div class="text-subtitle-1 font-weight-bold">Chọn Fanpage muốn kết nối</div>
+                        <div class="text-caption text-medium-emphasis">Chúng tôi tìm thấy {{ fbPages.length }} trang bạn quản lý</div>
+                      </div>
+                      <v-btn variant="tonal" size="small" color="primary" rounded="lg" @click="fbPages = []">
+                        <v-icon start size="14">mdi-account-switch</v-icon> Đổi tài khoản
+                      </v-btn>
+                    </div>
+                    
+                    <v-text-field
+                      v-model="fbPageSearch"
+                      placeholder="Tìm kiếm tên trang hoặc ID..."
+                      variant="outlined"
+                      density="comfortable"
+                      rounded="lg"
+                      prepend-inner-icon="mdi-magnify"
+                      class="mb-4"
+                      hide-details
+                    />
+
+                    <div class="fb-page-list-container border rounded-xl overflow-hidden mt-2">
+                      <v-list class="pa-0 overflow-y-auto" max-height="350">
+                        <template v-for="(page, i) in filteredFbPages" :key="page.id">
+                          <v-list-item class="pa-4 hover-list-item">
+                            <template v-slot:prepend>
+                              <v-avatar size="56" class="mr-4 border" color="grey-lighten-4">
+                                <v-img :src="`https://graph.facebook.com/${page.id}/picture?type=large`" />
+                              </v-avatar>
+                            </template>
+                            
+                            <v-list-item-title class="font-weight-bold text-subtitle-1">{{ page.name }}</v-list-item-title>
+                            <v-list-item-subtitle class="text-caption text-medium-emphasis">ID: {{ page.id }}</v-list-item-subtitle>
+
+                            <template v-slot:append>
+                              <v-btn
+                                v-if="!isPageConnected(page.id)"
+                                color="primary"
+                                size="small"
+                                rounded="lg"
+                                variant="flat"
+                                class="px-6 font-weight-bold"
+                                :loading="linkingPageId === page.id"
+                                @click="handleLinkFbPage(page)"
+                              >
+                                Kích hoạt
+                              </v-btn>
+                              <v-chip v-else color="success" size="small" variant="tonal" class="font-weight-bold px-4" prepend-icon="mdi-check">Đã kết nối</v-chip>
+                            </template>
+                          </v-list-item>
+                          <v-divider v-if="i < filteredFbPages.length - 1" class="opacity-5" />
+                        </template>
+                      </v-list>
+                    </div>
+                  </div>
+                </v-window-item>
+              </v-window>
+            </div>
+          </div>
+        </div>
       </v-card>
     </v-dialog>
 
@@ -223,12 +493,99 @@
 </template>
 
 <style scoped>
-.gradient-text {
-  background: var(--gradient-brand);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.add-connection-card {
+  border-radius: 24px !important;
+  background: white !important;
+  height: 650px;
 }
 
+.sidebar-add-connection {
+  width: 240px;
+  flex-shrink: 0;
+  border-right: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-item {
+  transition: all 0.2s ease;
+}
+
+.sidebar-item:hover:not(.v-list-item--active) {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.content-area {
+  min-width: 0;
+}
+
+.close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  color: #999;
+}
+
+.header-section {
+  background: linear-gradient(to bottom, #fafafa, #ffffff);
+}
+
+.qr-frame {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.step-num {
+  width: 28px;
+  height: 28px;
+  background: #f0f0f0;
+  color: #666;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.instruction-steps .step-item:nth-child(1) .step-num,
+.instruction-steps .step-item:nth-child(2) .step-num,
+.instruction-steps .step-item:nth-child(3) .step-num {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.avatar-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.scanned-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: var(--color-success);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 4px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hover-list-item {
+  transition: background 0.2s ease;
+}
+
+.hover-list-item:hover {
+  background: #fcfcfc;
+}
+
+.fb-page-list-container {
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Glass & Tech Styles from previous design */
 .glass-card {
   background: var(--color-surface-elevated) !important;
   border: 1px solid var(--color-border) !important;
@@ -250,20 +607,6 @@
   border-color: var(--color-primary) !important;
 }
 
-.account-avatar {
-  border: 2px solid var(--color-surface);
-  box-shadow: var(--shadow-sm);
-}
-
-.last-sync {
-  font-size: 11px;
-  color: var(--color-text-muted);
-}
-
-.custom-card-text {
-  color: var(--color-text-secondary);
-}
-
 .action-btn {
   background: var(--color-surface-muted) !important;
   border: 1px solid var(--color-border);
@@ -277,23 +620,6 @@
   transform: scale(1.1);
 }
 
-.action-btn.success:hover {
-  color: var(--color-success);
-  border-color: var(--color-success-border);
-  background: var(--color-success-soft) !important;
-}
-
-.action-btn.info:hover {
-  color: var(--color-primary);
-  border-color: var(--color-primary-soft-strong);
-}
-
-.action-btn.cyan:hover {
-  color: var(--color-accent);
-  border-color: var(--color-accent);
-  background: var(--color-accent-soft) !important;
-}
-
 .status-indicator {
   position: absolute;
   inset: 18px 18px auto auto;
@@ -303,25 +629,13 @@
   box-shadow: 0 0 0 6px var(--color-surface);
 }
 
-.status-indicator.success {
-  background: var(--color-success);
-}
-
-.status-indicator.warning {
-  background: var(--color-warning);
-}
-
-.status-indicator.error {
-  background: var(--color-danger);
-}
+.status-indicator.success { background: var(--color-success); }
+.status-indicator.warning { background: var(--color-warning); }
+.status-indicator.error { background: var(--color-danger); }
 
 .bg-black-opacity {
   background: var(--color-overlay);
   border-top: 1px solid var(--color-border);
-}
-
-.fallout-border {
-  border: 1px solid var(--color-border-strong) !important;
 }
 
 .tech-qr-card {
@@ -390,33 +704,14 @@
 .bl { bottom: -2px; left: -2px; border-right: none; border-top: none; border-radius: 0 0 0 12px; }
 .br { bottom: -2px; right: -2px; border-left: none; border-top: none; border-radius: 0 0 12px 0; }
 
-.step-num {
-  width: 24px;
-  height: 24px;
-  background: var(--gradient-brand);
-  color: var(--color-text-inverse);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.animate-pulse {
-  animation: pulse 1.5s infinite ease-in-out;
-}
-
+.animate-pulse { animation: pulse 1.5s infinite ease-in-out; }
 @keyframes pulse {
   0% { opacity: 0.5; }
   50% { opacity: 1; }
   100% { opacity: 0.5; }
 }
 
-.scale-in {
-  animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
+.scale-in { animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 @keyframes scaleIn {
   0% { transform: scale(0.8); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
@@ -432,13 +727,8 @@
   justify-content: center;
 }
 
-.border-gold {
-  border: 2px solid var(--color-primary-soft-strong);
-}
-
-.color-cyan {
-  color: var(--color-primary);
-}
+.border-gold { border: 2px solid var(--color-primary-soft-strong); }
+.color-cyan { color: var(--color-primary); }
 
 .type-icon-badge {
   position: absolute;
@@ -587,7 +877,7 @@ async function handleFacebookLogin() {
     }
 
     facebookOauthPopup.value = popup;
-    const code = await waitForFacebookOauthCode(state, popup);
+    const code = await waitForFacebookOauthCode(state, popup) as string;
     const exchangeRes = await api.post('/facebook/oauth/exchange-code', {
       code,
       redirectUri,
