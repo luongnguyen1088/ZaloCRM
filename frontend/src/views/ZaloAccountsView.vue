@@ -15,7 +15,7 @@
         class="px-6"
         @click="showAddDialog = true"
       >
-        Thêm tài khoản
+        Thêm kết nối
       </v-btn>
     </div>
 
@@ -129,10 +129,10 @@
     <!-- Empty State -->
     <div v-else class="text-center py-16">
       <div class="empty-state-icon mb-6">
-        <v-icon size="80" color="disabled">mdi-cellphone-link-off</v-icon>
+        <v-icon size="80" color="disabled">mdi-connection</v-icon>
       </div>
-      <h2 class="text-h5 text-disabled mb-2">Chưa có tài khoản nào</h2>
-      <p class="text-body-1 text-medium-emphasis mb-6">Hãy thêm tài khoản Zalo đầu tiên để bắt đầu quản lý</p>
+      <h2 class="text-h5 text-disabled mb-2">Chưa có kết nối nào</h2>
+      <p class="text-body-1 text-medium-emphasis mb-6">Hãy thêm kênh kết nối đầu tiên để bắt đầu quản lý</p>
       <v-btn color="primary" rounded="lg" class="px-8" @click="showAddDialog = true">Thêm ngay</v-btn>
     </div>
 
@@ -321,7 +321,7 @@
     <!-- Delete Confirm -->
     <v-dialog v-model="showDeleteDialog" max-width="400">
       <v-card class="glass-card" elevation="24">
-        <v-card-title class="pa-6">Xác nhận xóa tài khoản?</v-card-title>
+        <v-card-title class="pa-6">Xác nhận xóa kết nối?</v-card-title>
         <v-card-text class="px-6 pb-6 pt-0">
           Bạn có chắc muốn xóa <strong>{{ deleteTarget?.displayName || deleteTarget?.id }}</strong> khỏi hệ thống?
         </v-card-text>

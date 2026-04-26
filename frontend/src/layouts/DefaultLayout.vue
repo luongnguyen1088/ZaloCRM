@@ -186,7 +186,7 @@ const menuItems = [
   { title: 'Dashboard', icon: 'mdi-view-dashboard-outline', path: '/' },
   { title: 'Tin nhắn', icon: 'mdi-message-text-outline', path: '/chat' },
   { title: 'Khách hàng', icon: 'mdi-account-group-outline', path: '/contacts' },
-  { title: 'Tài khoản Zalo', icon: 'mdi-cellphone-link', path: '/zalo-accounts' },
+  { title: 'Kết nối đa kênh', icon: 'mdi-cellphone-link', path: '/zalo-accounts' },
   { title: 'Lịch hẹn', icon: 'mdi-calendar-clock-outline', path: '/appointments' },
   { title: 'Báo cáo', icon: 'mdi-chart-arc', path: '/reports' },
   { title: 'Phân tích kinh doanh', icon: 'mdi-chart-timeline-variant-shimmer', path: '/analytics' },
