@@ -150,15 +150,61 @@
 
           <v-window v-model="addType">
             <v-window-item value="zalo">
-              <p class="text-body-2 text-medium-emphasis mb-4">Nhập tên để gợi nhớ tài khoản Zalo này.</p>
-              <v-text-field
-                v-model="newAccountName"
-                label="Tên hiển thị (Tùy chọn)"
-                placeholder="VD: Zalo CSKH 01 (Để trống để lấy tên Zalo)"
-                variant="outlined"
-                rounded="lg"
-                @keyup.enter="handleAddAccount"
-              />
+              <div v-if="qrError" class="text-center py-4">
+                <v-alert type="error" variant="tonal" class="mb-4">{{ qrError }}</v-alert>
+                <v-btn color="primary" variant="text" @click="resetZaloAdd">Thử lại</v-btn>
+              </div>
+              
+              <div v-else-if="qrScanned" class="text-center py-8">
+                <v-avatar size="100" class="mb-4 border-gold">
+                  <v-img :src="qrAvatar || '/default-avatar.png'" />
+                </v-avatar>
+                <div class="text-h6 mb-1">{{ scannedName }}</div>
+                <div class="text-body-2 text-success font-weight-bold">Đã quét thành công!</div>
+                <p class="text-caption text-medium-emphasis mt-2">Vui lòng đợi trong giây lát để hoàn tất kết nối...</p>
+                <v-progress-linear indeterminate color="success" class="mt-4" />
+              </div>
+
+              <div v-else-if="qrImage" class="text-center">
+                <div class="qr-container pa-4 mb-4 bg-white rounded-lg d-inline-block border">
+                  <v-img :src="qrImage" width="240" height="240" aspect-ratio="1" />
+                </div>
+                
+                <div class="text-h6 font-weight-bold mb-4">Quét QR để kết nối Zalo</div>
+                
+                <div class="text-left mx-auto" style="max-width: 300px">
+                  <div class="d-flex align-start mb-3">
+                    <v-avatar size="24" color="primary" class="mr-3 text-caption">1</v-avatar>
+                    <div class="text-body-2">Mở ứng dụng <strong>Zalo</strong> trên di động</div>
+                  </div>
+                  <div class="d-flex align-start mb-3">
+                    <v-avatar size="24" color="primary" class="mr-3 text-caption">2</v-avatar>
+                    <div class="text-body-2">Nhấn nút <strong>Quét mã QR</strong> ở góc trên</div>
+                  </div>
+                  <div class="d-flex align-start">
+                    <v-avatar size="24" color="primary" class="mr-3 text-caption">3</v-avatar>
+                    <div class="text-body-2">Quét mã phía trên để kết nối</div>
+                  </div>
+                </div>
+
+                <v-divider class="my-6" />
+                <p class="text-caption text-medium-emphasis">
+                  Sau khi quét thành công, hệ thống sẽ tự động đồng bộ tên và ảnh đại diện của bạn.
+                </p>
+              </div>
+
+              <div v-else class="text-center py-12">
+                <v-progress-circular indeterminate color="primary" size="64" width="6" />
+                <p class="mt-4 text-body-1 font-weight-medium">Đang khởi tạo mã QR...</p>
+              </div>
+
+
+
+
+
+
+
+
             </v-window-item>
 
             <v-window-item value="facebook">
@@ -241,6 +287,7 @@
           <v-spacer />
           <v-btn variant="text" rounded="lg" @click="showAddDialog = false">Hủy</v-btn>
           <v-btn
+            v-if="addType !== 'zalo'"
             color="primary"
             rounded="xl"
             variant="flat"
@@ -572,7 +619,7 @@
 </style>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch, nextTick } from 'vue';
 import { useZaloAccounts, type ZaloAccount } from '@/composables/use-zalo-accounts';
 import { useAuthStore } from '@/stores/auth';
 import ZaloAccessDialog from '@/components/settings/ZaloAccessDialog.vue';
@@ -600,6 +647,48 @@ const addType = ref('zalo');
 const deleteTarget = ref<ZaloAccount | null>(null);
 const accessTarget = ref<ZaloAccount | null>(null);
 const facebookOauthPopup = ref<Window | null>(null);
+const isAutoAddingZalo = ref(false);
+
+function resetZaloAdd() {
+  qrImage.value = '';
+  qrScanned.value = false;
+  scannedName.value = '';
+  qrError.value = '';
+  isAutoAddingZalo.value = false;
+  const currentType = addType.value;
+  addType.value = '';
+  nextTick(() => {
+    addType.value = currentType;
+  });
+}
+
+// Tự động kích hoạt luồng quét mã Zalo khi chọn tab Zalo trong Dialog thêm mới
+watch([showAddDialog, addType], async ([newShow, newType]) => {
+  if (newShow && newType === 'zalo' && !isAutoAddingZalo.value) {
+    isAutoAddingZalo.value = true;
+    try {
+      const resp = await api.post('/zalo-accounts', { displayName: 'Đang kết nối...' });
+      const newAcc = resp.data;
+      await fetchAccounts();
+      loginAccount(newAcc.id, true); // silent = true
+    } catch (err: any) {
+      qrError.value = err.response?.data?.error || 'Không thể khởi tạo kết nối Zalo';
+    }
+  } else if (!newShow) {
+    qrImage.value = '';
+    qrScanned.value = false;
+    scannedName.value = '';
+    qrError.value = '';
+    isAutoAddingZalo.value = false;
+  }
+});
+
+// Đóng dialog thêm mới khi Zalo đã kết nối thành công (thông qua silent login)
+watch(showQRDialog, (val) => {
+  if (!val && showAddDialog.value && addType.value === 'zalo' && qrScanned.value) {
+    showAddDialog.value = false;
+  }
+});
 
 type FacebookOAuthMessage = {
   source: 'facebook-oauth-callback';

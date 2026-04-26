@@ -92,13 +92,13 @@ export function useZaloAccounts() {
     }
   }
 
-  async function loginAccount(accountId: string) {
+  async function loginAccount(accountId: string, silent = false) {
     currentLoginAccountId.value = accountId;
     qrImage.value = '';
     qrScanned.value = false;
     scannedName.value = '';
     qrError.value = '';
-    showQRDialog.value = true;
+    if (!silent) showQRDialog.value = true;
     socket?.emit('zalo:subscribe', { accountId });
     try {
       await api.post(`/zalo-accounts/${accountId}/login`);
