@@ -16,3 +16,284 @@
     at async Promise.all (index 1)
     at async fetchAll (http://127.0.0.1:4173/src/composables/use-dashboard.ts:13:53)
 [2m11:31:45 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: [Vuetify UPGRADE] 'theme.global.name.value = light' is deprecated, use 'theme.change('light')' instead.
+[2m11:34:19 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "plansLoading" was accessed during render but is not defined on instance. 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:19 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "recommendedPlan" was accessed during render but is not defined on instance. 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:19 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "openUpgradeEntry" was accessed during render but is not defined on instance. 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:19 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "recommendedPlan" was accessed during render but is not defined on instance. 
+  at <VDefaultsProvider key="content-defaults" disabled=true defaults= {"VIcon":{"icon":false}} > 
+  at <VBtn block="" color="primary" rounded="xl"  ... > 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:26 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "plansLoading" was accessed during render but is not defined on instance. 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:26 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "recommendedPlan" was accessed during render but is not defined on instance. 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:26 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "openUpgradeEntry" was accessed during render but is not defined on instance. 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:26 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "plansError" was accessed during render but is not defined on instance. 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:26 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "plansLoading" was accessed during render but is not defined on instance. 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:26 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "recommendedPlan" was accessed during render but is not defined on instance. 
+  at <VDefaultsProvider key="content-defaults" disabled=true defaults= {"VIcon":{"icon":false}} > 
+  at <VBtn block="" color="primary" rounded="xl"  ... > 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:31 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "recommendedPlan" was accessed during render but is not defined on instance. 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< null > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:31 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "openUpgradeEntry" was accessed during render but is not defined on instance. 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< null > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:31 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "recommendedPlan" was accessed during render but is not defined on instance. 
+  at <VDefaultsProvider key="content-defaults" disabled=true defaults= {"VIcon":{"icon":false}} > 
+  at <VBtn block="" color="primary" rounded="xl"  ... > 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< null > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:32 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "recommendedPlan" was accessed during render but is not defined on instance. 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:32 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "openUpgradeEntry" was accessed during render but is not defined on instance. 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:32 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "recommendedPlan" was accessed during render but is not defined on instance. 
+  at <VDefaultsProvider key="content-defaults" disabled=true defaults= {"VIcon":{"icon":false}} > 
+  at <VBtn block="" color="primary" rounded="xl"  ... > 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:37 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "openUpgradeEntry" was accessed during render but is not defined on instance. 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< null > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:37 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "openUpgradeEntry" was accessed during render but is not defined on instance. 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:45 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "openUpgradeEntry" was accessed during render but is not defined on instance. 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< null > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:45 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "openUpgradeEntry" was accessed during render but is not defined on instance. 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
+[2m11:34:45 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Property "openUpgradeEntry" was accessed during render but is not defined on instance. 
+  at <VContainer class="pricing-page__container py-10 py-md-14" > 
+  at <VContainer fluid="" class="pricing-page pa-0" > 
+  at <PricingPage onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > > 
+  at <BaseTransition mode="out-in" onBeforeEnter=fn<onBeforeEnter> onLeave=fn<onLeave>  ... > 
+  at <Transition name="fade-transition" css=true mode="out-in"  ... > 
+  at <FadeTransition mode="out-in" > 
+  at <RouterView> 
+  at <VContainer fluid="" > 
+  at <VMain> 
+  at <VApp class="" > 
+  at <DefaultLayout> 
+  at <App>
