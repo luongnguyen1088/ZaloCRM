@@ -82,7 +82,7 @@ const internalValue = computed({
 
 function goToPricing() {
   internalValue.value = false;
-  router.push('/billing/pricing');
+  router.push('/pricing');
 }
 </script>
 

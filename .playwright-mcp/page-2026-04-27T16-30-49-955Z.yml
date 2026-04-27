@@ -1,0 +1,124 @@
+- main [ref=e7]:
+  - generic [ref=e10]:
+    - generic [ref=e11]:
+      - generic [ref=e13]:
+        - generic [ref=e14]: 󰁨
+        - generic [ref=e15]: ZaloCRM cho đội ngũ social commerce
+      - generic [ref=e16]:
+        - paragraph [ref=e17]: Một workspace cho sale, CSKH và automation
+        - heading "Đăng nhập để tiếp tục vận hành ZaloCRM" [level=1] [ref=e18]:
+          - text: Đăng nhập để tiếp tục
+          - generic [ref=e19]: vận hành ZaloCRM
+        - paragraph [ref=e20]: Theo dõi hội thoại, chốt lịch hẹn, phân tích hiệu suất và kích hoạt AI trong cùng một giao diện dành cho đội ngũ đang chạy Zalo hằng ngày.
+      - generic [ref=e21]:
+        - article [ref=e22]:
+          - generic [ref=e23]: 70%
+          - generic [ref=e24]: Giảm thời gian phản hồi lead mới
+        - article [ref=e25]:
+          - generic [ref=e26]: < 5 phút
+          - generic [ref=e27]: Nắm được trạng thái lịch hẹn và hội thoại
+        - article [ref=e28]:
+          - generic [ref=e29]: 24/7
+          - generic [ref=e30]: AI hỗ trợ ngoài giờ và lúc quá tải
+      - generic [ref=e32]:
+        - generic [ref=e33]:
+          - generic [ref=e34]:
+            - paragraph [ref=e35]: Realtime workspace
+            - heading "Mọi tín hiệu bán hàng được gom về một màn hình" [level=2] [ref=e36]
+          - generic [ref=e39]: Đồng bộ theo thời gian thực
+        - generic [ref=e40]:
+          - img "ZaloCRM illustration" [ref=e41]:
+            - img "ZaloCRM illustration" [ref=e152]
+          - generic [ref=e42]:
+            - generic [ref=e43]: AI Summary
+            - strong [ref=e44]: Rút gọn hội thoại dài thành 3 ý chính cho sale
+        - generic [ref=e45]:
+          - generic [ref=e46]:
+            - generic [ref=e47]: 1 dashboard
+            - generic [ref=e48]: Gom sales, CSKH, OA và automation
+          - generic [ref=e49]:
+            - generic [ref=e50]: 3 lớp
+            - generic [ref=e51]: Theo dõi KPI, lịch hẹn và pipeline theo thời gian thực
+          - generic [ref=e52]:
+            - generic [ref=e53]: AI-ready
+            - generic [ref=e54]: Tóm tắt, gợi ý và phản hồi nhanh ngay trong luồng chat
+        - generic [ref=e55]:
+          - generic [ref=e56]:
+            - generic [ref=e58]: 󰁨
+            - generic [ref=e59]:
+              - generic [ref=e60]: AI Smart Summary
+              - generic [ref=e61]: Tự động rút gọn hội thoại để đội sale nắm đúng nhu cầu trước khi trả lời.
+          - generic [ref=e62]:
+            - generic [ref=e64]: 󰄪
+            - generic [ref=e65]:
+              - generic [ref=e66]: Pipeline rõ ràng
+              - generic [ref=e67]: Theo dõi từng bước từ lead mới, lịch hẹn đến chuyển đổi ngay trên một flow.
+          - generic [ref=e68]:
+            - generic [ref=e70]: 󱙺
+            - generic [ref=e71]:
+              - generic [ref=e72]: Automation theo điều kiện
+              - generic [ref=e73]: Kích hoạt các action lặp lại mà không phải chuyển tab hoặc thao tác thủ công.
+    - generic [ref=e76]:
+      - generic [ref=e77]:
+        - generic [ref=e80]: 󱐋
+        - generic [ref=e81]:
+          - generic [ref=e82]: Đăng nhập workspace
+          - heading "Chào mừng trở lại" [level=2] [ref=e83]
+          - paragraph [ref=e84]: Dùng email công việc đã được cấp quyền để vào lại dashboard và tiếp tục phiên làm việc.
+      - generic [ref=e85]:
+        - generic [ref=e86]:
+          - generic [ref=e87]: 󰳈
+          - generic [ref=e88]: Bảo mật theo workspace và phân quyền người dùng.
+        - generic [ref=e89]:
+          - generic [ref=e90]: 󰊭
+          - generic [ref=e91]: Hỗ trợ đăng nhập bằng Google Workspace nếu tài khoản đã được liên kết.
+      - generic [ref=e92]:
+        - generic [ref=e96]:
+          - generic [ref=e98]: 󰇰
+          - textbox "Email công việc" [ref=e100]:
+            - /placeholder: name@company.com
+            - text: admin@claro.vn
+          - button "Clear Email công việc" [ref=e154] [cursor=pointer]: 󰅙
+        - generic [ref=e104]:
+          - generic [ref=e106]: 󰍁
+          - textbox "Mật khẩu" [ref=e108]:
+            - /placeholder: Nhập mật khẩu của bạn
+            - text: admin123
+          - button [ref=e110] [cursor=pointer]:
+            - generic [ref=e112]: 󰛐
+        - generic [ref=e113]:
+          - generic [ref=e114]:
+            - generic [ref=e115]: 󰳈
+            - generic [ref=e116]:
+              - text: Không truy cập được?
+              - link "Quên mật khẩu?" [ref=e117] [cursor=pointer]:
+                - /url: /forgot-password
+          - link "Tạo workspace mới" [ref=e118] [cursor=pointer]:
+            - /url: /register
+        - button "Vào ZaloCRM" [ref=e155] [cursor=pointer]:
+          - generic [ref=e156]:
+            - generic [ref=e157]: Vào ZaloCRM
+            - generic [ref=e158]: 󰅂
+      - generic [ref=e121]: Hoặc tiếp tục với
+      - generic [ref=e125]:
+        - button "Tiếp tục sử dụng dịch vụ bằng GoogleMở trong thẻ mới" [ref=e127] [cursor=pointer]:
+          - generic [ref=e129]:
+            - img [ref=e131]
+            - generic [ref=e138]: Tiếp tục sử dụng dịch vụ bằng Google
+        - iframe
+      - paragraph [ref=e139]: Dành cho tài khoản đã liên kết Google Workspace với hệ thống.
+      - alert [ref=e140]:
+        - generic [ref=e142]: 󰗠
+        - generic [ref=e143]:
+          - generic [ref=e144]: Nút Google đã sẵn sàng
+          - generic [ref=e145]: Đăng nhập Google giờ dùng nút chính thức của Google thay cho luồng prompt dễ bị skip.
+      - generic [ref=e146]:
+        - text: Nếu bạn thấy lỗi
+        - strong [ref=e147]: "`Google connection expired or failed. Please relink your Google account.`"
+        - text: ở trang
+        - strong [ref=e148]: Tích hợp
+        - text: ", đó là lỗi OAuth của Google Sheets, không phải lỗi đăng nhập Google."
+      - paragraph [ref=e150]:
+        - text: Chưa có hệ thống cho đội ngũ của bạn?
+        - link "Thiết lập workspace mới" [ref=e151] [cursor=pointer]:
+          - /url: /register

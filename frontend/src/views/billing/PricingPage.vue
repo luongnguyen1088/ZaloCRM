@@ -58,6 +58,17 @@
             <div class="summary-card__hint">
               {{ currentPlan ? getPlanDescription(currentPlan.name) : 'Bắt đầu với Free hoặc nâng cấp ngay để mở rộng giới hạn.' }}
             </div>
+            <v-btn
+              block
+              color="primary"
+              rounded="xl"
+              height="48"
+              class="mt-5"
+              :disabled="plansLoading || (!recommendedPlan && !plans.length)"
+              @click="openUpgradeEntry"
+            >
+              {{ recommendedPlan ? `NÃ¢ng cáº¥p lÃªn ${recommendedPlan.name}` : 'Xem báº£ng giÃ¡ gÃ³i cÆ°á»›c' }}
+            </v-btn>
           </div>
 
           <div class="summary-metrics">
@@ -95,7 +106,7 @@
         </div>
       </section>
 
-      <section class="section-head mt-14">
+      <section id="pricing-plans" class="section-head mt-14">
         <div>
           <div class="eyebrow-chip eyebrow-chip--soft mb-3">Bảng giá</div>
           <h2 class="section-title">So sánh nhanh các gói chính</h2>
@@ -104,6 +115,26 @@
           Mỗi gói đều bao gồm CRM cơ bản, quản lý hội thoại và theo dõi tập trung theo tổ chức.
         </p>
       </section>
+
+      <v-alert
+        v-if="plansError"
+        type="warning"
+        variant="tonal"
+        rounded="xl"
+        class="mt-5"
+      >
+        {{ plansError }}
+      </v-alert>
+
+      <v-alert
+        v-else-if="!plansLoading && !plans.length"
+        type="info"
+        variant="tonal"
+        rounded="xl"
+        class="mt-5"
+      >
+        ChÆ°a táº£i Ä‘Æ°á»£c danh sÃ¡ch gÃ³i cÆ°á»›c. HÃ£y táº£i láº¡i trang hoáº·c liÃªn há»‡ admin Ä‘á»ƒ kiá»ƒm tra deployment.
+      </v-alert>
 
       <v-row class="pricing-grid mt-2" align="stretch">
         <v-col
@@ -430,6 +461,8 @@ const paymentDialog = ref(false);
 const selectedPlan = ref<PaymentSelection | null>(null);
 const isTopup = ref(false);
 const isYearly = ref(true);
+const plansLoading = ref(false);
+const plansError = ref('');
 const paymentSubmitting = ref(false);
 const feedbackOpen = ref(false);
 const feedbackColor = ref<'success' | 'error'>('success');
@@ -462,6 +495,15 @@ const faqs = [
 ];
 
 const currentPlan = computed(() => plans.value.find((plan) => plan.id === currentPlanId.value) || null);
+const recommendedPlan = computed(() => {
+  const currentPlanKey = currentPlan.value ? normalizePlanKey(currentPlan.value.name) : '';
+  const paidPlans = plans.value.filter((plan) => plan.priceMonth > 0);
+
+  if (!paidPlans.length) return null;
+  if (currentPlanKey === 'enterprise') return plansByKey.value.enterprise || paidPlans[paidPlans.length - 1];
+  if (currentPlanKey === 'pro') return plansByKey.value.enterprise || paidPlans[paidPlans.length - 1];
+  return plansByKey.value.pro || paidPlans[0];
+});
 
 const plansByKey = computed<Record<string, SubscriptionPlan | undefined>>(() => {
   return plans.value.reduce<Record<string, SubscriptionPlan | undefined>>((acc, plan) => {
@@ -522,11 +564,18 @@ const comparisonRows = computed<Array<{ label: string; free: ComparisonValue; pr
 });
 
 const fetchPlans = async () => {
+  plansLoading.value = true;
+  plansError.value = '';
+
   try {
     const res = await api.get('/billing/plans');
     plans.value = res.data.sort((a: SubscriptionPlan, b: SubscriptionPlan) => a.priceMonth - b.priceMonth);
-  } catch (err) {
+  } catch (err: any) {
     console.error('Failed to fetch plans', err);
+    plans.value = [];
+    plansError.value = err.response?.data?.error || 'KhÃ´ng táº£i Ä‘Æ°á»£c báº£ng giÃ¡ gÃ³i cÆ°á»›c.';
+  } finally {
+    plansLoading.value = false;
   }
 };
 
@@ -633,10 +682,23 @@ const parseFeatures = (features: SubscriptionPlan['features']) => {
   return Array.isArray(features) ? features : [];
 };
 
+const scrollToPlans = () => {
+  document.getElementById('pricing-plans')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
 const selectPlan = (plan: SubscriptionPlan) => {
   selectedPlan.value = { ...plan };
   isTopup.value = false;
   paymentDialog.value = true;
+};
+
+const openUpgradeEntry = () => {
+  if (recommendedPlan.value) {
+    selectPlan(recommendedPlan.value);
+    return;
+  }
+
+  scrollToPlans();
 };
 
 const selectTopup = (pack: TopupPack) => {
