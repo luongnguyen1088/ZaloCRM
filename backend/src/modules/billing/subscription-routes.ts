@@ -3,6 +3,7 @@ import { authMiddleware } from '../auth/auth-middleware.js';
 import { prisma } from '../../shared/database/prisma-client.js';
 import { getOrgSubscription } from './subscription-service.js';
 import * as paymentOrderService from './payment-order-service.js';
+import { ensureDefaultSubscriptionPlans } from './subscription-plan-service.js';
 
 export async function subscriptionRoutes(app: FastifyInstance): Promise<void> {
   app.addHook('preHandler', authMiddleware);
@@ -15,6 +16,7 @@ export async function subscriptionRoutes(app: FastifyInstance): Promise<void> {
 
   // GET /api/v1/billing/plans — list available plans
   app.get('/api/v1/billing/plans', async () => {
+    await ensureDefaultSubscriptionPlans();
     return await prisma.subscriptionPlan.findMany({
       orderBy: { priceMonth: 'asc' },
     });

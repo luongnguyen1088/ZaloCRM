@@ -1,5 +1,6 @@
 import { prisma } from '../../shared/database/prisma-client.js';
 import { getApprovedTopupTokensForWindow } from '../billing/payment-order-service.js';
+import { ensureDefaultSubscriptionPlans } from '../billing/subscription-plan-service.js';
 
 const FALLBACK_AI_TOKENS = 100000;
 
@@ -124,6 +125,7 @@ export async function updateOrgSubscription(orgId: string, planId: string, month
 }
 
 export async function getSubscriptionPlans() {
+  await ensureDefaultSubscriptionPlans();
   return await prisma.subscriptionPlan.findMany({
     orderBy: { priceMonth: 'asc' }
   });
