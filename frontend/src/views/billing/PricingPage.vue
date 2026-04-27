@@ -1,273 +1,530 @@
 <template>
-  <v-container class="py-12 pricing-shell">
-    <div class="text-center mb-16 entrance-animation">
-      <div class="pricing-badge mb-4 mx-auto">
-        <v-icon color="primary" size="18">mdi-shield-crown-outline</v-icon>
-        <span class="ml-2">Plans & Pricing</span>
-      </div>
-      <h1 class="text-h2 font-weight-black text-white mb-4">
-        Nâng cấp <span class="text-gradient">Zalo Automation</span>
-      </h1>
-      <p class="text-h6 text-placeholder mx-auto pricing-intro">
-        Chọn gói cước phù hợp để tự động hóa chăm sóc khách hàng trên Zalo và mở rộng doanh thu bền vững.
-      </p>
-    </div>
+  <v-container fluid class="pricing-page pa-0" :class="{ 'pricing-page--dark': isDark }">
+    <div class="pricing-page__aurora pricing-page__aurora--primary"></div>
+    <div class="pricing-page__aurora pricing-page__aurora--secondary"></div>
+    <div class="pricing-page__grid"></div>
 
-    <v-row justify="center" class="pricing-grid">
-      <v-col v-for="(plan, index) in plans" :key="plan.id" cols="12" md="4" class="px-4">
-        <v-card
-          :class="['pricing-card', `plan-${plan.name.toLowerCase()}`, { 'plan-featured': plan.name === 'Pro' }]"
-          class="pa-8 d-flex flex-column h-100 entrance-animation"
-          :style="{ animationDelay: `${index * 0.1}s` }"
-        >
-          <div v-if="plan.name === 'Pro'" class="featured-tag">Phổ biến nhất</div>
-
-          <div class="plan-header mb-6">
-            <h2 class="plan-name mb-1">{{ plan.name }}</h2>
-            <div class="plan-price">
-              <span class="currency">đ</span>
-              <span class="amount">{{ formatPriceValue(plan.priceMonth) }}</span>
-              <span class="period" v-if="plan.priceMonth > 0">/tháng</span>
-            </div>
+    <v-container class="pricing-page__container py-10 py-md-14">
+      <section class="hero-panel">
+        <div class="hero-copy">
+          <div class="eyebrow-chip mb-5">
+            <v-icon size="16" color="primary">mdi-crown-outline</v-icon>
+            <span>Gói cước ZaloCRM</span>
           </div>
 
-          <div class="ai-box mb-8">
-            <div class="ai-box__inner">
-              <v-icon color="info" size="20">mdi-auto-fix</v-icon>
-              <div class="ml-3">
-                <div class="text-caption font-weight-bold text-white uppercase">AI POWER</div>
-                <div class="text-h6 font-weight-black text-gradient-ai">
-                   ~{{ Math.floor(plan.maxAiTokens / 1500).toLocaleString() }} lượt phản hồi
-                </div>
-              </div>
-            </div>
-          </div>
+          <h1 class="hero-title mb-5">
+            Chọn gói phù hợp để
+            <span class="hero-title__accent">tăng tốc chăm sóc khách hàng</span>
+            trên Zalo
+          </h1>
 
-          <v-list density="compact" class="bg-transparent flex-grow-1 feature-list">
-            <v-list-item class="px-0 py-1">
-              <template #prepend>
-                <v-icon color="success" size="20">mdi-check-circle</v-icon>
-              </template>
-              <v-list-item-title class="text-white">
-                Tối đa <strong>{{ plan.maxZaloAcc }}</strong> tài khoản Zalo
-              </v-list-item-title>
-            </v-list-item>
+          <p class="hero-description mb-8">
+            Tập trung hội thoại, tự động hóa phản hồi, mở rộng AI Assistant và quản lý nhiều tài khoản
+            Zalo trong cùng một workspace.
+          </p>
 
-            <v-list-item v-for="(feature, idx) in parseFeatures(plan.features)" :key="idx" class="px-0 py-1">
-              <template #prepend>
-                <v-icon color="success" size="20">mdi-check-circle</v-icon>
-              </template>
-              <v-list-item-title class="text-white">{{ feature }}</v-list-item-title>
-            </v-list-item>
-          </v-list>
-
-          <v-btn
-            block
-            height="56"
-            rounded="xl"
-            class="mt-8 shadow-glow"
-            :class="plan.name === 'Pro' ? 'btn-plan-pro' : 'btn-plan-standard'"
-            :disabled="currentPlanId === plan.id"
-            @click="selectPlan(plan)"
-          >
-            <span>{{ currentPlanId === plan.id ? 'Gói hiện tại' : 'Nâng cấp ngay' }}</span>
-            <v-icon v-if="currentPlanId !== plan.id" end>mdi-arrow-right</v-icon>
-          </v-btn>
-        </v-card>
-      </v-col>
-    </v-row>
-
-    <!-- AI Top-up Packs Section -->
-    <div class="text-center mt-16 mb-10 entrance-animation">
-      <h2 class="text-h4 font-weight-black text-white mb-4">Gói bổ sung lượt AI</h2>
-      <p class="text-body-1 text-placeholder">Bạn cần thêm lượt phản hồi để sử dụng trong tháng? Hãy mua thêm các gói lẻ bên dưới.</p>
-    </div>
-
-    <v-row justify="center" class="mb-12">
-      <v-col v-for="pack in aiPacks" :key="pack.id" cols="12" sm="6" md="3">
-        <v-card class="topup-card pa-6 text-center h-100 d-flex flex-column" variant="flat">
-          <div class="topup-icon mb-4">
-            <v-icon color="primary" size="32">mdi-lightning-bolt</v-icon>
-          </div>
-          <h3 class="text-h6 font-weight-bold mb-1">{{ pack.name }}</h3>
-          <div class="text-h5 font-weight-black text-gradient-ai mb-4">
-            +{{ Math.floor(pack.tokens / 1500).toLocaleString() }} lượt
-          </div>
-          <v-spacer />
-          <div class="text-subtitle-1 font-weight-bold mb-4">{{ formatPrice(pack.price) }}</div>
-          <v-btn
-            block
-            color="primary"
-            variant="tonal"
-            rounded="lg"
-            @click="selectTopup(pack)"
-          >
-            Mua ngay
-          </v-btn>
-        </v-card>
-      </v-col>
-    </v-row>
-
-    <v-dialog v-model="paymentDialog" max-width="560" scrollable content-class="payment-dialog-content">
-      <v-card v-if="selectedPlan" class="payment-modal glass-card d-flex flex-column">
-        <div class="payment-modal__orb payment-modal__orb--primary"></div>
-        <div class="payment-modal__orb payment-modal__orb--accent"></div>
-
-        <div class="pa-8 payment-content">
-          <div class="d-flex align-start justify-space-between mb-6">
-            <div class="d-flex align-start flex-grow-1">
-              <div class="modal-icon mr-4">
-                <v-icon size="28" color="primary">mdi-wallet-outline</v-icon>
-              </div>
-              <div>
-                <div class="payment-kicker mb-2">Thanh toán nâng cấp</div>
-                <h3 class="payment-title">Gói {{ selectedPlan.name }}</h3>
-                <p class="payment-subtitle mb-0">
-                  Quét mã QR để thanh toán. Sau khi bạn xác nhận, đơn sẽ được chuyển tới quản trị viên để đối soát và duyệt thủ công.
-                </p>
-              </div>
+          <div class="hero-actions">
+            <div class="billing-switch">
+              <button
+                type="button"
+                class="billing-switch__option"
+                :class="{ 'billing-switch__option--active': !isYearly }"
+                @click="isYearly = false"
+              >
+                Theo tháng
+              </button>
+              <button
+                type="button"
+                class="billing-switch__option"
+                :class="{ 'billing-switch__option--active': isYearly }"
+                @click="isYearly = true"
+              >
+                Theo năm
+                <span class="billing-switch__badge">Tiết kiệm 20%</span>
+              </button>
             </div>
 
-            <v-btn icon variant="text" size="small" class="payment-close" @click="paymentDialog = false">
-              <v-icon size="20">mdi-close</v-icon>
-            </v-btn>
-          </div>
-
-          <div class="payment-summary mb-5">
-            <div>
-              <div class="payment-summary__label">Số tiền cần thanh toán</div>
-              <div class="payment-summary__amount">{{ formatPrice(selectedPlan.priceMonth) }}</div>
-            </div>
-            <div class="payment-summary__badge">
-              <v-icon size="16" color="warning">mdi-timer-sand</v-icon>
-              <span>Chờ admin duyệt</span>
+            <div class="hero-note">
+              <v-icon size="16" color="success">mdi-shield-check-outline</v-icon>
+              <span>Thanh toán chuyển khoản, admin duyệt gói nhanh sau khi đối soát.</span>
             </div>
           </div>
-
-          <div class="payment-body mb-6">
-            <div class="payment-qr-panel">
-              <div class="payment-panel__label mb-3">Mã QR thanh toán</div>
-              <div class="qr-wrapper text-center mb-3 pa-4">
-                <v-img
-                  :src="`https://img.vietqr.io/image/MB-6386365999-compact2.png?amount=${selectedPlan.priceMonth}&addInfo=${isTopup ? 'NAPAI' : 'CRMPAY'}%20${selectedPlan.name}&accountName=CONG%20TY%20TNHH%20CLARO%20VIET%20NAM`"
-                  width="220"
-                  class="mx-auto rounded-xl border-glass"
-                />
-              </div>
-              <div class="payment-qr-caption">
-                Dùng ứng dụng ngân hàng để quét mã và giữ nguyên số tiền chuyển khoản.
-              </div>
-            </div>
-
-            <div class="payment-details">
-              <div class="payment-panel__label mb-3">Thông tin giao dịch</div>
-
-              <div class="payment-info rounded-xl mb-4">
-                <div class="payment-info__row">
-                  <span class="payment-info__label">Chủ tài khoản</span>
-                  <span class="payment-info__value">CÔNG TY TNHH CLARO VIỆT NAM</span>
-                </div>
-                <div class="payment-info__row">
-                  <span class="payment-info__label">Ngân hàng</span>
-                  <span class="payment-info__value">MB Bank</span>
-                </div>
-                <div class="payment-info__row">
-                  <span class="payment-info__label">Số tài khoản</span>
-                  <span class="payment-info__value d-flex align-center">
-                    6386365999
-                    <v-btn icon="mdi-content-copy" variant="text" size="x-small" color="primary" class="ml-2" @click="copyText('6386365999')"></v-btn>
-                  </span>
-                </div>
-                <div class="payment-info__row">
-                  <span class="payment-info__label">Số tiền</span>
-                  <span class="payment-info__value text-primary">{{ formatPrice(selectedPlan.priceMonth) }}</span>
-                </div>
-                <div class="payment-info__row">
-                  <span class="payment-info__label">Nội dung</span>
-                  <span class="payment-info__value payment-info__value--accent">{{ isTopup ? 'NAP AI' : 'CRMPAY' }} {{ selectedPlan.name }}</span>
-                </div>
-              </div>
-
-              <div class="payment-steps mb-4">
-                <div class="payment-step">
-                  <div class="payment-step__index">1</div>
-                  <div>Mở ứng dụng ngân hàng và chọn <strong>Quét QR</strong>.</div>
-                </div>
-                <div class="payment-step">
-                  <div class="payment-step__index">2</div>
-                  <div>Kiểm tra lại số tiền và nội dung chuyển khoản trước khi xác nhận.</div>
-                </div>
-                <div class="payment-step">
-                  <div class="payment-step__index">3</div>
-                  <div>Nhấn nút bên dưới sau khi chuyển khoản để hệ thống bắt đầu đối soát.</div>
-                </div>
-              </div>
-
-              <div class="payment-note">
-                <v-icon size="18" color="primary">mdi-information-outline</v-icon>
-                <span>Đơn thanh toán sẽ được tạo sau khi bạn xác nhận, sau đó admin duyệt để kích hoạt gói hoặc cộng thêm lượt phản hồi AI.</span>
-              </div>
-            </div>
-          </div>
-
         </div>
 
-        <div class="payment-actions pa-8 pt-0">
+        <div class="hero-summary">
+          <div class="summary-card">
+            <div class="summary-card__label">Gói hiện tại</div>
+            <div class="summary-card__value">{{ currentPlan?.name || 'Chưa kích hoạt' }}</div>
+            <div class="summary-card__hint">
+              {{ currentPlan ? getPlanDescription(currentPlan.name) : 'Bắt đầu với Free hoặc nâng cấp ngay để mở rộng giới hạn.' }}
+            </div>
+          </div>
+
+          <div class="summary-metrics">
+            <div class="summary-metric">
+              <span class="summary-metric__label">Tài khoản Zalo</span>
+              <strong class="summary-metric__value">{{ currentPlan?.maxZaloAcc ?? 1 }}</strong>
+            </div>
+            <div class="summary-metric">
+              <span class="summary-metric__label">Lượt AI / tháng</span>
+              <strong class="summary-metric__value">~{{ formatNumber(getAiReplies(currentPlan?.maxAiTokens ?? 0)) }}</strong>
+            </div>
+            <div class="summary-metric">
+              <span class="summary-metric__label">Chu kỳ thanh toán</span>
+              <strong class="summary-metric__value">{{ isYearly ? '12 tháng' : '1 tháng' }}</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="insight-strip">
+        <div class="insight-card">
+          <span class="insight-card__label">Chi phí vận hành</span>
+          <strong class="insight-card__value">Tối ưu hơn</strong>
+          <p>Gộp CRM, AI và automation trong một gói thay vì nhiều công cụ rời rạc.</p>
+        </div>
+        <div class="insight-card">
+          <span class="insight-card__label">Khả năng mở rộng</span>
+          <strong class="insight-card__value">Linh hoạt theo team</strong>
+          <p>Tăng số tài khoản Zalo, nâng giới hạn AI và giữ dữ liệu tập trung theo tổ chức.</p>
+        </div>
+        <div class="insight-card">
+          <span class="insight-card__label">Triển khai</span>
+          <strong class="insight-card__value">Kích hoạt nhanh</strong>
+          <p>Tạo đơn trên hệ thống, chuyển khoản đúng nội dung và chờ admin xác nhận.</p>
+        </div>
+      </section>
+
+      <section class="section-head mt-14">
+        <div>
+          <div class="eyebrow-chip eyebrow-chip--soft mb-3">Bảng giá</div>
+          <h2 class="section-title">So sánh nhanh các gói chính</h2>
+        </div>
+        <p class="section-subtitle">
+          Mỗi gói đều bao gồm CRM cơ bản, quản lý hội thoại và theo dõi tập trung theo tổ chức.
+        </p>
+      </section>
+
+      <v-row class="pricing-grid mt-2" align="stretch">
+        <v-col
+          v-for="(plan, index) in plans"
+          :key="plan.id"
+          cols="12"
+          md="4"
+          class="d-flex"
+        >
+          <v-card
+            class="plan-card pa-6 pa-md-7 d-flex flex-column flex-grow-1"
+            :class="{
+              'plan-card--featured': isFeaturedPlan(plan),
+              'plan-card--current': currentPlanId === plan.id,
+            }"
+            :style="{ animationDelay: `${index * 80}ms` }"
+          >
+            <div class="plan-card__top mb-6">
+              <div>
+                <div class="plan-card__pill" :class="`plan-card__pill--${getPlanTone(plan.name)}`">
+                  <v-icon size="16">{{ getPlanIcon(plan.name) }}</v-icon>
+                  <span>{{ getPlanBadge(plan.name) }}</span>
+                </div>
+                <h3 class="plan-card__name mt-4">{{ plan.name }}</h3>
+                <p class="plan-card__description mt-2">
+                  {{ getPlanDescription(plan.name) }}
+                </p>
+              </div>
+
+              <div v-if="isFeaturedPlan(plan)" class="featured-chip">
+                Phù hợp nhất
+              </div>
+            </div>
+
+            <div class="price-block mb-6">
+              <div class="price-block__main">
+                <span class="price-block__currency">đ</span>
+                <span class="price-block__amount">{{ formatCompactPrice(getDisplayMonthlyPrice(plan.priceMonth)) }}</span>
+                <span class="price-block__period">/tháng</span>
+              </div>
+              <div v-if="plan.priceMonth > 0" class="price-block__meta">
+                <span v-if="isYearly">Thanh toán {{ formatPrice(plan.priceMonth * 12 * 0.8) }} / năm</span>
+                <span v-else>Thanh toán {{ formatPrice(plan.priceMonth) }} / tháng</span>
+              </div>
+              <div v-else class="price-block__meta">Miễn phí để bắt đầu và dùng thử workflow cơ bản</div>
+            </div>
+
+            <div class="quota-panel mb-6">
+              <div class="quota-panel__item">
+                <span class="quota-panel__label">Tài khoản Zalo</span>
+                <strong>{{ plan.maxZaloAcc }}</strong>
+              </div>
+              <div class="quota-panel__item">
+                <span class="quota-panel__label">Lượt AI ước tính</span>
+                <strong>~{{ formatNumber(getAiReplies(plan.maxAiTokens)) }}</strong>
+              </div>
+              <div class="quota-panel__item">
+                <span class="quota-panel__label">Tokens AI</span>
+                <strong>{{ formatNumber(plan.maxAiTokens) }}</strong>
+              </div>
+            </div>
+
+            <div class="feature-stack mb-8">
+              <div class="feature-stack__title">Bao gồm</div>
+              <div class="feature-row">
+                <v-icon size="16" color="primary">mdi-check-circle</v-icon>
+                <span>Tối đa {{ plan.maxZaloAcc }} tài khoản Zalo hoạt động đồng thời</span>
+              </div>
+              <div
+                v-for="(feature, featureIndex) in parseFeatures(plan.features)"
+                :key="`${plan.id}-${featureIndex}`"
+                class="feature-row"
+              >
+                <v-icon size="16" color="primary">mdi-check-circle</v-icon>
+                <span>{{ feature }}</span>
+              </div>
+            </div>
+
+            <v-spacer />
+
+            <v-btn
+              block
+              height="54"
+              rounded="xl"
+              class="plan-card__cta"
+              :class="{ 'plan-card__cta--featured': isFeaturedPlan(plan) }"
+              :variant="currentPlanId === plan.id ? 'tonal' : isFeaturedPlan(plan) ? 'flat' : 'outlined'"
+              :color="currentPlanId === plan.id ? 'primary' : 'primary'"
+              :disabled="currentPlanId === plan.id"
+              @click="selectPlan(plan)"
+            >
+              {{ currentPlanId === plan.id ? 'Gói đang sử dụng' : 'Chọn gói này' }}
+            </v-btn>
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <section class="section-head mt-16">
+        <div>
+          <div class="eyebrow-chip eyebrow-chip--soft mb-3">Đối chiếu tính năng</div>
+          <h2 class="section-title">Bảng so sánh chi tiết</h2>
+        </div>
+        <p class="section-subtitle">
+          Dùng bảng này để kiểm tra nhanh giới hạn và các quyền lợi theo từng gói.
+        </p>
+      </section>
+
+      <div class="comparison-shell mt-5">
+        <v-table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Tính năng</th>
+              <th class="text-center">Free</th>
+              <th class="text-center comparison-table__highlight">Pro</th>
+              <th class="text-center">Enterprise</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in comparisonRows" :key="row.label">
+              <td class="comparison-table__label">{{ row.label }}</td>
+              <td class="text-center">{{ renderComparisonValue(row.free) }}</td>
+              <td class="text-center comparison-table__highlight">{{ renderComparisonValue(row.pro) }}</td>
+              <td class="text-center">{{ renderComparisonValue(row.enterprise) }}</td>
+            </tr>
+          </tbody>
+        </v-table>
+      </div>
+
+      <section class="section-head mt-16">
+        <div>
+          <div class="eyebrow-chip eyebrow-chip--soft mb-3">Top-up AI</div>
+          <h2 class="section-title">Bổ sung lượt AI khi cần</h2>
+        </div>
+        <p class="section-subtitle">
+          Dùng khi team cần tăng năng lực trả lời trong tháng mà chưa muốn nâng gói chính.
+        </p>
+      </section>
+
+      <v-row class="mt-2" align="stretch">
+        <v-col v-for="pack in aiPacks" :key="pack.id" cols="12" sm="6" md="3" class="d-flex">
+          <v-card class="topup-card pa-6 d-flex flex-column flex-grow-1">
+            <div class="topup-card__icon mb-5">
+              <v-icon size="26" color="primary">mdi-lightning-bolt-outline</v-icon>
+            </div>
+            <h3 class="topup-card__name mb-2">{{ pack.name }}</h3>
+            <div class="topup-card__quota mb-2">+{{ formatNumber(getAiReplies(pack.tokens)) }} lượt AI</div>
+            <div class="topup-card__tokens mb-6">{{ formatNumber(pack.tokens) }} tokens</div>
+            <v-spacer />
+            <div class="topup-card__price mb-5">{{ formatPrice(pack.price) }}</div>
+            <v-btn block rounded="xl" color="primary" variant="flat" height="48" @click="selectTopup(pack)">
+              Nạp gói AI
+            </v-btn>
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <section class="faq-section mt-16">
+        <section class="section-head mb-6">
+          <div>
+            <div class="eyebrow-chip eyebrow-chip--soft mb-3">FAQ</div>
+            <h2 class="section-title">Câu hỏi thường gặp</h2>
+          </div>
+        </section>
+
+        <v-expansion-panels variant="accordion" class="faq-panels">
+          <v-expansion-panel v-for="faq in faqs" :key="faq.q" class="faq-panel">
+            <v-expansion-panel-title class="faq-panel__title">
+              {{ faq.q }}
+            </v-expansion-panel-title>
+            <v-expansion-panel-text class="faq-panel__text">
+              {{ faq.a }}
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </section>
+    </v-container>
+
+    <v-dialog v-model="paymentDialog" max-width="640" scrollable content-class="payment-dialog">
+      <v-card v-if="selectedPlan" class="payment-card">
+        <div class="payment-card__hero pa-6 pa-md-7">
+          <div>
+            <div class="eyebrow-chip eyebrow-chip--inverted mb-3">
+              <v-icon size="16" color="white">mdi-credit-card-outline</v-icon>
+              <span>{{ isTopup ? 'Thanh toán top-up AI' : 'Nâng cấp gói cước' }}</span>
+            </div>
+            <h3 class="payment-card__title">{{ selectedPlan.name }}</h3>
+            <p class="payment-card__subtitle">
+              Quét mã QR hoặc chuyển khoản thủ công với đúng số tiền và nội dung để hệ thống tạo yêu cầu duyệt.
+            </p>
+          </div>
+          <v-btn icon variant="text" color="white" @click="paymentDialog = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </div>
+
+        <div class="pa-6 pa-md-7">
+          <div class="payment-summary mb-6">
+            <div>
+              <div class="payment-summary__label">Tổng thanh toán</div>
+              <div class="payment-summary__amount">{{ formatPrice(getFinalAmount()) }}</div>
+            </div>
+            <div class="payment-summary__badge">
+              {{ isTopup ? 'Top-up AI' : isYearly ? 'Gói 12 tháng' : 'Gói 1 tháng' }}
+            </div>
+          </div>
+
+          <v-row class="payment-layout">
+            <v-col cols="12" md="5">
+              <div class="qr-box pa-4">
+                <v-img :src="generateQrUrl()" class="rounded-lg" cover />
+              </div>
+              <div class="payment-caption mt-3">
+                <v-icon size="14" class="mr-1">mdi-camera-outline</v-icon>
+                Dùng ứng dụng ngân hàng để quét QR
+              </div>
+            </v-col>
+
+            <v-col cols="12" md="7">
+              <div class="payment-info">
+                <div class="payment-info__row">
+                  <span>Chủ tài khoản</span>
+                  <strong>CÔNG TY TNHH CLARO VIỆT NAM</strong>
+                </div>
+                <div class="payment-info__row">
+                  <span>Ngân hàng</span>
+                  <strong>MB Bank (Quân đội)</strong>
+                </div>
+                <div class="payment-info__row">
+                  <span>Số tài khoản</span>
+                  <strong>
+                    6386365999
+                    <v-btn icon="mdi-content-copy" size="x-small" variant="text" color="primary" @click="copyText('6386365999')" />
+                  </strong>
+                </div>
+                <div class="payment-info__row">
+                  <span>Nội dung</span>
+                  <strong class="payment-info__content">
+                    {{ generatePaymentContent() }}
+                    <v-btn icon="mdi-content-copy" size="x-small" variant="text" color="primary" @click="copyText(generatePaymentContent())" />
+                  </strong>
+                </div>
+              </div>
+            </v-col>
+          </v-row>
+
+          <div class="payment-steps mt-7">
+            <div class="payment-step">
+              <div class="payment-step__index">1</div>
+              <p>Mở app ngân hàng và quét QR hoặc nhập tay thông tin chuyển khoản.</p>
+            </div>
+            <div class="payment-step">
+              <div class="payment-step__index">2</div>
+              <p>Kiểm tra đúng số tiền và nội dung chuyển khoản trước khi xác nhận.</p>
+            </div>
+            <div class="payment-step">
+              <div class="payment-step__index">3</div>
+              <p>Nhấn nút bên dưới để tạo yêu cầu duyệt sau khi bạn đã chuyển khoản xong.</p>
+            </div>
+          </div>
+
           <v-btn
             block
-            height="54"
             color="primary"
+            variant="flat"
             rounded="xl"
-            class="btn-glow payment-confirm"
+            height="54"
+            class="mt-8"
             :loading="paymentSubmitting"
             @click="confirmPayment"
           >
-            Tôi đã chuyển khoản, tạo đơn duyệt
+            Tôi đã chuyển khoản thành công
           </v-btn>
-          <v-btn
-            block
-            variant="tonal"
-            rounded="xl"
-            class="mt-3 payment-cancel"
-            @click="paymentDialog = false"
-          >
-            Hủy bỏ
+          <v-btn block variant="text" rounded="xl" class="mt-3" @click="paymentDialog = false">
+            Hủy giao dịch
           </v-btn>
         </div>
       </v-card>
     </v-dialog>
 
-    <v-snackbar v-model="feedbackOpen" :color="feedbackColor" timeout="4200" rounded="pill">
+    <v-snackbar v-model="feedbackOpen" :color="feedbackColor" timeout="5000" rounded="pill">
       {{ feedbackMessage }}
     </v-snackbar>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useTheme } from 'vuetify';
 import { api } from '@/api/index';
 
-const plans = ref<any[]>([]);
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  priceMonth: number;
+  maxZaloAcc: number;
+  maxAiTokens: number;
+  features: string[] | string | null;
+}
+
+interface TopupPack {
+  id: string;
+  name: string;
+  tokens: number;
+  price: number;
+}
+
+interface PaymentSelection {
+  id?: string;
+  name: string;
+  priceMonth: number;
+  tokenAmount?: number;
+}
+
+type ComparisonValue = string | boolean;
+
+const AI_REPLY_TOKEN_RATIO = 1500;
+
+const theme = useTheme();
+const isDark = computed(() => theme.global.current.value.dark);
+
+const plans = ref<SubscriptionPlan[]>([]);
 const currentPlanId = ref<string | null>(null);
 const paymentDialog = ref(false);
-const selectedPlan = ref<any>(null);
+const selectedPlan = ref<PaymentSelection | null>(null);
 const isTopup = ref(false);
+const isYearly = ref(true);
 const paymentSubmitting = ref(false);
 const feedbackOpen = ref(false);
 const feedbackColor = ref<'success' | 'error'>('success');
 const feedbackMessage = ref('');
 
-const aiPacks = ref([
-  { id: 'ai_200k', name: 'Gói Tiết kiệm', tokens: 200000, price: 50000 },
-  { id: 'ai_1m', name: 'Gói Phổ thông', tokens: 1000000, price: 200000 },
-  { id: 'ai_3m', name: 'Gói Chuyên nghiệp', tokens: 3000000, price: 500000 },
-  { id: 'ai_12m', name: 'Gói Doanh nghiệp', tokens: 12000000, price: 1500000 },
+const aiPacks = ref<TopupPack[]>([
+  { id: 'ai_200k', name: 'Gói tiết kiệm', tokens: 200000, price: 50000 },
+  { id: 'ai_1m', name: 'Gói phổ thông', tokens: 1000000, price: 200000 },
+  { id: 'ai_3m', name: 'Gói chuyên nghiệp', tokens: 3000000, price: 500000 },
+  { id: 'ai_12m', name: 'Gói doanh nghiệp', tokens: 12000000, price: 1500000 },
 ]);
+
+const faqs = [
+  {
+    q: 'Lượt phản hồi AI được tính như thế nào?',
+    a: 'Trung bình khoảng 1.500 tokens tương đương 1 lượt phản hồi AI đầy đủ. Tin nhắn dài hoặc có nhiều ngữ cảnh sẽ dùng nhiều tokens hơn.',
+  },
+  {
+    q: 'Tôi có thể nâng cấp gói giữa tháng không?',
+    a: 'Có. Bạn có thể tạo yêu cầu nâng cấp bất kỳ lúc nào. Admin sẽ duyệt thanh toán và cập nhật gói cho tổ chức tương ứng.',
+  },
+  {
+    q: 'Có hỗ trợ nhiều tài khoản Zalo trong cùng tổ chức không?',
+    a: 'Có. Mỗi gói quy định số lượng tài khoản Zalo có thể hoạt động đồng thời. Tất cả hội thoại vẫn được quản lý tập trung trong cùng workspace.',
+  },
+  {
+    q: 'Nếu hết lượt AI trong tháng thì sao?',
+    a: 'Bạn có thể nạp thêm top-up AI ngay trên trang này để tiếp tục sử dụng mà không phải chờ sang chu kỳ tiếp theo.',
+  },
+];
+
+const currentPlan = computed(() => plans.value.find((plan) => plan.id === currentPlanId.value) || null);
+
+const plansByKey = computed<Record<string, SubscriptionPlan | undefined>>(() => {
+  return plans.value.reduce<Record<string, SubscriptionPlan | undefined>>((acc, plan) => {
+    acc[normalizePlanKey(plan.name)] = plan;
+    return acc;
+  }, {});
+});
+
+const comparisonRows = computed<Array<{ label: string; free: ComparisonValue; pro: ComparisonValue; enterprise: ComparisonValue }>>(() => {
+  const freePlan = plansByKey.value.free;
+  const proPlan = plansByKey.value.pro;
+  const enterprisePlan = plansByKey.value.enterprise;
+
+  return [
+    {
+      label: 'Số tài khoản Zalo',
+      free: String(freePlan?.maxZaloAcc ?? 1),
+      pro: String(proPlan?.maxZaloAcc ?? 5),
+      enterprise: String(enterprisePlan?.maxZaloAcc ?? 50),
+    },
+    {
+      label: 'Lượt phản hồi AI / tháng',
+      free: `~${formatNumber(getAiReplies(freePlan?.maxAiTokens ?? 45000))}`,
+      pro: `~${formatNumber(getAiReplies(proPlan?.maxAiTokens ?? 1500000))}`,
+      enterprise: `~${formatNumber(getAiReplies(enterprisePlan?.maxAiTokens ?? 15000000))}`,
+    },
+    {
+      label: 'CRM & quản lý contact',
+      free: 'Cơ bản',
+      pro: 'Đầy đủ',
+      enterprise: 'Nâng cao',
+    },
+    {
+      label: 'Automation workflow',
+      free: false,
+      pro: true,
+      enterprise: true,
+    },
+    {
+      label: 'Báo cáo & phân tích',
+      free: false,
+      pro: true,
+      enterprise: true,
+    },
+    {
+      label: 'Knowledge base AI',
+      free: 'Giới hạn',
+      pro: true,
+      enterprise: true,
+    },
+    {
+      label: 'Hỗ trợ triển khai',
+      free: 'Cộng đồng',
+      pro: 'Email / Chat',
+      enterprise: 'Ưu tiên',
+    },
+  ];
+});
 
 const fetchPlans = async () => {
   try {
     const res = await api.get('/billing/plans');
-    plans.value = res.data;
+    plans.value = res.data.sort((a: SubscriptionPlan, b: SubscriptionPlan) => a.priceMonth - b.priceMonth);
   } catch (err) {
     console.error('Failed to fetch plans', err);
   }
@@ -289,33 +546,102 @@ onMounted(() => {
   fetchSubscription();
 });
 
-const formatPriceValue = (price: number) => {
-  if (price === 0) return '0';
-  return `${(price / 1000).toLocaleString()}k`;
+const normalizePlanKey = (name: string) => name.trim().toLowerCase();
+
+const getPlanIcon = (name: string) => {
+  const planKey = normalizePlanKey(name);
+  if (planKey === 'free') return 'mdi-sprout-outline';
+  if (planKey === 'pro') return 'mdi-rocket-launch-outline';
+  if (planKey === 'enterprise') return 'mdi-office-building-cog-outline';
+  return 'mdi-cube-outline';
 };
+
+const getPlanTone = (name: string) => {
+  const planKey = normalizePlanKey(name);
+  if (planKey === 'free') return 'neutral';
+  if (planKey === 'pro') return 'primary';
+  if (planKey === 'enterprise') return 'accent';
+  return 'neutral';
+};
+
+const getPlanBadge = (name: string) => {
+  const planKey = normalizePlanKey(name);
+  if (planKey === 'free') return 'Khởi động';
+  if (planKey === 'pro') return 'Khuyên dùng';
+  if (planKey === 'enterprise') return 'Mở rộng';
+  return 'Gói dịch vụ';
+};
+
+const getPlanDescription = (name: string) => {
+  const planKey = normalizePlanKey(name);
+  if (planKey === 'free') return 'Phù hợp để trải nghiệm hệ thống và triển khai quy trình cơ bản.';
+  if (planKey === 'pro') return 'Dành cho team bán hàng hoặc CSKH cần AI và automation chạy thường xuyên.';
+  if (planKey === 'enterprise') return 'Phù hợp tổ chức nhiều tài khoản, cần quy mô lớn và hỗ trợ ưu tiên.';
+  return 'Gói dịch vụ dành cho tổ chức của bạn.';
+};
+
+const isFeaturedPlan = (plan: SubscriptionPlan) => normalizePlanKey(plan.name) === 'pro';
+
+const getAiReplies = (tokens: number) => Math.max(0, Math.floor(tokens / AI_REPLY_TOKEN_RATIO));
+
+const getDisplayMonthlyPrice = (monthlyPrice: number) => {
+  if (monthlyPrice === 0) return 0;
+  return isYearly.value ? monthlyPrice * 0.8 : monthlyPrice;
+};
+
+const getFinalAmount = () => {
+  if (!selectedPlan.value) return 0;
+  if (isTopup.value) return selectedPlan.value.priceMonth;
+  return isYearly.value ? selectedPlan.value.priceMonth * 12 * 0.8 : selectedPlan.value.priceMonth;
+};
+
+const generatePaymentContent = () => {
+  if (!selectedPlan.value) return '';
+  const prefix = isTopup.value ? 'NAPAI' : isYearly.value ? 'CRMPAY1Y' : 'CRMPAY';
+  return `${prefix} ${selectedPlan.value.name.split(' ')[0]}`.toUpperCase();
+};
+
+const generateQrUrl = () => {
+  if (!selectedPlan.value) return '';
+  const amount = getFinalAmount();
+  const content = generatePaymentContent();
+  return `https://img.vietqr.io/image/MB-6386365999-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(content)}&accountName=CONG%20TY%20TNHH%20CLARO%20VIET%20NAM`;
+};
+
+const formatCompactPrice = (price: number) => {
+  if (price === 0) return '0';
+  if (price < 1000000) return `${(price / 1000).toLocaleString('vi-VN')}k`;
+  return `${(price / 1000000).toLocaleString('vi-VN')}tr`;
+};
+
+const formatNumber = (value: number) => value.toLocaleString('vi-VN');
 
 const formatPrice = (price: number) => {
   if (price === 0) return 'Miễn phí';
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 };
 
-const parseFeatures = (features: any) => {
+const parseFeatures = (features: SubscriptionPlan['features']) => {
   if (typeof features === 'string') {
-    return JSON.parse(features);
+    try {
+      return JSON.parse(features) as string[];
+    } catch (_error) {
+      return [];
+    }
   }
 
-  return features || [];
+  return Array.isArray(features) ? features : [];
 };
 
-const selectPlan = (plan: any) => {
-  selectedPlan.value = plan;
+const selectPlan = (plan: SubscriptionPlan) => {
+  selectedPlan.value = { ...plan };
   isTopup.value = false;
   paymentDialog.value = true;
 };
 
-const selectTopup = (pack: any) => {
+const selectTopup = (pack: TopupPack) => {
   selectedPlan.value = {
-    name: pack.name + ' (+' + Math.floor(pack.tokens / 1500).toLocaleString() + ' lượt phản hồi)',
+    name: pack.name,
     priceMonth: pack.price,
     tokenAmount: pack.tokens,
   };
@@ -325,7 +651,6 @@ const selectTopup = (pack: any) => {
 
 const confirmPayment = async () => {
   if (!selectedPlan.value) return;
-
   paymentSubmitting.value = true;
 
   try {
@@ -334,448 +659,697 @@ const confirmPayment = async () => {
           orderType: 'ai_topup',
           planName: selectedPlan.value.name,
           tokenAmount: selectedPlan.value.tokenAmount,
-          amount: selectedPlan.value.priceMonth,
-          paymentContent: `NAPAI ${selectedPlan.value.name}`,
-          metadata: {
-            source: 'pricing_page',
-          },
+          amount: getFinalAmount(),
+          paymentContent: generatePaymentContent(),
         }
       : {
           orderType: 'subscription_upgrade',
           planId: selectedPlan.value.id,
           planName: selectedPlan.value.name,
-          months: 1,
-          amount: selectedPlan.value.priceMonth,
-          paymentContent: `CRMPAY ${selectedPlan.value.name}`,
-          metadata: {
-            source: 'pricing_page',
-          },
+          months: isYearly.value ? 12 : 1,
+          amount: getFinalAmount(),
+          paymentContent: generatePaymentContent(),
         };
 
     const res = await api.post('/billing/orders', payload);
     paymentDialog.value = false;
     feedbackColor.value = 'success';
-    feedbackMessage.value = `Đã tạo đơn ${res.data.referenceCode}. Quản trị viên sẽ duyệt sau khi đối soát giao dịch.`;
+    feedbackMessage.value = `Đã tạo đơn ${res.data.referenceCode}. Admin sẽ duyệt sau khi đối soát thanh toán.`;
     feedbackOpen.value = true;
   } catch (err: any) {
-    console.error('Failed to create payment order', err);
     feedbackColor.value = 'error';
-    feedbackMessage.value = err.response?.data?.error || 'Không thể tạo đơn thanh toán. Vui lòng thử lại.';
+    feedbackMessage.value = err.response?.data?.error || 'Không thể tạo đơn thanh toán.';
     feedbackOpen.value = true;
   } finally {
     paymentSubmitting.value = false;
   }
 };
 
-const copyText = (text: string) => {
-  navigator.clipboard.writeText(text);
+const copyText = async (text: string) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    feedbackColor.value = 'success';
+    feedbackMessage.value = 'Đã sao chép thông tin.';
+    feedbackOpen.value = true;
+  } catch (_error) {
+    feedbackColor.value = 'error';
+    feedbackMessage.value = 'Không thể sao chép vào clipboard.';
+    feedbackOpen.value = true;
+  }
+};
+
+const renderComparisonValue = (value: ComparisonValue) => {
+  if (value === true) return '✓';
+  if (value === false) return '—';
+  return value;
 };
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
-.pricing-shell {
-  font-family: 'Outfit', sans-serif;
-}
-
-.pricing-intro {
-  max-width: 600px;
-}
-
-.entrance-animation {
-  opacity: 0;
-  animation: fadeInSlide 0.8s ease-out forwards;
-}
-
-@keyframes fadeInSlide {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.pricing-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 16px;
-  background: var(--color-surface-glass);
-  border: 1px solid var(--color-border);
-  border-radius: 99px;
-  box-shadow: var(--shadow-sm);
-  color: var(--color-text-secondary);
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-.text-gradient {
-  background: var(--gradient-accent);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.text-gradient-ai {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-success));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.text-placeholder {
-  color: var(--color-text-secondary);
-}
-
-.text-cyan {
-  color: var(--color-primary);
-}
-
-.topup-card {
-  background: var(--color-surface-glass) !important;
-  border: 1px solid var(--color-border) !important;
-  border-radius: 24px !important;
-  transition: all 0.3s ease;
-}
-
-.topup-card:hover {
-  transform: translateY(-5px);
-  border-color: var(--color-primary) !important;
-  box-shadow: var(--shadow-md);
-}
-
-.topup-icon {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-primary-soft);
-  border-radius: 20px;
-}
-
-.pricing-card {
+.pricing-page {
   position: relative;
-  overflow: visible;
-  background: var(--color-surface-elevated) !important;
-  border: 1px solid var(--color-border) !important;
-  border-radius: 32px !important;
-  backdrop-filter: blur(12px);
-  box-shadow: var(--shadow-sm);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.pricing-card:hover {
-  transform: translateY(-8px);
-  border-color: var(--color-primary-soft-strong) !important;
-}
-
-.plan-featured {
-  border: 2px solid var(--color-primary) !important;
-  box-shadow: var(--glow-brand);
-}
-
-.featured-tag {
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 4px 16px;
-  background: var(--gradient-brand);
-  border-radius: 99px;
-  color: var(--color-text-inverse);
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-.plan-name {
-  color: var(--color-text);
-  font-size: 1.5rem;
-  font-weight: 800;
-}
-
-.plan-price {
-  display: flex;
-  align-items: baseline;
-  color: var(--color-text);
-}
-
-.currency {
-  margin-right: 4px;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.amount {
-  font-size: 3.5rem;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.period {
-  margin-left: 8px;
-  color: var(--color-text-secondary);
-  font-size: 1rem;
-}
-
-.ai-box {
-  background: var(--color-overlay);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-}
-
-.ai-box__inner {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-}
-
-.btn-plan-pro {
-  background: var(--gradient-brand) !important;
-  color: var(--color-text-inverse) !important;
-  font-weight: 800 !important;
-  text-transform: none !important;
-}
-
-.btn-plan-standard {
-  background: var(--color-surface-glass) !important;
-  border: 1px solid var(--color-border) !important;
-  color: var(--color-text) !important;
-  font-weight: 700 !important;
-  text-transform: none !important;
-}
-
-.shadow-glow:hover {
-  box-shadow: var(--glow-brand) !important;
-}
-
-.glass-card {
-  position: relative;
+  min-height: 100vh;
   overflow: hidden;
-  background: var(--color-surface-elevated) !important;
-  border: 1px solid var(--color-border) !important;
-  border-radius: 32px !important;
-  backdrop-filter: blur(24px) saturate(180%);
-  box-shadow: var(--shadow-lg);
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.1), transparent 28%),
+    linear-gradient(180deg, #f8fbff 0%, #f8fafc 45%, #eef4ff 100%);
   color: var(--color-text);
+  font-family: 'Manrope', sans-serif;
 }
 
-:deep(.payment-dialog-content) {
-  width: min(560px, calc(100vw - 24px));
-  max-height: calc(100vh - 24px);
-  margin: 12px;
+.pricing-page--dark {
+  background:
+    radial-gradient(circle at top left, rgba(96, 165, 250, 0.14), transparent 26%),
+    linear-gradient(180deg, #08101f 0%, #0f172a 52%, #101b31 100%);
 }
 
-.payment-modal {
-  max-height: calc(100vh - 24px);
-}
-
-.payment-content {
-  flex: 1 1 auto;
-  min-height: 0;
+.pricing-page__container {
   position: relative;
   z-index: 1;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
-  -webkit-overflow-scrolling: touch;
 }
 
-.payment-content::-webkit-scrollbar {
-  width: 10px;
-}
-
-.payment-content::-webkit-scrollbar-thumb {
-  background: var(--color-border-strong);
-  border: 2px solid transparent;
-  border-radius: 999px;
-  background-clip: content-box;
-}
-
-.payment-content::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.payment-modal__orb {
-  position: absolute;
-  border-radius: 999px;
-  filter: blur(24px);
+.pricing-page__aurora,
+.pricing-page__grid {
   pointer-events: none;
+  position: absolute;
 }
 
-.payment-modal__orb--primary {
-  top: -56px;
-  right: -36px;
-  width: 160px;
-  height: 160px;
-  background: var(--color-primary-soft-strong);
-}
-
-.payment-modal__orb--accent {
-  bottom: -68px;
-  left: -30px;
-  width: 150px;
-  height: 150px;
-  background: var(--color-accent-soft);
-}
-
-.modal-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  background: var(--color-primary-soft);
-  border: 1px solid var(--color-primary-soft-strong);
-  border-radius: 18px;
-}
-
-.payment-close {
-  margin-right: -8px;
-  color: var(--color-text-secondary) !important;
-}
-
-.payment-kicker {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 12px;
-  background: var(--color-primary-soft);
+.pricing-page__aurora {
   border-radius: 999px;
-  color: var(--color-primary-strong);
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  filter: blur(70px);
+  opacity: 0.18;
 }
 
-.payment-title {
-  margin: 0 0 8px;
-  color: var(--color-text);
-  font-size: 1.6rem;
-  font-weight: 800;
-  line-height: 1.15;
+.pricing-page__aurora--primary {
+  top: -100px;
+  right: -80px;
+  width: 420px;
+  height: 420px;
+  background: #2563eb;
 }
 
-.payment-subtitle {
-  max-width: 360px;
-  color: var(--color-text-secondary);
-  font-size: 0.96rem;
-  line-height: 1.65;
+.pricing-page__aurora--secondary {
+  left: -120px;
+  top: 420px;
+  width: 360px;
+  height: 360px;
+  background: #0f766e;
 }
 
-.payment-summary {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 18px 20px;
-  background: var(--gradient-hero);
-  border: 1px solid var(--color-primary-soft-strong);
-  border-radius: 24px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+.pricing-page__grid {
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(180deg, rgba(255, 255, 255, 0.4), transparent 70%);
 }
 
-.payment-summary__label,
-.payment-panel__label {
-  color: var(--color-text-secondary);
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.payment-summary__amount {
-  margin-top: 8px;
-  color: var(--color-text);
-  font-size: 1.9rem;
-  font-weight: 800;
-  line-height: 1.1;
-}
-
-.payment-summary__badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  background: var(--color-surface-glass);
-  border: 1px solid var(--color-success-border);
-  border-radius: 999px;
-  color: var(--color-success);
-  font-size: 0.82rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.payment-body {
+.hero-panel {
   display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.85fr);
+  gap: 22px;
+  align-items: stretch;
+}
+
+.hero-copy,
+.hero-summary,
+.insight-card,
+.plan-card,
+.comparison-shell,
+.topup-card,
+.faq-panel,
+.payment-card,
+.payment-summary,
+.payment-info,
+.qr-box {
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(18px);
+}
+
+.pricing-page--dark .hero-copy,
+.pricing-page--dark .hero-summary,
+.pricing-page--dark .insight-card,
+.pricing-page--dark .plan-card,
+.pricing-page--dark .comparison-shell,
+.pricing-page--dark .topup-card,
+.pricing-page--dark .faq-panel,
+.pricing-page--dark .payment-card,
+.pricing-page--dark .payment-summary,
+.pricing-page--dark .payment-info,
+.pricing-page--dark .qr-box {
+  background: rgba(19, 32, 59, 0.78);
+}
+
+.hero-copy {
+  padding: 36px;
+  border-radius: 32px;
+}
+
+.hero-summary {
+  padding: 24px;
+  border-radius: 32px;
+  display: flex;
+  flex-direction: column;
   gap: 18px;
 }
 
-.payment-qr-panel,
-.payment-details {
-  padding: 20px;
-  background: var(--color-surface-glass);
-  border: 1px solid var(--color-border);
-  border-radius: 24px;
-}
-
-.border-glass {
-  border: 2px solid var(--color-border);
-}
-
-.qr-wrapper {
-  background: linear-gradient(180deg, var(--color-surface), var(--color-surface-muted));
-  border: 1px solid var(--color-border);
-  border-radius: 24px;
-  box-shadow: var(--shadow-sm);
-}
-
-.payment-qr-caption {
-  color: var(--color-text-secondary);
-  font-size: 0.92rem;
-  line-height: 1.6;
-  text-align: center;
-}
-
-.payment-info {
-  overflow: hidden;
-  background: var(--color-overlay);
-  border: 1px solid var(--color-border);
-}
-
-.payment-info__row {
-  display: flex;
+.eyebrow-chip {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
+  width: fit-content;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--color-primary-strong);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.eyebrow-chip--soft {
+  background: rgba(15, 23, 42, 0.04);
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.eyebrow-chip--inverted {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.hero-title {
+  max-width: 12ch;
+  color: var(--color-text);
+  font-size: clamp(2.7rem, 5vw, 4.8rem);
+  line-height: 1;
+  letter-spacing: -0.06em;
+  font-weight: 900;
+}
+
+.hero-title__accent {
+  display: block;
+  color: transparent;
+  background: linear-gradient(135deg, #2563eb 0%, #0891b2 42%, #0f766e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.hero-description,
+.section-subtitle,
+.summary-card__hint,
+.insight-card p,
+.plan-card__description,
+.price-block__meta,
+.payment-card__subtitle,
+.payment-caption,
+.faq-panel__text,
+.topup-card__tokens {
+  color: var(--color-text-secondary);
+  line-height: 1.75;
+}
+
+.hero-description {
+  max-width: 60ch;
+  font-size: 1.02rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 16px;
-  padding: 14px 16px;
 }
 
-.payment-info__row + .payment-info__row {
-  border-top: 1px solid var(--color-border);
+.billing-switch {
+  display: inline-flex;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.05);
+  border: 1px solid var(--color-border);
 }
 
-.payment-info__label {
+.billing-switch__option {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  padding: 12px 18px;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.22s ease;
+}
+
+.billing-switch__option--active {
+  background: var(--gradient-brand);
+  color: #fff;
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.22);
+}
+
+.billing-switch__badge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 0.72rem;
+}
+
+.hero-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   color: var(--color-text-secondary);
   font-size: 0.95rem;
 }
 
-.payment-info__value {
-  color: var(--color-text);
-  font-size: 1rem;
-  font-weight: 800;
-  text-align: right;
+.summary-card {
+  padding: 20px;
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(37, 99, 235, 0.1), rgba(15, 23, 42, 0.02));
+  border: 1px solid rgba(37, 99, 235, 0.18);
 }
 
-.payment-info__value--accent {
-  color: var(--color-primary);
+.summary-card__label,
+.summary-metric__label,
+.quota-panel__label,
+.feature-stack__title,
+.insight-card__label,
+.payment-summary__label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.summary-card__value {
+  margin-top: 10px;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--color-text);
+}
+
+.summary-metrics {
+  display: grid;
+  gap: 14px;
+}
+
+.summary-metric {
+  padding: 18px 20px;
+  border-radius: 22px;
+  background: rgba(15, 23, 42, 0.04);
+  border: 1px solid var(--color-border);
+}
+
+.summary-metric__value {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: var(--color-text);
+}
+
+.insight-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.insight-card {
+  padding: 22px;
+  border-radius: 28px;
+}
+
+.insight-card__value {
+  display: block;
+  margin: 12px 0 10px;
+  font-size: 1.2rem;
+  font-weight: 850;
+  color: var(--color-text);
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 18px;
+}
+
+.section-title {
+  margin: 0;
+  color: var(--color-text);
+  font-size: clamp(1.6rem, 2.5vw, 2.4rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.section-subtitle {
+  max-width: 56ch;
+  margin: 0;
+}
+
+.pricing-grid {
+  row-gap: 18px;
+}
+
+.plan-card {
+  position: relative;
+  border-radius: 32px !important;
+  overflow: hidden;
+  animation: rise-in 0.5s ease both;
+}
+
+.plan-card--featured {
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.18), transparent 28%),
+    rgba(255, 255, 255, 0.84);
+  border-color: rgba(37, 99, 235, 0.25) !important;
+  box-shadow: 0 26px 55px rgba(37, 99, 235, 0.14);
+}
+
+.pricing-page--dark .plan-card--featured {
+  background:
+    radial-gradient(circle at top right, rgba(96, 165, 250, 0.24), transparent 30%),
+    rgba(19, 32, 59, 0.88);
+}
+
+.plan-card--current {
+  border-color: rgba(16, 185, 129, 0.28) !important;
+}
+
+.plan-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 12px;
+}
+
+.plan-card__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.plan-card__pill--neutral {
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--color-text-secondary);
+}
+
+.plan-card__pill--primary {
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--color-primary-strong);
+}
+
+.plan-card__pill--accent {
+  background: rgba(15, 118, 110, 0.1);
+  color: #0f766e;
+}
+
+.pricing-page--dark .plan-card__pill--accent {
+  color: #5eead4;
+}
+
+.plan-card__name {
+  margin: 0;
+  font-size: 1.7rem;
+  font-weight: 900;
+  color: var(--color-text);
+  letter-spacing: -0.03em;
+}
+
+.featured-chip {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--gradient-brand);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.price-block__main {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--color-text);
+}
+
+.price-block__currency {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.price-block__amount {
+  font-size: clamp(2.7rem, 4vw, 4rem);
+  line-height: 0.92;
+  letter-spacing: -0.06em;
+  font-weight: 900;
+}
+
+.price-block__period {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.quota-panel {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 16px;
+  border-radius: 24px;
+  background: rgba(15, 23, 42, 0.04);
+  border: 1px solid var(--color-border);
+}
+
+.quota-panel__item strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--color-text);
+  font-size: 1.1rem;
+  font-weight: 850;
+}
+
+.feature-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.feature-row {
+  display: flex;
+  align-items: start;
+  gap: 10px;
+  color: var(--color-text);
+  line-height: 1.65;
+}
+
+.plan-card__cta {
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+}
+
+.plan-card__cta--featured {
+  box-shadow: 0 18px 36px rgba(37, 99, 235, 0.2);
+}
+
+.comparison-shell {
+  overflow: hidden;
+  border-radius: 28px;
+}
+
+.comparison-table {
+  background: transparent !important;
+}
+
+.comparison-table :deep(th) {
+  background: rgba(15, 23, 42, 0.04);
+  color: var(--color-text);
+  font-size: 0.92rem;
+  font-weight: 800;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+.comparison-table :deep(td) {
+  color: var(--color-text);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18) !important;
+  font-weight: 600;
+}
+
+.comparison-table__label {
+  min-width: 220px;
+}
+
+.comparison-table__highlight {
+  background: rgba(37, 99, 235, 0.06);
+}
+
+.topup-card {
+  border-radius: 28px !important;
+}
+
+.topup-card__icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  background: rgba(37, 99, 235, 0.1);
+}
+
+.topup-card__name,
+.payment-card__title {
+  color: var(--color-text);
+  margin: 0;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.payment-card__title {
+  color: #fff;
+  font-size: 2rem;
+}
+
+.topup-card__quota {
+  color: var(--color-text);
+  font-size: 1.45rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.topup-card__price {
+  color: var(--color-text);
+  font-size: 1.15rem;
+  font-weight: 850;
+}
+
+.faq-section {
+  padding-bottom: 48px;
+}
+
+.faq-panels {
+  background: transparent !important;
+}
+
+.faq-panel {
+  border-radius: 24px !important;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+
+.faq-panel::before {
+  display: none;
+}
+
+.faq-panel__title {
+  color: var(--color-text);
+  font-weight: 800;
+}
+
+.payment-card {
+  overflow: hidden;
+  border-radius: 30px !important;
+}
+
+.payment-card__hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: start;
+  background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);
+}
+
+.payment-card__subtitle {
+  color: rgba(255, 255, 255, 0.74);
+  max-width: 52ch;
+}
+
+.payment-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 20px;
+  border-radius: 24px;
+}
+
+.payment-summary__amount {
+  margin-top: 6px;
+  font-size: 1.7rem;
+  font-weight: 900;
+  color: var(--color-text);
+}
+
+.payment-summary__badge {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--color-primary-strong);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.qr-box {
+  border-radius: 24px;
+}
+
+.payment-info {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 24px;
+}
+
+.payment-info__row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.payment-info__row span {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.payment-info__row strong {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  color: var(--color-text);
+  font-size: 1rem;
+  font-weight: 850;
+}
+
+.payment-info__content {
+  color: var(--color-primary-strong) !important;
+}
+
+.payment-caption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .payment-steps {
@@ -784,127 +1358,111 @@ const copyText = (text: string) => {
 }
 
 .payment-step {
-  display: grid;
-  grid-template-columns: 32px minmax(0, 1fr);
-  gap: 12px;
+  display: flex;
   align-items: start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.04);
+  border: 1px solid var(--color-border);
+}
+
+.payment-step p {
   color: var(--color-text);
-  font-size: 0.95rem;
   line-height: 1.6;
 }
 
 .payment-step__index {
-  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: var(--color-primary-soft);
-  border: 1px solid var(--color-primary-soft-strong);
-  border-radius: 12px;
-  color: var(--color-primary-strong);
-  font-size: 0.92rem;
-  font-weight: 800;
-}
-
-.payment-note {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 14px 16px;
-  background: var(--color-primary-soft);
-  border: 1px solid var(--color-primary-soft-strong);
-  border-radius: 18px;
-  color: var(--color-text-secondary);
-  font-size: 0.92rem;
-  line-height: 1.55;
-}
-
-.payment-actions {
-  position: relative;
-  z-index: 1;
   flex: 0 0 auto;
-  border-top: 1px solid var(--color-border);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0), var(--color-surface-elevated) 22%);
-  backdrop-filter: blur(18px);
+  border-radius: 50%;
+  background: var(--gradient-brand);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 900;
 }
 
-.btn-glow {
-  box-shadow: var(--glow-brand);
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.payment-confirm {
-  font-weight: 800 !important;
-  text-transform: none !important;
+@media (max-width: 1260px) {
+  .hero-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .insight-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .section-head {
+    flex-direction: column;
+    align-items: start;
+  }
 }
 
-.payment-cancel {
-  background: var(--color-overlay) !important;
-  border: 1px solid var(--color-border) !important;
-  color: var(--color-text-secondary) !important;
-  font-weight: 700 !important;
-  text-transform: none !important;
-}
+@media (max-width: 960px) {
+  .hero-copy,
+  .hero-summary {
+    padding: 24px;
+    border-radius: 28px;
+  }
 
-.pricing-shell :deep(.text-white) {
-  color: var(--color-text) !important;
-}
+  .quota-panel {
+    grid-template-columns: 1fr;
+  }
 
-.pricing-shell :deep(.text-h2) {
-  color: var(--color-text) !important;
+  .comparison-shell {
+    overflow-x: auto;
+  }
 }
 
 @media (max-width: 600px) {
-  :deep(.payment-dialog-content) {
-    width: calc(100vw - 16px);
-    max-height: calc(100vh - 16px);
-    margin: 8px;
+  .pricing-page__container {
+    padding-top: 24px !important;
+    padding-bottom: 32px !important;
   }
 
-  .payment-modal {
-    max-height: calc(100vh - 16px);
+  .hero-title {
+    max-width: none;
+    font-size: 2.5rem;
   }
 
-  .payment-content,
-  .payment-actions {
-    padding-left: 20px !important;
-    padding-right: 20px !important;
+  .billing-switch {
+    width: 100%;
+    flex-direction: column;
+    border-radius: 24px;
   }
 
-  .payment-content {
-    padding-top: 20px !important;
-    padding-bottom: 18px !important;
+  .billing-switch__option {
+    justify-content: center;
   }
 
-  .payment-actions {
-    padding-bottom: 20px !important;
-  }
-
-  .payment-title {
-    font-size: 1.36rem;
-  }
-
+  .hero-note,
   .payment-summary {
+    align-items: start;
     flex-direction: column;
-    align-items: stretch;
   }
 
-  .payment-summary__badge {
-    width: fit-content;
+  .plan-card,
+  .topup-card,
+  .faq-panel {
+    border-radius: 24px !important;
   }
 
-  .payment-qr-panel,
-  .payment-details {
-    padding: 18px;
-  }
-
-  .payment-info__row {
+  .payment-card__hero {
     flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .payment-info__value {
-    text-align: left;
   }
 }
 </style>
