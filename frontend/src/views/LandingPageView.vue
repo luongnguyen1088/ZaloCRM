@@ -2,7 +2,11 @@
   <div class="landing-page">
     <div class="landing-noise"></div>
 
-    <v-app-bar flat height="84" class="landing-navbar px-4 px-md-8">
+    <v-app-bar
+      flat
+      :height="isCompactHeader ? 72 : 84"
+      :class="['landing-navbar', 'px-4', 'px-md-8', { 'landing-navbar--compact': isCompactHeader }]"
+    >
       <div class="brand-mark" @click="$router.push('/')">
         <div class="brand-mark__icon">
           <v-icon size="20">mdi-lightning-bolt</v-icon>
@@ -405,11 +409,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
+const isCompactHeader = ref(false);
+
+function syncHeaderState() {
+  isCompactHeader.value = window.scrollY > 36;
+}
+
+onMounted(() => {
+  syncHeaderState();
+  window.addEventListener('scroll', syncHeaderState, { passive: true });
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', syncHeaderState);
+});
 
 const heroStats = [
   { value: '1 workspace', label: 'gom chat, CRM và AI vào cùng màn hình' },
@@ -566,13 +584,31 @@ const integrationPoints = [
   position: sticky !important;
   top: 0;
   z-index: 30;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease,
+    height 0.25s ease,
+    padding 0.25s ease !important;
   background: rgba(248, 250, 252, 0.72) !important;
   backdrop-filter: blur(18px);
   border-bottom: 1px solid rgba(148, 163, 184, 0.16) !important;
 }
 
+.landing-navbar--compact {
+  background: rgba(248, 250, 252, 0.9) !important;
+  border-bottom-color: rgba(148, 163, 184, 0.24) !important;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
 .v-theme--dark .landing-navbar {
   background: rgba(8, 17, 33, 0.72) !important;
+}
+
+.v-theme--dark .landing-navbar--compact {
+  background: rgba(8, 17, 33, 0.88) !important;
+  box-shadow: 0 14px 32px rgba(2, 6, 23, 0.34);
 }
 
 .brand-mark {
@@ -580,6 +616,7 @@ const integrationPoints = [
   align-items: center;
   gap: 14px;
   cursor: pointer;
+  transition: gap 0.25s ease;
 }
 
 .brand-mark__icon {
@@ -591,6 +628,12 @@ const integrationPoints = [
   color: #fff;
   background: linear-gradient(135deg, #2563eb, #1d4ed8 60%, #f59e0b);
   box-shadow: 0 18px 30px rgba(37, 99, 235, 0.22);
+  transition:
+    width 0.25s ease,
+    height 0.25s ease,
+    border-radius 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
 }
 
 .brand-mark__icon--small {
@@ -603,17 +646,20 @@ const integrationPoints = [
   font-size: 1rem;
   font-weight: 800;
   letter-spacing: -0.03em;
+  transition: font-size 0.25s ease;
 }
 
 .brand-mark__meta {
   font-size: 0.78rem;
   color: var(--color-text-secondary);
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .nav-links {
   align-items: center;
   gap: 28px;
   margin-right: 28px;
+  transition: gap 0.25s ease, margin 0.25s ease;
 }
 
 .nav-links a,
@@ -621,6 +667,8 @@ const integrationPoints = [
 .closing-link {
   color: var(--color-text-secondary);
   text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
   transition: color 0.2s ease, opacity 0.2s ease;
 }
 
@@ -638,6 +686,7 @@ const integrationPoints = [
 
 .nav-button {
   color: var(--color-text);
+  opacity: 0.88;
 }
 
 .nav-cta,
@@ -646,6 +695,38 @@ const integrationPoints = [
   border-radius: 999px !important;
   background: linear-gradient(135deg, #2563eb, #1d4ed8 58%, #0f172a) !important;
   box-shadow: 0 20px 40px rgba(37, 99, 235, 0.2);
+}
+
+.nav-cta {
+  min-width: 146px;
+}
+
+.landing-navbar--compact .brand-mark {
+  gap: 12px;
+}
+
+.landing-navbar--compact .brand-mark__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+}
+
+.landing-navbar--compact .brand-mark__name {
+  font-size: 0.96rem;
+}
+
+.landing-navbar--compact .brand-mark__meta {
+  opacity: 0.72;
+}
+
+.landing-navbar--compact .nav-links {
+  gap: 22px;
+  margin-right: 20px;
+}
+
+.landing-navbar--compact .nav-cta {
+  min-width: 136px;
 }
 
 .hero-section {
@@ -1485,12 +1566,31 @@ const integrationPoints = [
     display: none;
   }
 
+  .brand-mark {
+    gap: 10px;
+  }
+
+  .brand-mark__icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+
+  .brand-mark__name {
+    font-size: 0.94rem;
+  }
+
   .nav-actions {
-    gap: 8px;
+    gap: 6px;
   }
 
   .nav-cta {
+    min-width: 0;
     padding-inline: 1rem !important;
+  }
+
+  .landing-navbar--compact .nav-cta {
+    padding-inline: 0.9rem !important;
   }
 
   .hero-actions .v-btn {
