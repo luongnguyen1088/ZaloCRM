@@ -137,6 +137,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { z } from 'zod';
+import { GOOGLE_CLIENT_ID, hasGoogleClientId } from '@/config/google';
 
 const orgName = ref('');
 const fullName = ref('');
@@ -170,10 +171,15 @@ function validateField(field: string, value: any) {
 }
 
 onMounted(() => {
+  if (!hasGoogleClientId()) {
+    serverError.value = 'Google Sign-In chưa được cấu hình cho frontend. Hãy thêm VITE_GOOGLE_CLIENT_ID trước khi dùng đăng nhập Google.';
+    return;
+  }
+
   const googleIdentity = (window as any).google;
   if (googleIdentity?.accounts?.id) {
     googleIdentity.accounts.id.initialize({
-      client_id: '926202174216-4v1fml75f5403k79bvoeuau2go3oe1jq.apps.googleusercontent.com',
+      client_id: GOOGLE_CLIENT_ID,
       callback: handleGoogleCallback,
       use_fedcm_for_prompt: false,
     });
@@ -227,6 +233,11 @@ async function handleRegister() {
 }
 
 function loginWithGoogle() {
+  if (!hasGoogleClientId()) {
+    serverError.value = 'Google Sign-In chưa được cấu hình cho frontend. Hãy thêm VITE_GOOGLE_CLIENT_ID trước khi dùng đăng nhập Google.';
+    return;
+  }
+
   const googleIdentity = (window as any).google;
   if (googleIdentity?.accounts?.id) {
     googleIdentity.accounts.id.prompt();

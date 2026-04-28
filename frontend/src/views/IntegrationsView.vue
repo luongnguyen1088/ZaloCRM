@@ -373,6 +373,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue';
 import { api } from '@/api';
+import { GOOGLE_CLIENT_ID, hasGoogleClientId } from '@/config/google';
 
 interface SyncLog {
   id: string;
@@ -478,6 +479,11 @@ async function fetchIntegrations() {
 }
 
 async function linkGoogleAccount() {
+  if (!hasGoogleClientId()) {
+    dialogError.value = 'Thiếu VITE_GOOGLE_CLIENT_ID ở frontend. Không thể mở Google OAuth cho tới khi biến này được cấu hình.';
+    return;
+  }
+
   const google = (window as any).google;
   if (!google?.accounts?.oauth2) {
     dialogError.value = 'Google OAuth library chưa tải xong. Vui lòng thử lại sau vài giây.';
@@ -485,7 +491,7 @@ async function linkGoogleAccount() {
   }
 
   const client = google.accounts.oauth2.initCodeClient({
-    client_id: '926202174216-4v1fml75f5403k79bvoeuau2go3oe1jq.apps.googleusercontent.com',
+    client_id: GOOGLE_CLIENT_ID,
     scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.email',
     ux_mode: 'popup',
     callback: async (response: any) => {

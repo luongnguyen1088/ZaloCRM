@@ -257,6 +257,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import heroIllustration from '@/assets/hero.png';
 import { useAuthStore } from '@/stores/auth';
+import { GOOGLE_CLIENT_ID, hasGoogleClientId } from '@/config/google';
 
 interface GoogleIdentity {
   accounts?: {
@@ -374,8 +375,23 @@ onMounted(async () => {
     }
     if (isBackendUnavailable(err)) {
       backendUnavailable.value = true;
+      error.value = 'Máy chủ đăng nhập hiện không phản hồi. Hãy đảm bảo backend đang chạy và kết nối được database.';
+      return;
+    }
+    if (isBackendUnavailable(err)) {
+      backendUnavailable.value = true;
       error.value = 'KhÃ´ng thá»ƒ káº¿t ná»‘i tá»›i mÃ¡y chá»§ Ä‘Äƒng nháº­p. HÃ£y kiá»ƒm tra backend/API rá»“i thá»­ láº¡i.';
     }
+  }
+
+  if (!hasGoogleClientId()) {
+    setGoogleDiagnostic(
+      'init',
+      'warning',
+      'Google Sign-In chưa được cấu hình',
+      'Thiếu VITE_GOOGLE_CLIENT_ID ở frontend. Google login sẽ không hoạt động cho tới khi bạn thêm biến môi trường này.'
+    );
+    return;
   }
 
   const ready = await ensureGoogleReady();
@@ -391,7 +407,7 @@ function initGoogle(identity: GoogleIdentity) {
   }
 
   identity.accounts?.id?.initialize({
-    client_id: '926202174216-4v1fml75f5403k79bvoeuau2go3oe1jq.apps.googleusercontent.com',
+    client_id: GOOGLE_CLIENT_ID,
     callback: handleGoogleCallback,
     use_fedcm_for_prompt: false,
   });
