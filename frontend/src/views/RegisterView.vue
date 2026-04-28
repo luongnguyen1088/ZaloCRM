@@ -184,7 +184,7 @@ async function handleGoogleCallback(response: any) {
   loading.value = true;
   try {
     await authStore.googleLogin(response.credential);
-    router.push('/');
+    router.push('/dashboard');
   } catch (err) {
     console.error('Registration failed', err);
   } finally {
@@ -217,7 +217,7 @@ async function handleRegister() {
   loading.value = true;
   try {
     await authStore.register(result.data);
-    router.push('/');
+    router.push('/dashboard');
   } catch (err: any) {
     serverError.value = err.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.';
     console.error('Registration failed', err);

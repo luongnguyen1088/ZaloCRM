@@ -38,7 +38,7 @@ async function handleSetup() {
   try {
     await authStore.setup({ orgName: orgName.value, fullName: fullName.value, email: email.value, password: password.value });
     success.value = true;
-    setTimeout(() => router.push('/'), 1000);
+    setTimeout(() => router.push('/dashboard'), 1000);
   } catch (err: any) {
     error.value = err.response?.data?.error || 'Thiết lập thất bại';
   } finally {

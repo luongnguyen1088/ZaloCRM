@@ -58,6 +58,12 @@ const routes = [
   },
   {
     path: '/',
+    name: 'LandingPage',
+    component: () => import('@/views/LandingPageView.vue'),
+    meta: { layout: 'public' },
+  },
+  {
+    path: '/dashboard',
     name: 'Dashboard',
     component: () => import('@/views/DashboardView.vue'),
     meta: { requiresAuth: true },
@@ -169,7 +175,7 @@ router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore();
 
   // Skip guard for public pages
-  if (['Setup', 'Login', 'Register', 'AcceptInvite', 'ForgotPassword', 'ResetPassword', 'FacebookOAuthCallback', 'PrivacyPolicy', 'DataDeletion'].includes(to.name as string)) {
+  if (['LandingPage', 'Setup', 'Login', 'Register', 'AcceptInvite', 'ForgotPassword', 'ResetPassword', 'FacebookOAuthCallback', 'PrivacyPolicy', 'DataDeletion'].includes(to.name as string)) {
     return next();
   }
 

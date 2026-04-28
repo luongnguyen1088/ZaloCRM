@@ -77,7 +77,7 @@ export const useAuthStore = defineStore('auth', () => {
     // Reload profile to get full details
     await fetchProfile();
     // Redirect to home
-    window.location.href = '/';
+    window.location.href = '/dashboard';
   }
 
   async function createOrg(name: string) {

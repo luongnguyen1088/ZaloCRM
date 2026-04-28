@@ -183,7 +183,7 @@ onMounted(() => {
 });
 
 const menuItems = [
-  { title: 'Dashboard', icon: 'mdi-view-dashboard-outline', path: '/' },
+  { title: 'Dashboard', icon: 'mdi-view-dashboard-outline', path: '/dashboard' },
   { title: 'Tin nhắn', icon: 'mdi-message-text-outline', path: '/chat' },
   { title: 'Khách hàng', icon: 'mdi-account-group-outline', path: '/contacts' },
   { title: 'Kết nối đa kênh', icon: 'mdi-cellphone-link', path: '/zalo-accounts' },

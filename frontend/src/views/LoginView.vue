@@ -360,7 +360,7 @@ onMounted(async () => {
     if (authStore.token) {
       await authStore.init();
       if (authStore.isAuthenticated) {
-        router.replace('/');
+        router.replace('/dashboard');
         return;
       }
     }
@@ -419,7 +419,7 @@ async function handleGoogleCallback(response: GoogleCredentialResponse) {
       'Máy chủ đã xác thực tài khoản Google và tạo phiên đăng nhập thành công.'
     );
     console.info('[Google Login] POST /auth/google succeeded');
-    router.push('/');
+    router.push('/dashboard');
   } catch (err: any) {
     const backendMessage = err.response?.data?.error || err.message || 'Đăng nhập với Google thất bại.';
     const normalized = String(backendMessage).toLowerCase();
@@ -457,7 +457,7 @@ async function handleLogin() {
 
   try {
     await authStore.login(email.value.trim(), password.value);
-    router.push('/');
+    router.push('/dashboard');
   } catch (err: any) {
     error.value = err.response?.data?.error || 'Đăng nhập thất bại. Kiểm tra lại email và mật khẩu.';
   } finally {
