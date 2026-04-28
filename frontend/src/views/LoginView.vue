@@ -734,7 +734,8 @@ async function renderGoogleButton() {
 
 .login-hero {
   display: grid;
-  gap: 28px;
+  gap: 24px;
+  padding-top: 8px;
 }
 
 .hero-pill {
@@ -771,9 +772,9 @@ async function renderGoogleButton() {
   flex-direction: column;
   gap: 8px;
   color: var(--color-text);
-  font-size: clamp(3rem, 5vw, 5rem);
-  line-height: 0.98;
-  letter-spacing: -2.5px;
+  font-size: clamp(2.7rem, 4.5vw, 4.45rem);
+  line-height: 1.08;
+  letter-spacing: -2.1px;
   font-weight: 800;
 }
 
@@ -784,11 +785,11 @@ async function renderGoogleButton() {
 }
 
 .hero-description {
-  margin-top: 22px;
+  margin-top: 18px;
   max-width: 620px;
   color: var(--color-text-secondary);
-  font-size: 1.06rem;
-  line-height: 1.72;
+  font-size: 1.02rem;
+  line-height: 1.66;
 }
 
 .hero-stats {
@@ -809,7 +810,7 @@ async function renderGoogleButton() {
 }
 
 .stat-card {
-  padding: 22px 20px;
+  padding: 20px 18px;
   border-radius: 24px;
 }
 
@@ -828,7 +829,7 @@ async function renderGoogleButton() {
 }
 
 .workspace-board {
-  padding: 28px;
+  padding: 24px;
   border-radius: 32px;
 }
 
@@ -851,7 +852,7 @@ async function renderGoogleButton() {
 .workspace-board__title {
   max-width: 500px;
   color: var(--color-text);
-  font-size: 1.45rem;
+  font-size: 1.35rem;
   line-height: 1.32;
   font-weight: 700;
 }
@@ -880,8 +881,8 @@ async function renderGoogleButton() {
 
 .workspace-board__media {
   position: relative;
-  margin-top: 24px;
-  height: 290px;
+  margin-top: 20px;
+  height: 270px;
 }
 
 .workspace-board__image {
@@ -925,7 +926,7 @@ async function renderGoogleButton() {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
-  margin-top: 20px;
+  margin-top: 18px;
 }
 
 .signal-card {
@@ -957,7 +958,7 @@ async function renderGoogleButton() {
 .workflow-list {
   display: grid;
   gap: 14px;
-  margin-top: 20px;
+  margin-top: 18px;
 }
 
 .workflow-card {
@@ -1007,11 +1008,11 @@ async function renderGoogleButton() {
 }
 
 .login-panel__inner {
-  padding: 34px;
+  padding: 30px;
 }
 
 .panel-header {
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 
 .panel-brand {
@@ -1047,27 +1048,28 @@ async function renderGoogleButton() {
 }
 
 .panel-brand__description {
-  margin-top: 16px;
+  margin-top: 14px;
   color: var(--color-text-secondary);
   line-height: 1.62;
 }
 
 .entry-points {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .entry-point {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 14px;
+  padding: 10px 14px;
   border-radius: 18px;
   background: rgba(245, 247, 252, 0.9);
   border: 1px solid var(--color-border);
   color: var(--color-text-secondary);
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   font-weight: 600;
 }
 
@@ -1082,7 +1084,7 @@ async function renderGoogleButton() {
 }
 
 .field-shell {
-  padding: 12px 16px;
+  padding: 10px 16px;
   border-radius: 20px;
   border: 1px solid var(--color-border);
   background: rgba(255, 255, 255, 0.75);
@@ -1104,7 +1106,7 @@ async function renderGoogleButton() {
 
 .field-label {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   color: var(--color-text-secondary);
   font-size: 0.84rem;
   font-weight: 700;
@@ -1182,7 +1184,7 @@ async function renderGoogleButton() {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin: 24px 0 14px;
+  margin: 20px 0 12px;
 }
 
 .divider__line {
@@ -1254,8 +1256,8 @@ async function renderGoogleButton() {
 }
 
 .integration-note {
-  margin-top: 12px;
-  padding: 14px 16px;
+  margin-top: 10px;
+  padding: 13px 15px;
   border-radius: 18px;
   border: 1px solid var(--color-border);
   background: rgba(245, 247, 252, 0.9);
@@ -1269,7 +1271,7 @@ async function renderGoogleButton() {
   justify-content: center;
   gap: 8px;
   flex-wrap: wrap;
-  margin-top: 24px;
+  margin-top: 20px;
   color: var(--color-text-secondary);
   font-size: 0.9rem;
   text-align: center;
@@ -1278,7 +1280,7 @@ async function renderGoogleButton() {
 @media (min-width: 1201px) {
   .login-panel-wrap {
     position: sticky;
-    top: 24px;
+    top: 18px;
     align-self: start;
   }
 }
@@ -1305,8 +1307,9 @@ async function renderGoogleButton() {
   }
 
   .hero-title {
-    font-size: 2.8rem;
-    letter-spacing: -1.6px;
+    font-size: 2.5rem;
+    letter-spacing: -1.3px;
+    line-height: 1.1;
   }
 
   .hero-description {
@@ -1343,6 +1346,10 @@ async function renderGoogleButton() {
 
   .panel-brand__title {
     font-size: 1.72rem;
+  }
+
+  .entry-points {
+    display: grid;
   }
 }
 </style>
