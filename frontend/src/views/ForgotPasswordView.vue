@@ -79,13 +79,7 @@
               class="login-success"
             >
               {{ success }}
-              <div v-if="devToken" class="mt-4 dev-token-box">
-                <p class="text-caption mb-1"><strong>Dev Mode:</strong> Vì chưa cấu hình SMTP, mã reset của bạn là:</p>
-                <code>{{ devToken }}</code>
-                <v-btn size="small" variant="text" color="primary" class="mt-2" :to="`/reset-password?token=${devToken}`">
-                  Đi đến trang đặt lại mật khẩu
-                </v-btn>
-              </div>
+              
             </v-alert>
 
             <v-form v-if="!success" @submit.prevent="handleSubmit" class="login-form">
@@ -143,7 +137,6 @@ const email = ref('');
 const loading = ref(false);
 const error = ref('');
 const success = ref('');
-const devToken = ref('');
 const authStore = useAuthStore();
 
 async function handleSubmit() {
@@ -156,11 +149,7 @@ async function handleSubmit() {
 
   try {
     const res = await authStore.forgotPassword(email.value.trim());
-    success.value = res.data.message || 'Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu vào email của bạn. Vui lòng kiểm tra hộp thư (và cả thư rác).';
-    if (res.data.token) {
-      devToken.value = res.data.token;
-    }
-  } catch (err: any) {
+    success.value = res.data.message || 'Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu vào email của bạn. Vui lòng kiểm tra hộp thư (và cả thư rác).';  } catch (err: any) {
     error.value = err.response?.data?.error || 'Đã có lỗi xảy ra. Vui lòng thử lại sau.';
   } finally {
     loading.value = false;
@@ -317,21 +306,6 @@ async function handleSubmit() {
   text-decoration: none;
 }
 
-.dev-token-box {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px dashed var(--color-primary);
-}
-
-code {
-  background: #2d2d2d;
-  color: #f8f8f2;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-family: monospace;
-  word-break: break-all;
-}
 
 @keyframes fadeInSlide {
   from { opacity: 0; transform: translateY(32px); }

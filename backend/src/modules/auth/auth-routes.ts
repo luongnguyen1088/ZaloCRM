@@ -25,7 +25,18 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   // POST /api/v1/auth/register — create org + owner user, return JWT
   app.post<{
     Body: { orgName: string; fullName: string; email: string; password: string };
-  }>('/api/v1/auth/register', async (request, reply) => {
+  }>(
+    '/api/v1/auth/register',
+    {
+      config: {
+        rateLimit: {
+          max: 5,
+          timeWindow: '1 hour',
+          errorResponseBuilder: () => ({ error: 'Quá nhiều yêu cầu đăng ký. Vui lòng thử lại sau 1 giờ.' })
+        }
+      }
+    },
+    async (request, reply) => {
     const { orgName, fullName, email, password } = request.body;
     if (!orgName || !fullName || !email || !password) {
       return reply.status(400).send({ error: 'Missing required fields' });
@@ -47,7 +58,18 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   // POST /api/v1/auth/login — verify credentials, return JWT for active org
   app.post<{
     Body: { email: string; password: string };
-  }>('/api/v1/auth/login', async (request, reply) => {
+  }>(
+    '/api/v1/auth/login',
+    {
+      config: {
+        rateLimit: {
+          max: 5,
+          timeWindow: '15 minutes',
+          errorResponseBuilder: () => ({ error: 'Quá nhiều yêu cầu đăng nhập sai. Vui lòng thử lại sau 15 phút.' })
+        }
+      }
+    },
+    async (request, reply) => {
     const { email, password } = request.body;
     if (!email || !password) {
       return reply.status(400).send({ error: 'Missing email or password' });
@@ -144,16 +166,29 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   });
 
   // POST /api/v1/auth/forgot-password
-  app.post<{ Body: { email: string } }>('/api/v1/auth/forgot-password', async (request, reply) => {
+  app.post<{ Body: { email: string } }>(
+    '/api/v1/auth/forgot-password',
+    {
+      config: {
+        rateLimit: {
+          max: 3,
+          timeWindow: '1 hour',
+          errorResponseBuilder: () => ({ error: 'Quá nhiều yêu cầu. Vui lòng đợi 1 giờ trước khi thử lại.' })
+        }
+      }
+    },
+    async (request, reply) => {
     const { email } = request.body;
     if (!email) return reply.status(400).send({ error: 'Email là bắt buộc' });
     
     try {
       const { token } = await forgotPassword(email);
-      // In development, we return the token so the user can test without email setup
-      return { message: 'Yêu cầu đặt lại mật khẩu đã được ghi nhận', token };
+      // Ghi log ở server để DEV debug/gửi email qua queue. Tuyệt đối không gửi token về client.
+      request.log.info(`[FORGOT PASSWORD] Reset token for ${email}: ${token}`);
+      return reply.status(200).send({ message: 'Nếu email tồn tại trong hệ thống, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu qua email.' });
     } catch (err: any) {
-      return reply.status(200).send({ message: err.message });
+      // Bắt lỗi và trả về nguyên văn chung một câu thông báo để chống hacker dò quét (enumeration) xem email nào tồn tại
+      return reply.status(200).send({ message: 'Nếu email tồn tại trong hệ thống, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu qua email.' });
     }
   });
 
