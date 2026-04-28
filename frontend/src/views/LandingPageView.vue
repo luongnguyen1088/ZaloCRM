@@ -4,53 +4,53 @@
 
     <v-app-bar
       flat
-      :height="isCompactHeader ? 72 : 84"
+      :height="isCompactHeader ? 88 : 104"
       :class="['landing-navbar', 'px-4', 'px-md-8', { 'landing-navbar--compact': isCompactHeader }]"
     >
-      <div class="brand-mark" @click="$router.push('/')">
-        <div class="brand-mark__icon">
-          <v-icon size="20">mdi-lightning-bolt</v-icon>
+      <div class="landing-navbar__shell">
+        <div class="brand-mark" @click="$router.push('/')">
+          <div class="brand-mark__icon">
+            <v-icon size="20">mdi-lightning-bolt</v-icon>
+          </div>
+          <div class="brand-mark__copy">
+            <div class="brand-mark__name">Claro</div>
+            <div class="brand-mark__meta">AI sales workspace</div>
+          </div>
         </div>
-        <div>
-          <div class="brand-mark__name">Claro</div>
-          <div class="brand-mark__meta">AI sales workspace</div>
+
+        <div class="nav-links">
+          <a href="#overview">Tổng quan</a>
+          <a href="#workflow">Vận hành</a>
+          <a href="#features">Tính năng</a>
+          <a href="#integrations">Tích hợp</a>
         </div>
-      </div>
 
-      <v-spacer></v-spacer>
-
-      <div class="nav-links d-none d-lg-flex">
-        <a href="#overview">Tổng quan</a>
-        <a href="#workflow">Vận hành</a>
-        <a href="#features">Tính năng</a>
-        <a href="#integrations">Tích hợp</a>
-      </div>
-
-      <div class="nav-actions">
-        <v-btn
-          v-if="!isAuthenticated"
-          variant="text"
-          class="text-none nav-button d-none d-sm-inline-flex"
-          to="/login"
-        >
-          Đăng nhập
-        </v-btn>
-        <v-btn
-          v-if="!isAuthenticated"
-          color="primary"
-          class="text-none nav-cta"
-          to="/register"
-        >
-          Tạo workspace
-        </v-btn>
-        <v-btn
-          v-else
-          color="primary"
-          class="text-none nav-cta"
-          to="/dashboard"
-        >
-          Vào dashboard
-        </v-btn>
+        <div class="nav-actions">
+          <v-btn
+            v-if="!isAuthenticated"
+            variant="text"
+            class="text-none nav-button"
+            to="/login"
+          >
+            Đăng nhập
+          </v-btn>
+          <v-btn
+            v-if="!isAuthenticated"
+            color="primary"
+            class="text-none nav-cta"
+            to="/register"
+          >
+            Tạo workspace
+          </v-btn>
+          <v-btn
+            v-else
+            color="primary"
+            class="text-none nav-cta"
+            to="/dashboard"
+          >
+            Vào dashboard
+          </v-btn>
+        </div>
       </div>
     </v-app-bar>
 
@@ -596,6 +596,14 @@ const integrationPoints = [
   border-bottom: 1px solid rgba(148, 163, 184, 0.16) !important;
 }
 
+.landing-navbar__shell {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+}
+
 .landing-navbar--compact {
   background: rgba(248, 250, 252, 0.9) !important;
   border-bottom-color: rgba(148, 163, 184, 0.24) !important;
@@ -617,6 +625,11 @@ const integrationPoints = [
   gap: 14px;
   cursor: pointer;
   transition: gap 0.25s ease;
+}
+
+.brand-mark__copy {
+  display: grid;
+  gap: 2px;
 }
 
 .brand-mark__icon {
@@ -656,10 +669,18 @@ const integrationPoints = [
 }
 
 .nav-links {
+  display: flex;
   align-items: center;
-  gap: 28px;
-  margin-right: 28px;
-  transition: gap 0.25s ease, margin 0.25s ease;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  transition: gap 0.25s ease;
+}
+
+.nav-links::-webkit-scrollbar {
+  display: none;
 }
 
 .nav-links a,
@@ -672,10 +693,28 @@ const integrationPoints = [
   transition: color 0.2s ease, opacity 0.2s ease;
 }
 
+.nav-links a {
+  flex: 0 0 auto;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.48);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  white-space: nowrap;
+}
+
 .nav-links a:hover,
 .landing-footer__links a:hover,
 .closing-link:hover {
   color: var(--color-text);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.v-theme--dark .nav-links a {
+  background: rgba(15, 23, 42, 0.36);
+}
+
+.v-theme--dark .nav-links a:hover {
+  background: rgba(15, 23, 42, 0.58);
 }
 
 .nav-actions {
@@ -721,12 +760,15 @@ const integrationPoints = [
 }
 
 .landing-navbar--compact .nav-links {
-  gap: 22px;
-  margin-right: 20px;
+  gap: 8px;
 }
 
 .landing-navbar--compact .nav-cta {
   min-width: 136px;
+}
+
+.landing-navbar--compact .nav-links a {
+  padding: 8px 12px;
 }
 
 .hero-section {
@@ -1561,9 +1603,10 @@ const integrationPoints = [
     padding-inline: 12px !important;
   }
 
-  .brand-mark__meta,
-  .proof-line__label {
-    display: none;
+  .landing-navbar__shell {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    align-items: stretch;
   }
 
   .brand-mark {
@@ -1580,8 +1623,13 @@ const integrationPoints = [
     font-size: 0.94rem;
   }
 
+  .brand-mark__copy {
+    gap: 0;
+  }
+
   .nav-actions {
     gap: 6px;
+    justify-content: flex-end;
   }
 
   .nav-cta {
@@ -1591,6 +1639,11 @@ const integrationPoints = [
 
   .landing-navbar--compact .nav-cta {
     padding-inline: 0.9rem !important;
+  }
+
+  .nav-links {
+    justify-content: flex-start;
+    padding-bottom: 2px;
   }
 
   .hero-actions .v-btn {
