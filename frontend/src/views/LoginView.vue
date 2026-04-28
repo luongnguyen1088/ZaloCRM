@@ -282,6 +282,7 @@ const email = ref('');
 const password = ref('');
 const loading = ref(false);
 const error = ref('');
+const backendUnavailable = ref(false);
 const showPassword = ref(false);
 const googleReady = ref(false);
 const googleLoading = ref(false);
@@ -347,6 +348,7 @@ watch([email, password], () => {
   if (error.value) {
     error.value = '';
   }
+  backendUnavailable.value = false;
 });
 
 onMounted(async () => {
@@ -364,7 +366,17 @@ onMounted(async () => {
         return;
       }
     }
-  } catch {}
+  } catch (err: any) {
+    if (isBackendUnavailable(err)) {
+      backendUnavailable.value = true;
+      error.value = 'Máy chủ đăng nhập hiện không phản hồi. Hãy đảm bảo backend đang chạy và kết nối được database.';
+      return;
+    }
+    if (isBackendUnavailable(err)) {
+      backendUnavailable.value = true;
+      error.value = 'KhÃ´ng thá»ƒ káº¿t ná»‘i tá»›i mÃ¡y chá»§ Ä‘Äƒng nháº­p. HÃ£y kiá»ƒm tra backend/API rá»“i thá»­ láº¡i.';
+    }
+  }
 
   const ready = await ensureGoogleReady();
   if (ready) {
@@ -463,6 +475,18 @@ async function handleLogin() {
   } finally {
     loading.value = false;
   }
+}
+
+function isBackendUnavailable(err: any) {
+  if (!err) {
+    return false;
+  }
+
+  if (!err.response) {
+    return true;
+  }
+
+  return Number(err.response.status) >= 500;
 }
 
 async function retryGoogleButton() {

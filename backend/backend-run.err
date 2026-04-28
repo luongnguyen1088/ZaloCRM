@@ -1,0 +1,124 @@
+[2026-04-28T15:12:52.463Z] [ERROR] [dashboard] Message volume error: PrismaClientKnownRequestError: 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `42P01`. Message: `relation "messages" does not exist`
+    at Gr.handleRequestError (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:8286)
+    at Gr.handleAndLogRequestError (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:7581)
+    at Gr.request (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:7288)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:75:6730)
+    at async Object.<anonymous> (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/dist/modules/dashboard/dashboard-routes.js:62:26) {
+  code: 'P2010',
+  meta: {
+    driverAdapterError: DriverAdapterError: TableDoesNotExist
+        at PrismaPgAdapter.onError (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/node_modules/@prisma/adapter-pg/dist/index.mjs:651:11)
+        at PrismaPgAdapter.performIO (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/node_modules/@prisma/adapter-pg/dist/index.mjs:646:12)
+        at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+        at async PrismaPgAdapter.queryRaw (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/node_modules/@prisma/adapter-pg/dist/index.mjs:566:30)
+        at async e.interpretNode (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:11:44573)
+        at async e.run (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:11:43287)
+        at async e.execute (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:57:815)
+        at async jt.request (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:58:2327)
+        at async Object.singleLoader (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:6569)
+        at async Gr.request (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:7175)
+        at async a (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:75:6730)
+        at async Object.<anonymous> (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/dist/modules/dashboard/dashboard-routes.js:62:26) {
+      cause: [Object]
+    }
+  },
+  clientVersion: '7.5.0'
+}
+[2026-04-28T15:16:22.505Z] [ERROR] [dashboard] Message volume error: PrismaClientKnownRequestError: 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `42P01`. Message: `relation "messages" does not exist`
+    at Gr.handleRequestError (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:8286)
+    at Gr.handleAndLogRequestError (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:7581)
+    at Gr.request (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:7288)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:75:6730)
+    at async Object.<anonymous> (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/dist/modules/dashboard/dashboard-routes.js:62:26) {
+  code: 'P2010',
+  meta: {
+    driverAdapterError: DriverAdapterError: TableDoesNotExist
+        at PrismaPgAdapter.onError (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/node_modules/@prisma/adapter-pg/dist/index.mjs:651:11)
+        at PrismaPgAdapter.performIO (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/node_modules/@prisma/adapter-pg/dist/index.mjs:646:12)
+        at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+        at async PrismaPgAdapter.queryRaw (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/node_modules/@prisma/adapter-pg/dist/index.mjs:566:30)
+        at async e.interpretNode (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:11:44573)
+        at async e.run (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:11:43287)
+        at async e.execute (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:57:815)
+        at async jt.request (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:58:2327)
+        at async Object.singleLoader (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:6569)
+        at async Gr.request (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:7175)
+        at async a (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:75:6730)
+        at async Object.<anonymous> (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/dist/modules/dashboard/dashboard-routes.js:62:26) {
+      cause: [Object]
+    }
+  },
+  clientVersion: '7.5.0'
+}
+[2026-04-28T15:16:40.724Z] [ERROR] [dashboard] Message volume error: PrismaClientKnownRequestError: 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `42P01`. Message: `relation "messages" does not exist`
+    at Gr.handleRequestError (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:8286)
+    at Gr.handleAndLogRequestError (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:7581)
+    at Gr.request (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:7288)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:75:6730)
+    at async Object.<anonymous> (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/dist/modules/dashboard/dashboard-routes.js:62:26) {
+  code: 'P2010',
+  meta: {
+    driverAdapterError: DriverAdapterError: TableDoesNotExist
+        at PrismaPgAdapter.onError (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/node_modules/@prisma/adapter-pg/dist/index.mjs:651:11)
+        at PrismaPgAdapter.performIO (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/node_modules/@prisma/adapter-pg/dist/index.mjs:646:12)
+        at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+        at async PrismaPgAdapter.queryRaw (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/node_modules/@prisma/adapter-pg/dist/index.mjs:566:30)
+        at async e.interpretNode (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:11:44573)
+        at async e.run (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:11:43287)
+        at async e.execute (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:57:815)
+        at async jt.request (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:58:2327)
+        at async Object.singleLoader (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:6569)
+        at async Gr.request (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:7175)
+        at async a (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:75:6730)
+        at async Object.<anonymous> (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/dist/modules/dashboard/dashboard-routes.js:62:26) {
+      cause: [Object]
+    }
+  },
+  clientVersion: '7.5.0'
+}
+[2026-04-28T15:16:43.033Z] [ERROR] [dashboard] Message volume error: PrismaClientKnownRequestError: 
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `42P01`. Message: `relation "messages" does not exist`
+    at Gr.handleRequestError (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:8286)
+    at Gr.handleAndLogRequestError (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:7581)
+    at Gr.request (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:7288)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:75:6730)
+    at async Object.<anonymous> (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/dist/modules/dashboard/dashboard-routes.js:62:26) {
+  code: 'P2010',
+  meta: {
+    driverAdapterError: DriverAdapterError: TableDoesNotExist
+        at PrismaPgAdapter.onError (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/node_modules/@prisma/adapter-pg/dist/index.mjs:651:11)
+        at PrismaPgAdapter.performIO (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/node_modules/@prisma/adapter-pg/dist/index.mjs:646:12)
+        at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+        at async PrismaPgAdapter.queryRaw (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/node_modules/@prisma/adapter-pg/dist/index.mjs:566:30)
+        at async e.interpretNode (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:11:44573)
+        at async e.run (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:11:43287)
+        at async e.execute (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:57:815)
+        at async jt.request (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:58:2327)
+        at async Object.singleLoader (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:6569)
+        at async Gr.request (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:65:7175)
+        at async a (C:\Users\ADMIN\Desktop\Code\Antigravity 2026\ZaloCRM\backend\node_modules\@prisma\client\runtime\client.js:75:6730)
+        at async Object.<anonymous> (file:///C:/Users/ADMIN/Desktop/Code/Antigravity%202026/ZaloCRM/backend/dist/modules/dashboard/dashboard-routes.js:62:26) {
+      cause: [Object]
+    }
+  },
+  clientVersion: '7.5.0'
+}
