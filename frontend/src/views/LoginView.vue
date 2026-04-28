@@ -1,104 +1,113 @@
 <template>
-  <div class="login-shell">
-    <div class="login-container">
-      <section class="login-showcase">
-        <div class="entrance-animation-delay-1">
-          <div class="login-badge glow-border">
-            <v-icon size="18" color="primary">mdi-auto-fix</v-icon>
-            <span class="ml-2">Claro cho đội ngũ social commerce</span>
-          </div>
+  <div class="login-page">
+    <div class="login-backdrop">
+      <div class="backdrop-orb backdrop-orb--blue"></div>
+      <div class="backdrop-orb backdrop-orb--amber"></div>
+      <div class="backdrop-grid"></div>
+    </div>
+
+    <div class="login-layout">
+      <section class="login-hero">
+        <div class="hero-pill">
+          <v-icon size="18" color="primary">mdi-creation-outline</v-icon>
+          <span>Claro AI sales workspace</span>
         </div>
 
-        <div class="login-copy entrance-animation-delay-2">
-          <p class="login-overline">Một workspace cho sale, CSKH và automation</p>
-          <h1 class="login-title">
-            Đăng nhập để tiếp tục
-            <span class="text-gradient">vận hành Claro</span>
+        <div class="hero-copy">
+          <p class="hero-overline">Social commerce operations</p>
+          <h1 class="hero-title">
+            Đăng nhập để quay lại
+            <span class="hero-title__accent">bàn điều phối bán hàng</span>
           </h1>
-          <p class="login-description">
-            Theo dõi hội thoại, chốt lịch hẹn, phân tích hiệu suất và kích hoạt AI trong cùng một giao diện
-            dành cho đội ngũ đang chạy Zalo hằng ngày.
+          <p class="hero-description">
+            Theo dõi hội thoại, lịch hẹn, trạng thái xử lý và gợi ý AI trong một giao diện duy nhất cho đội sale và CSKH.
           </p>
         </div>
 
-        <div class="login-stat-grid entrance-animation-delay-3">
-          <article v-for="stat in quickStats" :key="stat.label" class="login-stat-card glass-dark">
-            <div class="login-stat-value">{{ stat.value }}</div>
-            <div class="login-stat-label">{{ stat.label }}</div>
+        <div class="hero-stats">
+          <article v-for="stat in quickStats" :key="stat.label" class="stat-card">
+            <div class="stat-card__value">{{ stat.value }}</div>
+            <div class="stat-card__label">{{ stat.label }}</div>
           </article>
         </div>
 
-        <div class="login-preview entrance-animation-delay-4">
-          <div class="login-preview__surface glass-dark">
-            <div class="login-preview__top">
+        <div class="workspace-board">
+          <div class="workspace-board__header">
+            <div>
+              <p class="workspace-board__eyebrow">Realtime workspace</p>
+              <h2 class="workspace-board__title">Mọi tín hiệu bán hàng được gom về một màn hình rõ ràng</h2>
+            </div>
+
+            <div class="workspace-board__status">
+              <span class="status-dot"></span>
+              <span>Đồng bộ liên tục</span>
+            </div>
+          </div>
+
+          <div class="workspace-board__media">
+            <v-img :src="heroIllustration" alt="Claro workspace" cover class="workspace-board__image" />
+
+            <div class="workspace-board__floating">
+              <div class="workspace-board__floating-label">AI Summary</div>
+              <strong>Rút gọn hội thoại dài thành các ý chính để sale phản hồi nhanh hơn</strong>
+            </div>
+          </div>
+
+          <div class="workspace-board__signals">
+            <div v-for="signal in workspaceSignals" :key="signal.label" class="signal-card">
+              <div class="signal-card__label">{{ signal.label }}</div>
+              <div class="signal-card__value">{{ signal.value }}</div>
+              <div class="signal-card__note">{{ signal.note }}</div>
+            </div>
+          </div>
+
+          <div class="workflow-list">
+            <article v-for="item in highlights" :key="item.title" class="workflow-card">
+              <div class="workflow-card__icon">
+                <v-icon size="20">{{ item.icon }}</v-icon>
+              </div>
+
               <div>
-                <p class="login-preview__eyebrow">Realtime workspace</p>
-                <h2 class="login-preview__title">Mọi tín hiệu bán hàng được gom về một màn hình</h2>
+                <div class="workflow-card__title">{{ item.title }}</div>
+                <div class="workflow-card__text">{{ item.description }}</div>
               </div>
-              <div class="live-indicator">
-                <div class="pulse-dot"></div>
-                <span>Đồng bộ theo thời gian thực</span>
-              </div>
-            </div>
-
-            <div class="login-preview__illustration">
-              <v-img :src="heroIllustration" alt="Claro illustration" cover class="rounded-xl border-glass" />
-              <div class="glow-layer"></div>
-              <div class="login-preview__callout glass-dark">
-                <span class="login-preview__callout-label">AI Summary</span>
-                <strong class="login-preview__callout-title">Rút gọn hội thoại dài thành 3 ý chính cho sale</strong>
-              </div>
-            </div>
-
-            <div class="login-preview__metrics">
-              <div v-for="metric in overviewMetrics" :key="metric.label" class="login-preview__metric">
-                <div class="login-preview__metric-value">{{ metric.value }}</div>
-                <div class="login-preview__metric-label">{{ metric.label }}</div>
-              </div>
-            </div>
-
-            <div class="login-feature-list">
-              <div v-for="item in highlights" :key="item.title" class="login-feature">
-                <div class="feature-icon-shell">
-                  <v-icon size="20" class="feature-icon">{{ item.icon }}</v-icon>
-                </div>
-                <div>
-                  <div class="login-feature__title">{{ item.title }}</div>
-                  <div class="login-feature__text">{{ item.description }}</div>
-                </div>
-              </div>
-            </div>
+            </article>
           </div>
         </div>
       </section>
 
-      <section class="login-form-side entrance-animation-delay-2">
-        <v-card class="login-card glass-premium" elevation="0">
-          <div class="login-card__content">
-            <header class="login-card__header">
-              <div class="brand-logo-container">
-                <div class="logo-orb">
-                  <v-icon size="34" color="white">mdi-lightning-bolt</v-icon>
+      <section class="login-panel-wrap">
+        <v-card class="login-panel" elevation="0">
+          <div class="login-panel__inner">
+            <header class="panel-header">
+              <div class="panel-brand">
+                <div class="panel-brand__orb">
+                  <v-icon size="28" color="white">mdi-lightning-bolt</v-icon>
+                </div>
+
+                <div>
+                  <div class="panel-brand__eyebrow">Đăng nhập workspace</div>
+                  <h2 class="panel-brand__title">Chào mừng trở lại</h2>
                 </div>
               </div>
 
-              <div class="login-card__copy">
-                <div class="login-card__eyebrow">Đăng nhập workspace</div>
-                <h2 class="login-card__title">Chào mừng trở lại</h2>
-                <p class="login-card__subtitle">
-                  Dùng email công việc đã được cấp quyền để vào lại dashboard và tiếp tục phiên làm việc.
-                </p>
-              </div>
+              <p class="panel-brand__description">
+                Dùng email công việc hoặc Google Workspace đã được liên kết để vào lại dashboard.
+              </p>
             </header>
 
-            <div class="login-card__microcopy">
-              <div class="login-card__microcopy-item">
-                <v-icon size="16" class="mr-2">mdi-shield-check-outline</v-icon>
-                <span>Bảo mật theo workspace và phân quyền người dùng.</span>
+            <div class="entry-points">
+              <div class="entry-point">
+                <v-icon size="16">mdi-email-outline</v-icon>
+                <span>Email nội bộ</span>
               </div>
-              <div class="login-card__microcopy-item">
-                <v-icon size="16" class="mr-2">mdi-google</v-icon>
-                <span>Hỗ trợ đăng nhập bằng Google Workspace nếu tài khoản đã được liên kết.</span>
+              <div class="entry-point">
+                <v-icon size="16">mdi-google</v-icon>
+                <span>Google Workspace</span>
+              </div>
+              <div class="entry-point">
+                <v-icon size="16">mdi-shield-check-outline</v-icon>
+                <span>Phân quyền theo workspace</span>
               </div>
             </div>
 
@@ -107,16 +116,17 @@
               type="error"
               variant="tonal"
               density="comfortable"
-              class="login-error"
+              class="panel-alert"
             >
               {{ error }}
             </v-alert>
 
-            <v-form @submit.prevent="handleLogin" class="login-form">
-              <div class="input-group">
+            <v-form class="login-form" @submit.prevent="handleLogin">
+              <div class="field-shell">
+                <label class="field-label" for="login-email">Email công việc</label>
                 <v-text-field
+                  id="login-email"
                   v-model="email"
-                  label="Email công việc"
                   type="email"
                   variant="plain"
                   autocomplete="email"
@@ -128,16 +138,21 @@
                   class="premium-input"
                 >
                   <template #prepend-inner>
-                    <v-icon class="input-icon mr-2">mdi-email-outline</v-icon>
+                    <v-icon class="field-icon mr-2">mdi-email-outline</v-icon>
                   </template>
                 </v-text-field>
               </div>
 
-              <div class="input-group">
+              <div class="field-shell">
+                <div class="field-label-row">
+                  <label class="field-label" for="login-password">Mật khẩu</label>
+                  <router-link to="/forgot-password" class="inline-link">Quên mật khẩu?</router-link>
+                </div>
+
                 <v-text-field
+                  id="login-password"
                   v-model="password"
                   :type="showPassword ? 'text' : 'password'"
-                  label="Mật khẩu"
                   variant="plain"
                   autocomplete="current-password"
                   placeholder="Nhập mật khẩu của bạn"
@@ -146,7 +161,7 @@
                   class="premium-input"
                 >
                   <template #prepend-inner>
-                    <v-icon class="input-icon mr-2">mdi-lock-outline</v-icon>
+                    <v-icon class="field-icon mr-2">mdi-lock-outline</v-icon>
                   </template>
                   <template #append-inner>
                     <v-btn
@@ -157,7 +172,7 @@
                       class="password-toggle"
                       @click="showPassword = !showPassword"
                     >
-                      <v-icon class="input-icon">
+                      <v-icon class="field-icon">
                         {{ showPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline' }}
                       </v-icon>
                     </v-btn>
@@ -165,34 +180,35 @@
                 </v-text-field>
               </div>
 
-              <div class="login-assistance">
-                <div class="login-assistance__note">
-                  <v-icon size="16" class="mr-2">mdi-shield-check-outline</v-icon>
-                  <span>Không truy cập được? <router-link to="/forgot-password" class="assist-link">Quên mật khẩu?</router-link></span>
+              <div class="form-meta">
+                <div class="form-meta__note">
+                  <v-icon size="16">mdi-shield-check-outline</v-icon>
+                  <span>Chỉ tài khoản đã được cấp quyền trong workspace mới đăng nhập được.</span>
                 </div>
-                <router-link to="/register" class="assist-link">Tạo workspace mới</router-link>
+
+                <router-link to="/register" class="inline-link">Tạo workspace mới</router-link>
               </div>
 
               <v-btn
                 type="submit"
                 height="58"
                 block
-                class="btn-primary-gradient"
+                class="primary-button"
                 :loading="loading"
                 :disabled="loading || !canSubmit"
               >
                 <span>{{ submitLabel }}</span>
-                <v-icon end>mdi-chevron-right</v-icon>
+                <v-icon end>mdi-arrow-right</v-icon>
               </v-btn>
             </v-form>
 
-            <div class="divider-text">
-              <span class="line"></span>
-              <span class="text">Hoặc tiếp tục với</span>
-              <span class="line"></span>
+            <div class="divider">
+              <span class="divider__line"></span>
+              <span class="divider__text">Hoặc tiếp tục với</span>
+              <span class="divider__line"></span>
             </div>
 
-            <div class="google-signin-block">
+            <div class="google-area">
               <div
                 ref="googleButtonHost"
                 class="google-button-host"
@@ -204,7 +220,7 @@
                 block
                 height="54"
                 variant="outlined"
-                class="btn-google-glass"
+                class="google-fallback"
                 :loading="googleLoading"
                 :disabled="loading"
                 @click="retryGoogleButton"
@@ -217,33 +233,31 @@
                 />
                 <span>{{ googleButtonLabel }}</span>
               </v-btn>
-            </div>
 
-            <p class="login-google-hint" :class="{ 'is-ready': googleReady }">
-              {{ googleHint }}
-            </p>
+              <p class="google-hint" :class="{ 'is-ready': googleReady }">
+                {{ googleHint }}
+              </p>
+            </div>
 
             <v-alert
               v-if="googleDiagnostic.visible"
               :type="googleDiagnostic.level"
               variant="tonal"
               density="comfortable"
-              class="login-google-diagnostic"
+              class="panel-alert panel-alert--google"
             >
-              <div class="login-google-diagnostic__title">{{ googleDiagnostic.title }}</div>
-              <div class="login-google-diagnostic__text">{{ googleDiagnostic.detail }}</div>
+              <div class="google-diagnostic__title">{{ googleDiagnostic.title }}</div>
+              <div class="google-diagnostic__text">{{ googleDiagnostic.detail }}</div>
             </v-alert>
 
-            <div class="login-google-diagnostic-note">
+            <div class="integration-note">
               Nếu bạn thấy lỗi <strong>`Google connection expired or failed. Please relink your Google account.`</strong>
-              ở trang <strong>Tích hợp</strong>, đó là lỗi OAuth của Google Sheets, không phải lỗi đăng nhập Google.
+              ở trang <strong>Tích hợp</strong>, đó là lỗi OAuth của Google Sheets chứ không phải lỗi đăng nhập Google.
             </div>
 
-            <footer class="login-footer">
-              <p class="footer-text">
-                Chưa có hệ thống cho đội ngũ của bạn?
-                <router-link to="/register" class="signup-link">Thiết lập workspace mới</router-link>
-              </p>
+            <footer class="panel-footer">
+              <span>Chưa có hệ thống cho đội ngũ của bạn?</span>
+              <router-link to="/register" class="inline-link">Thiết lập workspace mới</router-link>
             </footer>
           </div>
         </v-card>
@@ -256,8 +270,8 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import heroIllustration from '@/assets/hero.png';
-import { useAuthStore } from '@/stores/auth';
 import { GOOGLE_CLIENT_ID, hasGoogleClientId } from '@/config/google';
+import { useAuthStore } from '@/stores/auth';
 
 interface GoogleIdentity {
   accounts?: {
@@ -297,36 +311,37 @@ const googleDiagnostic = ref({
   title: '',
   detail: '',
 });
+
 const router = useRouter();
 const authStore = useAuthStore();
 
 const quickStats = [
   { value: '70%', label: 'Giảm thời gian phản hồi lead mới' },
-  { value: '< 5 phút', label: 'Nắm được trạng thái lịch hẹn và hội thoại' },
-  { value: '24/7', label: 'AI hỗ trợ ngoài giờ và lúc quá tải' },
+  { value: '< 5 phút', label: 'Nắm trạng thái lịch hẹn và hội thoại nhanh hơn' },
+  { value: '24/7', label: 'AI hỗ trợ ngoài giờ và lúc đội sale quá tải' },
 ];
 
-const overviewMetrics = [
-  { value: '1 dashboard', label: 'Gom sales, CSKH, OA và automation' },
-  { value: '3 lớp', label: 'Theo dõi KPI, lịch hẹn và pipeline theo thời gian thực' },
-  { value: 'AI-ready', label: 'Tóm tắt, gợi ý và phản hồi nhanh ngay trong luồng chat' },
+const workspaceSignals = [
+  { label: 'Inbox hợp nhất', value: '1 workspace', note: 'Chat, CRM và AI trên cùng một màn hình.' },
+  { label: 'Nhắc việc', value: 'Theo bước', note: 'Không bỏ quên follow-up hoặc lịch đã hẹn.' },
+  { label: 'Đề xuất trả lời', value: 'Realtime', note: 'AI hỗ trợ tóm tắt và gợi ý phản hồi ngay trong luồng chat.' },
 ];
 
 const highlights = [
   {
     icon: 'mdi-auto-fix',
     title: 'AI Smart Summary',
-    description: 'Tự động rút gọn hội thoại để đội sale nắm đúng nhu cầu trước khi trả lời.',
+    description: 'Tóm tắt nhanh bối cảnh để sale không phải đọc lại toàn bộ cuộc hội thoại trước khi trả lời.',
   },
   {
     icon: 'mdi-chart-line',
     title: 'Pipeline rõ ràng',
-    description: 'Theo dõi từng bước từ lead mới, lịch hẹn đến chuyển đổi ngay trên một flow.',
+    description: 'Nhìn được lead mới, lịch hẹn, cơ hội và bước tiếp theo trong một flow thống nhất.',
   },
   {
     icon: 'mdi-robot-outline',
-    title: 'Automation theo điều kiện',
-    description: 'Kích hoạt các action lặp lại mà không phải chuyển tab hoặc thao tác thủ công.',
+    title: 'Automation đúng lúc',
+    description: 'Kích hoạt các tác vụ lặp lại theo điều kiện mà không phải nhảy giữa nhiều tab.',
   },
 ];
 
@@ -342,20 +357,21 @@ const googleButtonLabel = computed(() => {
 const googleHint = computed(() =>
   googleReady.value
     ? 'Dành cho tài khoản đã liên kết Google Workspace với hệ thống.'
-    : 'Nếu nút Google chưa sẵn sàng, hệ thống sẽ tự khởi tạo lại khi bạn bấm.'
+    : 'Nếu nút Google chưa sẵn sàng, hệ thống sẽ thử khởi tạo lại khi bạn bấm.'
 );
 
 watch([email, password], () => {
   if (error.value) {
     error.value = '';
   }
+
   backendUnavailable.value = false;
 });
 
 onMounted(async () => {
   try {
-    const needs = await authStore.checkSetup();
-    if (needs) {
+    const needsSetup = await authStore.checkSetup();
+    if (needsSetup) {
       router.replace('/setup');
       return;
     }
@@ -370,17 +386,9 @@ onMounted(async () => {
   } catch (err: any) {
     if (isBackendUnavailable(err)) {
       backendUnavailable.value = true;
-      error.value = 'Máy chủ đăng nhập hiện không phản hồi. Hãy đảm bảo backend đang chạy và kết nối được database.';
+      error.value =
+        'Máy chủ đăng nhập hiện không phản hồi. Hãy kiểm tra backend, kết nối database và thử lại sau.';
       return;
-    }
-    if (isBackendUnavailable(err)) {
-      backendUnavailable.value = true;
-      error.value = 'Máy chủ đăng nhập hiện không phản hồi. Hãy đảm bảo backend đang chạy và kết nối được database.';
-      return;
-    }
-    if (isBackendUnavailable(err)) {
-      backendUnavailable.value = true;
-      error.value = 'KhÃ´ng thá»ƒ káº¿t ná»‘i tá»›i mÃ¡y chá»§ Ä‘Äƒng nháº­p. HÃ£y kiá»ƒm tra backend/API rá»“i thá»­ láº¡i.';
     }
   }
 
@@ -411,6 +419,7 @@ function initGoogle(identity: GoogleIdentity) {
     callback: handleGoogleCallback,
     use_fedcm_for_prompt: false,
   });
+
   googleInitialized.value = true;
   googleReady.value = true;
 }
@@ -423,7 +432,6 @@ async function handleGoogleCallback(response: GoogleCredentialResponse) {
       'Google đã mở prompt nhưng không trả về token',
       'Người dùng có thể đã đóng popup, hủy chọn tài khoản hoặc trình duyệt chặn bước xác thực cuối.'
     );
-    console.warn('[Google Login] Callback returned without credential');
     error.value = 'Không nhận được xác thực từ Google. Vui lòng thử lại.';
     return;
   }
@@ -434,7 +442,7 @@ async function handleGoogleCallback(response: GoogleCredentialResponse) {
     'Đã nhận token từ Google',
     'Đang gửi token tới máy chủ để xác thực qua POST /api/v1/auth/google.'
   );
-  console.info('[Google Login] Credential received, sending POST /auth/google');
+
   loading.value = true;
   error.value = '';
 
@@ -446,7 +454,6 @@ async function handleGoogleCallback(response: GoogleCredentialResponse) {
       'Đăng nhập Google thành công',
       'Máy chủ đã xác thực tài khoản Google và tạo phiên đăng nhập thành công.'
     );
-    console.info('[Google Login] POST /auth/google succeeded');
     router.push('/dashboard');
   } catch (err: any) {
     const backendMessage = err.response?.data?.error || err.message || 'Đăng nhập với Google thất bại.';
@@ -459,16 +466,17 @@ async function handleGoogleCallback(response: GoogleCredentialResponse) {
         'Đây là lỗi Google Sheets integration, không phải lỗi đăng nhập',
         'Token OAuth của Google Sheets ở trang Tích hợp đã hết hạn. Việc đó không phải là bước POST /auth/google của màn đăng nhập.'
       );
-    } else {
+    } else if (isBackendUnavailable(err)) {
       setGoogleDiagnostic(
         'backend',
         'error',
-        'Google prompt đã xong nhưng POST /auth/google bị lỗi',
-        backendMessage
+        'Máy chủ chưa phản hồi cho Google Sign-In',
+        'Frontend đã nhận token từ Google nhưng backend không hoàn tất bước xác thực.'
       );
+    } else {
+      setGoogleDiagnostic('backend', 'error', 'Google prompt đã xong nhưng POST /auth/google bị lỗi', backendMessage);
     }
 
-    console.error('[Google Login] POST /auth/google failed:', backendMessage, err);
     error.value = 'Đăng nhập với Google thất bại. Vui lòng thử lại.';
   } finally {
     loading.value = false;
@@ -487,7 +495,12 @@ async function handleLogin() {
     await authStore.login(email.value.trim(), password.value);
     router.push('/dashboard');
   } catch (err: any) {
-    error.value = err.response?.data?.error || 'Đăng nhập thất bại. Kiểm tra lại email và mật khẩu.';
+    if (isBackendUnavailable(err)) {
+      backendUnavailable.value = true;
+      error.value = 'Máy chủ đăng nhập hiện không phản hồi. Hãy thử lại sau khi backend sẵn sàng.';
+    } else {
+      error.value = err.response?.data?.error || 'Đăng nhập thất bại. Kiểm tra lại email và mật khẩu.';
+    }
   } finally {
     loading.value = false;
   }
@@ -515,15 +528,15 @@ async function retryGoogleButton() {
     'Đang chuẩn bị nút Google Sign-In',
     'Hệ thống đang kiểm tra thư viện Google và thử render lại nút đăng nhập chính thức.'
   );
+
   const ready = await ensureGoogleReady({ force: true });
   if (!ready) {
     setGoogleDiagnostic(
       'init',
       'warning',
       'Google Sign-In chưa sẵn sàng',
-      'Thư viện Google chưa khởi tạo xong hoặc bị trình duyệt/extension chặn trước khi nút đăng nhập được render.'
+      'Thư viện Google chưa khởi tạo xong hoặc bị trình duyệt hay extension chặn trước khi nút đăng nhập được render.'
     );
-    console.warn('[Google Login] Google library is not ready');
     error.value = 'Google Sign-In chưa sẵn sàng. Vui lòng thử lại sau vài giây hoặc tải lại trang.';
     return;
   }
@@ -536,7 +549,6 @@ async function retryGoogleButton() {
       'Không thể render nút Google Sign-In',
       'Thư viện Google đã tải nhưng không render được nút đăng nhập. Kiểm tra trình duyệt, extension hoặc CSP của site.'
     );
-    console.warn('[Google Login] Google button render failed');
   }
 }
 
@@ -655,430 +667,411 @@ async function renderGoogleButton() {
     'render',
     'success',
     'Nút Google đã sẵn sàng',
-    'Đăng nhập Google giờ dùng nút chính thức của Google thay cho luồng prompt dễ bị skip.'
+    'Đăng nhập Google giờ dùng nút chính thức của Google thay cho luồng prompt dễ bị bỏ qua.'
   );
-  console.info('[Google Login] Official Google button rendered');
+
   return true;
 }
 </script>
 
 <style scoped>
-.login-shell {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.login-page {
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+  padding: clamp(24px, 4vw, 40px);
 }
 
-.login-container {
+.login-backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.backdrop-orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(90px);
+  opacity: 0.55;
+}
+
+.backdrop-orb--blue {
+  top: -120px;
+  left: -40px;
+  width: 360px;
+  height: 360px;
+  background: rgba(42, 106, 255, 0.28);
+}
+
+.backdrop-orb--amber {
+  right: -120px;
+  bottom: 40px;
+  width: 340px;
+  height: 340px;
+  background: rgba(255, 187, 89, 0.22);
+}
+
+.backdrop-grid {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(120, 134, 160, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 134, 160, 0.08) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: radial-gradient(circle at center, black 42%, transparent 88%);
+}
+
+.login-layout {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(420px, 0.92fr);
-  gap: 72px;
+  gap: 52px;
   width: 100%;
-  max-width: 1300px;
+  max-width: 1320px;
+  margin: 0 auto;
   align-items: start;
 }
 
-.login-showcase {
-  display: flex;
-  flex-direction: column;
+.login-hero {
+  display: grid;
+  gap: 28px;
 }
 
-.login-form-side {
-  display: flex;
-  justify-content: center;
-}
-
-@keyframes fadeInSlide {
-  from {
-    opacity: 0;
-    transform: translateY(32px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-
-  50% {
-    transform: scale(1.5);
-    opacity: 0.5;
-  }
-
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.entrance-animation-delay-1 {
-  animation: fadeInSlide 0.8s ease-out forwards;
-}
-
-.entrance-animation-delay-2 {
-  animation: fadeInSlide 0.8s ease-out 0.08s forwards;
-  opacity: 0;
-}
-
-.entrance-animation-delay-3 {
-  animation: fadeInSlide 0.8s ease-out 0.16s forwards;
-  opacity: 0;
-}
-
-.entrance-animation-delay-4 {
-  animation: fadeInSlide 0.8s ease-out 0.24s forwards;
-  opacity: 0;
-}
-
-.login-badge {
+.hero-pill {
   display: inline-flex;
   align-items: center;
-  padding: 10px 18px;
+  gap: 10px;
+  width: fit-content;
+  padding: 12px 18px;
   border-radius: 999px;
-  background: var(--color-surface-glass);
-  color: var(--color-text-secondary);
-  font-size: 0.88rem;
-  font-weight: 600;
-  margin-bottom: 28px;
-  backdrop-filter: blur(12px);
-}
-
-.glow-border {
   border: 1px solid var(--color-primary-soft-strong);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px);
+  color: var(--color-text-secondary);
   box-shadow: var(--glow-brand);
+  font-size: 0.88rem;
+  font-weight: 700;
 }
 
-.login-overline {
+.hero-copy {
+  max-width: 660px;
+}
+
+.hero-overline {
+  margin-bottom: 14px;
   color: var(--color-accent);
-  text-transform: uppercase;
+  font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 1.8px;
-  font-size: 0.82rem;
-  margin-bottom: 14px;
+  text-transform: uppercase;
 }
 
-.login-title {
+.hero-title {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: clamp(3rem, 5.5vw, 4.8rem);
-  font-weight: 800;
-  line-height: 1;
+  gap: 8px;
   color: var(--color-text);
-  letter-spacing: -2.4px;
-  max-width: 620px;
+  font-size: clamp(3rem, 5vw, 5rem);
+  line-height: 0.98;
+  letter-spacing: -2.5px;
+  font-weight: 800;
 }
 
-.text-gradient {
+.hero-title__accent {
   background: var(--gradient-accent);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.login-description {
-  margin-top: 24px;
-  font-size: 1.08rem;
+.hero-description {
+  margin-top: 22px;
+  max-width: 620px;
   color: var(--color-text-secondary);
-  max-width: 600px;
+  font-size: 1.06rem;
   line-height: 1.72;
 }
 
-.login-stat-grid {
+.hero-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-  margin-top: 42px;
+  gap: 16px;
 }
 
-.glass-dark {
-  background: var(--color-surface-elevated);
+.stat-card,
+.workspace-board,
+.login-panel,
+.signal-card,
+.workflow-card {
   border: 1px solid var(--color-border);
-  backdrop-filter: blur(14px);
-  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(18px);
   box-shadow: var(--shadow-sm);
 }
 
-.login-stat-card {
+.stat-card {
   padding: 22px 20px;
+  border-radius: 24px;
 }
 
-.login-stat-value {
+.stat-card__value {
+  color: var(--color-text);
   font-size: 1.55rem;
   font-weight: 800;
-  color: var(--color-text);
   letter-spacing: -0.8px;
 }
 
-.login-stat-label {
+.stat-card__label {
+  margin-top: 10px;
   color: var(--color-text-secondary);
   font-size: 0.88rem;
-  line-height: 1.5;
-  margin-top: 10px;
+  line-height: 1.55;
 }
 
-.login-preview {
-  margin-top: 40px;
-}
-
-.login-preview__surface {
+.workspace-board {
   padding: 28px;
+  border-radius: 32px;
 }
 
-.login-preview__top {
+.workspace-board__header {
   display: flex;
   justify-content: space-between;
   gap: 20px;
   align-items: flex-start;
-  margin-bottom: 24px;
 }
 
-.login-preview__eyebrow {
-  color: var(--color-primary);
-  text-transform: uppercase;
-  font-weight: 700;
-  font-size: 0.76rem;
-  letter-spacing: 1.1px;
+.workspace-board__eyebrow {
   margin-bottom: 10px;
+  color: var(--color-primary);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
 }
 
-.login-preview__title,
-.login-feature__title,
-.login-card__title {
+.workspace-board__title {
+  max-width: 500px;
   color: var(--color-text);
+  font-size: 1.45rem;
+  line-height: 1.32;
   font-weight: 700;
 }
 
-.login-preview__title {
-  font-size: 1.4rem;
-  line-height: 1.3;
-  max-width: 460px;
-}
-
-.live-indicator {
+.workspace-board__status {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
+  padding: 10px 14px;
+  border-radius: 999px;
   background: var(--color-success-soft);
   border: 1px solid var(--color-success-border);
-  border-radius: 999px;
   color: var(--color-success);
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 700;
   white-space: nowrap;
 }
 
-.pulse-dot {
+.status-dot {
   width: 8px;
   height: 8px;
-  background: var(--color-success);
-  border-radius: 50%;
-  animation: pulse 2s infinite;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.12);
 }
 
-.login-preview__illustration {
+.workspace-board__media {
   position: relative;
-  height: 268px;
+  margin-top: 24px;
+  height: 290px;
 }
 
-.border-glass {
+.workspace-board__image {
+  height: 100%;
+  border-radius: 24px;
   border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-sm);
 }
 
-.glow-layer {
+.workspace-board__media::after {
+  content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 100% 0%, var(--color-primary-soft-strong), transparent 72%);
+  border-radius: 24px;
+  background: radial-gradient(circle at top right, rgba(33, 91, 255, 0.32), transparent 48%);
   pointer-events: none;
 }
 
-.login-preview__callout {
+.workspace-board__floating {
   position: absolute;
   right: 18px;
   bottom: 18px;
-  width: min(260px, calc(100% - 36px));
-  padding: 14px 16px;
+  width: min(280px, calc(100% - 36px));
+  padding: 16px 18px;
+  border-radius: 22px;
+  background: rgba(10, 18, 39, 0.78);
+  color: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(20px);
 }
 
-.login-preview__callout-label {
-  display: inline-block;
-  color: var(--color-primary);
+.workspace-board__floating-label {
+  margin-bottom: 8px;
+  color: rgba(173, 212, 255, 0.95);
   font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.workspace-board__signals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.signal-card {
+  border-radius: 20px;
+  padding: 16px;
+}
+
+.signal-card__label {
+  color: var(--color-text-muted);
+  font-size: 0.76rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 6px;
 }
 
-.login-preview__callout-title {
-  display: block;
+.signal-card__value {
+  margin: 8px 0 6px;
   color: var(--color-text);
-  line-height: 1.45;
-  font-size: 0.94rem;
-}
-
-.login-preview__metrics {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  margin: 22px 0 24px;
-}
-
-.login-preview__metric {
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: var(--color-surface-glass);
-  border: 1px solid var(--color-border);
-}
-
-.login-preview__metric-value {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 800;
-  color: var(--color-text);
-  margin-bottom: 6px;
 }
 
-.login-preview__metric-label {
-  font-size: 0.82rem;
-  line-height: 1.5;
+.signal-card__note {
   color: var(--color-text-secondary);
+  font-size: 0.84rem;
+  line-height: 1.55;
 }
 
-.login-feature-list {
+.workflow-list {
   display: grid;
-  gap: 16px;
-}
-
-.login-feature {
-  display: grid;
-  grid-template-columns: 40px minmax(0, 1fr);
   gap: 14px;
-  align-items: start;
+  margin-top: 20px;
 }
 
-.feature-icon-shell {
-  width: 40px;
-  height: 40px;
-  border-radius: 14px;
+.workflow-card {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 14px;
+  padding: 16px;
+  border-radius: 22px;
+}
+
+.workflow-card__icon {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
   background: var(--color-primary-soft);
+  color: var(--color-primary);
   border: 1px solid var(--color-primary-soft-strong);
 }
 
-.feature-icon {
-  color: var(--color-primary);
-}
-
-.login-feature__title {
+.workflow-card__title {
+  color: var(--color-text);
   font-size: 0.98rem;
+  font-weight: 700;
 }
 
-.login-feature__text {
-  font-size: 0.88rem;
-  line-height: 1.58;
+.workflow-card__text {
   margin-top: 6px;
+  color: var(--color-text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.56;
 }
 
-.login-card {
-  width: 100%;
-  max-width: 520px;
-}
-
-.glass-premium {
-  background: var(--color-surface-glass) !important;
-  border: 1px solid var(--color-border) !important;
-  backdrop-filter: blur(24px) saturate(180%);
-  border-radius: 32px !important;
-  box-shadow: var(--shadow-lg);
-  padding: 4px;
-}
-
-.login-card__content {
-  padding: 38px;
-}
-
-.login-card__header {
-  display: flex;
-  gap: 18px;
-  align-items: flex-start;
-  margin-bottom: 24px;
-}
-
-.brand-logo-container {
-  flex-shrink: 0;
-}
-
-.logo-orb {
-  width: 68px;
-  height: 68px;
-  background: var(--gradient-accent);
-  border-radius: 20px;
+.login-panel-wrap {
   display: flex;
   justify-content: center;
+}
+
+.login-panel {
+  width: 100%;
+  max-width: 520px;
+  border-radius: 34px !important;
+  background: rgba(255, 255, 255, 0.86) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.login-panel__inner {
+  padding: 34px;
+}
+
+.panel-header {
+  margin-bottom: 22px;
+}
+
+.panel-brand {
+  display: flex;
+  gap: 16px;
   align-items: center;
+}
+
+.panel-brand__orb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 62px;
+  height: 62px;
+  border-radius: 20px;
+  background: var(--gradient-brand);
   box-shadow: var(--glow-brand);
 }
 
-.login-card__copy {
-  min-width: 0;
-}
-
-.login-card__eyebrow {
+.panel-brand__eyebrow {
   color: var(--color-primary);
   font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 1.1px;
   text-transform: uppercase;
-  margin-bottom: 8px;
 }
 
-.login-card__title {
-  font-size: 2rem;
+.panel-brand__title {
+  color: var(--color-text);
+  font-size: 1.95rem;
+  font-weight: 800;
   letter-spacing: -1px;
 }
 
-.login-card__subtitle,
-.login-feature__text,
-.footer-text,
-.login-google-hint,
-.login-assistance__note {
+.panel-brand__description {
+  margin-top: 16px;
   color: var(--color-text-secondary);
+  line-height: 1.62;
 }
 
-.login-card__subtitle {
-  margin-top: 8px;
-  line-height: 1.6;
-}
-
-.login-card__microcopy {
+.entry-points {
   display: grid;
   gap: 10px;
   margin-bottom: 20px;
-  padding: 14px 16px;
-  border-radius: 20px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
 }
 
-.login-card__microcopy-item {
+.entry-point {
   display: inline-flex;
-  align-items: flex-start;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(245, 247, 252, 0.9);
+  border: 1px solid var(--color-border);
   color: var(--color-text-secondary);
-  font-size: 0.84rem;
-  line-height: 1.5;
+  font-size: 0.88rem;
+  font-weight: 600;
 }
 
-.login-error {
+.panel-alert {
   margin-bottom: 18px;
   border-radius: 18px;
 }
@@ -1088,26 +1081,41 @@ async function renderGoogleButton() {
   gap: 14px;
 }
 
-.input-group {
-  background: var(--color-surface-glass);
+.field-shell {
+  padding: 12px 16px;
+  border-radius: 20px;
   border: 1px solid var(--color-border);
-  border-radius: 18px;
-  padding: 10px 16px;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(255, 255, 255, 0.75);
+  transition: all 0.28s ease;
 }
 
-.input-group:focus-within {
-  background: var(--color-surface);
+.field-shell:focus-within {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 4px var(--color-primary-soft);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.field-label-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--color-text-secondary);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.field-icon {
+  color: var(--color-text-secondary);
 }
 
 .premium-input {
   width: 100%;
-}
-
-.input-icon {
-  color: var(--color-text-secondary);
 }
 
 .password-toggle {
@@ -1120,13 +1128,9 @@ async function renderGoogleButton() {
 }
 
 :deep(.v-field__input) {
+  padding-top: 6px;
   color: var(--color-text) !important;
   font-size: 1rem;
-  padding-top: 10px;
-}
-
-:deep(.v-label) {
-  color: var(--color-text-secondary) !important;
 }
 
 :deep(.v-field input::placeholder) {
@@ -1134,80 +1138,68 @@ async function renderGoogleButton() {
   opacity: 1;
 }
 
-.login-assistance {
+.form-meta {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
+  gap: 14px;
   align-items: center;
-  margin: 4px 0 6px;
+  margin: 2px 0 6px;
 }
 
-.login-assistance__note {
+.form-meta__note {
   display: inline-flex;
   align-items: center;
-  font-size: 0.84rem;
+  gap: 8px;
+  color: var(--color-text-secondary);
+  font-size: 0.82rem;
   line-height: 1.5;
 }
 
-.assist-link,
-.signup-link {
+.inline-link {
   color: var(--color-accent);
-  text-decoration: none;
   font-weight: 700;
+  text-decoration: none;
   white-space: nowrap;
 }
 
-.btn-primary-gradient {
+.primary-button {
+  border-radius: 20px !important;
   background: var(--gradient-brand) !important;
   color: var(--color-text-inverse) !important;
-  border-radius: 18px !important;
   font-size: 1.02rem !important;
   font-weight: 700 !important;
   text-transform: none !important;
-  letter-spacing: -0.4px;
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  letter-spacing: -0.2px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease !important;
 }
 
-.btn-primary-gradient:hover {
-  transform: translateY(-2px);
+.primary-button:hover {
+  transform: translateY(-1px);
   box-shadow: var(--glow-brand) !important;
 }
 
-.divider-text {
+.divider {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   margin: 24px 0 14px;
 }
 
-.line {
+.divider__line {
   flex: 1;
   height: 1px;
   background: var(--color-border);
 }
 
-.text {
-  color: var(--color-text-secondary);
+.divider__text {
+  color: var(--color-text-muted);
   font-size: 0.76rem;
   font-weight: 700;
-  text-transform: uppercase;
   letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
-.btn-google-glass {
-  border: 1px solid var(--color-border) !important;
-  background: var(--color-surface-glass) !important;
-  color: var(--color-text) !important;
-  border-radius: 18px !important;
-  text-transform: none !important;
-  font-weight: 700 !important;
-}
-
-.btn-google-glass:hover {
-  background: var(--color-surface) !important;
-}
-
-.google-signin-block {
+.google-area {
   margin-top: 2px;
 }
 
@@ -1225,209 +1217,132 @@ async function renderGoogleButton() {
   width: 100% !important;
 }
 
-.login-google-hint {
-  margin-top: 12px;
-  font-size: 0.82rem;
-  line-height: 1.55;
-  min-height: 2.6em;
+.google-fallback {
+  border-radius: 18px !important;
+  border: 1px solid var(--color-border) !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+  color: var(--color-text) !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
 }
 
-.login-google-hint.is-ready {
+.google-hint {
+  min-height: 2.7em;
+  margin-top: 12px;
+  color: var(--color-text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.google-hint.is-ready {
   color: var(--color-success);
 }
 
-.login-google-diagnostic {
-  margin-top: 10px;
-  border-radius: 18px;
+.panel-alert--google {
+  margin-top: 8px;
+  margin-bottom: 0;
 }
 
-.login-google-diagnostic__title {
-  font-weight: 700;
+.google-diagnostic__title {
   margin-bottom: 4px;
+  font-weight: 700;
 }
 
-.login-google-diagnostic__text,
-.login-google-diagnostic-note {
+.google-diagnostic__text {
   font-size: 0.82rem;
   line-height: 1.55;
 }
 
-.login-google-diagnostic-note {
-  margin-top: 10px;
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: var(--color-surface);
+.integration-note {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: 18px;
   border: 1px solid var(--color-border);
+  background: rgba(245, 247, 252, 0.9);
   color: var(--color-text-secondary);
-}
-
-.login-footer {
-  margin-top: 26px;
-  text-align: center;
-}
-
-.footer-text {
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   line-height: 1.6;
 }
 
+.panel-footer {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
 @media (min-width: 1201px) {
-  .login-form-side {
+  .login-panel-wrap {
     position: sticky;
-    top: clamp(20px, 4vh, 40px);
+    top: 24px;
     align-self: start;
   }
 }
 
-@media (max-height: 920px) and (min-width: 1201px) {
-  .login-container {
-    gap: 52px;
-  }
-
-  .login-badge {
-    margin-bottom: 20px;
-  }
-
-  .login-title {
-    font-size: clamp(2.7rem, 4.5vw, 4rem);
-  }
-
-  .login-description {
-    margin-top: 18px;
-    font-size: 1rem;
-    line-height: 1.62;
-  }
-
-  .login-stat-grid {
-    margin-top: 30px;
-    gap: 14px;
-  }
-
-  .login-stat-card {
-    padding: 18px 18px;
-  }
-
-  .login-preview {
-    margin-top: 24px;
-  }
-
-  .login-preview__surface {
-    padding: 22px;
-  }
-
-  .login-preview__top {
-    margin-bottom: 18px;
-  }
-
-  .login-preview__illustration {
-    height: 220px;
-  }
-
-  .login-preview__metrics {
-    gap: 12px;
-    margin: 18px 0 18px;
-  }
-
-  .login-preview__metric {
-    padding: 12px 14px;
-  }
-
-  .login-feature-list {
-    gap: 12px;
-  }
-}
-
-@media (max-height: 820px) and (min-width: 1201px) {
-  .login-container {
-    gap: 42px;
-  }
-
-  .login-stat-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .login-preview__metrics {
-    display: none;
-  }
-
-  .login-preview__illustration {
-    height: 188px;
-  }
-
-  .login-preview__callout {
-    padding: 12px 14px;
-  }
-
-  .login-feature__text {
-    margin-top: 4px;
-  }
-}
-
 @media (max-width: 1200px) {
-  .login-container {
+  .login-layout {
     grid-template-columns: 1fr;
+    max-width: 760px;
     gap: 30px;
-    max-width: 720px;
   }
 
-  .login-showcase {
-    order: 2;
-  }
-
-  .login-form-side {
+  .login-panel-wrap {
     order: 1;
   }
 
-  .login-card {
-    max-width: 100%;
-  }
-
-  .login-preview {
-    margin-top: 12px;
+  .login-hero {
+    order: 2;
   }
 }
 
 @media (max-width: 760px) {
-  .login-title {
+  .login-page {
+    padding: 18px;
+  }
+
+  .hero-title {
     font-size: 2.8rem;
     letter-spacing: -1.6px;
   }
 
-  .login-description {
+  .hero-description {
     font-size: 1rem;
   }
 
-  .login-stat-grid,
-  .login-preview__metrics {
+  .hero-stats,
+  .workspace-board__signals {
     grid-template-columns: 1fr;
   }
 
-  .login-preview__top,
-  .login-assistance,
-  .login-card__header {
-    flex-direction: column;
-  }
-
-  .login-assistance {
-    align-items: flex-start;
-  }
-
-  .login-card__content {
-    padding: 28px 22px;
-  }
-
-  .login-preview__surface {
+  .workspace-board,
+  .login-panel__inner {
     padding: 22px;
   }
 
-  .login-preview__illustration {
+  .workspace-board__header,
+  .field-label-row,
+  .form-meta,
+  .panel-brand {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .workspace-board__media {
     height: 220px;
   }
 
-  .login-preview__callout {
+  .workspace-board__floating {
     right: 12px;
     bottom: 12px;
     width: calc(100% - 24px);
+  }
+
+  .panel-brand__title {
+    font-size: 1.72rem;
   }
 }
 </style>
