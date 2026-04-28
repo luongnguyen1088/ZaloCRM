@@ -145,7 +145,6 @@ async function handleSubmit() {
   loading.value = true;
   error.value = '';
   success.value = '';
-  devToken.value = '';
 
   try {
     const res = await authStore.forgotPassword(email.value.trim());
