@@ -2,11 +2,7 @@
   <div class="landing-page">
     <div class="landing-noise"></div>
 
-    <v-app-bar
-      flat
-      :height="isCompactHeader ? 88 : 104"
-      :class="['landing-navbar', 'px-4', 'px-md-8', { 'landing-navbar--compact': isCompactHeader }]"
-    >
+    <header class="landing-navbar px-4 px-md-8">
       <div class="landing-navbar__shell">
         <div class="brand-mark" @click="$router.push('/')">
           <div class="brand-mark__icon">
@@ -52,9 +48,9 @@
           </v-btn>
         </div>
       </div>
-    </v-app-bar>
+    </header>
 
-    <main>
+    <main class="landing-main">
       <section id="overview" class="hero-section">
         <v-container class="hero-shell">
           <div class="hero-grid">
@@ -409,25 +405,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
-const isCompactHeader = ref(false);
-
-function syncHeaderState() {
-  isCompactHeader.value = window.scrollY > 36;
-}
-
-onMounted(() => {
-  syncHeaderState();
-  window.addEventListener('scroll', syncHeaderState, { passive: true });
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener('scroll', syncHeaderState);
-});
 
 const heroStats = [
   { value: '1 workspace', label: 'gom chat, CRM và AI vào cùng màn hình' },
@@ -581,19 +563,22 @@ const integrationPoints = [
 }
 
 .landing-navbar {
-  position: sticky !important;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 30;
-  transition:
-    background-color 0.25s ease,
-    border-color 0.25s ease,
-    box-shadow 0.25s ease,
-    transform 0.25s ease,
-    height 0.25s ease,
-    padding 0.25s ease !important;
-  background: rgba(248, 250, 252, 0.72) !important;
+  min-height: 104px;
+  display: flex;
+  align-items: center;
+  background: rgba(248, 250, 252, 0.92);
   backdrop-filter: blur(18px);
-  border-bottom: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+.landing-main {
+  padding-top: 132px;
 }
 
 .landing-navbar__shell {
@@ -604,18 +589,8 @@ const integrationPoints = [
   align-items: center;
 }
 
-.landing-navbar--compact {
-  background: rgba(248, 250, 252, 0.9) !important;
-  border-bottom-color: rgba(148, 163, 184, 0.24) !important;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-}
-
 .v-theme--dark .landing-navbar {
-  background: rgba(8, 17, 33, 0.72) !important;
-}
-
-.v-theme--dark .landing-navbar--compact {
-  background: rgba(8, 17, 33, 0.88) !important;
+  background: rgba(8, 17, 33, 0.9);
   box-shadow: 0 14px 32px rgba(2, 6, 23, 0.34);
 }
 
@@ -738,37 +713,6 @@ const integrationPoints = [
 
 .nav-cta {
   min-width: 146px;
-}
-
-.landing-navbar--compact .brand-mark {
-  gap: 12px;
-}
-
-.landing-navbar--compact .brand-mark__icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
-}
-
-.landing-navbar--compact .brand-mark__name {
-  font-size: 0.96rem;
-}
-
-.landing-navbar--compact .brand-mark__meta {
-  opacity: 0.72;
-}
-
-.landing-navbar--compact .nav-links {
-  gap: 8px;
-}
-
-.landing-navbar--compact .nav-cta {
-  min-width: 136px;
-}
-
-.landing-navbar--compact .nav-links a {
-  padding: 8px 12px;
 }
 
 .hero-section {
@@ -1600,7 +1544,12 @@ const integrationPoints = [
 
 @media (max-width: 599px) {
   .landing-navbar {
+    min-height: 154px;
     padding-inline: 12px !important;
+  }
+
+  .landing-main {
+    padding-top: 182px;
   }
 
   .landing-navbar__shell {
@@ -1635,10 +1584,6 @@ const integrationPoints = [
   .nav-cta {
     min-width: 0;
     padding-inline: 1rem !important;
-  }
-
-  .landing-navbar--compact .nav-cta {
-    padding-inline: 0.9rem !important;
   }
 
   .nav-links {

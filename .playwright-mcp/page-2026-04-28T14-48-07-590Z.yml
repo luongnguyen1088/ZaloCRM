@@ -1,0 +1,87 @@
+- generic [ref=e4]:
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - button [ref=e7] [cursor=pointer]:
+        - generic [ref=e9]: 󰍜
+      - generic [ref=e10]:
+        - generic [ref=e12]: 󰧑
+        - generic [ref=e14]:
+          - generic [ref=e15]: Zalo
+          - generic [ref=e16]: CRM
+      - generic [ref=e20]:
+        - generic [ref=e22]: 󰍉
+        - textbox "Tìm kiếm..." [ref=e24]
+        - text: 󰅙
+      - generic [ref=e27]: ONLINE
+      - button [ref=e28] [cursor=pointer]:
+        - generic [ref=e32]: 󰂜
+      - link [ref=e33] [cursor=pointer]:
+        - /url: /api-settings
+        - generic [ref=e35]: 󰢻
+      - button [ref=e36] [cursor=pointer]:
+        - generic [ref=e38]: 󰖔
+      - button [ref=e39] [cursor=pointer]:
+        - generic [ref=e41]: 󰍃
+  - navigation [ref=e42]:
+    - list [ref=e44]:
+      - link "Dashboard" [ref=e45] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=e47]: 󰨝
+        - generic [ref=e49]: Dashboard
+      - link "Tin nhắn" [ref=e50] [cursor=pointer]:
+        - /url: /chat
+        - generic [ref=e52]: 󰍪
+        - generic [ref=e54]: Tin nhắn
+      - link "Khách hàng" [ref=e55] [cursor=pointer]:
+        - /url: /contacts
+        - generic [ref=e57]: 󰭘
+        - generic [ref=e59]: Khách hàng
+      - link "Kết nối đa kênh" [ref=e60] [cursor=pointer]:
+        - /url: /zalo-accounts
+        - generic [ref=e62]: 󰄡
+        - generic [ref=e64]: Kết nối đa kênh
+      - link "Lịch hẹn" [ref=e65] [cursor=pointer]:
+        - /url: /appointments
+        - generic [ref=e67]: 󱛡
+        - generic [ref=e69]: Lịch hẹn
+      - link "Báo cáo" [ref=e70] [cursor=pointer]:
+        - /url: /reports
+        - generic [ref=e72]: 󰄦
+        - generic [ref=e74]: Báo cáo
+      - link "Phân tích kinh doanh" [ref=e75] [cursor=pointer]:
+        - /url: /analytics
+        - generic [ref=e77]: 󱖶
+        - generic [ref=e79]: Phân tích kinh doanh
+      - link "Nhân sự & Phân quyền" [ref=e80] [cursor=pointer]:
+        - /url: /settings
+        - generic [ref=e82]: 󱍱
+        - generic [ref=e84]: Nhân sự & Phân quyền
+      - link "Kết nối & Hạn mức AI" [ref=e85] [cursor=pointer]:
+        - /url: /api-settings
+        - generic [ref=e87]: 󰢻
+        - generic [ref=e89]: Kết nối & Hạn mức AI
+      - link "Đào tạo AI" [ref=e90] [cursor=pointer]:
+        - /url: /ai-training
+        - generic [ref=e92]: 󱆀
+        - generic [ref=e94]: Đào tạo AI
+      - link "Hiệu quả AI" [ref=e95] [cursor=pointer]:
+        - /url: /ai-usage
+        - generic [ref=e97]: 󰄪
+        - generic [ref=e99]: Hiệu quả AI
+      - link "Tích hợp" [ref=e100] [cursor=pointer]:
+        - /url: /integrations
+        - generic [ref=e102]: 󱘖
+        - generic [ref=e104]: Tích hợp
+      - link "Automation" [ref=e105] [cursor=pointer]:
+        - /url: /automation
+        - generic [ref=e107]: 󱙺
+        - generic [ref=e109]: Automation
+      - link "Gói cước" [ref=e110] [cursor=pointer]:
+        - /url: /pricing
+        - generic [ref=e112]: 󱇐
+        - generic [ref=e114]: Gói cước
+    - list [ref=e116]:
+      - listitem [ref=e117] [cursor=pointer]:
+        - generic [ref=e119]: 󰅁
+        - generic [ref=e121]: Thu gọn
+  - main [ref=e122]
