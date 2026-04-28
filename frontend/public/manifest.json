@@ -1,7 +1,7 @@
 {
-  "name": "ZaloCRM",
-  "short_name": "ZaloCRM",
-  "description": "Quản lý nhiều tài khoản Zalo cá nhân",
+  "name": "Claro",
+  "short_name": "Claro",
+  "description": "Workspace CRM va AI cho doi sale van hanh tren social commerce",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F8FAFC",
