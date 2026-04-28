@@ -7,7 +7,7 @@
           <v-icon size="40" class="mr-3 text-primary">mdi-transit-connection-variant</v-icon>
           Tích hợp
         </h1>
-        <p class="text-subtitle-1 text-medium-emphasis">Kết nối ZaloCRM với các công cụ mạnh mẽ để tự động hóa quy trình làm việc của bạn.</p>
+        <p class="text-subtitle-1 text-medium-emphasis">Kết nối Claro với các công cụ mạnh mẽ để tự động hóa quy trình làm việc của bạn.</p>
       </div>
       <v-btn
         color="primary"
@@ -132,7 +132,7 @@
       </div>
       <h3 class="text-h5 font-weight-bold mb-2">Bắt đầu kết nối dữ liệu</h3>
       <p class="text-body-1 text-medium-emphasis mb-8 mx-auto" style="max-width: 480px">
-        Tích hợp ZaloCRM với các nền tảng khác để tự động hóa quy trình nhập liệu và chăm sóc khách hàng.
+        Tích hợp Claro với các nền tảng khác để tự động hóa quy trình nhập liệu và chăm sóc khách hàng.
       </p>
       <v-btn
         color="primary"

@@ -9,7 +9,7 @@
         <div class="hero-copy">
           <div class="eyebrow-chip mb-5">
             <v-icon size="16" color="primary">mdi-crown-outline</v-icon>
-            <span>Gói cước ZaloCRM</span>
+            <span>Gói cước Claro</span>
           </div>
 
           <h1 class="hero-title mb-5">

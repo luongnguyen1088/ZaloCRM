@@ -4,7 +4,7 @@
       <v-progress-circular indeterminate color="#1877F2" size="56" width="5" class="mb-4" />
       <h1 class="text-h6 font-weight-bold mb-2">Dang xu ly ket noi Facebook</h1>
       <p class="text-body-2 text-medium-emphasis mb-0">
-        Cua so nay se tu dong dong sau khi gui ket qua ve ZaloCRM.
+        Cua so nay se tu dong dong sau khi gui ket qua ve Claro.
       </p>
     </div>
   </div>

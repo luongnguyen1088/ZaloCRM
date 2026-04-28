@@ -13,7 +13,7 @@
           class="mb-6 rounded-lg"
           density="compact"
         >
-          AI được quản lý bởi ZaloCRM. Bạn không cần nhập API key riêng.
+          AI được quản lý bởi Claro. Bạn không cần nhập API key riêng.
         </v-alert>
 
         <div class="section-label mb-2">Tầng 1: Quy tắc hệ thống (Mặc định)</div>

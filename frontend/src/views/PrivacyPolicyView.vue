@@ -3,10 +3,10 @@
     <v-container class="py-10">
       <v-card class="legal-card mx-auto" max-width="980" rounded="xl" elevation="0">
         <v-card-text class="pa-8 pa-md-10">
-          <div class="eyebrow mb-4">ZaloCRM</div>
+          <div class="eyebrow mb-4">Claro</div>
           <h1 class="text-h3 font-weight-bold mb-3">Chính sách bảo mật</h1>
           <p class="text-body-1 text-medium-emphasis mb-8">
-            Chính sách này áp dụng cho webapp ZaloCRM tại <strong>zalo.claro.vn</strong> và các kết nối
+            Chính sách này áp dụng cho webapp Claro tại <strong>zalo.claro.vn</strong> và các kết nối
             Facebook Fanpage, Zalo cá nhân được người dùng chủ động cấp quyền trong hệ thống.
           </p>
 
@@ -22,7 +22,7 @@
             <h2 class="text-h6 font-weight-bold mb-3">2. Mục đích sử dụng dữ liệu</h2>
             <p class="text-body-1 mb-0">
               Dữ liệu được sử dụng để hiển thị hội thoại, đồng bộ tin nhắn, quản lý khách hàng, phân quyền người dùng,
-              vận hành các tính năng tự động hóa và hỗ trợ báo cáo nội bộ của tổ chức sử dụng ZaloCRM.
+              vận hành các tính năng tự động hóa và hỗ trợ báo cáo nội bộ của tổ chức sử dụng Claro.
             </p>
           </section>
 

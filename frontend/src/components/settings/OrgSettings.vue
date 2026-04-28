@@ -23,7 +23,7 @@
         label="Tên tổ chức"
         :disabled="!authStore.isOwner || saving"
         variant="outlined"
-        placeholder="Vd: Công ty TNHH ZaloCRM"
+        placeholder="Vd: Công ty TNHH Claro"
         class="mb-4"
         rounded="lg"
         hide-details="auto"

@@ -5,7 +5,7 @@
         <div class="entrance-animation-delay-1">
           <div class="login-badge glow-border">
             <v-icon size="18" color="primary">mdi-auto-fix</v-icon>
-            <span class="ml-2">ZaloCRM cho đội ngũ social commerce</span>
+            <span class="ml-2">Claro cho đội ngũ social commerce</span>
           </div>
         </div>
 
@@ -13,7 +13,7 @@
           <p class="login-overline">Một workspace cho sale, CSKH và automation</p>
           <h1 class="login-title">
             Đăng nhập để tiếp tục
-            <span class="text-gradient">vận hành ZaloCRM</span>
+            <span class="text-gradient">vận hành Claro</span>
           </h1>
           <p class="login-description">
             Theo dõi hội thoại, chốt lịch hẹn, phân tích hiệu suất và kích hoạt AI trong cùng một giao diện
@@ -42,7 +42,7 @@
             </div>
 
             <div class="login-preview__illustration">
-              <v-img :src="heroIllustration" alt="ZaloCRM illustration" cover class="rounded-xl border-glass" />
+              <v-img :src="heroIllustration" alt="Claro illustration" cover class="rounded-xl border-glass" />
               <div class="glow-layer"></div>
               <div class="login-preview__callout glass-dark">
                 <span class="login-preview__callout-label">AI Summary</span>
@@ -329,7 +329,7 @@ const highlights = [
 ];
 
 const canSubmit = computed(() => email.value.trim().length > 0 && password.value.length > 0);
-const submitLabel = computed(() => (loading.value ? 'Đang đăng nhập...' : 'Vào ZaloCRM'));
+const submitLabel = computed(() => (loading.value ? 'Đang đăng nhập...' : 'Vào Claro'));
 const googleButtonLabel = computed(() => {
   if (googleLoading.value) {
     return 'Đang tải Google Sign-In';

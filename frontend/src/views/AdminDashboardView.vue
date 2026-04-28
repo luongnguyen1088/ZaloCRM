@@ -10,7 +10,7 @@
         <h1 class="hero-title mb-4">Điều phối thuê bao và tăng trưởng toàn hệ thống</h1>
         <p class="hero-description mb-6">
           Một màn hình để rà soát tổ chức mới, phát hiện thuê bao sắp hết hạn và kích hoạt gói cước
-          nhanh hơn cho toàn bộ hệ thống ZaloCRM.
+          nhanh hơn cho toàn bộ hệ thống Claro.
         </p>
 
         <div class="hero-actions">

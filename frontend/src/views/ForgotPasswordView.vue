@@ -5,7 +5,7 @@
         <div class="entrance-animation-delay-1">
           <div class="login-badge glow-border">
             <v-icon size="18" color="primary">mdi-shield-lock-outline</v-icon>
-            <span class="ml-2">Bảo vệ tài khoản ZaloCRM</span>
+            <span class="ml-2">Bảo vệ tài khoản Claro</span>
           </div>
         </div>
 

@@ -3,17 +3,17 @@
     <v-container class="py-10">
       <v-card class="legal-card mx-auto" max-width="920" rounded="xl" elevation="0">
         <v-card-text class="pa-8 pa-md-10">
-          <div class="eyebrow mb-4">ZaloCRM</div>
+          <div class="eyebrow mb-4">Claro</div>
           <h1 class="text-h3 font-weight-bold mb-3">Hướng dẫn xóa dữ liệu</h1>
           <p class="text-body-1 text-medium-emphasis mb-8">
-            Nếu bạn đã kết nối Facebook Fanpage hoặc dùng ZaloCRM và muốn yêu cầu xóa dữ liệu liên quan đến tài khoản,
+            Nếu bạn đã kết nối Facebook Fanpage hoặc dùng Claro và muốn yêu cầu xóa dữ liệu liên quan đến tài khoản,
             hãy làm theo một trong các cách dưới đây.
           </p>
 
           <section class="mb-7">
             <h2 class="text-h6 font-weight-bold mb-3">1. Xóa từ trong hệ thống</h2>
             <p class="text-body-1 mb-0">
-              Quản trị viên hoặc người có quyền quản lý tài khoản có thể đăng nhập vào ZaloCRM, vào mục
+              Quản trị viên hoặc người có quyền quản lý tài khoản có thể đăng nhập vào Claro, vào mục
               <strong>Tài khoản Zalo</strong> và ngắt kết nối hoặc xóa tài khoản/Fanpage khỏi workspace.
             </p>
           </section>
@@ -36,7 +36,7 @@
             <h2 class="text-h6 font-weight-bold mb-3">3. Phạm vi xóa</h2>
             <p class="text-body-1 mb-0">
               Sau khi xác minh yêu cầu hợp lệ, chúng tôi sẽ xóa hoặc vô hiệu hóa dữ liệu liên quan trong phạm vi hệ
-              thống ZaloCRM, bao gồm cấu hình kết nối, dữ liệu đồng bộ và dữ liệu CRM gắn với tài khoản đó nếu phù hợp
+              thống Claro, bao gồm cấu hình kết nối, dữ liệu đồng bộ và dữ liệu CRM gắn với tài khoản đó nếu phù hợp
               với chính sách vận hành và yêu cầu pháp lý.
             </p>
           </section>

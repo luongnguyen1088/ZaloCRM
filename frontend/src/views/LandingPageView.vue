@@ -8,7 +8,7 @@
           <v-icon size="20">mdi-lightning-bolt</v-icon>
         </div>
         <div>
-          <div class="brand-mark__name">ZaloCRM</div>
+          <div class="brand-mark__name">Claro</div>
           <div class="brand-mark__meta">AI sales workspace</div>
         </div>
       </div>
@@ -66,7 +66,7 @@
               </h1>
 
               <p class="hero-subtitle">
-                ZaloCRM gom chat, khách hàng, lịch hẹn, tự động hóa và dữ liệu bán hàng vào một
+                Claro gom chat, khách hàng, lịch hẹn, tự động hóa và dữ liệu bán hàng vào một
                 workspace duy nhất. Nhân sự không còn phải nhảy tab, AI không còn đứng ngoài quy
                 trình vận hành.
               </p>
@@ -254,7 +254,7 @@
               <div class="section-kicker">Năng lực cốt lõi</div>
               <h2>Không chỉ là inbox hợp kênh, mà là một hệ điều hành bán hàng nhỏ gọn</h2>
               <p>
-                ZaloCRM được thiết kế cho các team vận hành thực tế: cần nhìn nhanh khách nào nóng,
+                Claro được thiết kế cho các team vận hành thực tế: cần nhìn nhanh khách nào nóng,
                 ai đang phụ trách, đơn nào đang vướng và lịch follow-up nào sắp trễ.
               </p>
 
@@ -323,7 +323,7 @@
             <div class="integration-diagram">
               <div class="diagram-core">
                 <div class="diagram-core__label">Control layer</div>
-                <div class="diagram-core__title">ZaloCRM Workspace</div>
+                <div class="diagram-core__title">Claro Workspace</div>
                 <div class="diagram-core__text">Tin nhắn, khách hàng, AI, lịch hẹn, báo cáo</div>
               </div>
 
@@ -387,7 +387,7 @@
             <v-icon size="16">mdi-lightning-bolt</v-icon>
           </div>
           <div>
-            <div class="landing-footer__title">ZaloCRM by Claro.vn</div>
+            <div class="landing-footer__title">Claro</div>
             <div class="landing-footer__meta">
               Workspace cho sale, CSKH và tự động hóa hội thoại
             </div>
@@ -397,7 +397,7 @@
         <div class="landing-footer__links">
           <router-link to="/privacy-policy">Chính sách bảo mật</router-link>
           <router-link to="/data-deletion">Xóa dữ liệu</router-link>
-          <span>&copy; {{ new Date().getFullYear() }} ZaloCRM</span>
+          <span>&copy; {{ new Date().getFullYear() }} Claro</span>
         </div>
       </v-container>
     </v-footer>

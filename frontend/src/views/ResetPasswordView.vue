@@ -15,7 +15,7 @@
             <span class="text-gradient">mật mật bảo mật</span>
           </h1>
           <p class="login-description">
-            Vui lòng chọn một mật khẩu mạnh mà bạn chưa từng sử dụng trước đây để đảm bảo an toàn cho tài khoản ZaloCRM của bạn.
+            Vui lòng chọn một mật khẩu mạnh mà bạn chưa từng sử dụng trước đây để đảm bảo an toàn cho tài khoản Claro của bạn.
           </p>
         </div>
 

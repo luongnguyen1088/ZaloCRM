@@ -122,7 +122,7 @@
 
           <footer class="mt-12 text-center">
             <p class="text-caption footer-text">
-              Đã có tài khoản ZaloCRM?
+              Đã có tài khoản Claro?
               <router-link to="/login" class="signup-link">Đăng nhập ngay</router-link>
             </p>
           </footer>
