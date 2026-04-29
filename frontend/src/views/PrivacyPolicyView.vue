@@ -6,7 +6,7 @@
           <div class="eyebrow mb-4">Claro</div>
           <h1 class="text-h3 font-weight-bold mb-3">Chính sách bảo mật</h1>
           <p class="text-body-1 text-medium-emphasis mb-8">
-            Chính sách này áp dụng cho webapp Claro tại <strong>zalo.claro.vn</strong> và các kết nối
+            Chính sách này áp dụng cho webapp Claro tại <strong>claro.vn</strong> và các kết nối
             Facebook Fanpage, Zalo cá nhân được người dùng chủ động cấp quyền trong hệ thống.
           </p>
 
