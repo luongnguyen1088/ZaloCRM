@@ -1,8 +1,8 @@
 
 <template>
-  <v-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" max-width="920">
+  <v-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" max-width="920" scrollable>
     <v-card class="upgrade-dialog">
-      <div class="upgrade-dialog__hero pa-6 pa-md-7 position-relative overflow-hidden">
+      <div class="upgrade-dialog__hero flex-shrink-0 pa-6 pa-md-7 position-relative overflow-hidden">
         <div class="upgrade-dialog__hero-bg"></div>
         <div class="upgrade-dialog__hero-content position-relative">
           <div class="upgrade-dialog__hero-copy">
@@ -28,8 +28,9 @@
         </div>
       </div>
 
-      <div class="pa-6 pa-md-7">
-        <v-alert
+      <v-card-text class="pa-0">
+        <div class="pa-6 pa-md-7">
+          <v-alert
           v-if="error"
           type="error"
           variant="tonal"
@@ -149,7 +150,7 @@
             </v-btn>
           </v-card>
         </div>
-      </div>
+      </v-card-text>
     </v-card>
   </v-dialog>
 </template>
