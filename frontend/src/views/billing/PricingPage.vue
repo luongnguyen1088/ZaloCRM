@@ -314,7 +314,7 @@
 
     <v-dialog v-model="paymentDialog" max-width="640" scrollable content-class="payment-dialog">
       <v-card v-if="selectedPlan" class="payment-card">
-        <div class="payment-card__hero pa-6 pa-md-7">
+        <div class="payment-card__hero flex-shrink-0 pa-6 pa-md-7">
           <div>
             <div class="eyebrow-chip eyebrow-chip--inverted mb-3">
               <v-icon size="16" color="white">mdi-credit-card-outline</v-icon>
@@ -330,7 +330,8 @@
           </v-btn>
         </div>
 
-        <div class="pa-6 pa-md-7">
+        <v-card-text class="pa-0 scrollable-content">
+          <div class="pa-6 pa-md-7">
           <div class="payment-summary mb-6">
             <div>
               <div class="payment-summary__label">Tổng thanh toán</div>
@@ -410,7 +411,8 @@
           <v-btn block variant="text" rounded="xl" class="mt-3" @click="paymentDialog = false">
             Hủy giao dịch
           </v-btn>
-        </div>
+          </div>
+        </v-card-text>
       </v-card>
     </v-dialog>
 
@@ -1394,8 +1396,17 @@ const renderComparisonValue = (value: ComparisonValue) => {
 }
 
 .payment-card {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh; /* Constrain to viewport for scrolling */
   overflow: hidden;
   border-radius: 30px !important;
+}
+
+.scrollable-content {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0; /* Crucial for scrolling inside flexbox */
 }
 
 .payment-card__hero {
