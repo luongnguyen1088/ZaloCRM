@@ -2,25 +2,28 @@
 <template>
   <v-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" max-width="920">
     <v-card class="upgrade-dialog">
-      <div class="upgrade-dialog__hero pa-6 pa-md-7">
-        <div class="upgrade-dialog__hero-copy">
-          <div class="eyebrow eyebrow--light mb-2">Kích hoạt thuê bao</div>
-          <h3 class="upgrade-dialog__title mb-2">
-            {{ selectedOrg?.name || 'Chọn tổ chức' }}
-          </h3>
-          <p class="upgrade-dialog__subtitle">
-            Thay đổi gói cước và cập nhật thời hạn sử dụng ngay lập tức cho tổ chức được chọn.
-          </p>
-        </div>
-
-        <div v-if="selectedOrg" class="upgrade-dialog__hero-meta">
-          <div class="upgrade-stat">
-            <span class="upgrade-stat__label">Gói hiện tại</span>
-            <strong class="upgrade-stat__value">{{ getPlanName(selectedOrg) }}</strong>
+      <div class="upgrade-dialog__hero pa-6 pa-md-7 position-relative overflow-hidden">
+        <div class="upgrade-dialog__hero-bg"></div>
+        <div class="upgrade-dialog__hero-content position-relative">
+          <div class="upgrade-dialog__hero-copy">
+            <div class="eyebrow eyebrow--light mb-2">Kích hoạt thuê bao</div>
+            <h3 class="upgrade-dialog__title mb-2">
+              {{ selectedOrg?.name || 'Chọn tổ chức' }}
+            </h3>
+            <p class="upgrade-dialog__subtitle">
+              Thay đổi gói cước và cập nhật thời hạn sử dụng ngay lập tức cho tổ chức được chọn.
+            </p>
           </div>
-          <div class="upgrade-stat">
-            <span class="upgrade-stat__label">Gia hạn hiện tại</span>
-            <strong class="upgrade-stat__value">{{ getRenewalText(selectedOrg) }}</strong>
+
+          <div v-if="selectedOrg" class="upgrade-dialog__hero-meta">
+            <div class="upgrade-stat">
+              <span class="upgrade-stat__label">Gói hiện tại</span>
+              <strong class="upgrade-stat__value">{{ getPlanName(selectedOrg) }}</strong>
+            </div>
+            <div class="upgrade-stat">
+              <span class="upgrade-stat__label">Gia hạn hiện tại</span>
+              <strong class="upgrade-stat__value">{{ getRenewalText(selectedOrg) }}</strong>
+            </div>
           </div>
         </div>
       </div>
@@ -78,7 +81,12 @@
                 :class="['duration-option', { 'duration-option--active': form.months === option.value }]"
                 @click="form.months = option.value"
               >
-                <strong>{{ option.label }}</strong>
+                <div class="d-flex align-center justify-space-between mb-1">
+                  <strong>{{ option.label }}</strong>
+                  <v-chip v-if="option.badge" color="success" size="x-small" variant="flat" class="font-weight-bold px-2">
+                    {{ option.badge }}
+                  </v-chip>
+                </div>
                 <span>{{ option.hint }}</span>
               </button>
             </div>
@@ -167,10 +175,10 @@ const emit = defineEmits<{
 }>();
 
 const durationOptions = [
-  { value: 1, label: '1 tháng', hint: 'Kích hoạt nhanh' },
-  { value: 3, label: '3 tháng', hint: 'Chu kỳ ngắn' },
-  { value: 6, label: '6 tháng', hint: 'Ổn định hơn' },
-  { value: 12, label: '12 tháng', hint: 'Giảm tần suất gia hạn' },
+  { value: 1, label: '1 tháng', hint: 'Kích hoạt nhanh', badge: null },
+  { value: 3, label: '3 tháng', hint: 'Chu kỳ ngắn', badge: null },
+  { value: 6, label: '6 tháng', hint: 'Ổn định hơn', badge: 'Tặng 10%' },
+  { value: 12, label: '12 tháng', hint: 'Giảm tần suất', badge: 'Tặng 20%' },
 ];
 
 const form = ref({
@@ -217,12 +225,42 @@ const handleConfirm = () => {
 }
 
 .upgrade-dialog__hero {
+  background: linear-gradient(135deg, #0f172a, #13203b 58%, #1d4ed8);
+  color: #fff;
+}
+
+.upgrade-dialog__hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(29, 78, 216, 0.8));
+}
+
+.upgrade-dialog__hero-bg::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 50%, rgba(56, 189, 248, 0.15) 0%, transparent 50%),
+              radial-gradient(circle at 70% 30%, rgba(99, 102, 241, 0.2) 0%, transparent 50%);
+  animation: bgPulse 12s ease-in-out infinite alternate;
+}
+
+@keyframes bgPulse {
+  0% { transform: scale(1) translate(0, 0); }
+  100% { transform: scale(1.1) translate(-2%, 2%); }
+}
+
+.upgrade-dialog__hero-content {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 18px;
-  background: linear-gradient(135deg, #0f172a, #13203b 58%, #1d4ed8);
-  color: #fff;
+  width: 100%;
 }
 
 .upgrade-dialog__hero-copy {
@@ -294,24 +332,38 @@ const handleConfirm = () => {
 
 .plan-option, .duration-option {
   padding: 18px;
-  background: var(--color-surface-elevated);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 22px;
   color: inherit;
   text-align: left;
   cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
 }
 
 .plan-option:hover, .duration-option:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   border-color: var(--color-primary-soft-strong);
+  box-shadow: 0 8px 24px -8px rgba(var(--v-theme-primary), 0.15);
 }
 
 .plan-option--active, .duration-option--active {
   border-color: var(--color-primary) !important;
-  background: linear-gradient(180deg, var(--color-primary-soft), var(--color-surface-elevated));
-  box-shadow: 0 0 0 1px var(--color-primary-soft-strong);
+  background: linear-gradient(145deg, var(--color-surface), var(--color-primary-soft));
+  box-shadow: 0 0 0 2px var(--color-primary) !important;
+}
+
+.plan-option--active::before, .duration-option--active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at top right, rgba(var(--v-theme-primary), 0.1), transparent 70%);
+  pointer-events: none;
 }
 
 .plan-option__price, .duration-option strong {
@@ -340,11 +392,13 @@ const handleConfirm = () => {
 .upgrade-summary {
   align-self: start;
   background:
-    radial-gradient(circle at top right, rgba(37, 99, 235, 0.1), transparent 36%),
-    var(--color-surface-elevated) !important;
+    radial-gradient(circle at top right, rgba(var(--v-theme-primary), 0.08), transparent 40%),
+    var(--color-surface) !important;
   border-radius: 28px !important;
   border: 1px solid var(--color-border) !important;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 24px;
 }
 
 .summary-stack {
