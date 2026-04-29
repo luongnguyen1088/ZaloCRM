@@ -28,7 +28,7 @@
         </div>
       </div>
 
-      <v-card-text class="pa-0">
+      <v-card-text class="pa-0 scrollable-content">
         <div class="pa-6 pa-md-7">
           <v-alert
           v-if="error"
@@ -221,9 +221,18 @@ const handleConfirm = () => {
 
 <style scoped>
 .upgrade-dialog {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh; /* Ensure dialog is constrained to viewport */
   overflow: hidden;
   border-radius: 32px !important;
   border: 1px solid var(--color-border) !important;
+}
+
+.scrollable-content {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0; /* Crucial for scrolling inside flexbox */
 }
 
 .upgrade-dialog__hero {
