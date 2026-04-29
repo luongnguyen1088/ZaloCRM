@@ -150,6 +150,7 @@
             </v-btn>
           </v-card>
         </div>
+        </div>
       </v-card-text>
     </v-card>
   </v-dialog>
