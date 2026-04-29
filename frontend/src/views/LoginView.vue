@@ -522,6 +522,17 @@ async function retryGoogleButton() {
   error.value = '';
   clearGoogleDiagnostic();
 
+  if (!hasGoogleClientId()) {
+    setGoogleDiagnostic(
+      'init',
+      'warning',
+      'Google Sign-In chưa được cấu hình',
+      'Thiếu VITE_GOOGLE_CLIENT_ID ở frontend. Vui lòng thêm biến môi trường này trước khi build.'
+    );
+    error.value = 'Chưa cấu hình Google Client ID. Vui lòng liên hệ Admin.';
+    return;
+  }
+
   setGoogleDiagnostic(
     'init',
     'info',
