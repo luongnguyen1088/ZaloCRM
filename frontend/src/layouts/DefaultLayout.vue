@@ -8,7 +8,7 @@
           <v-icon size="18" color="white">mdi-brain</v-icon>
         </div>
         <v-app-bar-title class="brand-title">
-          <span class="brand-title__base">Cla</span><span class="brand-title__mark">ro</span>
+          <span class="brand-title__base">Claro</span>
         </v-app-bar-title>
       </div>
 
