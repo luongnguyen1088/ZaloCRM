@@ -15,11 +15,18 @@ export async function subscriptionRoutes(app: FastifyInstance): Promise<void> {
   });
 
   // GET /api/v1/billing/plans — list available plans
-  app.get('/api/v1/billing/plans', async () => {
-    await ensureDefaultSubscriptionPlans();
-    return await prisma.subscriptionPlan.findMany({
-      orderBy: { priceMonth: 'asc' },
-    });
+  app.get('/api/v1/billing/plans', async (request, reply) => {
+    try {
+      await ensureDefaultSubscriptionPlans();
+      return await prisma.subscriptionPlan.findMany({
+        orderBy: { priceMonth: 'asc' },
+      });
+    } catch (err) {
+      request.log.error({ err }, 'Failed to load subscription plans');
+      return reply.status(503).send({
+        error: 'Không tải được bảng giá gói cước lúc này. Vui lòng thử lại sau.',
+      });
+    }
   });
 
   // GET /api/v1/billing/orders — list current org payment orders

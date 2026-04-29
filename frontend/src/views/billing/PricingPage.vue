@@ -64,7 +64,7 @@
               rounded="xl"
               height="48"
               class="mt-5"
-              :disabled="plansLoading || (!recommendedPlan && !plans.length)"
+              :disabled="plansLoading || plansUsingFallback || (!recommendedPlan && !plans.length)"
               @click="openUpgradeEntry"
             >
               {{ recommendedPlan ? `NÃ¢ng cáº¥p lÃªn ${recommendedPlan.name}` : 'Xem báº£ng giÃ¡ gÃ³i cÆ°á»›c' }}
@@ -117,13 +117,13 @@
       </section>
 
       <v-alert
-        v-if="plansError"
+        v-if="plansNotice"
         type="warning"
         variant="tonal"
         rounded="xl"
         class="mt-5"
       >
-        {{ plansError }}
+        {{ plansNotice }}
       </v-alert>
 
       <v-alert
@@ -148,7 +148,7 @@
             class="plan-card pa-6 pa-md-7 d-flex flex-column flex-grow-1"
             :class="{
               'plan-card--featured': isFeaturedPlan(plan),
-              'plan-card--current': currentPlanId === plan.id,
+              'plan-card--current': isCurrentPlan(plan),
             }"
             :style="{ animationDelay: `${index * 80}ms` }"
           >
@@ -221,12 +221,12 @@
               rounded="xl"
               class="plan-card__cta"
               :class="{ 'plan-card__cta--featured': isFeaturedPlan(plan) }"
-              :variant="currentPlanId === plan.id ? 'tonal' : isFeaturedPlan(plan) ? 'flat' : 'outlined'"
-              :color="currentPlanId === plan.id ? 'primary' : 'primary'"
-              :disabled="currentPlanId === plan.id"
+              :variant="isCurrentPlan(plan) ? 'tonal' : isFeaturedPlan(plan) ? 'flat' : 'outlined'"
+              :color="isCurrentPlan(plan) ? 'primary' : 'primary'"
+              :disabled="plansUsingFallback || isCurrentPlan(plan)"
               @click="selectPlan(plan)"
             >
-              {{ currentPlanId === plan.id ? 'Gói đang sử dụng' : 'Chọn gói này' }}
+              {{ isCurrentPlan(plan) ? 'Gói đang sử dụng' : 'Chọn gói này' }}
             </v-btn>
           </v-card>
         </v-col>
@@ -451,18 +451,46 @@ interface PaymentSelection {
 type ComparisonValue = string | boolean;
 
 const AI_REPLY_TOKEN_RATIO = 1500;
+const DEFAULT_PRICING_PLANS: SubscriptionPlan[] = [
+  {
+    id: 'fallback-free',
+    name: 'Free',
+    priceMonth: 0,
+    maxZaloAcc: 1,
+    maxAiTokens: 50000,
+    features: ['CRM cơ bản', '1 tài khoản Zalo', 'AI Assistant (Model cơ bản)', '~30 lượt phản hồi AI/tháng'],
+  },
+  {
+    id: 'fallback-pro',
+    name: 'Pro',
+    priceMonth: 200000,
+    maxZaloAcc: 5,
+    maxAiTokens: 1500000,
+    features: ['Đầy đủ CRM', '5 tài khoản Zalo', 'AI Assistant (Tốc độ cao)', 'Automation', '~1,000 lượt phản hồi AI/tháng'],
+  },
+  {
+    id: 'fallback-enterprise',
+    name: 'Enterprise',
+    priceMonth: 1000000,
+    maxZaloAcc: 50,
+    maxAiTokens: 15000000,
+    features: ['Vô hạn CRM', '50 tài khoản Zalo', 'AI Assistant (Claude 3.5 Sonnet)', 'Ưu tiên hỗ trợ', '~10,000 lượt phản hồi AI/tháng'],
+  },
+];
 
 const theme = useTheme();
 const isDark = computed(() => theme.global.current.value.dark);
 
 const plans = ref<SubscriptionPlan[]>([]);
 const currentPlanId = ref<string | null>(null);
+const currentPlanName = ref<string | null>(null);
 const paymentDialog = ref(false);
 const selectedPlan = ref<PaymentSelection | null>(null);
 const isTopup = ref(false);
 const isYearly = ref(true);
 const plansLoading = ref(false);
-const plansError = ref('');
+const plansNotice = ref('');
+const plansUsingFallback = ref(false);
 const paymentSubmitting = ref(false);
 const feedbackOpen = ref(false);
 const feedbackColor = ref<'success' | 'error'>('success');
@@ -494,7 +522,19 @@ const faqs = [
   },
 ];
 
-const currentPlan = computed(() => plans.value.find((plan) => plan.id === currentPlanId.value) || null);
+const currentPlan = computed(() => {
+  if (currentPlanId.value) {
+    const planById = plans.value.find((plan) => plan.id === currentPlanId.value);
+    if (planById) return planById;
+  }
+
+  if (currentPlanName.value) {
+    const currentPlanKey = normalizePlanKey(currentPlanName.value);
+    return plans.value.find((plan) => normalizePlanKey(plan.name) === currentPlanKey) || null;
+  }
+
+  return null;
+});
 const recommendedPlan = computed(() => {
   const currentPlanKey = currentPlan.value ? normalizePlanKey(currentPlan.value.name) : '';
   const paidPlans = plans.value.filter((plan) => plan.priceMonth > 0);
@@ -565,15 +605,20 @@ const comparisonRows = computed<Array<{ label: string; free: ComparisonValue; pr
 
 const fetchPlans = async () => {
   plansLoading.value = true;
-  plansError.value = '';
+  plansNotice.value = '';
+  plansUsingFallback.value = false;
 
   try {
     const res = await api.get('/billing/plans');
     plans.value = res.data.sort((a: SubscriptionPlan, b: SubscriptionPlan) => a.priceMonth - b.priceMonth);
   } catch (err: any) {
     console.error('Failed to fetch plans', err);
-    plans.value = [];
-    plansError.value = err.response?.data?.error || 'KhÃ´ng táº£i Ä‘Æ°á»£c báº£ng giÃ¡ gÃ³i cÆ°á»›c.';
+    plans.value = DEFAULT_PRICING_PLANS.map((plan) => ({
+      ...plan,
+      features: Array.isArray(plan.features) ? [...plan.features] : plan.features,
+    }));
+    plansUsingFallback.value = true;
+    plansNotice.value = 'Đang hiển thị bảng giá mặc định do hệ thống chưa tải được dữ liệu gói cước. Tạm thời chưa thể tạo yêu cầu nâng cấp.';
   } finally {
     plansLoading.value = false;
   }
@@ -584,6 +629,7 @@ const fetchSubscription = async () => {
     const res = await api.get('/billing/subscription');
     if (res.data) {
       currentPlanId.value = res.data.planId;
+      currentPlanName.value = res.data.plan?.name || null;
     }
   } catch (err) {
     console.error('Failed to fetch subscription', err);
@@ -630,6 +676,10 @@ const getPlanDescription = (name: string) => {
 };
 
 const isFeaturedPlan = (plan: SubscriptionPlan) => normalizePlanKey(plan.name) === 'pro';
+const isCurrentPlan = (plan: SubscriptionPlan) => {
+  if (currentPlanId.value && plan.id === currentPlanId.value) return true;
+  return currentPlanName.value ? normalizePlanKey(plan.name) === normalizePlanKey(currentPlanName.value) : false;
+};
 
 const getAiReplies = (tokens: number) => Math.max(0, Math.floor(tokens / AI_REPLY_TOKEN_RATIO));
 
@@ -686,13 +736,30 @@ const scrollToPlans = () => {
   document.getElementById('pricing-plans')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
+const showUpgradeUnavailableMessage = () => {
+  feedbackColor.value = 'error';
+  feedbackMessage.value = 'Tạm thời chưa thể tạo yêu cầu nâng cấp trong khi hệ thống đang dùng bảng giá mặc định.';
+  feedbackOpen.value = true;
+};
+
 const selectPlan = (plan: SubscriptionPlan) => {
+  if (plansUsingFallback.value) {
+    showUpgradeUnavailableMessage();
+    return;
+  }
+
   selectedPlan.value = { ...plan };
   isTopup.value = false;
   paymentDialog.value = true;
 };
 
 const openUpgradeEntry = () => {
+  if (plansUsingFallback.value) {
+    showUpgradeUnavailableMessage();
+    scrollToPlans();
+    return;
+  }
+
   if (recommendedPlan.value) {
     selectPlan(recommendedPlan.value);
     return;
