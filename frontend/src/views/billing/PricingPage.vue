@@ -337,8 +337,27 @@
               <div class="payment-summary__label">Tổng thanh toán</div>
               <div class="payment-summary__amount">{{ formatPrice(getFinalAmount()) }}</div>
             </div>
-            <div class="payment-summary__badge">
-              {{ isTopup ? 'Top-up AI' : isYearly ? 'Gói 12 tháng' : 'Gói 1 tháng' }}
+            
+            <div v-if="isTopup" class="payment-summary__badge">
+              Top-up AI
+            </div>
+            <div v-else class="billing-switch billing-switch--small">
+              <button
+                type="button"
+                class="billing-switch__option"
+                :class="{ 'billing-switch__option--active': !isYearly }"
+                @click="isYearly = false"
+              >
+                1 tháng
+              </button>
+              <button
+                type="button"
+                class="billing-switch__option"
+                :class="{ 'billing-switch__option--active': isYearly }"
+                @click="isYearly = true"
+              >
+                1 năm (-20%)
+              </button>
             </div>
           </div>
 
@@ -1048,6 +1067,17 @@ const renderComparisonValue = (value: ComparisonValue) => {
   background: var(--gradient-brand);
   color: #fff;
   box-shadow: 0 14px 28px rgba(37, 99, 235, 0.22);
+}
+
+.billing-switch--small {
+  padding: 4px;
+  gap: 4px;
+}
+
+.billing-switch--small .billing-switch__option {
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 800;
 }
 
 .billing-switch__badge {
