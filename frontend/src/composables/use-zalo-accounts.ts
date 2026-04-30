@@ -159,7 +159,11 @@ export function useZaloAccounts() {
       connected.value = true;
       // Reset after a delay so subsequent attempts work
       setTimeout(() => { connected.value = false; }, 1000);
-      fetchAccounts();
+
+      // Small delay to ensure DB update is finished on backend
+      setTimeout(() => {
+        fetchAccounts();
+      }, 500);
     });
 
     socket.on('zalo:disconnected', (_data: { accountId: string }) => { fetchAccounts(); });

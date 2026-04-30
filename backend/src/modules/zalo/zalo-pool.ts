@@ -129,7 +129,6 @@ class ZaloAccountPool {
       instance.zaloUid = ownId;
 
       this.attachListener(accountId, api);
-      this.io?.emit('zalo:connected', { accountId, zaloUid: ownId });
       const currentInst = this.instances.get(accountId);
       await this.updateAccountDB(
         accountId, 
@@ -138,6 +137,7 @@ class ZaloAccountPool {
         currentInst?.displayName, 
         currentInst?.avatarUrl
       );
+      this.io?.emit('zalo:connected', { accountId, zaloUid: ownId });
       // Emit webhook (orgId lookup is async, fire-and-forget)
       prisma.zaloAccount.findUnique({ where: { id: accountId }, select: { orgId: true } })
         .then((rec) => rec && emitWebhook(rec.orgId, 'zalo.connected', { accountId }))
