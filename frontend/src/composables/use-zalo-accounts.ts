@@ -39,6 +39,7 @@ export function useZaloAccounts() {
   const qrAvatar = ref('');
   const qrError = ref('');
   const currentLoginAccountId = ref('');
+  const connected = ref(false);
 
   let socket: Socket | null = null;
 
@@ -155,6 +156,9 @@ export function useZaloAccounts() {
 
     socket.on('zalo:connected', (_data: { accountId: string }) => {
       showQRDialog.value = false;
+      connected.value = true;
+      // Reset after a delay so subsequent attempts work
+      setTimeout(() => { connected.value = false; }, 1000);
       fetchAccounts();
     });
 
@@ -179,7 +183,7 @@ export function useZaloAccounts() {
 
   return {
     accounts, loading, adding, deleting,
-    showQRDialog, qrImage, qrScanned, scannedName, qrAvatar, qrError,
+    showQRDialog, qrImage, qrScanned, scannedName, qrAvatar, qrError, connected,
     getAccountStatus, isRealtimeZaloAccount, statusColor, statusText,
     fetchAccounts, addAccount, loginAccount, reconnectAccount, deleteAccount,
     cancelQR, setupSocket,

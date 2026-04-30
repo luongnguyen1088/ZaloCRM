@@ -280,45 +280,65 @@
                     </div>
 
                     <div class="flex-grow-1 ml-md-10 mt-10 mt-md-0" style="max-width: 400px">
-                      <div class="text-subtitle-1 font-weight-bold mb-6 color-cyan">HƯỚNG DẪN KẾT NỐI</div>
-                      
-                      <div class="instruction-steps">
-                        <div class="step-item d-flex align-start mb-6">
-                          <div class="step-num mr-4">1</div>
-                          <div>
-                            <div class="text-body-2 font-weight-bold mb-1">Mở ứng dụng Zalo</div>
-                            <div class="text-caption text-medium-emphasis">Mở ứng dụng Zalo trên điện thoại di động của bạn</div>
+                      <div v-if="!qrScanned">
+                        <div class="text-subtitle-1 font-weight-bold mb-6 color-cyan">HƯỚNG DẪN KẾT NỐI</div>
+                        
+                        <div class="instruction-steps">
+                          <div class="step-item d-flex align-start mb-6">
+                            <div class="step-num mr-4">1</div>
+                            <div>
+                              <div class="text-body-2 font-weight-bold mb-1">Mở ứng dụng Zalo</div>
+                              <div class="text-caption text-medium-emphasis">Mở ứng dụng Zalo trên điện thoại di động của bạn</div>
+                            </div>
+                          </div>
+                          
+                          <div class="step-item d-flex align-start mb-6">
+                            <div class="step-num mr-4">2</div>
+                            <div>
+                              <div class="text-body-2 font-weight-bold mb-1">Chọn quét mã QR</div>
+                              <div class="text-caption text-medium-emphasis">Nhấn vào biểu tượng <strong>Quét mã QR</strong> ở góc trên bên phải màn hình.</div>
+                            </div>
+                          </div>
+                          
+                          <div class="step-item d-flex align-start">
+                            <div class="step-num mr-4">3</div>
+                            <div>
+                              <div class="text-body-2 font-weight-bold mb-1">Xác nhận đăng nhập</div>
+                              <div class="text-caption text-medium-emphasis">Hướng camera vào mã QR và nhấn <strong>Đăng nhập</strong> trên điện thoại.</div>
+                            </div>
                           </div>
                         </div>
+
+                        <v-divider class="my-8" />
                         
-                        <div class="step-item d-flex align-start mb-6">
-                          <div class="step-num mr-4">2</div>
-                          <div>
-                            <div class="text-body-2 font-weight-bold mb-1">Chọn quét mã QR</div>
-                            <div class="text-caption text-medium-emphasis">Nhấn vào biểu tượng <strong>Quét mã QR</strong> ở góc trên bên phải màn hình.</div>
-                          </div>
-                        </div>
+                        <v-alert
+                          icon="mdi-shield-lock-outline"
+                          color="green-lighten-5"
+                          class="text-caption text-green-darken-3 border-success-subtle"
+                          variant="flat"
+                          rounded="lg"
+                        >
+                          Kết nối an toàn qua giao thức mã hóa Zalo. Chúng tôi không lưu trữ mật khẩu của bạn.
+                        </v-alert>
+                      </div>
+
+                      <div v-else class="text-center py-12 scale-in h-100 d-flex flex-column justify-center">
+                        <v-avatar size="100" color="green-lighten-5" class="mb-6 mx-auto">
+                          <v-icon color="success" size="48">mdi-cellphone-check</v-icon>
+                        </v-avatar>
+                        <div class="text-h6 font-weight-bold mb-2">Kiểm tra điện thoại</div>
+                        <p class="text-body-2 text-medium-emphasis px-6">
+                          Một yêu cầu đăng nhập đã được gửi tới Zalo của bạn. <br/>
+                          Vui lòng nhấn <strong>"Đăng nhập"</strong> trên điện thoại để hoàn tất.
+                        </p>
                         
-                        <div class="step-item d-flex align-start">
-                          <div class="step-num mr-4">3</div>
-                          <div>
-                            <div class="text-body-2 font-weight-bold mb-1">Xác nhận đăng nhập</div>
-                            <div class="text-caption text-medium-emphasis">Hướng camera vào mã QR và nhấn <strong>Đăng nhập</strong> trên điện thoại.</div>
+                        <div class="mt-10 pt-10 border-top w-100">
+                          <div class="text-caption text-disabled d-flex align-center justify-center">
+                            <v-icon size="14" class="mr-1">mdi-lock-outline</v-icon>
+                            Bảo mật bởi Zalo
                           </div>
                         </div>
                       </div>
-
-                      <v-divider class="my-8" />
-                      
-                      <v-alert
-                        icon="mdi-shield-lock-outline"
-                        color="green-lighten-5"
-                        class="text-caption text-green-darken-3 border-success-subtle"
-                        variant="flat"
-                        rounded="lg"
-                      >
-                        Kết nối an toàn qua giao thức mã hóa Zalo. Chúng tôi không lưu trữ mật khẩu của bạn.
-                      </v-alert>
                     </div>
                   </div>
                 </v-window-item>
@@ -762,7 +782,7 @@ import { api } from '@/api/index';
 
 const {
   accounts, loading, adding, deleting,
-  showQRDialog, qrImage, qrScanned, scannedName, qrAvatar, qrError,
+  showQRDialog, qrImage, qrScanned, scannedName, qrAvatar, qrError, connected,
   getAccountStatus, isRealtimeZaloAccount, statusColor, statusText,
   fetchAccounts, loginAccount, reconnectAccount, deleteAccount,
   cancelQR, setupSocket,
@@ -841,9 +861,9 @@ watch(addType, () => {
   }
 });
 
-// Đóng dialog thêm mới khi Zalo đã kết nối thành công (thông qua silent login)
-watch(showQRDialog, (val) => {
-  if (!val && showAddDialog.value && addType.value === 'zalo' && qrScanned.value) {
+// Đóng dialog thêm mới khi Zalo đã kết nối thành công
+watch(connected, (val) => {
+  if (val && showAddDialog.value && addType.value === 'zalo') {
     showAddDialog.value = false;
   }
 });
