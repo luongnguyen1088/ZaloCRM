@@ -34,7 +34,7 @@
           <v-card-text class="pa-6">
             <div class="d-flex align-center mb-4">
               <v-avatar size="56" class="mr-4 border-gold">
-                <v-img :src="item.avatarUrl || 'https://stc-zaloid.zadn.vn/v2/images/default_avatar.png'" />
+                <v-img :src="getAccountAvatar(item)" />
                 <v-icon
                   v-if="item.type === 'facebook_page'"
                   size="18"
@@ -807,6 +807,12 @@ const isAutoAddingZalo = ref(false);
 
 
 const currentDraftId = ref<string | null>(null);
+
+function getAccountAvatar(account: ZaloAccount) {
+  if (account.avatarUrl) return account.avatarUrl;
+  if (account.channelType === 'facebook') return 'https://www.facebook.com/images/fb_icon_325x325.png';
+  return 'https://stc-zaloid.zadn.vn/v2/images/default_avatar.png';
+}
 
 async function startZaloAdd() {
   isAutoAddingZalo.value = true;

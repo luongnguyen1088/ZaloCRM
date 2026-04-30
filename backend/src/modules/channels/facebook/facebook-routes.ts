@@ -12,6 +12,11 @@ import { config } from '../../../config/index.js';
 export async function facebookRoutes(app: FastifyInstance) {
   app.addHook('preHandler', authMiddleware);
 
+  const isPlaceholderPageName = (value?: string | null) => {
+    const normalized = value?.trim().toLowerCase();
+    return !normalized || normalized === 'facebook fanpage';
+  };
+
   app.get(
     '/api/v1/facebook/oauth/config',
     async (_request, reply) => {
@@ -138,10 +143,13 @@ export async function facebookRoutes(app: FastifyInstance) {
       try {
         const fb = new FacebookApi(accessToken);
         await fb.subscribeAppToPage(pageId);
+        const pageInfo = await fb.getPageInfo(pageId);
 
         await prisma.zaloAccount.update({
           where: { id: account.id },
           data: {
+            ...(pageInfo.name ? { displayName: pageInfo.name } : {}),
+            ...(pageInfo.avatarUrl ? { avatarUrl: pageInfo.avatarUrl } : {}),
             status: 'connected',
             lastConnectedAt: new Date(),
           },
@@ -172,9 +180,14 @@ export async function facebookRoutes(app: FastifyInstance) {
 
       try {
         const fb = new FacebookApi(accessToken);
-        const resolvedPageId = pageId || (await fb.getPageInfo()).id;
-        const resolvedPageName = pageName?.trim() || 'Facebook Fanpage';
-        const resolvedAvatarUrl = avatarUrl || 'https://www.facebook.com/images/fb_icon_325x325.png';
+        const pageInfo = await fb.getPageInfo(pageId || 'me');
+        const resolvedPageId = pageId || pageInfo.id;
+        const resolvedPageName = !isPlaceholderPageName(pageName) ? pageName!.trim() : (pageInfo.name || 'Facebook Fanpage');
+        const resolvedAvatarUrl = avatarUrl || pageInfo.avatarUrl || 'https://www.facebook.com/images/fb_icon_325x325.png';
+
+        if (!resolvedPageId) {
+          return reply.status(400).send({ error: 'Khong the xac dinh Fanpage tu access token nay' });
+        }
 
         await fb.subscribeAppToPage(resolvedPageId);
 

@@ -50,7 +50,12 @@ export class FacebookApi {
     try {
       const response = await fetch(`${this.baseUrl}/${this.version}/${pageId}?fields=id,name,picture&access_token=${this.pageAccessToken}`);
       if (!response.ok) throw new Error('Failed to fetch page info');
-      return await response.json();
+      const data = await response.json() as any;
+      return {
+        id: data?.id || null,
+        name: data?.name || null,
+        avatarUrl: data?.picture?.data?.url || null,
+      };
     } catch (err: any) {
       logger.error('[facebook-api] Get Page Info error:', err.message);
       throw err;

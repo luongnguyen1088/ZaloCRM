@@ -7,8 +7,14 @@ import { authMiddleware } from '../auth/auth-middleware.js';
 import { checkZaloAccountLimit } from '../billing/subscription-middleware.js';
 import { zaloPool } from './zalo-pool.js';
 import { prisma } from '../../shared/database/prisma-client.js';
+import { FacebookApi } from '../channels/facebook/facebook-api.js';
 
 export async function zaloRoutes(app: FastifyInstance): Promise<void> {
+  const isPlaceholderFacebookName = (value?: string | null) => {
+    const normalized = value?.trim().toLowerCase();
+    return !normalized || normalized === 'facebook fanpage';
+  };
+
   // All routes in this plugin require auth
   app.addHook('preHandler', authMiddleware);
 
@@ -37,15 +43,47 @@ export async function zaloRoutes(app: FastifyInstance): Promise<void> {
     });
 
     // Merge live status from pool and check if session exists (hide raw sessionData)
-    return accounts.map((a: any) => {
+    return Promise.all(accounts.map(async (a: any) => {
       const { sessionData, platformConfig, owner, channelType, ...rest } = a;
       const isFacebook = channelType === 'facebook';
       const liveAccount = isFacebook ? null : zaloPool.getAccountSnapshot(a.id);
+      let facebookDisplayName = rest.displayName;
+      let facebookAvatarUrl = rest.avatarUrl;
+
+      if (isFacebook && (isPlaceholderFacebookName(rest.displayName) || !rest.avatarUrl)) {
+        const accessToken = platformConfig?.accessToken;
+
+        if (accessToken) {
+          try {
+            const fb = new FacebookApi(accessToken);
+            const pageInfo = await fb.getPageInfo(rest.fbPageId || 'me');
+
+            facebookDisplayName = pageInfo.name || facebookDisplayName;
+            facebookAvatarUrl = pageInfo.avatarUrl || facebookAvatarUrl;
+
+            if (facebookDisplayName !== rest.displayName || facebookAvatarUrl !== rest.avatarUrl) {
+              await prisma.zaloAccount.update({
+                where: { id: a.id },
+                data: {
+                  ...(facebookDisplayName ? { displayName: facebookDisplayName } : {}),
+                  ...(facebookAvatarUrl ? { avatarUrl: facebookAvatarUrl } : {}),
+                },
+              });
+            }
+          } catch {
+            // Keep stale DB values when Facebook cannot be queried.
+          }
+        }
+      }
 
       return {
         ...rest,
-        displayName: rest.displayName || liveAccount?.displayName || null,
-        avatarUrl: rest.avatarUrl || liveAccount?.avatarUrl || null,
+        displayName: isFacebook
+          ? (facebookDisplayName || null)
+          : (rest.displayName || liveAccount?.displayName || null),
+        avatarUrl: isFacebook
+          ? (facebookAvatarUrl || null)
+          : (rest.avatarUrl || liveAccount?.avatarUrl || null),
         zaloUid: rest.zaloUid || liveAccount?.zaloUid || null,
         channelType,
         type: isFacebook ? 'facebook_page' : 'zalo_personal',
@@ -55,7 +93,7 @@ export async function zaloRoutes(app: FastifyInstance): Promise<void> {
         liveStatus: isFacebook ? a.status : (liveAccount?.status || zaloPool.getStatus(a.id)),
         hasSession: isFacebook ? !!platformConfig?.accessToken : !!sessionData,
       };
-    });
+    }));
   });
 
   // POST /api/v1/zalo-accounts — create a new account record
