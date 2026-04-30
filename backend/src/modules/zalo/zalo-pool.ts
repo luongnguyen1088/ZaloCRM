@@ -133,6 +133,7 @@ class ZaloAccountPool {
       let finalAvatar = instance.avatarUrl;
       try {
         const userInfo = await api.getUserInfo(ownId);
+        // zca-js might return profiles in changed_profiles
         const profile = userInfo?.changed_profiles?.[ownId] || userInfo?.changed_profiles?.[`${ownId}_0`];
         if (profile) {
           finalName = profile.zaloName || profile.displayName || profile.display_name || finalName;
@@ -144,12 +145,17 @@ class ZaloAccountPool {
         logger.warn(`[zalo:${accountId}] Failed to fetch own profile after login:`, err);
       }
 
+      // If still no name, use a default fallback
+      if (!finalName || finalName === 'Đang kết nối...') {
+        finalName = 'Zalo User';
+      }
+
       this.attachListener(accountId, api);
       await this.updateAccountDB(
         accountId, 
         'connected', 
         ownId, 
-        finalName && finalName !== 'Đang kết nối...' ? finalName : undefined, 
+        finalName, 
         finalAvatar
       );
       this.io?.emit('zalo:connected', { accountId, zaloUid: ownId });
@@ -204,14 +210,14 @@ class ZaloAccountPool {
       instance.zaloUid = ownId;
 
       // Fetch profile info to update stale data (like 'Đang kết nối...')
-      let finalName: string | undefined;
-      let finalAvatar: string | undefined;
+      let finalName = instance.displayName;
+      let finalAvatar = instance.avatarUrl;
       try {
         const userInfo = await api.getUserInfo(ownId);
         const profile = userInfo?.changed_profiles?.[ownId] || userInfo?.changed_profiles?.[`${ownId}_0`];
         if (profile) {
-          finalName = profile.zaloName || profile.displayName || profile.display_name;
-          finalAvatar = profile.avatar;
+          finalName = profile.zaloName || profile.displayName || profile.display_name || finalName;
+          finalAvatar = profile.avatar || finalAvatar;
           instance.displayName = finalName;
           instance.avatarUrl = finalAvatar;
         }
@@ -219,12 +225,17 @@ class ZaloAccountPool {
         logger.warn(`[zalo:${accountId}] Failed to fetch own profile after reconnect:`, err);
       }
 
+      // If still no name, use a default fallback
+      if (!finalName || finalName === 'Đang kết nối...') {
+        finalName = 'Zalo User';
+      }
+
       this.attachListener(accountId, api);
       await this.updateAccountDB(
         accountId, 
         'connected', 
         ownId,
-        finalName && finalName !== 'Đang kết nối...' ? finalName : undefined,
+        finalName,
         finalAvatar
       );
       this.io?.emit('zalo:connected', { accountId, zaloUid: ownId });
@@ -345,8 +356,8 @@ class ZaloAccountPool {
         data: {
           status,
           ...(zaloUid !== null ? { zaloUid } : {}),
-          ...(displayName ? { displayName } : {}),
-          ...(avatarUrl ? { avatarUrl } : {}),
+          ...(displayName !== undefined ? { displayName } : {}),
+          ...(avatarUrl !== undefined ? { avatarUrl } : {}),
           ...(status === 'connected' ? { lastConnectedAt: new Date() } : {}),
         },
       });

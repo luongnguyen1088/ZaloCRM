@@ -812,7 +812,7 @@ async function startZaloAdd() {
   isAutoAddingZalo.value = true;
   qrError.value = '';
   try {
-    const resp = await api.post('/zalo-accounts', { displayName: 'Đang kết nối...' });
+    const resp = await api.post('/zalo-accounts', { displayName: undefined });
     const newAcc = resp.data;
     currentDraftId.value = newAcc.id;
     // Không fetchAccounts ở đây để tránh hiện "rác" ở danh sách ngoài
