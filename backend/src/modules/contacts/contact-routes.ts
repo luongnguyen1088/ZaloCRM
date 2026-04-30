@@ -13,6 +13,37 @@ import { runAutomationRules } from '../automation/automation-service.js';
 
 type QueryParams = Record<string, string>;
 
+function mapContactWithChannelInfo<T extends {
+  conversations?: Array<{
+    lastMessageAt?: Date | null;
+    zaloAccount?: {
+      id: string;
+      displayName: string | null;
+      channelType: string;
+      fbPageId?: string | null;
+      zaloUid?: string | null;
+    } | null;
+  }>;
+}>(contact: T) {
+  const conversations = contact.conversations ?? [];
+  const connectedChannels = conversations
+    .filter((conversation) => conversation.zaloAccount)
+    .map((conversation) => conversation.zaloAccount!)
+    .filter((channel, index, arr) => arr.findIndex((item) => item.id === channel.id) === index)
+    .map((channel) => ({
+      id: channel.id,
+      displayName: channel.displayName,
+      channelType: channel.channelType,
+      platformId: channel.channelType === 'facebook' ? (channel.fbPageId ?? null) : (channel.zaloUid ?? null),
+    }));
+
+  return {
+    ...contact,
+    primaryChannel: connectedChannels[0] ?? null,
+    connectedChannels,
+  };
+}
+
 function resolveSourceFilter(source: string) {
   const normalized = source.trim().toLowerCase();
   const aliases: Record<string, string[]> = {
@@ -63,6 +94,22 @@ export async function contactRoutes(app: FastifyInstance): Promise<void> {
           include: {
             assignedUser: { select: { id: true, fullName: true, email: true } },
             _count: { select: { conversations: true, appointments: true } },
+            conversations: {
+              take: 3,
+              orderBy: { lastMessageAt: 'desc' },
+              select: {
+                lastMessageAt: true,
+                zaloAccount: {
+                  select: {
+                    id: true,
+                    displayName: true,
+                    channelType: true,
+                    fbPageId: true,
+                    zaloUid: true,
+                  },
+                },
+              },
+            },
           },
           orderBy: { updatedAt: 'desc' },
           skip: (pageNum - 1) * limitNum,
@@ -71,7 +118,7 @@ export async function contactRoutes(app: FastifyInstance): Promise<void> {
         prisma.contact.count({ where }),
       ]);
 
-      return { contacts, total, page: pageNum, limit: limitNum };
+      return { contacts: contacts.map(mapContactWithChannelInfo), total, page: pageNum, limit: limitNum };
     } catch (err) {
       logger.error('[contacts] List error:', err);
       return reply.status(500).send({ error: 'Failed to fetch contacts' });
@@ -141,11 +188,28 @@ export async function contactRoutes(app: FastifyInstance): Promise<void> {
           assignedUser: { select: { id: true, fullName: true, email: true } },
           appointments: { orderBy: { appointmentDate: 'desc' }, take: 10 },
           _count: { select: { conversations: true } },
+          conversations: {
+            take: 10,
+            orderBy: { lastMessageAt: 'desc' },
+            select: {
+              id: true,
+              lastMessageAt: true,
+              zaloAccount: {
+                select: {
+                  id: true,
+                  displayName: true,
+                  channelType: true,
+                  fbPageId: true,
+                  zaloUid: true,
+                },
+              },
+            },
+          },
         },
       });
 
       if (!contact) return reply.status(404).send({ error: 'Contact not found' });
-      return contact;
+      return mapContactWithChannelInfo(contact);
     } catch (err) {
       logger.error('[contacts] Detail error:', err);
       return reply.status(500).send({ error: 'Failed to fetch contact' });

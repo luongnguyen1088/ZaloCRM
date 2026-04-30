@@ -6,11 +6,11 @@
       <div class="contacts-hero__content">
         <div class="contacts-hero__badge">
           <v-icon size="18">mdi-account-group-outline</v-icon>
-          <span>CRM khách hàng</span>
+          <span>CRM khach hang</span>
         </div>
-        <h1 class="text-h4 font-weight-bold mb-2">Khách hàng</h1>
+        <h1 class="text-h4 font-weight-bold mb-2">Khach hang</h1>
         <p class="text-body-1 text-medium-emphasis mb-0 contacts-hero__subtitle">
-          Theo dõi lead mới, ưu tiên chăm sóc, và mở nhanh hồ sơ khách hàng có tín hiệu chuyển đổi tốt.
+          Theo doi lead moi, uu tien cham soc, va mo nhanh ho so khach hang co tin hieu chuyen doi tot.
         </p>
       </div>
 
@@ -22,7 +22,7 @@
           class="text-none"
           @click="showDuplicateDialog = true"
         >
-          Trùng lặp
+          Trung lap
           <v-badge
             v-if="duplicateTotal > 0"
             :content="duplicateTotal"
@@ -32,7 +32,7 @@
         </v-btn>
 
         <v-btn color="primary" rounded="xl" prepend-icon="mdi-plus" class="text-none elevation-4" @click="openCreate">
-          Thêm khách hàng
+          Them khach hang
         </v-btn>
       </div>
     </section>
@@ -43,7 +43,7 @@
           <v-card-text class="pa-5">
             <div class="d-flex align-center justify-space-between mb-4">
               <div>
-                <div class="text-overline metric-label">Tổng đang hiển thị</div>
+                <div class="text-overline metric-label">Tong dang hien thi</div>
                 <div class="text-h4 font-weight-bold">{{ total.toLocaleString('vi-VN') }}</div>
               </div>
               <div class="metric-icon">
@@ -51,7 +51,7 @@
               </div>
             </div>
             <div class="text-body-2 text-medium-emphasis">
-              {{ contacts.length }} hồ sơ trong trang hiện tại
+              {{ contacts.length }} ho so trong trang hien tai
             </div>
           </v-card-text>
         </v-card>
@@ -62,7 +62,7 @@
           <v-card-text class="pa-5">
             <div class="d-flex align-center justify-space-between mb-4">
               <div>
-                <div class="text-overline metric-label">Lead quan tâm</div>
+                <div class="text-overline metric-label">Lead quan tam</div>
                 <div class="text-h4 font-weight-bold">{{ interestedCount }}</div>
               </div>
               <div class="metric-icon metric-icon--warm">
@@ -70,7 +70,7 @@
               </div>
             </div>
             <div class="text-body-2 text-medium-emphasis">
-              Trạng thái <strong>Quan tâm</strong> hoặc điểm lead từ 70 trở lên
+              Trang thai <strong>Quan tam</strong> hoac diem lead tu 70 tro len
             </div>
           </v-card-text>
         </v-card>
@@ -81,7 +81,7 @@
           <v-card-text class="pa-5">
             <div class="d-flex align-center justify-space-between mb-4">
               <div>
-                <div class="text-overline metric-label">Cần follow-up</div>
+                <div class="text-overline metric-label">Can follow-up</div>
                 <div class="text-h4 font-weight-bold">{{ followUpCount }}</div>
               </div>
               <div class="metric-icon metric-icon--info">
@@ -89,7 +89,7 @@
               </div>
             </div>
             <div class="text-body-2 text-medium-emphasis">
-              Có lịch hẹn hoặc tái khám trong 7 ngày tới
+              Co lich hen hoac tai kham trong 7 ngay toi
             </div>
           </v-card-text>
         </v-card>
@@ -100,7 +100,7 @@
           <v-card-text class="pa-5">
             <div class="d-flex align-center justify-space-between mb-4">
               <div>
-                <div class="text-overline metric-label">Lâu chưa chạm</div>
+                <div class="text-overline metric-label">Lau chua cham</div>
                 <div class="text-h4 font-weight-bold">{{ staleCount }}</div>
               </div>
               <div class="metric-icon metric-icon--danger">
@@ -108,7 +108,7 @@
               </div>
             </div>
             <div class="text-body-2 text-medium-emphasis">
-              Không có hoạt động hoặc đã yên lặng trên 7 ngày
+              Khong co hoat dong hoac da yen lang tren 7 ngay
             </div>
           </v-card-text>
         </v-card>
@@ -146,17 +146,20 @@
               </v-avatar>
 
               <div class="contact-cell__content">
-                <div class="font-weight-bold text-body-1 text-truncate">{{ item.fullName || 'Chưa đặt tên' }}</div>
+                <div class="font-weight-bold text-body-1 text-truncate">{{ item.fullName || 'Chua dat ten' }}</div>
                 <div class="text-body-2 text-medium-emphasis">
-                  {{ item.phone || 'Chưa có SĐT' }}
+                  {{ item.phone || 'Chua co SDT' }}
                   <span v-if="item.email"> • {{ item.email }}</span>
                 </div>
                 <div class="d-flex flex-wrap ga-1 mt-2">
+                  <v-chip v-if="item.primaryChannel" size="x-small" variant="tonal" :color="channelColor(item.primaryChannel.channelType)">
+                    {{ channelBadge(item.primaryChannel) }}
+                  </v-chip>
                   <v-chip size="x-small" variant="tonal" color="primary">
-                    {{ item._count?.conversations ?? 0 }} hội thoại
+                    {{ item._count?.conversations ?? 0 }} hoi thoai
                   </v-chip>
                   <v-chip size="x-small" variant="tonal" color="secondary">
-                    {{ item._count?.appointments ?? 0 }} lịch hẹn
+                    {{ item._count?.appointments ?? 0 }} lich hen
                   </v-chip>
                   <v-chip v-for="tag in (item.tags || []).slice(0, 2)" :key="tag" size="x-small" variant="outlined">
                     {{ tag }}
@@ -171,6 +174,18 @@
               {{ sourceLabel(item.source) }}
             </v-chip>
             <span v-else class="text-medium-emphasis">—</span>
+          </template>
+
+          <template #item.primaryChannel="{ item }">
+            <div v-if="item.primaryChannel">
+              <v-chip :color="channelColor(item.primaryChannel.channelType)" size="small" variant="tonal" class="font-weight-medium mb-1">
+                {{ channelTypeLabel(item.primaryChannel.channelType) }}
+              </v-chip>
+              <div class="text-caption text-medium-emphasis text-truncate">
+                {{ item.primaryChannel.displayName || item.primaryChannel.platformId || 'Kenh da ket noi' }}
+              </div>
+            </div>
+            <span v-else class="text-medium-emphasis">Chua co</span>
           </template>
 
           <template #item.status="{ item }">
@@ -191,15 +206,15 @@
               <div class="font-weight-medium">{{ formatDate(item.nextAppointment) }}</div>
               <div class="text-caption text-medium-emphasis">{{ appointmentHint(item.nextAppointment) }}</div>
             </div>
-            <span v-else class="text-medium-emphasis">Chưa có lịch</span>
+            <span v-else class="text-medium-emphasis">Chua co lich</span>
           </template>
 
           <template #item.assignedUser="{ item }">
             <div v-if="item.assignedUser" class="text-body-2">
               <div class="font-weight-medium">{{ item.assignedUser.fullName }}</div>
-              <div class="text-caption text-medium-emphasis">Đang phụ trách</div>
+              <div class="text-caption text-medium-emphasis">Dang phu trach</div>
             </div>
-            <span v-else class="text-medium-emphasis">Chưa giao</span>
+            <span v-else class="text-medium-emphasis">Chua giao</span>
           </template>
 
           <template #item.leadScore="{ item }">
@@ -221,7 +236,7 @@
               <div class="font-weight-medium">{{ relativeTime(item.lastActivity) }}</div>
               <div class="text-caption text-medium-emphasis">{{ formatDateTime(item.lastActivity) }}</div>
             </div>
-            <span v-else class="text-medium-emphasis">Chưa ghi nhận</span>
+            <span v-else class="text-medium-emphasis">Chua ghi nhan</span>
           </template>
 
           <template #item.actions="{ item }">
@@ -249,13 +264,13 @@
               <v-avatar size="72" color="grey-lighten-4" class="mb-4">
                 <v-icon size="34" color="grey-darken-1">mdi-account-search-outline</v-icon>
               </v-avatar>
-              <div class="text-h6 font-weight-bold mb-2">Chưa tìm thấy khách hàng phù hợp</div>
+              <div class="text-h6 font-weight-bold mb-2">Chua tim thay khach hang phu hop</div>
               <div class="text-body-2 text-medium-emphasis mb-5">
-                Thử đổi bộ lọc hoặc thêm khách hàng mới để bắt đầu quản lý pipeline.
+                Thu doi bo loc hoac them khach hang moi de bat dau quan ly pipeline.
               </div>
               <div class="d-flex justify-center ga-2">
-                <v-btn variant="tonal" color="primary" rounded="xl" @click="onResetFilters">Xóa bộ lọc</v-btn>
-                <v-btn color="primary" rounded="xl" @click="openCreate">Thêm khách hàng</v-btn>
+                <v-btn variant="tonal" color="primary" rounded="xl" @click="onResetFilters">Xoa bo loc</v-btn>
+                <v-btn color="primary" rounded="xl" @click="openCreate">Them khach hang</v-btn>
               </div>
             </div>
           </template>
@@ -301,23 +316,20 @@ const selectedContact = ref<Contact | null>(null);
 const snack = ref({ show: false, text: '', color: 'success' });
 
 const headers: any[] = [
-  { title: 'Khách hàng', key: 'fullName', sortable: false, width: '340px' },
-  { title: 'Nguồn', key: 'source', sortable: false, width: '120px' },
-  { title: 'Trạng thái', key: 'status', sortable: false, width: '130px' },
-  { title: 'Tái khám', key: 'nextAppointment', sortable: true, width: '160px' },
-  { title: 'Phụ trách', key: 'assignedUser', sortable: false, width: '150px' },
+  { title: 'Khach hang', key: 'fullName', sortable: false, width: '340px' },
+  { title: 'Nguon', key: 'source', sortable: false, width: '120px' },
+  { title: 'Kenh ket noi', key: 'primaryChannel', sortable: false, width: '180px' },
+  { title: 'Trang thai', key: 'status', sortable: false, width: '130px' },
+  { title: 'Tai kham', key: 'nextAppointment', sortable: true, width: '160px' },
+  { title: 'Phu trach', key: 'assignedUser', sortable: false, width: '150px' },
   { title: 'Lead score', key: 'leadScore', sortable: true, width: '130px' },
-  { title: 'Hoạt động gần nhất', key: 'lastActivity', sortable: true, width: '170px' },
+  { title: 'Hoat dong gan nhat', key: 'lastActivity', sortable: true, width: '170px' },
   { title: '', key: 'actions', sortable: false, align: 'end' as const, width: '90px' },
 ];
 
-const activeFilterCount = computed(() => {
-  return [filters.search, filters.source, filters.status].filter(Boolean).length;
-});
+const activeFilterCount = computed(() => [filters.search, filters.source, filters.status].filter(Boolean).length);
 
-const interestedCount = computed(() => {
-  return contacts.value.filter((contact) => contact.status === 'interested' || (contact.leadScore ?? 0) >= 70).length;
-});
+const interestedCount = computed(() => contacts.value.filter((contact) => contact.status === 'interested' || (contact.leadScore ?? 0) >= 70).length);
 
 const followUpCount = computed(() => {
   const now = Date.now();
@@ -344,8 +356,8 @@ function sourceLabel(value: string) {
   if (option) return option.text;
   if (['fb', 'facebook'].includes(normalized)) return 'Facebook';
   if (['tt', 'tiktok'].includes(normalized)) return 'TikTok';
-  if (['gt', 'referral'].includes(normalized)) return 'Giới thiệu';
-  if (['cn', 'personal'].includes(normalized)) return 'Cá nhân';
+  if (['gt', 'referral'].includes(normalized)) return 'Gioi thieu';
+  if (['cn', 'personal'].includes(normalized)) return 'Ca nhan';
   return value;
 }
 
@@ -356,6 +368,19 @@ function sourceColor(value: string) {
   if (['tt', 'tiktok'].includes(normalized)) return 'pink';
   if (['gt', 'referral'].includes(normalized)) return 'deep-orange';
   return 'grey';
+}
+
+function channelTypeLabel(channelType: string) {
+  return channelType === 'facebook' ? 'Fanpage' : 'Zalo';
+}
+
+function channelColor(channelType: string) {
+  return channelType === 'facebook' ? 'blue' : 'cyan';
+}
+
+function channelBadge(channel: NonNullable<Contact['primaryChannel']>) {
+  const channelName = channel.displayName || channel.platformId || 'Kenh ket noi';
+  return `${channelTypeLabel(channel.channelType)} • ${channelName}`;
 }
 
 function statusLabel(value: string) {
@@ -394,10 +419,10 @@ function appointmentHint(date: string) {
   target.setHours(0, 0, 0, 0);
   const diffDays = Math.round((target.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (diffDays < 0) return `Quá ${Math.abs(diffDays)} ngày`;
-  if (diffDays === 0) return 'Hôm nay';
-  if (diffDays === 1) return 'Ngày mai';
-  return `${diffDays} ngày nữa`;
+  if (diffDays < 0) return `Qua ${Math.abs(diffDays)} ngay`;
+  if (diffDays === 0) return 'Hom nay';
+  if (diffDays === 1) return 'Ngay mai';
+  return `${diffDays} ngay nua`;
 }
 
 function scoreColor(score: number) {
@@ -412,11 +437,11 @@ function relativeTime(dateStr: string) {
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-  if (minutes < 60) return `${Math.max(minutes, 1)} phút trước`;
-  if (hours < 24) return `${hours} giờ trước`;
-  if (days === 0) return 'Hôm nay';
-  if (days === 1) return 'Hôm qua';
-  return `${days} ngày trước`;
+  if (minutes < 60) return `${Math.max(minutes, 1)} phut truoc`;
+  if (hours < 24) return `${hours} gio truoc`;
+  if (days === 0) return 'Hom nay';
+  if (days === 1) return 'Hom qua';
+  return `${days} ngay truoc`;
 }
 
 let filterTimer: ReturnType<typeof setTimeout> | null = null;
@@ -457,7 +482,7 @@ function onRowClick(_event: Event, row: { item: Contact }) {
 async function copyPhone(contact: Contact) {
   if (!contact.phone) return;
   await navigator.clipboard.writeText(contact.phone);
-  snack.value = { show: true, text: `Đã sao chép SĐT của ${contact.fullName || 'khách hàng'}`, color: 'success' };
+  snack.value = { show: true, text: `Da sao chep SDT cua ${contact.fullName || 'khach hang'}`, color: 'success' };
 }
 
 function onSaved() {

@@ -3,10 +3,10 @@
     <section class="mobile-contacts__hero">
       <div class="mobile-contacts__hero-top">
         <div>
-          <div class="text-overline font-weight-bold text-medium-emphasis">CRM khách hàng</div>
-          <h1 class="text-h5 font-weight-bold mb-1">Khách hàng</h1>
+          <div class="text-overline font-weight-bold text-medium-emphasis">CRM khach hang</div>
+          <h1 class="text-h5 font-weight-bold mb-1">Khach hang</h1>
           <p class="text-body-2 text-medium-emphasis mb-0">
-            {{ total.toLocaleString('vi-VN') }} hồ sơ • {{ interestedCount }} lead đang nóng
+            {{ total.toLocaleString('vi-VN') }} ho so • {{ interestedCount }} lead dang nong
           </p>
         </div>
 
@@ -18,13 +18,13 @@
           size="small"
           @click="refreshDuplicates"
         >
-          Trùng lặp
+          Trung lap
         </v-btn>
       </div>
 
       <v-text-field
         v-model="filters.search"
-        placeholder="Tìm khách hàng..."
+        placeholder="Tim khach hang..."
         prepend-inner-icon="mdi-magnify"
         variant="outlined"
         density="comfortable"
@@ -42,7 +42,7 @@
           size="small"
           @click="toggleStatus('')"
         >
-          Tất cả
+          Tat ca
         </v-chip>
         <v-chip
           v-for="status in STATUS_OPTIONS"
@@ -59,15 +59,15 @@
 
     <section class="mobile-contacts__summary">
       <div class="summary-pill">
-        <span class="summary-pill__label">Quan tâm</span>
+        <span class="summary-pill__label">Quan tam</span>
         <strong>{{ interestedCount }}</strong>
       </div>
       <div class="summary-pill">
-        <span class="summary-pill__label">Sắp hẹn</span>
+        <span class="summary-pill__label">Sap hen</span>
         <strong>{{ followUpCount }}</strong>
       </div>
       <div class="summary-pill">
-        <span class="summary-pill__label">Im lặng</span>
+        <span class="summary-pill__label">Im lang</span>
         <strong>{{ staleCount }}</strong>
       </div>
     </section>
@@ -94,10 +94,10 @@
 
             <div class="flex-grow-1 min-w-0">
               <div class="text-body-1 font-weight-bold text-truncate">
-                {{ contact.fullName || 'Chưa đặt tên' }}
+                {{ contact.fullName || 'Chua dat ten' }}
               </div>
               <div class="text-caption text-medium-emphasis">
-                {{ contact.phone || 'Chưa có SĐT' }}
+                {{ contact.phone || 'Chua co SDT' }}
               </div>
             </div>
 
@@ -115,23 +115,26 @@
             <v-chip v-if="contact.source" size="x-small" variant="tonal" :color="sourceColor(contact.source)">
               {{ sourceLabel(contact.source) }}
             </v-chip>
+            <v-chip v-if="contact.primaryChannel" size="x-small" variant="tonal" :color="channelColor(contact.primaryChannel.channelType)">
+              {{ channelTypeLabel(contact.primaryChannel.channelType) }} • {{ contact.primaryChannel.displayName || contact.primaryChannel.platformId || 'Kenh ket noi' }}
+            </v-chip>
             <v-chip size="x-small" variant="tonal" :color="scoreColor(contact.leadScore)">
               Score {{ contact.leadScore ?? 0 }}
             </v-chip>
             <v-chip size="x-small" variant="outlined">
-              {{ contact._count?.conversations ?? 0 }} hội thoại
+              {{ contact._count?.conversations ?? 0 }} hoi thoai
             </v-chip>
           </div>
 
           <div class="d-flex align-center justify-space-between mt-4 text-caption text-medium-emphasis">
-            <span>{{ contact.nextAppointment ? `Hẹn ${formatDate(contact.nextAppointment)}` : 'Chưa có lịch hẹn' }}</span>
-            <span>{{ contact.lastActivity ? relativeTime(contact.lastActivity) : 'Chưa có hoạt động' }}</span>
+            <span>{{ contact.nextAppointment ? `Hen ${formatDate(contact.nextAppointment)}` : 'Chua co lich hen' }}</span>
+            <span>{{ contact.lastActivity ? relativeTime(contact.lastActivity) : 'Chua co hoat dong' }}</span>
           </div>
         </v-card-text>
       </v-card>
 
       <div v-if="contacts.length === 0" class="text-center py-10 text-medium-emphasis">
-        Không tìm thấy khách hàng phù hợp
+        Khong tim thay khach hang phu hop
       </div>
     </div>
 
@@ -166,9 +169,7 @@ const { fetchDuplicateGroups } = useContactIntelligence();
 const showDialog = ref(false);
 const selectedContact = ref<Contact | null>(null);
 
-const interestedCount = computed(() => {
-  return contacts.value.filter((contact) => contact.status === 'interested' || (contact.leadScore ?? 0) >= 70).length;
-});
+const interestedCount = computed(() => contacts.value.filter((contact) => contact.status === 'interested' || (contact.leadScore ?? 0) >= 70).length);
 
 const followUpCount = computed(() => {
   const now = Date.now();
@@ -206,8 +207,8 @@ function sourceLabel(value: string) {
   if (option) return option.text;
   if (['fb', 'facebook'].includes(normalized)) return 'Facebook';
   if (['tt', 'tiktok'].includes(normalized)) return 'TikTok';
-  if (['gt', 'referral'].includes(normalized)) return 'Giới thiệu';
-  if (['cn', 'personal'].includes(normalized)) return 'Cá nhân';
+  if (['gt', 'referral'].includes(normalized)) return 'Gioi thieu';
+  if (['cn', 'personal'].includes(normalized)) return 'Ca nhan';
   return value;
 }
 
@@ -218,6 +219,14 @@ function sourceColor(value: string) {
   if (['tt', 'tiktok'].includes(normalized)) return 'pink';
   if (['gt', 'referral'].includes(normalized)) return 'deep-orange';
   return 'grey';
+}
+
+function channelTypeLabel(channelType: string) {
+  return channelType === 'facebook' ? 'Fanpage' : 'Zalo';
+}
+
+function channelColor(channelType: string) {
+  return channelType === 'facebook' ? 'blue' : 'cyan';
 }
 
 function scoreColor(score: number) {
@@ -234,9 +243,9 @@ function relativeTime(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime();
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  if (hours < 24) return `${Math.max(hours, 1)} giờ trước`;
-  if (days === 1) return 'Hôm qua';
-  return `${days} ngày trước`;
+  if (hours < 24) return `${Math.max(hours, 1)} gio truoc`;
+  if (days === 1) return 'Hom qua';
+  return `${days} ngay truoc`;
 }
 
 function toggleStatus(value: string) {

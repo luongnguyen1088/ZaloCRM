@@ -1,74 +1,111 @@
 <template>
-  <v-dialog v-model="show" max-width="680" persistent scrollable>
-    <v-card>
-      <v-card-title class="d-flex align-center">
-        <span>{{ isNew ? 'Thêm khách hàng' : 'Chi tiết khách hàng' }}</span>
+  <v-dialog v-model="show" max-width="760" persistent scrollable>
+    <v-card class="contact-dialog-card">
+      <v-card-title class="d-flex align-center px-6 pt-5 pb-4">
+        <div>
+          <div class="text-h6 font-weight-bold">{{ isNew ? 'Them khach hang' : 'Chi tiet khach hang' }}</div>
+          <div class="text-caption text-medium-emphasis">
+            {{ isNew ? 'Tao ho so CRM moi' : (props.contact?.fullName || 'Ho so khach hang') }}
+          </div>
+        </div>
         <v-spacer />
         <v-btn icon="mdi-close" variant="text" @click="close" />
       </v-card-title>
 
       <v-divider />
 
-      <v-card-text>
+      <v-card-text class="px-6 py-5">
+        <v-card
+          v-if="!isNew && props.contact"
+          class="contact-context-card mb-5"
+          elevation="0"
+        >
+          <v-card-text class="pa-4">
+            <div class="text-overline font-weight-bold text-medium-emphasis mb-3">Ngu canh ket noi</div>
+            <div class="d-flex flex-wrap ga-2">
+              <v-chip v-if="props.contact.source" :color="sourceColor(props.contact.source)" variant="tonal">
+                Nguon: {{ sourceLabel(props.contact.source) }}
+              </v-chip>
+              <v-chip
+                v-if="props.contact.primaryChannel"
+                :color="channelColor(props.contact.primaryChannel.channelType)"
+                variant="tonal"
+              >
+                Kenh chinh: {{ channelLabel(props.contact.primaryChannel) }}
+              </v-chip>
+              <v-chip v-if="props.contact.connectedChannels?.length" variant="outlined">
+                {{ props.contact.connectedChannels.length }} kenh da tung tiep xuc
+              </v-chip>
+            </div>
+
+            <div
+              v-if="props.contact.connectedChannels?.length"
+              class="d-flex flex-wrap ga-2 mt-3"
+            >
+              <v-chip
+                v-for="channel in props.contact.connectedChannels"
+                :key="channel.id"
+                size="small"
+                variant="outlined"
+                :color="channelColor(channel.channelType)"
+              >
+                {{ channelLabel(channel) }}
+              </v-chip>
+            </div>
+          </v-card-text>
+        </v-card>
+
         <v-row dense>
-          <!-- Full name -->
           <v-col cols="12" sm="6">
-            <v-text-field v-model="form.fullName" label="Họ và tên" :rules="[required]" />
+            <v-text-field v-model="form.fullName" label="Ho va ten" :rules="[required]" />
           </v-col>
 
-          <!-- Phone -->
           <v-col cols="12" sm="6">
-            <v-text-field v-model="form.phone" label="Số điện thoại" />
+            <v-text-field v-model="form.phone" label="So dien thoai" />
           </v-col>
 
-          <!-- Email -->
           <v-col cols="12" sm="6">
             <v-text-field v-model="form.email" label="Email" type="email" />
           </v-col>
 
-          <!-- Source -->
           <v-col cols="12" sm="6">
             <v-select
               v-model="form.source"
               :items="SOURCE_OPTIONS"
               item-title="text"
               item-value="value"
-              label="Nguồn"
+              label="Nguon"
               clearable
             />
           </v-col>
 
-          <!-- Status -->
           <v-col cols="12" sm="6">
             <v-select
               v-model="form.status"
               :items="STATUS_OPTIONS"
               item-title="text"
               item-value="value"
-              label="Trạng thái"
+              label="Trang thai"
               clearable
             />
           </v-col>
 
-          <!-- Next appointment date -->
           <v-col cols="12" sm="6">
             <v-text-field
               v-model="form.nextAppointmentDate"
-              label="Ngày tái khám"
+              label="Ngay tai kham"
               type="date"
             />
           </v-col>
 
-          <!-- First contact date -->
           <v-col cols="12" sm="6">
             <v-text-field
               v-model="form.firstContactDate"
-              label="Ngày tiếp nhận"
+              label="Ngay tiep nhan"
               type="date"
             />
           </v-col>
 
-          <!-- Tags -->
           <v-col cols="12" sm="6">
             <v-combobox
               v-model="form.tags"
@@ -81,11 +118,10 @@
             />
           </v-col>
 
-          <!-- Notes -->
           <v-col cols="12">
             <v-textarea
               v-model="form.notes"
-              label="Ghi chú"
+              label="Ghi chu"
               rows="3"
               auto-grow
             />
@@ -95,7 +131,7 @@
 
       <v-divider />
 
-      <v-card-actions>
+      <v-card-actions class="px-6 py-4">
         <v-btn
           v-if="!isNew"
           color="error"
@@ -103,11 +139,11 @@
           :loading="deleting"
           @click="onDelete"
         >
-          Xoá
+          Xoa
         </v-btn>
         <v-spacer />
-        <v-btn variant="text" @click="close">Huỷ</v-btn>
-        <v-btn color="primary" :loading="saving" @click="onSave">Lưu</v-btn>
+        <v-btn variant="text" @click="close">Huy</v-btn>
+        <v-btn color="primary" :loading="saving" @click="onSave">Luu</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -174,12 +210,8 @@ watch(() => props.contact, (c) => {
       email: c.email ?? '',
       source: c.source ?? '',
       status: c.status ?? '',
-      nextAppointmentDate: c.nextAppointment
-        ? new Date(c.nextAppointment).toISOString().split('T')[0]
-        : '',
-      firstContactDate: c.firstContactDate
-        ? new Date(c.firstContactDate).toISOString().split('T')[0]
-        : '',
+      nextAppointmentDate: c.nextAppointment ? new Date(c.nextAppointment).toISOString().split('T')[0] : '',
+      firstContactDate: c.firstContactDate ? new Date(c.firstContactDate).toISOString().split('T')[0] : '',
       notes: c.notes ?? '',
       tags: c.tags ?? [],
     };
@@ -189,7 +221,37 @@ watch(() => props.contact, (c) => {
 }, { immediate: true, deep: true });
 
 function required(v: string) {
-  return !!v || 'Bắt buộc';
+  return !!v || 'Bat buoc';
+}
+
+function sourceColor(value: string) {
+  const normalized = value.trim().toLowerCase();
+  if (['fb', 'facebook'].includes(normalized)) return 'blue';
+  if (normalized === 'zalo') return 'cyan';
+  if (['tt', 'tiktok'].includes(normalized)) return 'pink';
+  if (['gt', 'referral'].includes(normalized)) return 'deep-orange';
+  return 'grey';
+}
+
+function sourceLabel(value: string) {
+  const normalized = value.trim().toLowerCase();
+  const option = SOURCE_OPTIONS.find((item) => item.value === normalized);
+  if (option) return option.text;
+  if (['fb', 'facebook'].includes(normalized)) return 'Facebook';
+  if (normalized === 'zalo') return 'Zalo';
+  if (['tt', 'tiktok'].includes(normalized)) return 'TikTok';
+  if (['gt', 'referral'].includes(normalized)) return 'Gioi thieu';
+  if (['cn', 'personal'].includes(normalized)) return 'Ca nhan';
+  return value;
+}
+
+function channelColor(channelType: string) {
+  return channelType === 'facebook' ? 'blue' : 'cyan';
+}
+
+function channelLabel(channel: NonNullable<Contact['primaryChannel']>) {
+  const prefix = channel.channelType === 'facebook' ? 'Fanpage' : 'Zalo';
+  return `${prefix} • ${channel.displayName || channel.platformId || 'Kenh ket noi'}`;
 }
 
 async function onSave() {
@@ -234,3 +296,15 @@ function close() {
   emit('update:modelValue', false);
 }
 </script>
+
+<style scoped>
+.contact-dialog-card {
+  border-radius: 24px !important;
+}
+
+.contact-context-card {
+  border-radius: 18px !important;
+  background: rgba(248, 250, 252, 0.9) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+</style>

@@ -26,6 +26,18 @@ export interface Contact {
   leadScore: number;
   lastActivity: string | null;
   mergedInto: string | null;
+  primaryChannel?: {
+    id: string;
+    displayName: string | null;
+    channelType: string;
+    platformId: string | null;
+  } | null;
+  connectedChannels?: Array<{
+    id: string;
+    displayName: string | null;
+    channelType: string;
+    platformId: string | null;
+  }>;
   _count?: {
     conversations?: number;
     appointments?: number;
