@@ -40,15 +40,19 @@ export async function zaloRoutes(app: FastifyInstance): Promise<void> {
     return accounts.map((a: any) => {
       const { sessionData, platformConfig, owner, channelType, ...rest } = a;
       const isFacebook = channelType === 'facebook';
+      const liveAccount = isFacebook ? null : zaloPool.getAccountSnapshot(a.id);
 
       return {
         ...rest,
+        displayName: rest.displayName || liveAccount?.displayName || null,
+        avatarUrl: rest.avatarUrl || liveAccount?.avatarUrl || null,
+        zaloUid: rest.zaloUid || liveAccount?.zaloUid || null,
         channelType,
         type: isFacebook ? 'facebook_page' : 'zalo_personal',
         ownerUserId: owner?.id ?? a.ownerUserId,
         owner,
         platformConfig,
-        liveStatus: isFacebook ? a.status : zaloPool.getStatus(a.id),
+        liveStatus: isFacebook ? a.status : (liveAccount?.status || zaloPool.getStatus(a.id)),
         hasSession: isFacebook ? !!platformConfig?.accessToken : !!sessionData,
       };
     });

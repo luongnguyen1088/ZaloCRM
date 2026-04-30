@@ -355,12 +355,18 @@ class ZaloAccountPool {
         where: { id: accountId },
         data: {
           status,
-          ...(zaloUid !== null ? { zaloUid } : {}),
           ...(displayName !== undefined ? { displayName } : {}),
           ...(avatarUrl !== undefined ? { avatarUrl } : {}),
           ...(status === 'connected' ? { lastConnectedAt: new Date() } : {}),
         },
       });
+
+      if (zaloUid !== null) {
+        await prisma.zaloAccount.update({
+          where: { id: accountId },
+          data: { zaloUid },
+        });
+      }
     } catch (err) {
       logger.error(`[zalo:${accountId}] updateAccountDB error:`, err);
     }
@@ -393,6 +399,18 @@ class ZaloAccountPool {
 
   getInstance(accountId: string): ZaloInstance | undefined {
     return this.instances.get(accountId);
+  }
+
+  getAccountSnapshot(accountId: string): Pick<ZaloInstance, 'status' | 'displayName' | 'avatarUrl' | 'zaloUid'> | null {
+    const inst = this.instances.get(accountId);
+    if (!inst) return null;
+
+    return {
+      status: inst.status,
+      displayName: inst.displayName,
+      avatarUrl: inst.avatarUrl,
+      zaloUid: inst.zaloUid,
+    };
   }
 }
 
