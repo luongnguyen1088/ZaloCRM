@@ -143,13 +143,18 @@ export async function facebookRoutes(app: FastifyInstance) {
       try {
         const fb = new FacebookApi(accessToken);
         await fb.subscribeAppToPage(pageId);
-        const pageInfo = await fb.getPageInfo(pageId);
+        let pageInfo: Awaited<ReturnType<FacebookApi['getPageInfo']>> | null = null;
+        try {
+          pageInfo = await fb.getPageInfo(pageId);
+        } catch (err) {
+          logger.warn('[facebook] Re-subscribe page info refresh skipped:', err);
+        }
 
         await prisma.zaloAccount.update({
           where: { id: account.id },
           data: {
-            ...(pageInfo.name ? { displayName: pageInfo.name } : {}),
-            ...(pageInfo.avatarUrl ? { avatarUrl: pageInfo.avatarUrl } : {}),
+            ...(pageInfo?.name ? { displayName: pageInfo.name } : {}),
+            ...(pageInfo?.avatarUrl ? { avatarUrl: pageInfo.avatarUrl } : {}),
             status: 'connected',
             lastConnectedAt: new Date(),
           },
@@ -180,10 +185,15 @@ export async function facebookRoutes(app: FastifyInstance) {
 
       try {
         const fb = new FacebookApi(accessToken);
-        const pageInfo = await fb.getPageInfo(pageId || 'me');
-        const resolvedPageId = pageId || pageInfo.id;
-        const resolvedPageName = !isPlaceholderPageName(pageName) ? pageName!.trim() : (pageInfo.name || 'Facebook Fanpage');
-        const resolvedAvatarUrl = avatarUrl || pageInfo.avatarUrl || 'https://www.facebook.com/images/fb_icon_325x325.png';
+        let pageInfo: Awaited<ReturnType<FacebookApi['getPageInfo']>> | null = null;
+        try {
+          pageInfo = await fb.getPageInfo(pageId || 'me');
+        } catch (err) {
+          logger.warn('[facebook] Page info lookup failed during link-page, falling back to provided values:', err);
+        }
+        const resolvedPageId = pageId || pageInfo?.id;
+        const resolvedPageName = !isPlaceholderPageName(pageName) ? pageName!.trim() : (pageInfo?.name || 'Facebook Fanpage');
+        const resolvedAvatarUrl = avatarUrl || pageInfo?.avatarUrl || 'https://www.facebook.com/images/fb_icon_325x325.png';
 
         if (!resolvedPageId) {
           return reply.status(400).send({ error: 'Khong the xac dinh Fanpage tu access token nay' });
