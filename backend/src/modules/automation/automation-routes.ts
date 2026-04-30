@@ -36,6 +36,7 @@ export async function automationRoutes(app: FastifyInstance): Promise<void> {
           actions: Array.isArray(body.actions) ? body.actions : [],
           enabled: body.enabled ?? true,
           priority: Number(body.priority ?? 0),
+          delaySeconds: Number(body.delaySeconds ?? 0),
         },
       });
       return reply.status(201).send(rule);
@@ -64,6 +65,7 @@ export async function automationRoutes(app: FastifyInstance): Promise<void> {
           actions: Array.isArray(body.actions) ? body.actions : undefined,
           enabled: body.enabled,
           priority: body.priority !== undefined ? Number(body.priority) : undefined,
+          delaySeconds: body.delaySeconds !== undefined ? Number(body.delaySeconds) : undefined,
         },
       });
       return rule;

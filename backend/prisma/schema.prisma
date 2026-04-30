@@ -407,6 +407,7 @@ model AutomationRule {
   priority    Int          @default(0)
   runCount    Int          @default(0) @map("run_count")
   lastRunAt   DateTime?    @map("last_run_at")
+  delaySeconds Int          @default(0) @map("delay_seconds")
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @updatedAt @map("updated_at")
   org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)

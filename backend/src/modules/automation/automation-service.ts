@@ -6,6 +6,10 @@ import { createAppointmentAction } from './actions/create-appointment-action.js'
 import { sendTemplateAction } from './actions/send-template-action.js';
 import { aiReplyAction } from './actions/ai-reply-action.js';
 
+// Memory storage for active automation timers (debouncing)
+// Key format: `${orgId}:${conversationId}:${ruleId}`
+const activeTimers = new Map<string, NodeJS.Timeout>();
+
 export type AutomationTriggerType = 'message_received' | 'contact_created' | 'status_changed';
 
 type AutomationCondition = {
@@ -58,22 +62,50 @@ export async function runAutomationRules(context: AutomationContext): Promise<vo
   });
 
   for (const rule of rules) {
-    try {
-      const conditions = Array.isArray(rule.conditions) ? (rule.conditions as unknown as AutomationCondition[]) : [];
-      const actions = Array.isArray(rule.actions) ? (rule.actions as unknown as AutomationAction[]) : [];
-      if (!matchesConditions(conditions, context)) continue;
-
-      for (const action of actions) {
-        await executeAction(action, context);
+    const delayMs = (rule.delaySeconds || 0) * 1000;
+    
+    // If there is a delay, we use debouncing logic (especially for message_received)
+    if (delayMs > 0 && context.conversation?.id) {
+      const timerKey = `${context.orgId}:${context.conversation.id}:${rule.id}`;
+      
+      // Clear existing timer if any (reset the clock)
+      if (activeTimers.has(timerKey)) {
+        clearTimeout(activeTimers.get(timerKey));
+        activeTimers.delete(timerKey);
       }
-
-      await prisma.automationRule.update({
-        where: { id: rule.id },
-        data: { runCount: { increment: 1 }, lastRunAt: new Date() },
-      });
-    } catch (error) {
-      logger.error(`[automation] Rule "${rule.name}" (${rule.id}) execution failed:`, error);
+      
+      // Set a new timer
+      const timeout = setTimeout(async () => {
+        activeTimers.delete(timerKey);
+        await executeRule(rule, context);
+      }, delayMs);
+      
+      activeTimers.set(timerKey, timeout);
+      continue;
     }
+
+    // Immediate execution for rules without delay
+    await executeRule(rule, context);
+  }
+}
+
+async function executeRule(rule: any, context: AutomationContext): Promise<void> {
+  try {
+    const conditions = Array.isArray(rule.conditions) ? (rule.conditions as unknown as AutomationCondition[]) : [];
+    const actions = Array.isArray(rule.actions) ? (rule.actions as unknown as AutomationAction[]) : [];
+    
+    if (!matchesConditions(conditions, context)) return;
+
+    for (const action of actions) {
+      await executeAction(action, context);
+    }
+
+    await prisma.automationRule.update({
+      where: { id: rule.id },
+      data: { runCount: { increment: 1 }, lastRunAt: new Date() },
+    });
+  } catch (error) {
+    logger.error(`[automation] Rule "${rule.name}" (${rule.id}) execution failed:`, error);
   }
 }
 

@@ -26,10 +26,11 @@ export interface AutomationRule {
   conditions: AutomationCondition[];
   actions: AutomationAction[];
   enabled: boolean;
-  priority: number;
-  runCount: number;
-  lastRunAt?: string | null;
-  createdAt: string;
+   priority: number;
+   runCount: number;
+   lastRunAt?: string | null;
+   delaySeconds?: number;
+   createdAt: string;
 }
 
 export function useAutomationRules() {

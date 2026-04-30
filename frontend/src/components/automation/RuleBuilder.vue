@@ -18,8 +18,9 @@
             <v-textarea v-model="localRule.description" label="Mô tả mục đích của quy tắc này" variant="filled" density="comfortable" rows="2" hide-details />
             
             <div class="d-flex ga-4 flex-wrap mt-2">
-              <v-select v-model="localRule.trigger" :items="triggerItems" item-title="title" item-value="value" label="Sự kiện kích hoạt (Trigger)" variant="filled" density="comfortable" hide-details style="min-width: 280px" />
-              <v-text-field v-model="priorityValue" type="number" label="Độ ưu tiên" variant="filled" density="comfortable" hide-details style="max-width: 140px" prepend-inner-icon="mdi-sort-variant" />
+              <v-select v-model="localRule.trigger" :items="triggerItems" item-title="title" item-value="value" label="Sự kiện kích hoạt (Trigger)" variant="filled" density="comfortable" hide-details style="min-width: 250px" />
+              <v-text-field v-model="priorityValue" type="number" label="Ưu tiên" variant="filled" density="comfortable" hide-details style="max-width: 110px" prepend-inner-icon="mdi-sort-variant" />
+              <v-text-field v-model="delayValue" type="number" label="Độ trễ (giây)" variant="filled" density="comfortable" hide-details style="max-width: 140px" prepend-inner-icon="mdi-clock-fast" persistent-hint hint="Chờ khách nhắn xong mới chạy" />
               <div class="d-flex align-center ml-2">
                 <span class="text-body-2 mr-2">Trạng thái:</span>
                 <v-switch v-model="localRule.enabled" color="success" hide-details inset density="compact" />
@@ -110,6 +111,11 @@ const priorityValue = computed({
   set: (value: string) => { localRule.priority = Number(value || 0); },
 });
 
+const delayValue = computed({
+  get: () => String(localRule.delaySeconds ?? 0),
+  set: (value: string) => { localRule.delaySeconds = Number(value || 0); },
+});
+
 const ruleConditions = computed<AutomationCondition[]>({
   get: () => localRule.conditions ?? [],
   set: (value) => { localRule.conditions = value; },
@@ -129,6 +135,7 @@ watch(() => props.rule, (rule) => {
   localRule.actions = rule?.actions ? [...rule.actions] : [];
   localRule.enabled = rule?.enabled ?? true;
   localRule.priority = rule?.priority ?? 0;
+  localRule.delaySeconds = rule?.delaySeconds ?? 0;
 }, { immediate: true });
 
 function submit() {
@@ -142,6 +149,7 @@ function submit() {
     actions: localRule.actions ?? [],
     enabled: localRule.enabled ?? true,
     priority: localRule.priority ?? 0,
+    delaySeconds: localRule.delaySeconds ?? 0,
   });
 }
 </script>
