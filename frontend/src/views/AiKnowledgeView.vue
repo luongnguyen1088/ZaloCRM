@@ -13,7 +13,7 @@
         color="medium-emphasis"
         prepend-icon="mdi-help-circle-outline"
         rounded="xl"
-        @click="showGuide = true"
+        to="/ai-guide"
       >
         Hướng dẫn
       </v-btn>
@@ -1043,56 +1043,6 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="showGuide" max-width="760" scrollable>
-      <v-card class="guide-dialog overflow-hidden">
-        <v-toolbar color="surface" density="comfortable" class="border-bottom">
-          <v-icon color="primary" class="ml-4" icon="mdi-brain" />
-          <v-toolbar-title class="text-subtitle-1 font-weight-bold ml-2">
-            Hướng dẫn vận hành AI Studio
-          </v-toolbar-title>
-          <v-spacer />
-          <v-btn icon @click="showGuide = false">
-            <v-icon icon="mdi-close" />
-          </v-btn>
-        </v-toolbar>
-
-        <v-card-text class="pa-6 guide-content">
-          <div class="guide-block">
-            <h3 class="text-h6 font-weight-bold mb-2 primary--text">1. Cá tính</h3>
-            <p class="mb-0">
-              Đây là nơi quyết định AI nói như thế nào: xưng hô ra sao, có mềm hay sắc, ưu tiên
-              tư vấn hay chốt đơn.
-            </p>
-          </div>
-          <div class="guide-block">
-            <h3 class="text-h6 font-weight-bold mb-2 primary--text">2. Tri thức</h3>
-            <p class="mb-2">
-              Đây là nơi quyết định AI biết gì. Mỗi thẻ tri thức nên chỉ giải quyết một chủ đề:
-              giá, ship, đổi trả, bảng size, quy trình đặt hàng...
-            </p>
-            <v-alert variant="tonal" color="info" rounded="lg">
-              Nếu bạn có nhiều kênh bán khác nhau, hãy gắn tri thức theo đúng tài khoản để tránh AI
-              dùng nhầm dữ liệu.
-            </v-alert>
-          </div>
-          <div class="guide-block">
-            <h3 class="text-h6 font-weight-bold mb-2 primary--text">3. Vận hành</h3>
-            <p class="mb-0">
-              Đây là nơi quyết định AI được phép tự làm gì: tự reply, chỉ soạn nháp, follow-up,
-              khi nào phải dừng và nhường người thật.
-            </p>
-          </div>
-        </v-card-text>
-
-        <v-card-actions class="pa-6 border-top">
-          <v-spacer />
-          <v-btn color="primary" variant="flat" rounded="lg" @click="showGuide = false">
-            Đã hiểu
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
     <v-dialog v-model="correctDialog.show" max-width="620">
       <v-card class="form-dialog">
         <v-toolbar color="secondary" density="comfortable">
@@ -1181,7 +1131,6 @@ type ConfigScopeMeta = {
 
 const { accounts, fetchAccounts } = useZaloAccounts();
 
-const showGuide = ref(false);
 const activeSection = ref<StudioSection>('behavior');
 const items = ref<KnowledgeItem[]>([]);
 const aiConfig = ref<any>({
@@ -1972,7 +1921,6 @@ watch(configScopeId, async () => {
 .studio-shell,
 .section-card,
 .simulator-panel,
-.guide-dialog,
 .form-dialog {
   background: var(--color-surface-elevated) !important;
   border: 1px solid var(--color-border) !important;
@@ -2230,15 +2178,6 @@ watch(configScopeId, async () => {
   display: flex;
   flex-direction: column;
   justify-content: center;
-}
-
-.guide-content {
-  color: var(--color-text-secondary);
-  line-height: 1.65;
-}
-
-.guide-block + .guide-block {
-  margin-top: 20px;
 }
 
 .glass-list {

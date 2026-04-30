@@ -123,6 +123,12 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/ai-guide',
+    name: 'AiGuide',
+    component: () => import('@/views/AiGuideView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/ai-usage',
     name: 'AiUsage',
     component: () => import('@/views/AiUsageView.vue'),

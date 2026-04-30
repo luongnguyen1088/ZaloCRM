@@ -209,6 +209,7 @@ const menuGroups = [
     header: 'TRỢ LÝ AI',
     items: [
       { title: 'Đào tạo AI', icon: 'mdi-school-outline', path: '/ai-training' },
+      { title: 'Hướng dẫn AI', icon: 'mdi-book-open-page-variant-outline', path: '/ai-guide' },
       { title: 'Hiệu quả AI', icon: 'mdi-chart-line', path: '/ai-usage' },
       { title: 'Automation', icon: 'mdi-robot-outline', path: '/automation' },
     ]
