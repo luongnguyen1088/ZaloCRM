@@ -8,669 +8,620 @@ datasource db {
   schemas  = ["Claro"]
 }
 
-// Top-level org — every resource is scoped to an org
 model Organization {
-  id        String   @id @default(uuid())
-  name      String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  members       OrganizationMember[]
-  teams         Team[]
-  zaloAccounts  ZaloAccount[]
-  contacts        Contact[]
-  conversations   Conversation[]
-  appointments    Appointment[]
-  activityLogs    ActivityLog[]
-  dailyStats      DailyMessageStat[]
-  settings        AppSetting[]
-  duplicateGroups DuplicateGroup[]
-  savedReports    SavedReport[]
-  integrations    Integration[]
-  automationRules AutomationRule[]
-  messageTemplates MessageTemplate[]
-  aiConfig      AiConfig?
-  aiChannelConfigs AiChannelConfig[]
-  aiSuggestions AiSuggestion[]
-  aiTokenUsages AiTokenUsage[]
-  aiKnowledge   AiKnowledge[]
-  subscription  Subscription?
-  connections   OrganizationConnection[]
-  userInvitations UserInvitation[]
-  paymentOrders PaymentOrder[]
-
-  @@schema("Claro")
-  @@map("organizations")
-}
-
-// Global User identity for the entire platform
-model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  fullName     String   @map("full_name")
-  avatarUrl    String?  @map("avatar_url")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-
-  memberships      OrganizationMember[]
-  zaloAccounts     ZaloAccount[]
-  zaloAccess       ZaloAccountAccess[]
-  assignedContacts Contact[]           @relation("AssignedContacts")
-  appointments     Appointment[]
-  repliedMessages  Message[]           @relation("RepliedMessages")
+  id               String                   @id @default(uuid())
+  name             String
+  createdAt        DateTime                 @default(now()) @map("created_at")
+  updatedAt        DateTime                 @updatedAt @map("updated_at")
   activityLogs     ActivityLog[]
+  aiChannelConfigs AiChannelConfig[]
+  aiConfig         AiConfig?
+  aiKnowledge      AiKnowledge[]
+  aiSuggestions    AiSuggestion[]
+  aiTokenUsages    AiTokenUsage[]
+  settings         AppSetting[]
+  appointments     Appointment[]
+  automationRules  AutomationRule[]
+  contacts         Contact[]
+  conversations    Conversation[]
   dailyStats       DailyMessageStat[]
+  duplicateGroups  DuplicateGroup[]
+  integrations     Integration[]
+  messageTemplates MessageTemplate[]
+  connections      OrganizationConnection[]
+  members          OrganizationMember[]
+  paymentOrders    PaymentOrder[]
+  savedReports     SavedReport[]
+  subscription     Subscription?
+  teams            Team[]
+  userInvitations  UserInvitation[]
+  zaloAccounts     ZaloAccount[]
 
-  resetPasswordToken   String?   @map("reset_password_token")
-  resetPasswordExpires DateTime? @map("reset_password_expires")
-  isSystemAdmin        Boolean   @default(false) @map("is_system_admin")
-
+  @@map("organizations")
   @@schema("Claro")
-  @@map("users")
 }
 
-// Membership link between a specific User and an Organization
-model OrganizationMember {
-  id        String   @id @default(uuid())
-  orgId     String   @map("org_id")
-  userId    String   @map("user_id")
-  teamId    String?  @map("team_id")
-  role      String   @default("member") // owner, admin, editor, agent, viewer
-  isActive  Boolean  @default(true) @map("is_active")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+model User {
+  id                   String               @id @default(uuid())
+  email                String               @unique
+  passwordHash         String               @map("password_hash")
+  fullName             String               @map("full_name")
+  avatarUrl            String?              @map("avatar_url")
+  createdAt            DateTime             @default(now()) @map("created_at")
+  updatedAt            DateTime             @updatedAt @map("updated_at")
+  isSystemAdmin        Boolean              @default(false) @map("is_system_admin")
+  resetPasswordExpires DateTime?            @map("reset_password_expires")
+  resetPasswordToken   String?              @map("reset_password_token")
+  activityLogs         ActivityLog[]
+  appointments         Appointment[]
+  assignedContacts     Contact[]            @relation("AssignedContacts")
+  dailyStats           DailyMessageStat[]
+  repliedMessages      Message[]            @relation("RepliedMessages")
+  memberships          OrganizationMember[]
+  zaloAccess           ZaloAccountAccess[]
+  zaloAccounts         ZaloAccount[]
 
-  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  team Team?        @relation(fields: [teamId], references: [id])
+  @@map("users")
+  @@schema("Claro")
+}
+
+model OrganizationMember {
+  id        String       @id @default(uuid())
+  orgId     String       @map("org_id")
+  userId    String       @map("user_id")
+  teamId    String?      @map("team_id")
+  role      String       @default("member")
+  isActive  Boolean      @default(true) @map("is_active")
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  team      Team?        @relation(fields: [teamId], references: [id])
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([orgId, userId])
-  @@schema("Claro")
   @@map("organization_members")
+  @@schema("Claro")
 }
 
-// OAuth connections for external services (Google, etc.)
 model OrganizationConnection {
-  id           String   @id @default(uuid())
-  orgId        String   @map("org_id")
-  type         String   // google, facebook, etc.
-  accessToken  String?  @map("access_token")
-  refreshToken String?  @map("refresh_token")
-  expiresAt    DateTime? @map("expires_at")
-  metadata     Json     @default("{}")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-
-  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  id           String       @id @default(uuid())
+  orgId        String       @map("org_id")
+  type         String
+  accessToken  String?      @map("access_token")
+  refreshToken String?      @map("refresh_token")
+  expiresAt    DateTime?    @map("expires_at")
+  metadata     Json         @default("{}")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@unique([orgId, type])
-  @@schema("Claro")
   @@map("organization_connections")
+  @@schema("Claro")
 }
 
-// Team groups within an organization
 model Team {
-  id        String   @id @default(uuid())
-  orgId     String   @map("org_id")
+  id        String               @id @default(uuid())
+  orgId     String               @map("org_id")
   name      String
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt DateTime             @default(now()) @map("created_at")
+  members   OrganizationMember[]
+  org       Organization         @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
-  org     Organization         @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  members OrganizationMember[]
-
-  @@schema("Claro")
   @@map("teams")
+  @@schema("Claro")
 }
 
-// Invitations for new users (can join via link or email)
 model UserInvitation {
-  id        String   @id @default(uuid())
-  orgId     String   @map("org_id")
-  email     String?  // Optional for generic links
-  role      String   @default("member")
-  token     String   @unique
-  maxUses   Int      @default(1) @map("max_uses")
-  useCount  Int      @default(0) @map("use_count")
-  expiresAt DateTime @map("expires_at")
-  status    String   @default("pending") // pending, accepted, expired
-  createdAt DateTime @default(now()) @map("created_at")
+  id        String       @id @default(uuid())
+  orgId     String       @map("org_id")
+  email     String?
+  role      String       @default("member")
+  token     String       @unique
+  maxUses   Int          @default(1) @map("max_uses")
+  useCount  Int          @default(0) @map("use_count")
+  expiresAt DateTime     @map("expires_at")
+  status    String       @default("pending")
+  createdAt DateTime     @default(now()) @map("created_at")
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
-  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-
-  @@schema("Claro")
   @@map("user_invitations")
-}
-
-// Zalo account linked to a user (one user may own multiple Zalo accounts)
-model ZaloAccount {
-  id              String    @id @default(uuid())
-  orgId           String    @map("org_id")
-  ownerUserId     String    @map("owner_user_id")
-  channelType     String    @default("zalo") @map("channel_type") // zalo, facebook
-  zaloUid         String?   @unique @map("zalo_uid")
-  fbPageId        String?   @unique @map("fb_page_id")
-  displayName     String?   @map("display_name")
-  avatarUrl       String?   @map("avatar_url")
-  phone           String?
-  status          String    @default("disconnected")
-  sessionData     Json?     @map("session_data")
-  platformConfig  Json      @default("{}") @map("platform_config")
-  lastConnectedAt DateTime? @map("last_connected_at")
-  createdAt       DateTime  @default(now()) @map("created_at")
-
-  org           Organization        @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  owner         User                @relation(fields: [ownerUserId], references: [id])
-  access        ZaloAccountAccess[]
-  conversations Conversation[]
-  dailyStats    DailyMessageStat[]
-  aiKnowledge   AiKnowledge[]
-  aiChannelConfig AiChannelConfig?
-
   @@schema("Claro")
-  @@map("zalo_accounts")
 }
 
-// ACL: which users can access which Zalo accounts
-model ZaloAccountAccess {
-  id            String   @id @default(uuid())
-  zaloAccountId String   @map("zalo_account_id")
-  userId        String   @map("user_id")
-  permission    String   @default("read") // read, chat, admin
-  createdAt     DateTime @default(now()) @map("created_at")
+model ZaloAccount {
+  id              String              @id @default(uuid())
+  orgId           String              @map("org_id")
+  ownerUserId     String              @map("owner_user_id")
+  zaloUid         String?             @unique @map("zalo_uid")
+  displayName     String?             @map("display_name")
+  avatarUrl       String?             @map("avatar_url")
+  phone           String?
+  status          String              @default("disconnected")
+  sessionData     Json?               @map("session_data")
+  platformConfig  Json                @default("{}") @map("platform_config")
+  lastConnectedAt DateTime?           @map("last_connected_at")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  channelType     String              @default("zalo") @map("channel_type")
+  fbPageId        String?             @unique @map("fb_page_id")
+  aiChannelConfig AiChannelConfig?
+  aiKnowledge     AiKnowledge[]
+  conversations   Conversation[]
+  dailyStats      DailyMessageStat[]
+  access          ZaloAccountAccess[]
+  org             Organization        @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  owner           User                @relation(fields: [ownerUserId], references: [id])
 
-  zaloAccount ZaloAccount @relation(fields: [zaloAccountId], references: [id], onDelete: Cascade)
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("zalo_accounts")
+  @@schema("Claro")
+}
+
+model ZaloAccountAccess {
+  id            String      @id @default(uuid())
+  zaloAccountId String      @map("zalo_account_id")
+  userId        String      @map("user_id")
+  permission    String      @default("read")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  zaloAccount   ZaloAccount @relation(fields: [zaloAccountId], references: [id], onDelete: Cascade)
 
   @@unique([zaloAccountId, userId])
-  @@schema("Claro")
   @@map("zalo_account_access")
+  @@schema("Claro")
 }
 
-// CRM contact record
 model Contact {
-  id               String    @id @default(uuid())
-  orgId            String    @map("org_id")
-  zaloUid          String?   @map("zalo_uid")
-  facebookPsid     String?   @map("facebook_psid")
-  phone            String?
-  email            String?   @map("email")
-  fullName         String?   @map("full_name")
-  avatarUrl        String?   @map("avatar_url")
-  source           String?
-  sourceDate       DateTime? @map("source_date")
-  firstContactDate DateTime? @map("first_contact_date")
-  status           String?   @default("new")
-  nextAppointment  DateTime? @map("next_appointment")
-  assignedUserId   String?   @map("assigned_user_id")
-  notes            String?
-  tags             Json      @default("[]")
-  metadata         Json      @default("{}")
-  leadScore        Int       @default(0) @map("lead_score")
-  lastActivity     DateTime? @map("last_activity")
-  mergedInto       String?   @map("merged_into")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
-
-  org               Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  assignedUser      User?        @relation("AssignedContacts", fields: [assignedUserId], references: [id])
-  mergedIntoContact Contact?     @relation("ContactMerge", fields: [mergedInto], references: [id])
-  mergedFrom        Contact[]    @relation("ContactMerge")
-  conversations     Conversation[]
+  id                String         @id @default(uuid())
+  orgId             String         @map("org_id")
+  zaloUid           String?        @map("zalo_uid")
+  phone             String?
+  email             String?        @map("email")
+  fullName          String?        @map("full_name")
+  avatarUrl         String?        @map("avatar_url")
+  source            String?
+  sourceDate        DateTime?      @map("source_date")
+  firstContactDate  DateTime?      @map("first_contact_date")
+  status            String?        @default("new")
+  nextAppointment   DateTime?      @map("next_appointment")
+  assignedUserId    String?        @map("assigned_user_id")
+  notes             String?
+  tags              Json           @default("[]")
+  metadata          Json           @default("{}")
+  leadScore         Int            @default(0) @map("lead_score")
+  lastActivity      DateTime?      @map("last_activity")
+  mergedInto        String?        @map("merged_into")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+  facebookPsid      String?        @map("facebook_psid")
   appointments      Appointment[]
+  assignedUser      User?          @relation("AssignedContacts", fields: [assignedUserId], references: [id])
+  mergedIntoContact Contact?       @relation("ContactMerge", fields: [mergedInto], references: [id])
+  mergedFrom        Contact[]      @relation("ContactMerge")
+  org               Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  conversations     Conversation[]
 
   @@index([orgId, phone])
   @@index([orgId, zaloUid])
   @@index([orgId, facebookPsid])
   @@index([orgId, mergedInto])
-  @@schema("Claro")
   @@map("contacts")
+  @@schema("Claro")
 }
 
 model Conversation {
-  id               String    @id @default(uuid())
-  orgId            String    @map("org_id")
-  zaloAccountId    String    @map("zalo_account_id")
-  contactId        String?   @map("contact_id")
-  threadType       String    @default("user")
-  externalThreadId String?   @map("external_thread_id")
-  lastMessageAt    DateTime? @map("last_message_at")
-  unreadCount      Int       @default(0) @map("unread_count")
-  isReplied        Boolean   @default(true) @map("is_replied")
-  // Follow-up Tracking
-  followUpCount     Int       @default(0) @map("follow_up_count")
-  lastFollowUpAt    DateTime? @map("last_follow_up_at")
-  nextFollowUpAt    DateTime? @map("next_follow_up_at")
-  
-  // AI Status
-  aiPaused          Boolean   @default(false) @map("ai_paused")
-  aiPausedAt        DateTime? @map("ai_paused_at")
-  aiPauseReason     String?   @map("ai_pause_reason")
-
-  createdAt        DateTime  @default(now()) @map("created_at")
-
-  org           Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  zaloAccount   ZaloAccount   @relation(fields: [zaloAccountId], references: [id], onDelete: Cascade)
-  contact       Contact?      @relation(fields: [contactId], references: [id])
-  messages      Message[]
-  aiSuggestions AiSuggestion[]
-  summary          String?   @db.Text
-  summaryUpdatedAt DateTime? @map("summary_updated_at")
+  id               String         @id @default(uuid())
+  orgId            String         @map("org_id")
+  zaloAccountId    String         @map("zalo_account_id")
+  contactId        String?        @map("contact_id")
+  threadType       String         @default("user")
+  externalThreadId String?        @map("external_thread_id")
+  lastMessageAt    DateTime?      @map("last_message_at")
+  unreadCount      Int            @default(0) @map("unread_count")
+  isReplied        Boolean        @default(true) @map("is_replied")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  summary          String?
+  summaryUpdatedAt DateTime?      @map("summary_updated_at")
+  followUpCount    Int            @default(0) @map("follow_up_count")
+  lastFollowUpAt   DateTime?      @map("last_follow_up_at")
+  nextFollowUpAt   DateTime?      @map("next_follow_up_at")
+  aiPauseReason    String?        @map("ai_pause_reason")
+  aiPaused         Boolean        @default(false) @map("ai_paused")
+  aiPausedAt       DateTime?      @map("ai_paused_at")
+  aiSuggestions    AiSuggestion[]
+  contact          Contact?       @relation(fields: [contactId], references: [id])
+  org              Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  zaloAccount      ZaloAccount    @relation(fields: [zaloAccountId], references: [id], onDelete: Cascade)
+  messages         Message[]
 
   @@unique([zaloAccountId, externalThreadId])
   @@index([orgId, lastMessageAt])
-  @@schema("Claro")
   @@map("conversations")
+  @@schema("Claro")
 }
 
 model Message {
-  id              String    @id @default(uuid())
-  conversationId  String    @map("conversation_id")
-  zaloMsgId       String?   @map("zalo_msg_id")
-  senderType      String    @map("sender_type")
-  senderUid       String?   @map("sender_uid")
-  senderName      String?   @map("sender_name")
+  id              String       @id @default(uuid())
+  conversationId  String       @map("conversation_id")
+  zaloMsgId       String?      @map("zalo_msg_id")
+  senderType      String       @map("sender_type")
+  senderUid       String?      @map("sender_uid")
+  senderName      String?      @map("sender_name")
   content         String?
-  contentType     String    @default("text") @map("content_type")
-  attachments     Json      @default("[]")
-  isDeleted       Boolean   @default(false) @map("is_deleted")
-  deletedAt       DateTime? @map("deleted_at")
-  sentAt          DateTime  @map("sent_at")
-  repliedByUserId String?   @map("replied_by_user_id")
-  createdAt       DateTime  @default(now()) @map("created_at")
-
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  repliedBy    User?        @relation("RepliedMessages", fields: [repliedByUserId], references: [id])
+  contentType     String       @default("text") @map("content_type")
+  attachments     Json         @default("[]")
+  isDeleted       Boolean      @default(false) @map("is_deleted")
+  deletedAt       DateTime?    @map("deleted_at")
+  sentAt          DateTime     @map("sent_at")
+  repliedByUserId String?      @map("replied_by_user_id")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  repliedBy       User?        @relation("RepliedMessages", fields: [repliedByUserId], references: [id])
 
   @@index([conversationId, sentAt])
-  @@schema("Claro")
   @@map("messages")
+  @@schema("Claro")
 }
 
 model Appointment {
-  id              String   @id @default(uuid())
-  orgId           String   @map("org_id")
-  contactId       String   @map("contact_id")
-  assignedUserId  String?  @map("assigned_user_id")
-  appointmentDate DateTime @map("appointment_date")
-  appointmentTime String?  @map("appointment_time")
+  id              String       @id @default(uuid())
+  orgId           String       @map("org_id")
+  contactId       String       @map("contact_id")
+  assignedUserId  String?      @map("assigned_user_id")
+  appointmentDate DateTime     @map("appointment_date")
+  appointmentTime String?      @map("appointment_time")
   type            String?
-  status          String   @default("scheduled")
+  status          String       @default("scheduled")
   notes           String?
-  reminderSent    Boolean  @default(false) @map("reminder_sent")
-  createdAt       DateTime @default(now()) @map("created_at")
+  reminderSent    Boolean      @default(false) @map("reminder_sent")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  assignedUser    User?        @relation(fields: [assignedUserId], references: [id])
+  contact         Contact      @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  org             Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
-  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  contact      Contact      @relation(fields: [contactId], references: [id], onDelete: Cascade)
-  assignedUser User?        @relation(fields: [assignedUserId], references: [id])
-
-  @@schema("Claro")
   @@map("appointments")
+  @@schema("Claro")
 }
 
 model ActivityLog {
-  id         String   @id @default(uuid())
-  orgId      String   @map("org_id")
-  userId     String?  @map("user_id")
+  id         String       @id @default(uuid())
+  orgId      String       @map("org_id")
+  userId     String?      @map("user_id")
   action     String
-  entityType String?  @map("entity_type")
-  entityId   String?  @map("entity_id")
-  details    Json     @default("{}")
-  createdAt  DateTime @default(now()) @map("created_at")
-
-  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  user User?        @relation(fields: [userId], references: [id])
+  entityType String?      @map("entity_type")
+  entityId   String?      @map("entity_id")
+  details    Json         @default("{}")
+  createdAt  DateTime     @default(now()) @map("created_at")
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user       User?        @relation(fields: [userId], references: [id])
 
   @@index([orgId, createdAt])
-  @@schema("Claro")
   @@map("activity_logs")
+  @@schema("Claro")
 }
 
 model DailyMessageStat {
-  id                String   @id @default(uuid())
-  orgId             String   @map("org_id")
-  userId            String   @map("user_id")
-  zaloAccountId     String   @map("zalo_account_id")
-  statDate          DateTime @map("stat_date") @db.Date
-  messagesSent      Int      @default(0) @map("messages_sent")
-  messagesReceived  Int      @default(0) @map("messages_received")
-  messagesUnread    Int      @default(0) @map("messages_unread")
-  messagesUnreplied Int      @default(0) @map("messages_unreplied")
-  avgResponseTime   Int?     @map("avg_response_time_seconds")
-
-  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  zaloAccount ZaloAccount  @relation(fields: [zaloAccountId], references: [id], onDelete: Cascade)
-  user        User         @relation(fields: [userId], references: [id])
+  id                String       @id @default(uuid())
+  orgId             String       @map("org_id")
+  userId            String       @map("user_id")
+  zaloAccountId     String       @map("zalo_account_id")
+  statDate          DateTime     @map("stat_date") @db.Date
+  messagesSent      Int          @default(0) @map("messages_sent")
+  messagesReceived  Int          @default(0) @map("messages_received")
+  messagesUnread    Int          @default(0) @map("messages_unread")
+  messagesUnreplied Int          @default(0) @map("messages_unreplied")
+  avgResponseTime   Int?         @map("avg_response_time_seconds")
+  org               Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user              User         @relation(fields: [userId], references: [id])
+  zaloAccount       ZaloAccount  @relation(fields: [zaloAccountId], references: [id], onDelete: Cascade)
 
   @@unique([userId, zaloAccountId, statDate])
   @@index([orgId, statDate])
-  @@schema("Claro")
   @@map("daily_message_stats")
+  @@schema("Claro")
 }
 
 model Integration {
-  id         String    @id @default(uuid())
-  orgId      String    @map("org_id")
+  id         String       @id @default(uuid())
+  orgId      String       @map("org_id")
   type       String
-  name       String    @default("")
-  config     Json      @default("{}")
-  enabled    Boolean   @default(true)
-  lastSyncAt DateTime? @map("last_sync_at")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
+  name       String       @default("")
+  config     Json         @default("{}")
+  enabled    Boolean      @default(true)
+  lastSyncAt DateTime?    @map("last_sync_at")
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  syncLogs   SyncLog[]
 
-  org      Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  syncLogs SyncLog[]
-
-  @@schema("Claro")
   @@map("integrations")
+  @@schema("Claro")
 }
 
 model SyncLog {
-  id            String   @id @default(uuid())
-  integrationId String   @map("integration_id")
+  id            String      @id @default(uuid())
+  integrationId String      @map("integration_id")
   direction     String
-  recordCount   Int      @default(0) @map("record_count")
+  recordCount   Int         @default(0) @map("record_count")
   status        String
-  errorMessage  String?  @map("error_message")
-  createdAt     DateTime @default(now()) @map("created_at")
+  errorMessage  String?     @map("error_message")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  integration   Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
 
-  integration Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
-
-  @@schema("Claro")
   @@map("sync_logs")
+  @@schema("Claro")
 }
 
 model AppSetting {
-  id             String   @id @default(uuid())
-  orgId          String   @map("org_id")
-  settingKey     String   @map("setting_key")
-  valuePlain     String?  @map("value_plain")
-  valueEncrypted Bytes?   @map("value_encrypted")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
-
-  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  id             String       @id @default(uuid())
+  orgId          String       @map("org_id")
+  settingKey     String       @map("setting_key")
+  valuePlain     String?      @map("value_plain")
+  valueEncrypted Bytes?       @map("value_encrypted")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@unique([orgId, settingKey])
-  @@schema("Claro")
   @@map("app_settings")
+  @@schema("Claro")
 }
 
 model DuplicateGroup {
-  id         String   @id @default(uuid())
-  orgId      String   @map("org_id")
-  contactIds String[] @map("contact_ids")
-  matchType  String   @map("match_type")
-  confidence Float    @default(1.0)
-  resolved   Boolean  @default(false)
-  createdAt  DateTime @default(now()) @map("created_at")
-
-  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  id         String       @id @default(uuid())
+  orgId      String       @map("org_id")
+  contactIds String[]     @map("contact_ids")
+  matchType  String       @map("match_type")
+  confidence Float        @default(1.0)
+  resolved   Boolean      @default(false)
+  createdAt  DateTime     @default(now()) @map("created_at")
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@index([orgId, resolved])
-  @@schema("Claro")
   @@map("duplicate_groups")
+  @@schema("Claro")
 }
 
 model SavedReport {
-  id        String   @id @default(uuid())
-  orgId     String   @map("org_id")
+  id        String       @id @default(uuid())
+  orgId     String       @map("org_id")
   name      String
   type      String
-  config    Json     @default("{}")
-  createdBy String   @map("created_by")
-  createdAt DateTime @default(now()) @map("created_at")
+  config    Json         @default("{}")
+  createdBy String       @map("created_by")
+  createdAt DateTime     @default(now()) @map("created_at")
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
-  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-
-  @@schema("Claro")
   @@map("saved_reports")
+  @@schema("Claro")
 }
 
 model AutomationRule {
-  id          String   @id @default(uuid())
-  orgId       String   @map("org_id")
+  id          String       @id @default(uuid())
+  orgId       String       @map("org_id")
   name        String
   description String?
   trigger     String
-  conditions  Json     @default("[]")
-  actions     Json     @default("[]")
-  enabled     Boolean  @default(true)
-  priority    Int      @default(0)
-  runCount    Int      @default(0) @map("run_count")
-  lastRunAt   DateTime? @map("last_run_at")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  conditions  Json         @default("[]")
+  actions     Json         @default("[]")
+  enabled     Boolean      @default(true)
+  priority    Int          @default(0)
+  runCount    Int          @default(0) @map("run_count")
+  lastRunAt   DateTime?    @map("last_run_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@index([orgId, trigger, enabled, priority])
-  @@schema("Claro")
   @@map("automation_rules")
+  @@schema("Claro")
 }
 
 model MessageTemplate {
-  id        String   @id @default(uuid())
-  orgId     String   @map("org_id")
+  id        String       @id @default(uuid())
+  orgId     String       @map("org_id")
   name      String
   content   String
   category  String?
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@index([orgId, category])
-  @@schema("Claro")
   @@map("message_templates")
+  @@schema("Claro")
 }
 
 model AiConfig {
-  id             String   @id @default(uuid())
-  orgId          String   @unique @map("org_id")
-  provider       String   @default("anthropic")
-  model          String   @default("claude-sonnet-4-6")
-  maxDaily       Float    @default(50.0) @map("max_daily")
-  enabled        Boolean  @default(true)
-  instructions   String?  @db.Text
-  languagePolicy String   @default("auto") @map("language_policy")
-  // Follow-up Settings (Layer 4)
-  followUpEnabled       Boolean @default(false) @map("follow_up_enabled")
-  followUpInterval      Int     @default(30)    @map("follow_up_interval") // Minutes
-  followUpMaxMessages   Int     @default(3)     @map("follow_up_max_messages")
-  followUpType          String  @default("ai")  @map("follow_up_type") // 'ai' or 'manual'
-  followUpManualContent String? @db.Text       @map("follow_up_manual_content")
-  
-  // Smart Pause/Resume (Layer 5)
-  stopConditions       Json    @default("[]")   @map("stop_conditions")
-  autoResumeEnabled    Boolean @default(true)   @map("auto_resume_enabled")
-  autoResumeMinutes    Int     @default(60)     @map("auto_resume_minutes")
+  id                    String       @id @default(uuid())
+  orgId                 String       @unique @map("org_id")
+  provider              String       @default("anthropic")
+  model                 String       @default("claude-sonnet-4-6")
+  maxDaily              Float        @default(50.0) @map("max_daily")
+  enabled               Boolean      @default(true)
+  createdAt             DateTime     @default(now()) @map("created_at")
+  updatedAt             DateTime     @updatedAt @map("updated_at")
+  instructions          String?
+  languagePolicy        String       @default("auto") @map("language_policy")
+  followUpEnabled       Boolean      @default(false) @map("follow_up_enabled")
+  followUpInterval      Int          @default(30) @map("follow_up_interval")
+  followUpManualContent String?      @map("follow_up_manual_content")
+  followUpMaxMessages   Int          @default(3) @map("follow_up_max_messages")
+  followUpType          String       @default("ai") @map("follow_up_type")
+  autoResumeEnabled     Boolean      @default(true) @map("auto_resume_enabled")
+  autoResumeMinutes     Int          @default(60) @map("auto_resume_minutes")
+  stopConditions        Json         @default("[]") @map("stop_conditions")
+  aiTimezone            String       @default("Asia/Ho_Chi_Minh") @map("ai_timezone")
+  aiWorkHours           Json         @default("{}") @map("ai_work_hours")
+  aiWorkMode            String       @default("always") @map("ai_work_mode")
+  autoCreateLeads       Boolean      @default(false) @map("auto_create_leads")
+  autoExtractInfo       Boolean      @default(false) @map("auto_extract_info")
+  aiResponseMode        String       @default("auto") @map("ai_response_mode")
+  savedHumanHours       Float        @default(0) @map("saved_human_hours")
+  totalAiReplies        Int          @default(0) @map("total_ai_replies")
+  totalDraftsAccepted   Int          @default(0) @map("total_drafts_accepted")
+  org                   Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
-  // AI Scheduling (Layer 6)
-  aiWorkMode           String  @default("always") @map("ai_work_mode") // 'always', 'off_hours', 'manual'
-  aiResponseMode       String  @default("auto")   @map("ai_response_mode") // 'auto' (direct), 'hybrid' (draft), 'manual' (button)
-  aiWorkHours          Json    @default("{}")     @map("ai_work_hours")
-  aiTimezone           String  @default("Asia/Ho_Chi_Minh") @map("ai_timezone")
-
-  // Data Extraction (Layer 7)
-  autoExtractInfo      Boolean @default(false)    @map("auto_extract_info")
-  autoCreateLeads      Boolean @default(false)    @map("auto_create_leads")
-
-  // Analytics Tracking
-  totalAiReplies       Int     @default(0)        @map("total_ai_replies")
-  totalDraftsAccepted  Int     @default(0)        @map("total_drafts_accepted")
-  savedHumanHours      Float   @default(0)        @map("saved_human_hours")
-
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
-
-  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-
-  @@schema("Claro")
   @@map("ai_configs")
+  @@schema("Claro")
 }
 
 model AiChannelConfig {
-  id             String   @id @default(uuid())
-  orgId          String   @map("org_id")
-  zaloAccountId  String   @unique @map("zalo_account_id")
-  enabled        Boolean  @default(true)
-  instructions   String?  @db.Text
-  languagePolicy String   @default("auto") @map("language_policy")
-  followUpEnabled       Boolean @default(false) @map("follow_up_enabled")
-  followUpInterval      Int     @default(30)    @map("follow_up_interval")
-  followUpMaxMessages   Int     @default(3)     @map("follow_up_max_messages")
-  followUpType          String  @default("ai")  @map("follow_up_type")
-  followUpManualContent String? @db.Text        @map("follow_up_manual_content")
-  stopConditions        Json    @default("[]")  @map("stop_conditions")
-  autoResumeEnabled     Boolean @default(true)  @map("auto_resume_enabled")
-  autoResumeMinutes     Int     @default(60)    @map("auto_resume_minutes")
-  aiWorkMode            String  @default("always") @map("ai_work_mode")
-  aiResponseMode        String  @default("auto")   @map("ai_response_mode")
-  aiWorkHours           Json    @default("{}")     @map("ai_work_hours")
-  aiTimezone            String  @default("Asia/Ho_Chi_Minh") @map("ai_timezone")
-  autoExtractInfo       Boolean @default(false)   @map("auto_extract_info")
-  autoCreateLeads       Boolean @default(false)   @map("auto_create_leads")
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
-
-  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  zaloAccount ZaloAccount  @relation(fields: [zaloAccountId], references: [id], onDelete: Cascade)
+  id                    String       @id @default(uuid())
+  orgId                 String       @map("org_id")
+  zaloAccountId         String       @unique @map("zalo_account_id")
+  enabled               Boolean      @default(true)
+  instructions          String?
+  languagePolicy        String       @default("auto") @map("language_policy")
+  followUpEnabled       Boolean      @default(false) @map("follow_up_enabled")
+  followUpInterval      Int          @default(30) @map("follow_up_interval")
+  followUpMaxMessages   Int          @default(3) @map("follow_up_max_messages")
+  followUpType          String       @default("ai") @map("follow_up_type")
+  followUpManualContent String?      @map("follow_up_manual_content")
+  stopConditions        Json         @default("[]") @map("stop_conditions")
+  autoResumeEnabled     Boolean      @default(true) @map("auto_resume_enabled")
+  autoResumeMinutes     Int          @default(60) @map("auto_resume_minutes")
+  aiWorkMode            String       @default("always") @map("ai_work_mode")
+  aiResponseMode        String       @default("auto") @map("ai_response_mode")
+  aiWorkHours           Json         @default("{}") @map("ai_work_hours")
+  aiTimezone            String       @default("Asia/Ho_Chi_Minh") @map("ai_timezone")
+  autoExtractInfo       Boolean      @default(false) @map("auto_extract_info")
+  autoCreateLeads       Boolean      @default(false) @map("auto_create_leads")
+  createdAt             DateTime     @default(now()) @map("created_at")
+  updatedAt             DateTime     @updatedAt @map("updated_at")
+  org                   Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  zaloAccount           ZaloAccount  @relation(fields: [zaloAccountId], references: [id], onDelete: Cascade)
 
   @@index([orgId])
-  @@schema("Claro")
   @@map("ai_channel_configs")
+  @@schema("Claro")
 }
 
 model AiSuggestion {
-  id             String    @id @default(uuid())
-  orgId          String    @map("org_id")
-  conversationId String    @map("conversation_id")
-  messageId      String?   @map("message_id")
+  id             String       @id @default(uuid())
+  orgId          String       @map("org_id")
+  conversationId String       @map("conversation_id")
+  messageId      String?      @map("message_id")
   type           String
   content        String
   confidence     Float
-  accepted       Boolean   @default(false)
-  metadata       Json?     @default("{}")
-  createdAt      DateTime  @default(now()) @map("created_at")
-
-  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  accepted       Boolean      @default(false)
+  createdAt      DateTime     @default(now()) @map("created_at")
+  metadata       Json?        @default("{}")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  org            Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@index([orgId, createdAt])
   @@index([conversationId, createdAt])
   @@index([orgId, type, createdAt])
-  @@schema("Claro")
   @@map("ai_suggestions")
+  @@schema("Claro")
 }
 
 model AiTokenUsage {
-  id          String   @id @default(uuid())
-  orgId       String   @map("org_id")
-  feature     String
-  provider    String?
-  model       String?
-  tokens      Float    @default(1.0)
-  inputTokens Int?     @map("input_tokens")
-  outputTokens Int?    @map("output_tokens")
-  inputChars  Int?     @map("input_chars")
-  outputChars Int?    @map("output_chars")
-  metadata    Json     @default("{}")
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  id           String       @id @default(uuid())
+  orgId        String       @map("org_id")
+  feature      String
+  provider     String?
+  model        String?
+  tokens       Float        @default(1.0)
+  inputTokens  Int?         @map("input_tokens")
+  outputTokens Int?         @map("output_tokens")
+  inputChars   Int?         @map("input_chars")
+  outputChars  Int?         @map("output_chars")
+  metadata     Json         @default("{}")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@index([orgId, createdAt])
   @@index([orgId, feature, createdAt])
-  @@schema("Claro")
   @@map("ai_token_usages")
+  @@schema("Claro")
 }
 
 model SubscriptionPlan {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  priceMonth  Float    @map("price_month")
-  maxZaloAcc  Int      @default(1) @map("max_zalo_acc")
-  maxAiTokens Int      @default(1000) @map("max_ai_tokens")
-  features    Json     @default("[]")
-  createdAt   DateTime @default(now()) @map("created_at")
-
+  id            String         @id @default(uuid())
+  name          String         @unique
+  priceMonth    Float          @map("price_month")
+  maxZaloAcc    Int            @default(1) @map("max_zalo_acc")
+  maxAiTokens   Int            @default(1000) @map("max_ai_tokens")
+  features      Json           @default("[]")
+  createdAt     DateTime       @default(now()) @map("created_at")
   subscriptions Subscription[]
-  @@schema("Claro")
+
   @@map("subscription_plans")
+  @@schema("Claro")
 }
 
 model Subscription {
-  id              String   @id @default(uuid())
-  orgId           String   @unique @map("org_id")
-  planId          String   @map("plan_id")
-  status          String   @default("active")
-  currentPeriodStart DateTime @map("current_period_start")
-  currentPeriodEnd   DateTime @map("current_period_end")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id                 String           @id @default(uuid())
+  orgId              String           @unique @map("org_id")
+  planId             String           @map("plan_id")
+  status             String           @default("active")
+  currentPeriodStart DateTime         @map("current_period_start")
+  currentPeriodEnd   DateTime         @map("current_period_end")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+  org                Organization     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  plan               SubscriptionPlan @relation(fields: [planId], references: [id])
 
-  org  Organization     @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  plan SubscriptionPlan @relation(fields: [planId], references: [id])
-  @@schema("Claro")
   @@map("subscriptions")
+  @@schema("Claro")
 }
 
 model PaymentOrder {
-  id               String   @id @default(uuid())
-  orgId            String   @map("org_id")
-  orderType        String   @map("order_type")
-  status           String   @default("pending")
-  requestedByUserId String? @map("requested_by_user_id")
-  requestedByEmail String?  @map("requested_by_email")
-  reviewedByUserId String?  @map("reviewed_by_user_id")
-  reviewedByEmail  String?  @map("reviewed_by_email")
-  planId           String?  @map("plan_id")
-  planName         String?  @map("plan_name")
-  months           Int?
-  tokenAmount      Int?     @map("token_amount")
-  amount           Float    @default(0)
-  currency         String   @default("VND")
-  paymentContent   String?  @map("payment_content")
-  customerNote     String?  @map("customer_note")
-  adminNote        String?  @map("admin_note")
-  approvedAt       DateTime? @map("approved_at")
-  reviewedAt       DateTime? @map("reviewed_at")
-  effectiveFrom    DateTime? @map("effective_from")
-  effectiveTo      DateTime? @map("effective_to")
-  referenceCode    String   @unique @map("reference_code")
-  metadata         Json     @default("{}")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
-
-  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  id                String       @id @default(uuid())
+  orgId             String       @map("org_id")
+  orderType         String       @map("order_type")
+  status            String       @default("pending")
+  requestedByUserId String?      @map("requested_by_user_id")
+  requestedByEmail  String?      @map("requested_by_email")
+  reviewedByUserId  String?      @map("reviewed_by_user_id")
+  reviewedByEmail   String?      @map("reviewed_by_email")
+  planId            String?      @map("plan_id")
+  planName          String?      @map("plan_name")
+  months            Int?
+  tokenAmount       Int?         @map("token_amount")
+  amount            Float        @default(0)
+  currency          String       @default("VND")
+  paymentContent    String?      @map("payment_content")
+  customerNote      String?      @map("customer_note")
+  adminNote         String?      @map("admin_note")
+  approvedAt        DateTime?    @map("approved_at")
+  reviewedAt        DateTime?    @map("reviewed_at")
+  effectiveFrom     DateTime?    @map("effective_from")
+  effectiveTo       DateTime?    @map("effective_to")
+  referenceCode     String       @unique @map("reference_code")
+  metadata          Json         @default("{}")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+  org               Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@index([orgId, createdAt])
   @@index([status, createdAt])
   @@index([orderType, status, createdAt])
-  @@schema("Claro")
   @@map("payment_orders")
+  @@schema("Claro")
 }
 
 model AiKnowledge {
-  id        String   @id @default(uuid())
-  orgId     String   @map("org_id")
-  zaloAccountId String? @map("zalo_account_id")
-  title     String
-  content   String   @db.Text
-  category  String?  @default("general")
-  isActive  Boolean  @default(true) @map("is_active")
-  useCount  Int      @default(0) @map("use_count")
-  embedding Unsupported("public.vector(1536)")?
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id            String                 @id @default(uuid())
+  orgId         String                 @map("org_id")
+  zaloAccountId String?                @map("zalo_account_id")
+  title         String
+  content       String
+  category      String?                @default("general")
+  isActive      Boolean                @default(true) @map("is_active")
+  useCount      Int                    @default(0) @map("use_count")
+  createdAt     DateTime               @default(now()) @map("created_at")
+  updatedAt     DateTime               @updatedAt @map("updated_at")
+  embedding     Unsupported("vector")?
+  ftsTokens     Unsupported("tsvector")? @map("fts_tokens")
 
-  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  zaloAccount  ZaloAccount? @relation(fields: [zaloAccountId], references: [id], onDelete: Cascade)
+  org           Organization           @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  zaloAccount   ZaloAccount?           @relation(fields: [zaloAccountId], references: [id], onDelete: Cascade)
 
   @@index([orgId, isActive])
   @@index([zaloAccountId])
-  @@schema("Claro")
   @@map("ai_knowledge")
+  @@schema("Claro")
 }
