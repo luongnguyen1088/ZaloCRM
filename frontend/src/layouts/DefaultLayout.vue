@@ -13,7 +13,7 @@
       </div>
 
       <!-- Organization Switcher -->
-      <v-menu v-if="authStore.user && authStore.user.memberships.length > 0" offset-y transition="scale-transition">
+      <v-menu v-if="authStore.user && authStore.user.memberships?.length > 0" offset-y transition="scale-transition">
         <template v-slot:activator="{ props }">
           <v-btn v-bind="props" variant="tonal" color="primary" rounded="pill" class="ml-4 px-4 text-none" density="comfortable">
             <v-icon start size="small">mdi-domain</v-icon>

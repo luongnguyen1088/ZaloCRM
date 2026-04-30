@@ -84,8 +84,8 @@ export async function dashboardRoutes(app: FastifyInstance): Promise<void> {
           DATE(m.sent_at) AS date,
           COUNT(*) FILTER (WHERE m.sender_type = 'self') AS sent,
           COUNT(*) FILTER (WHERE m.sender_type = 'contact') AS received
-        FROM messages m
-        JOIN conversations c ON c.id = m.conversation_id
+        FROM "Claro".messages m
+        JOIN "Claro".conversations c ON c.id = m.conversation_id
         WHERE c.org_id = ${orgId}
           AND m.sent_at >= ${from}::date
           AND m.sent_at < (${to}::date + interval '1 day')

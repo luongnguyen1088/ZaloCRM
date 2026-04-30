@@ -67,7 +67,7 @@
               :disabled="plansLoading || plansUsingFallback || (!recommendedPlan && !plans.length)"
               @click="openUpgradeEntry"
             >
-              {{ recommendedPlan ? `NÃ¢ng cáº¥p lÃªn ${recommendedPlan.name}` : 'Xem báº£ng giÃ¡ gÃ³i cÆ°á»›c' }}
+              {{ recommendedPlan ? `Nâng cấp lên ${recommendedPlan.name}` : 'Xem bảng giá gói cước' }}
             </v-btn>
           </div>
 
@@ -133,7 +133,7 @@
         rounded="xl"
         class="mt-5"
       >
-        ChÆ°a táº£i Ä‘Æ°á»£c danh sÃ¡ch gÃ³i cÆ°á»›c. HÃ£y táº£i láº¡i trang hoáº·c liÃªn há»‡ admin Ä‘á»ƒ kiá»ƒm tra deployment.
+        Chưa tải được danh sách gói cước. Hãy tải lại trang hoặc liên hệ admin để kiểm tra deployment.
       </v-alert>
 
       <v-row class="pricing-grid mt-2" align="stretch">

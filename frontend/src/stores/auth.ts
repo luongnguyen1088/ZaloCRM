@@ -55,11 +55,13 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(email: string, password: string) {
     const res = await api.post('/auth/login', { email, password });
     setAuth(res.data.token, res.data.user);
+    await fetchProfile();
   }
 
   async function googleLogin(idToken: string) {
     const res = await api.post('/auth/google', { idToken });
     setAuth(res.data.token, res.data.user);
+    await fetchProfile();
   }
 
   async function fetchProfile() {
