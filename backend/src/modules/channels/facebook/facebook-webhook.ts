@@ -5,6 +5,7 @@ import { prisma } from '../../../shared/database/prisma-client.js';
 import { logger } from '../../../shared/utils/logger.js';
 import { config } from '../../../config/index.js';
 import { runAutomationRules } from '../../automation/automation-service.js';
+import { AiService } from '../../ai/ai-service.js';
 import { FacebookApi } from './facebook-api.js';
 
 export async function facebookWebhookRoutes(app: FastifyInstance) {
@@ -46,7 +47,8 @@ export async function facebookWebhookRoutes(app: FastifyInstance) {
 
 async function handleIncomingMessage(app: FastifyInstance, event: any, pageId: string) {
   const senderId = event.sender.id;
-  const messageText = event.message.text;
+  const messageText = event.message.text || '';
+  const sentAt = event.timestamp ? new Date(event.timestamp) : new Date();
 
   try {
     const channelAccount = await prisma.zaloAccount.findFirst({
@@ -91,6 +93,11 @@ async function handleIncomingMessage(app: FastifyInstance, event: any, pageId: s
       });
     }
 
+    void prisma.contact.update({
+      where: { id: contact.id },
+      data: { lastActivity: sentAt },
+    }).catch(() => {});
+
     let conversation = await prisma.conversation.findFirst({
       where: { orgId, zaloAccountId: channelAccount.id, contactId: contact.id }
     });
@@ -117,14 +124,14 @@ async function handleIncomingMessage(app: FastifyInstance, event: any, pageId: s
         senderName: contact.fullName || 'FB User',
         content: messageText,
         contentType: 'text',
-        sentAt: new Date(event.timestamp),
+        sentAt,
       }
     });
 
     await prisma.conversation.update({
       where: { id: conversation.id },
       data: {
-        lastMessageAt: new Date(),
+        lastMessageAt: sentAt,
         unreadCount: { increment: 1 },
         isReplied: false
       }
@@ -137,20 +144,49 @@ async function handleIncomingMessage(app: FastifyInstance, event: any, pageId: s
       conversationId: conversation.id
     });
 
-    await runAutomationRules({
+    const org = await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { id: true, name: true },
+    });
+    const conversationDetails = await prisma.conversation.findUnique({
+      where: { id: conversation.id },
+      select: {
+        id: true,
+        unreadCount: true,
+        externalThreadId: true,
+        threadType: true,
+        zaloAccountId: true,
+      },
+    });
+
+    void runAutomationRules({
       trigger: 'message_received',
       orgId,
+      org,
       contact: {
         id: contact.id,
         fullName: contact.fullName,
         phone: contact.phone,
         status: contact.status,
+        source: contact.source,
+        assignedUserId: contact.assignedUserId,
         tags: contact.tags,
         notes: contact.notes
       },
-      conversation: { id: conversation.id },
-      message: { id: message.id, content: messageText, contentType: 'text' }
+      conversation: conversationDetails
+        ? {
+            id: conversationDetails.id,
+            unreadCount: conversationDetails.unreadCount,
+            threadId: conversationDetails.externalThreadId,
+            threadType: conversationDetails.threadType,
+            zaloAccountId: conversationDetails.zaloAccountId,
+          }
+        : null,
+      message: { id: message.id, content: messageText, contentType: 'text', senderType: 'contact' }
     });
+
+    void AiService.checkStopConditions(orgId, conversation.id, messageText);
+    void AiService.extractLeadInfo(orgId, conversation.id, messageText);
   } catch (err) {
     logger.error('[facebook] Error handling message:', err);
   }
