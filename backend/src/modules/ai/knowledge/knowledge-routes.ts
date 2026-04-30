@@ -12,15 +12,29 @@ export async function knowledgeRoutes(fastify: FastifyInstance) {
     return service.getAiKnowledgeList(orgId);
   });
 
-  fastify.post('/', async (request: any) => {
+  fastify.post('/', async (request: any, reply) => {
     const orgId = request.user!.orgId;
-    return service.createAiKnowledge(orgId, request.body);
+    try {
+      return await service.createAiKnowledge(orgId, request.body);
+    } catch (err: any) {
+      console.error('[AI Knowledge Create Error]:', err);
+      return reply.status(err?.statusCode || 500).send({
+        error: err?.message || 'Không thể nạp kiến thức lúc này',
+      });
+    }
   });
 
-  fastify.put('/:id', async (request: any) => {
+  fastify.put('/:id', async (request: any, reply) => {
     const orgId = request.user!.orgId;
     const { id } = request.params;
-    return service.updateAiKnowledge(orgId, id, request.body);
+    try {
+      return await service.updateAiKnowledge(orgId, id, request.body);
+    } catch (err: any) {
+      console.error('[AI Knowledge Update Error]:', err);
+      return reply.status(err?.statusCode || 500).send({
+        error: err?.message || 'Không thể cập nhật kiến thức lúc này',
+      });
+    }
   });
 
   fastify.delete('/:id', async (request: any) => {

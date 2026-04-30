@@ -1081,6 +1081,11 @@ const accountOptions = computed(() => {
   return [{ title: 'Tất cả tài khoản', value: null }, ...opts];
 });
 
+const currentMagicAccountName = computed(() => {
+  const acc = accountOptions.value.find(o => o.value === magicAccountId.value);
+  return acc ? acc.title : 'Tat ca tai khoan';
+});
+
 const currentSimAccountName = computed(() => {
   const acc = accountOptions.value.find(o => o.value === simAccountId.value);
   return acc ? acc.title : '...';
@@ -1275,23 +1280,42 @@ function applyTemplate(t: any) {
   magicInput.value = t.content;
 }
 
+function getApiErrorMessage(err: any, fallback: string) {
+  return err?.response?.data?.error || err?.response?.data?.message || err?.message || fallback;
+}
+
+async function ensureKnownAccount(accountId: string | null) {
+  if (!accountId) return null;
+
+  const hasAccount = accountOptions.value.some(option => option.value === accountId);
+  if (hasAccount) return accountId;
+
+  await fetchAccounts();
+  return accountOptions.value.some(option => option.value === accountId) ? accountId : null;
+}
+
 async function runMagicAdd() {
   if (!magicInput.value.trim() || savingMagic.value) return;
   savingMagic.value = true;
   try {
+    const selectedAccountId = await ensureKnownAccount(magicAccountId.value);
+    if (magicAccountId.value && !selectedAccountId) {
+      throw new Error('Tài khoản áp dụng không còn tồn tại. Hãy chọn lại tài khoản.');
+    }
+
     const analysis = await api.post('/ai/knowledge/analyze', { content: magicInput.value });
     await api.post('/ai/knowledge', {
       title: analysis.data.title,
       category: analysis.data.category,
-      zaloAccountId: magicAccountId.value,
+      zaloAccountId: selectedAccountId,
       content: magicInput.value,
       isActive: true
     });
-    toast.value = { show: true, text: `Đã nạp xong tri thức cho ${currentSimAccountName.value}`, color: 'success', icon: 'mdi-sparkles' };
+    toast.value = { show: true, text: `Đã nạp xong tri thức cho ${currentMagicAccountName.value}`, color: 'success', icon: 'mdi-sparkles' };
     magicInput.value = '';
     await loadData();
-  } catch (err) {
-    toast.value = { show: true, text: 'Nạp nhanh thất bại', color: 'error', icon: 'mdi-alert' };
+  } catch (err: any) {
+    toast.value = { show: true, text: getApiErrorMessage(err, 'Nạp nhanh thất bại'), color: 'error', icon: 'mdi-alert' };
   } finally {
     savingMagic.value = false;
   }
@@ -1312,15 +1336,26 @@ async function saveItem() {
   if (!editDialog.value.valid) return;
   saving.value = true;
   try {
+    const selectedAccountId = await ensureKnownAccount(editDialog.value.item.zaloAccountId ?? null);
+    if (editDialog.value.item.zaloAccountId && !selectedAccountId) {
+      throw new Error('Tài khoản áp dụng không còn tồn tại. Hãy chọn lại tài khoản.');
+    }
+
+    const payload = {
+      ...editDialog.value.item,
+      zaloAccountId: selectedAccountId,
+    };
+
     if (editDialog.value.isEdit) {
-      await api.put(`/ai/knowledge/${editDialog.value.item.id}`, editDialog.value.item);
+      await api.put(`/ai/knowledge/${editDialog.value.item.id}`, payload);
     } else {
-      await api.post('/ai/knowledge', editDialog.value.item);
+      await api.post('/ai/knowledge', payload);
     }
     await loadData();
     editDialog.value.show = false;
-  } catch (err) {
+  } catch (err: any) {
     console.error('Failed to save knowledge:', err);
+    toast.value = { show: true, text: getApiErrorMessage(err, 'Không thể lưu tri thức'), color: 'error', icon: 'mdi-alert' };
   } finally {
     saving.value = false;
   }

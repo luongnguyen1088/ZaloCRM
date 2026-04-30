@@ -2,6 +2,48 @@ import { prisma } from '../../../shared/database/prisma-client.js';
 import { config } from '../../../config/index.js';
 import { embedWithOpenaiCompat } from '../providers/openai-compat.js';
 
+type KnowledgePayload = {
+  title: string;
+  content: string;
+  category?: string;
+  zaloAccountId?: string | null;
+};
+
+type KnowledgeUpdatePayload = {
+  title?: string;
+  content?: string;
+  category?: string;
+  isActive?: boolean;
+  zaloAccountId?: string | null;
+};
+
+function badRequest(message: string) {
+  return Object.assign(new Error(message), { statusCode: 400 });
+}
+
+async function resolveScopedZaloAccountId(orgId: string, zaloAccountId?: string | null) {
+  const normalizedId = typeof zaloAccountId === 'string' ? zaloAccountId.trim() : '';
+  if (!normalizedId) return null;
+
+  const account = await prisma.zaloAccount.findFirst({
+    where: {
+      id: normalizedId,
+      orgId,
+    },
+    select: {
+      id: true,
+      status: true,
+      displayName: true,
+    },
+  });
+
+  if (!account) {
+    throw badRequest('Tài khoản kết nối không hợp lệ hoặc đã bị xóa.');
+  }
+
+  return account.id;
+}
+
 export async function getAiKnowledgeList(orgId: string) {
   return prisma.aiKnowledge.findMany({
     where: { orgId },
@@ -14,13 +56,14 @@ export async function getAiKnowledgeList(orgId: string) {
   });
 }
 
-export async function createAiKnowledge(orgId: string, data: { title: string; content: string; category?: string; zaloAccountId?: string }) {
+export async function createAiKnowledge(orgId: string, data: KnowledgePayload) {
+  const scopedZaloAccountId = await resolveScopedZaloAccountId(orgId, data.zaloAccountId);
   const embedding = await generateEmbedding(data.content);
   
   return (prisma.aiKnowledge as any).create({
     data: {
       orgId,
-      zaloAccountId: data.zaloAccountId || null,
+      zaloAccountId: scopedZaloAccountId,
       title: data.title,
       content: data.content,
       category: data.category || 'general',
@@ -29,19 +72,17 @@ export async function createAiKnowledge(orgId: string, data: { title: string; co
   });
 }
 
-export async function updateAiKnowledge(orgId: string, id: string, data: { 
-  title?: string; 
-  content?: string; 
-  category?: string; 
-  isActive?: boolean;
-  zaloAccountId?: string | null;
-}) {
+export async function updateAiKnowledge(orgId: string, id: string, data: KnowledgeUpdatePayload) {
+  const scopedZaloAccountId = data.zaloAccountId !== undefined
+    ? await resolveScopedZaloAccountId(orgId, data.zaloAccountId)
+    : undefined;
+
   const updateData: any = {
     title: data.title,
     content: data.content,
     category: data.category,
     isActive: data.isActive,
-    zaloAccountId: data.zaloAccountId !== undefined ? data.zaloAccountId : undefined,
+    zaloAccountId: scopedZaloAccountId,
   };
 
   if (data.content) {
