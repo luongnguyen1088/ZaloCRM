@@ -21,6 +21,25 @@ function badRequest(message: string) {
   return Object.assign(new Error(message), { statusCode: 400 });
 }
 
+async function persistKnowledgeEmbedding(id: string, embedding: number[] | null) {
+  if (!embedding?.length) return;
+
+  const vectorStr = `[${embedding.join(',')}]`;
+  try {
+    await prisma.$executeRawUnsafe(
+      `
+        UPDATE "Claro"."ai_knowledge"
+        SET embedding = $2::vector
+        WHERE id = $1::uuid
+      `,
+      id,
+      vectorStr,
+    );
+  } catch (err) {
+    console.error('[Knowledge Service] Failed to persist embedding:', err);
+  }
+}
+
 async function resolveScopedZaloAccountId(orgId: string, zaloAccountId?: string | null) {
   const normalizedId = typeof zaloAccountId === 'string' ? zaloAccountId.trim() : '';
   if (!normalizedId) return null;
@@ -60,16 +79,18 @@ export async function createAiKnowledge(orgId: string, data: KnowledgePayload) {
   const scopedZaloAccountId = await resolveScopedZaloAccountId(orgId, data.zaloAccountId);
   const embedding = await generateEmbedding(data.content);
   
-  return (prisma.aiKnowledge as any).create({
+  const record = await prisma.aiKnowledge.create({
     data: {
       orgId,
       zaloAccountId: scopedZaloAccountId,
       title: data.title,
       content: data.content,
       category: data.category || 'general',
-      embedding: embedding || undefined,
     },
   });
+
+  await persistKnowledgeEmbedding(record.id, embedding);
+  return record;
 }
 
 export async function updateAiKnowledge(orgId: string, id: string, data: KnowledgeUpdatePayload) {
@@ -87,12 +108,16 @@ export async function updateAiKnowledge(orgId: string, id: string, data: Knowled
 
   if (data.content) {
     const embedding = await generateEmbedding(data.content);
-    if (embedding) {
-      updateData.embedding = embedding;
-    }
+    const record = await prisma.aiKnowledge.update({
+      where: { id, orgId },
+      data: updateData,
+    });
+
+    await persistKnowledgeEmbedding(record.id, embedding);
+    return record;
   }
 
-  return (prisma.aiKnowledge as any).update({
+  return prisma.aiKnowledge.update({
     where: { id, orgId },
     data: updateData,
   });
@@ -148,7 +173,7 @@ export async function searchSemanticKnowledge(orgId: string, query: string, zalo
       WITH vector_search AS (
         SELECT id, title, content,
                ROW_NUMBER() OVER (ORDER BY embedding <=> $3::vector) as rank
-        FROM "zalocrm"."ai_knowledge"
+        FROM "Claro"."ai_knowledge"
         WHERE org_id = $1::uuid AND is_active = true
         AND (zalo_account_id IS NULL OR zalo_account_id = $2::uuid)
         AND $3 IS NOT NULL -- Only run if we have a vector
@@ -157,7 +182,7 @@ export async function searchSemanticKnowledge(orgId: string, query: string, zalo
       keyword_search AS (
         SELECT id, title, content,
                ROW_NUMBER() OVER (ORDER BY ts_rank_cd(fts_tokens, websearch_to_tsquery('simple', $4)) DESC) as rank
-        FROM "zalocrm"."ai_knowledge"
+        FROM "Claro"."ai_knowledge"
         WHERE org_id = $1::uuid AND is_active = true
         AND (zalo_account_id IS NULL OR zalo_account_id = $2::uuid)
         AND fts_tokens @@ websearch_to_tsquery('simple', $4)
