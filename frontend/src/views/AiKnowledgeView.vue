@@ -28,55 +28,95 @@
       </v-btn>
     </div>
 
-    <v-card class="scope-toolbar mb-4" elevation="0" border>
-      <div class="d-flex flex-wrap align-center ga-3">
-        <v-select
-          v-model="configScopeId"
-          :items="configScopeOptions"
-          label="Phạm vi cấu hình AI"
-          variant="outlined"
-          density="comfortable"
-          rounded="lg"
-          hide-details
-          class="scope-toolbar__select"
-          prepend-inner-icon="mdi-sitemap-outline"
-        />
-        <v-chip
-          size="small"
-          :color="configScopeMeta.usesDefaultConfig ? 'warning' : configScopeId ? 'success' : 'primary'"
-          variant="tonal"
-        >
-          {{
-            configScopeId
-              ? (configScopeMeta.usesDefaultConfig ? 'Đang kế thừa mặc định' : 'Đang dùng override riêng')
-              : 'Đây là cấu hình mặc định'
-          }}
-        </v-chip>
-        <v-chip
-          v-if="configScopeMeta.scopeType === 'channel'"
-          size="small"
-          color="secondary"
-          variant="outlined"
-        >
-          {{ configScopeMeta.scopeChannelType === 'facebook' ? 'Fanpage Facebook' : 'Kênh Zalo' }}
-        </v-chip>
-        <v-spacer />
-        <v-btn
-          v-if="configScopeId"
-          variant="text"
-          color="warning"
-          prepend-icon="mdi-backup-restore"
-          :disabled="!configScopeMeta.hasChannelOverride"
-          :loading="resettingScope"
-          @click="resetConfigScope"
-        >
-          Quay về mặc định
-        </v-btn>
+    <v-card class="channel-hub mb-4" elevation="0" border>
+      <div class="d-flex align-start justify-space-between flex-wrap ga-3 mb-4">
+        <div>
+          <div class="text-caption text-medium-emphasis text-uppercase">Channel First</div>
+          <div class="text-h6 font-weight-bold mb-1">Chọn kênh cần cấu hình AI</div>
+          <p class="text-body-2 text-medium-emphasis mb-0 channel-hub__copy">
+            Mỗi Fanpage hoặc tài khoản Zalo có thể có cá tính, tri thức và cách vận hành riêng. Cấu hình nền chỉ là lớp fallback cho các kênh chưa được tách riêng.
+          </p>
+        </div>
+        <div class="d-flex flex-wrap ga-2 align-center">
+          <v-btn
+            variant="outlined"
+            color="secondary"
+            rounded="xl"
+            prepend-icon="mdi-layers-outline"
+            @click="configScopeId = null"
+          >
+            Cấu hình nền
+          </v-btn>
+          <v-btn
+            v-if="configScopeId"
+            variant="text"
+            color="warning"
+            prepend-icon="mdi-backup-restore"
+            :disabled="!configScopeMeta.hasChannelOverride"
+            :loading="resettingScope"
+            @click="resetConfigScope"
+          >
+            Quay về mặc định
+          </v-btn>
+        </div>
       </div>
-      <div class="scope-toolbar__hint text-body-2 text-medium-emphasis mt-3">
-        {{ configScopeId
-          ? `Bạn đang chỉnh AI cho ${currentConfigScopeName}. Persona, auto-reply, follow-up và stop-condition sẽ chỉ áp dụng cho kênh này.`
-          : 'Đây là lớp mặc định toàn workspace. Mọi kênh chưa có override riêng sẽ kế thừa cấu hình này.' }}
+
+      <div v-if="channelScopeCards.length" class="channel-grid">
+        <button
+          v-for="channel in channelScopeCards"
+          :key="channel.id"
+          type="button"
+          :class="['channel-card', { 'channel-card--active': configScopeId === channel.id }]"
+          @click="selectChannelScope(channel.id)"
+        >
+          <div class="d-flex align-center ga-3 mb-3">
+            <v-avatar size="44" :color="channel.channelType === 'facebook' ? 'primary' : 'secondary'" variant="tonal">
+              <v-img v-if="channel.avatarUrl" :src="channel.avatarUrl" cover />
+              <v-icon v-else :icon="channel.channelType === 'facebook' ? 'mdi-facebook' : 'mdi-chat-processing-outline'" />
+            </v-avatar>
+            <div class="text-left overflow-hidden">
+              <div class="font-weight-bold text-body-2 text-truncate">{{ channel.displayName }}</div>
+              <div class="text-caption text-medium-emphasis text-truncate">{{ channel.subtitle }}</div>
+            </div>
+          </div>
+          <div class="d-flex flex-wrap ga-2">
+            <v-chip size="x-small" :color="channel.statusColor" variant="tonal">{{ channel.statusLabel }}</v-chip>
+            <v-chip size="x-small" color="grey" variant="outlined">
+              {{
+                configScopeId === channel.id
+                  ? (channel.isInherited ? 'Kế thừa nền' : 'Config riêng')
+                  : 'Chọn để cấu hình'
+              }}
+            </v-chip>
+          </div>
+        </button>
+      </div>
+
+      <v-alert
+        v-else
+        variant="tonal"
+        color="warning"
+        rounded="lg"
+      >
+        Chưa có kênh kết nối nào. Hãy kết nối ít nhất một Fanpage hoặc tài khoản Zalo trước khi tách cấu hình AI theo kênh.
+      </v-alert>
+
+      <div class="channel-active-bar mt-4">
+        <div>
+          <div class="text-caption text-medium-emphasis text-uppercase">Đang chỉnh</div>
+          <div class="text-subtitle-1 font-weight-bold">{{ currentConfigScopeName }}</div>
+          <div class="text-body-2 text-medium-emphasis">
+            {{ currentScopeDescription }}
+          </div>
+        </div>
+        <div class="d-flex flex-wrap ga-2 justify-end">
+          <v-chip size="small" :color="currentScopeChipColor" variant="tonal">
+            {{ currentScopeChipLabel }}
+          </v-chip>
+          <v-chip v-if="configScopeId" size="small" color="secondary" variant="outlined">
+            {{ configScopeMeta.scopeChannelType === 'facebook' ? 'Fanpage Facebook' : 'Kênh Zalo' }}
+          </v-chip>
+        </div>
       </div>
     </v-card>
 
@@ -1128,6 +1168,16 @@ type ConfigScopeMeta = {
   scopeAccountName: string | null;
   scopeChannelType: 'zalo' | 'facebook' | null;
 };
+type ChannelScopeCard = {
+  id: string;
+  displayName: string;
+  subtitle: string;
+  avatarUrl: string | null;
+  channelType: 'zalo' | 'facebook';
+  isInherited: boolean;
+  statusLabel: string;
+  statusColor: string;
+};
 
 const { accounts, fetchAccounts } = useZaloAccounts();
 
@@ -1373,14 +1423,6 @@ const accountOptions = computed<AccountOption[]>(() => {
   return [{ title: 'Tất cả tài khoản', value: null }, ...scoped];
 });
 
-const configScopeOptions = computed<AccountOption[]>(() => {
-  const scoped = accounts.value.map((account) => ({
-    title: account.displayName || account.id,
-    value: account.id,
-  }));
-  return [{ title: 'Mặc định toàn workspace', value: null }, ...scoped];
-});
-
 const categories = computed(() => {
   const unique = new Set(
     items.value
@@ -1414,8 +1456,43 @@ const currentSimAccountName = computed(() => {
   return accountOptions.value.find((option) => option.value === simAccountId.value)?.title || 'Tất cả tài khoản';
 });
 
+const channelScopeCards = computed<ChannelScopeCard[]>(() =>
+  accounts.value.map((account) => ({
+    id: account.id,
+    displayName: account.displayName || account.id,
+    subtitle: account.channelType === 'facebook'
+      ? `Fanpage ${account.fbPageId || account.id}`
+      : `Zalo ${account.zaloUid || account.id}`,
+    avatarUrl: account.avatarUrl || null,
+    channelType: account.channelType,
+    isInherited: configScopeId.value === account.id ? configScopeMeta.value.usesDefaultConfig : true,
+    statusLabel: account.status === 'connected' ? 'Đang kết nối' : 'Chưa sẵn sàng',
+    statusColor: account.status === 'connected' ? 'success' : 'warning',
+  })),
+);
+
 const currentConfigScopeName = computed(() => {
-  return configScopeOptions.value.find((option) => option.value === configScopeId.value)?.title || 'Mặc định toàn workspace';
+  return accounts.value.find((account) => account.id === configScopeId.value)?.displayName
+    || (configScopeId.value ? configScopeId.value : 'Cấu hình nền toàn workspace');
+});
+
+const currentScopeDescription = computed(() => {
+  if (!configScopeId.value) {
+    return 'Đây là lớp fallback cho các kênh chưa có cấu hình riêng. Chỉ nên giữ rule nền chung, không nên nhét toàn bộ logic brand vào đây.';
+  }
+  return configScopeMeta.value.usesDefaultConfig
+    ? `Kênh này hiện vẫn đang kế thừa cấu hình nền. Lần lưu tiếp theo sẽ tạo cấu hình riêng cho ${currentConfigScopeName.value}.`
+    : `Bạn đang chỉnh bộ AI riêng cho ${currentConfigScopeName.value}. Các thay đổi ở đây sẽ không ảnh hưởng những kênh khác.`;
+});
+
+const currentScopeChipLabel = computed(() => {
+  if (!configScopeId.value) return 'Cấu hình nền';
+  return configScopeMeta.value.usesDefaultConfig ? 'Đang kế thừa nền' : 'Đang dùng config riêng';
+});
+
+const currentScopeChipColor = computed(() => {
+  if (!configScopeId.value) return 'primary';
+  return configScopeMeta.value.usesDefaultConfig ? 'warning' : 'success';
 });
 
 const operationsModeLabel = computed(() => {
@@ -1529,6 +1606,24 @@ function getApiErrorMessage(err: any, fallback: string) {
   return err?.response?.data?.error || err?.response?.data?.message || err?.message || fallback;
 }
 
+function initializePreferredScope() {
+  const hasCurrent = configScopeId.value && accounts.value.some((account) => account.id === configScopeId.value);
+  if (hasCurrent) return;
+
+  const preferred = accounts.value.find((account) => account.status === 'connected') || accounts.value[0];
+  configScopeId.value = preferred?.id || null;
+  if (preferred?.id) {
+    if (!magicAccountId.value) magicAccountId.value = preferred.id;
+    if (!simAccountId.value) simAccountId.value = preferred.id;
+  }
+}
+
+function selectChannelScope(accountId: string) {
+  configScopeId.value = accountId;
+  magicAccountId.value = accountId;
+  simAccountId.value = accountId;
+}
+
 async function ensureKnownAccount(accountId: string | null) {
   if (!accountId) return null;
   if (accountOptions.value.some((option) => option.value === accountId)) return accountId;
@@ -1565,7 +1660,9 @@ async function loadAiConfig() {
 async function loadData() {
   loading.value = true;
   try {
-    await Promise.all([loadKnowledge(), loadAiConfig()]);
+    await loadKnowledge();
+    initializePreferredScope();
+    await loadAiConfig();
   } catch (err) {
     console.error('Failed to load data:', err);
   } finally {
@@ -1585,7 +1682,9 @@ async function saveAiConfig() {
     applyLoadedConfig(res.data);
     toast.value = {
       show: true,
-      text: 'Đã lưu cấu hình AI',
+      text: configScopeId.value
+        ? `Đã lưu cấu hình AI cho ${currentConfigScopeName.value}`
+        : 'Đã lưu cấu hình nền của workspace',
       color: 'success',
       icon: 'mdi-check-circle',
     };
@@ -1897,7 +1996,9 @@ function getCategoryIcon(category: string) {
 }
 
 onMounted(async () => {
-  await Promise.all([fetchAccounts(), loadData()]);
+  await fetchAccounts();
+  initializePreferredScope();
+  await loadData();
 });
 
 watch(configScopeId, async () => {
@@ -1933,20 +2034,53 @@ watch(configScopeId, async () => {
   height: 100%;
 }
 
-.scope-toolbar {
-  padding: 18px 20px;
+.channel-hub {
+  padding: 20px 22px;
   background: var(--color-surface-elevated) !important;
   border: 1px solid var(--color-border) !important;
-  border-radius: 18px !important;
+  border-radius: 22px !important;
 }
 
-.scope-toolbar__select {
-  min-width: 320px;
-  max-width: 480px;
+.channel-hub__copy {
+  max-width: 820px;
 }
 
-.scope-toolbar__hint {
-  max-width: 900px;
+.channel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.channel-card {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid var(--color-border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.95));
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.channel-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(var(--v-theme-primary), 0.35);
+}
+
+.channel-card--active {
+  border-color: rgba(var(--v-theme-primary), 0.7);
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.12);
+  background: linear-gradient(180deg, rgba(239, 246, 255, 0.98), rgba(255, 255, 255, 0.95));
+}
+
+.channel-active-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: var(--color-surface-glass);
+  border: 1px solid var(--color-border);
 }
 
 .studio-shell__header {
