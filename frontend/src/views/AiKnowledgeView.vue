@@ -420,17 +420,35 @@
                     />
 
                     <div class="d-flex align-center mt-3 flex-wrap ga-3">
-                      <v-select
-                        v-model="magicAccountId"
-                        :items="accountOptions"
-                        label="Áp dụng cho"
-                        variant="outlined"
-                        density="compact"
-                        hide-details
-                        rounded="lg"
-                        class="knowledge-account-select"
-                        prepend-inner-icon="mdi-account-star-outline"
-                      />
+                      <div class="knowledge-scope-inline">
+                        <div class="text-caption text-medium-emphasis mb-1">Mặc định áp dụng cho</div>
+                        <div class="d-flex align-center ga-2 flex-wrap">
+                          <v-chip size="small" color="secondary" variant="tonal">
+                            {{ currentMagicAccountName }}
+                          </v-chip>
+                          <v-menu>
+                            <template #activator="{ props }">
+                              <v-btn
+                                v-bind="props"
+                                size="small"
+                                variant="text"
+                                color="medium-emphasis"
+                                prepend-icon="mdi-tune-variant"
+                              >
+                                Đổi phạm vi
+                              </v-btn>
+                            </template>
+                            <v-list density="compact" class="glass-list">
+                              <v-list-item
+                                v-for="option in accountOptions"
+                                :key="String(option.value)"
+                                :title="option.title"
+                                @click="magicAccountId = option.value"
+                              />
+                            </v-list>
+                          </v-menu>
+                        </div>
+                      </div>
                       <v-spacer />
                       <v-btn
                         color="primary"
@@ -883,17 +901,14 @@
               </div>
               <div class="text-subtitle-1 font-weight-bold">Trình giả lập AI</div>
             </div>
-            <v-select
-              v-model="simAccountId"
-              :items="accountOptions"
-              label="Kiểm thử theo tài khoản"
-              variant="outlined"
-              density="compact"
-              hide-details
-              rounded="pill"
-              class="sim-account-select"
-              @update:model-value="testMessages = []"
-            />
+            <div class="simulator-scope">
+              <v-chip size="small" color="primary" variant="tonal">
+                Đang kiểm thử: {{ currentSimAccountName }}
+              </v-chip>
+              <div class="text-caption text-medium-emphasis mt-1">
+                Simulator luôn bám theo kênh đang chọn ở đầu trang.
+              </div>
+            </div>
           </div>
 
           <div ref="chatContainer" class="simulator-messages custom-scrollbar">
@@ -1036,6 +1051,8 @@
                   :items="accountOptions"
                   label="Áp dụng cho"
                   variant="outlined"
+                  hint="Mặc định sẽ bám theo kênh đang mở. Chỉ chuyển về toàn cục khi kiến thức này dùng chung cho nhiều kênh."
+                  persistent-hint
                 />
               </v-col>
               <v-col cols="12">
@@ -1228,7 +1245,6 @@ const filterCategory = ref('Tất cả');
 const filterAccount = ref<string | null>(null);
 const magicInput = ref('');
 const magicAccountId = ref<string | null>(null);
-const simAccountId = ref<string | null>(null);
 const testQuestion = ref('');
 const testMessages = ref<any[]>([]);
 const chatContainer = ref<HTMLElement | null>(null);
@@ -1453,7 +1469,7 @@ const currentMagicAccountName = computed(() => {
 });
 
 const currentSimAccountName = computed(() => {
-  return accountOptions.value.find((option) => option.value === simAccountId.value)?.title || 'Tất cả tài khoản';
+  return currentConfigScopeName.value;
 });
 
 const channelScopeCards = computed<ChannelScopeCard[]>(() =>
@@ -1614,14 +1630,13 @@ function initializePreferredScope() {
   configScopeId.value = preferred?.id || null;
   if (preferred?.id) {
     if (!magicAccountId.value) magicAccountId.value = preferred.id;
-    if (!simAccountId.value) simAccountId.value = preferred.id;
   }
 }
 
 function selectChannelScope(accountId: string) {
   configScopeId.value = accountId;
   magicAccountId.value = accountId;
-  simAccountId.value = accountId;
+  testMessages.value = [];
 }
 
 async function ensureKnownAccount(accountId: string | null) {
@@ -1773,7 +1788,7 @@ function openAddDialog() {
       content: '',
       category: 'Chung',
       isActive: true,
-      zaloAccountId: null,
+      zaloAccountId: configScopeId.value,
     },
   };
 }
@@ -1876,7 +1891,7 @@ async function runTest() {
 
     const res = await api.post('/ai/knowledge/test', {
       question,
-      zaloAccountId: simAccountId.value,
+      zaloAccountId: configScopeId.value,
       history,
     });
 
@@ -1934,7 +1949,7 @@ async function proposeFix() {
         content: proposal.content,
         category: proposal.category,
         isActive: true,
-        zaloAccountId: simAccountId.value,
+        zaloAccountId: configScopeId.value,
       },
     };
 
@@ -2003,6 +2018,8 @@ onMounted(async () => {
 
 watch(configScopeId, async () => {
   if (loading.value) return;
+  magicAccountId.value = configScopeId.value;
+  testMessages.value = [];
   await loadAiConfig();
 });
 </script>
