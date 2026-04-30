@@ -182,7 +182,7 @@ const getMemberSummary = (org: Organization) => {
 const getPlanSummary = (org: Organization) => {
   const plan = org.subscription?.plan;
   if (!plan) return 'Chưa phát sinh doanh thu';
-  return `${plan.maxZaloAcc || 0} tài khoản Zalo • ${formatToken(plan.maxAiTokens || 0)} AI`;
+  return `${plan.maxZaloAcc || 0} kênh kết nối • ${formatToken(plan.maxAiTokens || 0)} AI`;
 };
 
 const getMonthlyValue = (org: Organization) => org.subscription?.plan?.priceMonth || 0;

@@ -105,7 +105,7 @@ export function useZaloAccounts() {
     try {
       await api.post(`/zalo-accounts/${accountId}/login`);
     } catch (err: any) {
-      qrError.value = err.response?.data?.error || 'Không thể bắt đầu đăng nhập';
+      qrError.value = err.response?.data?.message || err.response?.data?.error || 'Không thể bắt đầu đăng nhập';
     }
   }
 

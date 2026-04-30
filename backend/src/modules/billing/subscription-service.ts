@@ -9,18 +9,31 @@ export async function getOrgSubscription(orgId: string) {
 }
 
 /**
- * Check if the organization can add more Zalo accounts based on their plan.
+ * Check if the organization can add more channels (Zalo or Facebook) based on their plan.
+ */
+export async function canAddChannel(orgId: string): Promise<boolean> {
+  const sub = await getOrgSubscription(orgId);
+  const limit = sub?.plan.maxZaloAcc ?? 1;
+
+  const totalCount = await prisma.zaloAccount.count({ 
+    where: { orgId } 
+  });
+  
+  return totalCount < limit;
+}
+
+/**
+ * Kept for backward compatibility but using unified logic.
  */
 export async function canAddZaloAccount(orgId: string): Promise<boolean> {
-  const sub = await getOrgSubscription(orgId);
-  if (!sub) {
-    // Default to free limits if no subscription record found
-    const zaloCount = await prisma.zaloAccount.count({ where: { orgId } });
-    return zaloCount < 1; 
-  }
+  return canAddChannel(orgId);
+}
 
-  const zaloCount = await prisma.zaloAccount.count({ where: { orgId } });
-  return zaloCount < sub.plan.maxZaloAcc;
+/**
+ * Kept for backward compatibility but using unified logic.
+ */
+export async function canAddFacebookAccount(orgId: string): Promise<boolean> {
+  return canAddChannel(orgId);
 }
 
 /**

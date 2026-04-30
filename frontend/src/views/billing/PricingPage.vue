@@ -73,7 +73,7 @@
 
           <div class="summary-metrics">
             <div class="summary-metric">
-              <span class="summary-metric__label">Tài khoản Zalo</span>
+              <span class="summary-metric__label">Kênh kết nối</span>
               <strong class="summary-metric__value">{{ currentPlan?.maxZaloAcc ?? 1 }}</strong>
             </div>
             <div class="summary-metric">
@@ -97,7 +97,7 @@
         <div class="insight-card">
           <span class="insight-card__label">Khả năng mở rộng</span>
           <strong class="insight-card__value">Linh hoạt theo team</strong>
-          <p>Tăng số tài khoản Zalo, nâng giới hạn AI và giữ dữ liệu tập trung theo tổ chức.</p>
+          <p>Tăng số kênh kết nối, nâng giới hạn AI và giữ dữ liệu tập trung theo tổ chức.</p>
         </div>
         <div class="insight-card">
           <span class="insight-card__label">Triển khai</span>
@@ -184,7 +184,7 @@
 
             <div class="quota-panel mb-6">
               <div class="quota-panel__item">
-                <span class="quota-panel__label">Tài khoản Zalo</span>
+                <span class="quota-panel__label">Kênh kết nối</span>
                 <strong>{{ plan.maxZaloAcc }}</strong>
               </div>
               <div class="quota-panel__item">
@@ -201,7 +201,7 @@
               <div class="feature-stack__title">Bao gồm</div>
               <div class="feature-row">
                 <v-icon size="16" color="primary">mdi-check-circle</v-icon>
-                <span>Tối đa {{ plan.maxZaloAcc }} tài khoản Zalo hoạt động đồng thời</span>
+                <span>Tối đa {{ plan.maxZaloAcc }} kênh kết nối hoạt động đồng thời</span>
               </div>
               <div
                 v-for="(feature, featureIndex) in parseFeatures(plan.features)"
@@ -534,8 +534,8 @@ const faqs = [
     a: 'Có. Bạn có thể tạo yêu cầu nâng cấp bất kỳ lúc nào. Admin sẽ duyệt thanh toán và cập nhật gói cho tổ chức tương ứng.',
   },
   {
-    q: 'Có hỗ trợ nhiều tài khoản Zalo trong cùng tổ chức không?',
-    a: 'Có. Mỗi gói quy định số lượng tài khoản Zalo có thể hoạt động đồng thời. Tất cả hội thoại vẫn được quản lý tập trung trong cùng workspace.',
+    q: 'Có hỗ trợ nhiều kênh kết nối trong cùng tổ chức không?',
+    a: 'Có. Mỗi gói quy định số lượng kênh kết nối (Zalo, Facebook...) có thể hoạt động đồng thời. Tất cả hội thoại vẫn được quản lý tập trung trong cùng workspace.',
   },
   {
     q: 'Nếu hết lượt AI trong tháng thì sao?',
@@ -580,7 +580,7 @@ const comparisonRows = computed<Array<{ label: string; free: ComparisonValue; pr
 
   return [
     {
-      label: 'Số tài khoản Zalo',
+      label: 'Số kênh kết nối tối đa',
       free: String(freePlan?.maxZaloAcc ?? 1),
       pro: String(proPlan?.maxZaloAcc ?? 5),
       enterprise: String(enterprisePlan?.maxZaloAcc ?? 50),

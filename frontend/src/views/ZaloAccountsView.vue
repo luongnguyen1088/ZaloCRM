@@ -4,7 +4,7 @@
     <div class="d-flex align-center mb-8">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1">Kết nối đa kênh</h1>
-        <p class="text-medium-emphasis mb-0">Quản lý các tài khoản Zalo cá nhân và Facebook Fanpage</p>
+        <p class="text-medium-emphasis mb-0">Quản lý các kênh kết nối Zalo cá nhân và Facebook Fanpage</p>
       </div>
       <v-spacer />
       <v-btn
@@ -275,7 +275,7 @@
                         >
                           Bắt đầu kết nối
                         </v-btn>
-                        <p class="mt-4 text-caption text-medium-emphasis">Hệ thống sẽ tạo mã QR đăng nhập cho bạn</p>
+                        <p class="mt-4 text-caption text-medium-emphasis">Hệ thống sẽ tạo mã QR đăng nhập cho kênh mới</p>
                       </div>
                     </div>
 
@@ -798,7 +798,7 @@ async function startZaloAdd() {
     // Không fetchAccounts ở đây để tránh hiện "rác" ở danh sách ngoài
     loginAccount(newAcc.id, true); // silent = true
   } catch (err: any) {
-    qrError.value = err.response?.data?.error || 'Không thể khởi tạo kết nối Zalo';
+    qrError.value = err.response?.data?.message || err.response?.data?.error || 'Không thể khởi tạo kết nối Zalo';
     isAutoAddingZalo.value = false;
   }
 }

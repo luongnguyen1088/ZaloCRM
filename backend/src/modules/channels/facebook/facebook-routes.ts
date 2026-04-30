@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authMiddleware } from '../../auth/auth-middleware.js';
+import { checkFacebookAccountLimit } from '../../billing/subscription-middleware.js';
 import { prisma } from '../../../shared/database/prisma-client.js';
 import { logger } from '../../../shared/utils/logger.js';
 import { FacebookApi } from './facebook-api.js';
@@ -157,6 +158,7 @@ export async function facebookRoutes(app: FastifyInstance) {
   // POST /api/v1/facebook/link-page — link a page using a token
   app.post<{ Body: { accessToken: string; pageId?: string; pageName?: string; avatarUrl?: string } }>(
     '/api/v1/facebook/link-page',
+    { preHandler: [checkFacebookAccountLimit] },
     async (request, reply) => {
       const { accessToken, pageId, pageName, avatarUrl } = request.body as {
         accessToken: string;
