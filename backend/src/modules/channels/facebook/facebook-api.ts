@@ -64,6 +64,61 @@ export class FacebookApi {
     }
   }
 
+  async listRecentConversations(pageId: string, limit = 15) {
+    try {
+      const url = new URL(`${this.baseUrl}/${this.version}/${pageId}/conversations`);
+      url.search = new URLSearchParams({
+        fields: 'id,updated_time,participants.limit(10){id,name}',
+        limit: String(limit),
+        access_token: this.pageAccessToken,
+      }).toString();
+
+      const response = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+      const data = await response.json() as any;
+
+      if (!response.ok) {
+        throw new Error(data?.error?.message || 'Failed to fetch recent conversations');
+      }
+
+      return (data?.data || []) as Array<{
+        id: string;
+        updated_time?: string;
+        participants?: { data?: Array<{ id: string; name?: string | null }> };
+      }>;
+    } catch (err: any) {
+      logger.error('[facebook-api] List recent conversations error:', err.message);
+      throw err;
+    }
+  }
+
+  async listConversationMessages(conversationId: string, limit = 30) {
+    try {
+      const url = new URL(`${this.baseUrl}/${this.version}/${conversationId}/messages`);
+      url.search = new URLSearchParams({
+        fields: 'id,message,from,created_time',
+        limit: String(limit),
+        access_token: this.pageAccessToken,
+      }).toString();
+
+      const response = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+      const data = await response.json() as any;
+
+      if (!response.ok) {
+        throw new Error(data?.error?.message || 'Failed to fetch conversation messages');
+      }
+
+      return (data?.data || []) as Array<{
+        id: string;
+        message?: string | null;
+        from?: { id?: string | null; name?: string | null };
+        created_time?: string;
+      }>;
+    } catch (err: any) {
+      logger.error('[facebook-api] List conversation messages error:', err.message);
+      throw err;
+    }
+  }
+
   /**
    * Resolve a Messenger user's basic profile from a Page-scoped ID.
    */

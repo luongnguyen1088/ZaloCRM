@@ -4,6 +4,7 @@ import { checkFacebookAccountLimit } from '../../billing/subscription-middleware
 import { prisma } from '../../../shared/database/prisma-client.js';
 import { logger } from '../../../shared/utils/logger.js';
 import { FacebookApi } from './facebook-api.js';
+import { backfillFacebookRecentHistory } from './facebook-history-sync.js';
 import { config } from '../../../config/index.js';
 
 /**
@@ -160,6 +161,10 @@ export async function facebookRoutes(app: FastifyInstance) {
           },
         });
 
+        void backfillFacebookRecentHistory(account.id).catch((err) => {
+          logger.error('[facebook] Background history backfill after re-subscribe failed:', err);
+        });
+
         return { success: true, pageId };
       } catch (err: any) {
         logger.error('[facebook] Re-subscribe page webhook error:', err);
@@ -224,6 +229,10 @@ export async function facebookRoutes(app: FastifyInstance) {
             platformConfig: { accessToken },
             lastConnectedAt: new Date(),
           }
+        });
+
+        void backfillFacebookRecentHistory(account.id).catch((err) => {
+          logger.error('[facebook] Background history backfill after link-page failed:', err);
         });
 
         return account;
