@@ -5,22 +5,29 @@ const DEFAULT_SUBSCRIPTION_PLANS = [
     name: 'Free',
     priceMonth: 0,
     maxZaloAcc: 1,
-    maxAiTokens: 50000,
-    features: ['CRM cơ bản', '1 tài khoản Zalo', 'AI Assistant (Model cơ bản)', '~30 lượt phản hồi AI/tháng'],
+    maxAiTokens: 150000,
+    features: ['CRM cơ bản', '1 tài khoản Zalo/Facebook', '150,000 Tokens AI (Haiku/Flash)', 'Hỗ trợ cộng đồng'],
   },
   {
     name: 'Pro',
-    priceMonth: 200000,
-    maxZaloAcc: 5,
-    maxAiTokens: 1500000,
-    features: ['Đầy đủ CRM', '5 tài khoản Zalo', 'AI Assistant (Tốc độ cao)', 'Automation', '~1,000 lượt phản hồi AI/tháng'],
+    priceMonth: 250000,
+    maxZaloAcc: 3,
+    maxAiTokens: 2500000,
+    features: ['Đầy đủ CRM & Automation', '3 tài khoản Zalo/Facebook', '2,500,000 Tokens AI (Haiku/Flash)', 'Ưu tiên hỗ trợ 24/7'],
+  },
+  {
+    name: 'Business',
+    priceMonth: 650000,
+    maxZaloAcc: 15,
+    maxAiTokens: 8000000,
+    features: ['Tính năng Business nâng cao', '15 tài khoản Zalo/Facebook', '8,000,000 Tokens AI', 'Bao gồm 800k Premium Tokens (Sonnet)', 'Quản lý Team & Phân quyền'],
   },
   {
     name: 'Enterprise',
-    priceMonth: 1000000,
+    priceMonth: 2000000,
     maxZaloAcc: 50,
-    maxAiTokens: 15000000,
-    features: ['Vô hạn CRM', '50 tài khoản Zalo', 'AI Assistant (Claude 3.5 Sonnet)', 'Ưu tiên hỗ trợ', '~10,000 lượt phản hồi AI/tháng'],
+    maxAiTokens: 30000000,
+    features: ['Giải pháp Enterprise toàn diện', '50 tài khoản Zalo/Facebook', '30,000,000 Tokens AI', 'Bao gồm 5M Premium Tokens (Sonnet)', 'Dedicated account manager', 'API Access & Webhooks'],
   },
 ];
 
@@ -46,4 +53,3 @@ export async function ensureDefaultSubscriptionPlans() {
     ),
   );
 }
-

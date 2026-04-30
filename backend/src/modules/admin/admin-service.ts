@@ -42,6 +42,23 @@ async function getOrganizationAiOverview(orgId: string, input?: {
   const remainingTokens = Math.max(0, totalTokens - usedTokens);
   const usagePercent = totalTokens > 0 ? Math.min(100, Math.round((usedTokens / totalTokens) * 100)) : 0;
 
+  // Calculate Premium Token Entitlement (Claro 2.0: Business gets 800k, Enterprise gets 5M)
+  let premiumLimit = 0;
+  if (subscription?.plan.name === 'Business') premiumLimit = 800000;
+  else if (subscription?.plan.name === 'Enterprise') premiumLimit = 5000000;
+
+  // Query premium usage
+  const premiumAggregate = await prisma.aiTokenUsage.aggregate({
+    where: {
+      orgId,
+      createdAt: { gte: periodStart, lt: periodEnd },
+      model: { contains: 'sonnet' },
+    },
+    _sum: { tokens: true },
+  });
+  const usedPremiumTokens = Number(premiumAggregate._sum.tokens ?? 0);
+  const remainingPremiumTokens = Math.max(0, premiumLimit - usedPremiumTokens);
+
   return {
     enabled: input?.aiConfig?.enabled ?? true,
     planName: subscription?.plan.name ?? 'Free',
@@ -53,6 +70,9 @@ async function getOrganizationAiOverview(orgId: string, input?: {
     usedTokens,
     remainingTokens,
     usagePercent,
+    premiumLimit,
+    usedPremiumTokens,
+    remainingPremiumTokens,
   };
 }
 

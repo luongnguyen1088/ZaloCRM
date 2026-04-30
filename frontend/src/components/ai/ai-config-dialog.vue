@@ -21,7 +21,11 @@
           <v-list-item title="Gói & Mô hình" :subtitle="`${config.planName} - ${config.provider}/${config.model}`">
             <template #prepend><v-icon color="primary">mdi-shield-check-outline</v-icon></template>
           </v-list-item>
-          <v-list-item title="Hạn mức" :subtitle="`${Math.floor((config.remainingTokens ?? 0) / 1500)} / ${Math.floor((config.maxTokens ?? 0) / 1500)} lượt phản hồi`" />
+          <v-list-item title="Hạn mức Cơ bản (Haiku/Flash)" :subtitle="`${formatToken(config.remainingTokens ?? 0)} / ${formatToken(config.maxTokens ?? 0)} tokens`" />
+          
+          <v-list-item v-if="config.premiumLimit" title="Hạn mức Premium (Sonnet)" :subtitle="`${formatToken(config.remainingPremiumTokens ?? 0)} / ${formatToken(config.premiumLimit ?? 0)} tokens`" class="border-top">
+             <template #prepend><v-icon color="warning">mdi-star-circle-outline</v-icon></template>
+          </v-list-item>
         </v-list>
 
         <div class="section-label mb-2">Tầng 2: Cá tính & Phong cách (Tùy chỉnh)</div>
@@ -99,6 +103,9 @@ const props = defineProps<{
     usedTokens?: number;
     maxTokens?: number;
     remainingTokens?: number;
+    premiumLimit?: number;
+    usedPremiumTokens?: number;
+    remainingPremiumTokens?: number;
   };
 }>();
 
@@ -119,6 +126,12 @@ const languageOptions = [
   { title: 'Luôn dùng Tiếng Anh', value: 'en' },
 ];
 
+const formatToken = (value: number) => {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `${Math.round(value / 1_000)}k`;
+  return `${value}`;
+};
+
 watch(() => props.modelValue, (isOpen) => {
   if (isOpen) {
     local.enabled = props.config.enabled;
@@ -135,5 +148,8 @@ watch(() => props.modelValue, (isOpen) => {
   color: var(--color-primary);
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+.border-top {
+  border-top: 1px solid rgba(0,0,0,0.05);
 }
 </style>

@@ -141,6 +141,25 @@ async function getAiEntitlement(orgId: string) {
   });
 
   const usedTokens = aggregate._sum.tokens ?? 0;
+
+  // Calculate Premium Token Entitlement (Claro 2.0: Business gets 800k, Enterprise gets 5M)
+  // User previously mentioned: Business (8M total tokens), Enterprise (30M total tokens, 5M Sonnet)
+  // Let's stick to the 5M for Enterprise and maybe 800k for Business as a reasonable high-end allotment for Sonnet.
+  let premiumLimit = 0;
+  if (subscription?.plan.name === 'Business') premiumLimit = 800000;
+  else if (subscription?.plan.name === 'Enterprise') premiumLimit = 5000000;
+
+  // Query premium usage (where model is sonnet)
+  const premiumAggregate = await prisma.aiTokenUsage.aggregate({
+    where: {
+      orgId,
+      createdAt: { gte: periodStart, lt: periodEnd },
+      model: { contains: 'sonnet' },
+    },
+    _sum: { tokens: true },
+  });
+  const usedPremiumTokens = premiumAggregate._sum.tokens ?? 0;
+
   return {
     planName: subscription?.plan.name ?? 'Free',
     periodStart,
@@ -150,6 +169,9 @@ async function getAiEntitlement(orgId: string) {
     topupTokens,
     usedTokens,
     remainingTokens: Math.max(0, totalTokens - usedTokens),
+    premiumLimit,
+    usedPremiumTokens,
+    remainingPremiumTokens: Math.max(0, premiumLimit - usedPremiumTokens),
   };
 }
 
@@ -314,6 +336,9 @@ export async function getAiConfig(orgId: string, zaloAccountId?: string | null) 
     usedTokens: entitlement.usedTokens,
     maxTokens: entitlement.maxTokens,
     remainingTokens: entitlement.remainingTokens,
+    premiumLimit: entitlement.premiumLimit,
+    usedPremiumTokens: entitlement.usedPremiumTokens,
+    remainingPremiumTokens: entitlement.remainingPremiumTokens,
     periodStart: entitlement.periodStart,
     periodEnd: entitlement.periodEnd,
     scopeType: zaloAccountId ? 'channel' : 'org',
@@ -398,6 +423,9 @@ export async function getAiUsage(orgId: string) {
     usedTokens: entitlement.usedTokens,
     maxTokens: entitlement.maxTokens,
     remainingTokens: entitlement.remainingTokens,
+    usedPremiumTokens: entitlement.usedPremiumTokens,
+    premiumLimit: entitlement.premiumLimit,
+    remainingPremiumTokens: entitlement.remainingPremiumTokens,
     planName: entitlement.planName,
     periodStart: entitlement.periodStart,
     periodEnd: entitlement.periodEnd,
@@ -499,7 +527,10 @@ export async function generateAiOutput(input: {
 
   let model = platform.model;
   if (provider === 'openrouter') {
-    if (currentConfig.planName === 'Enterprise' && input.type === 'reply_draft') {
+    const isPremiumPlan = ['Business', 'Enterprise'].includes(currentConfig.planName);
+    const hasPremiumTokens = (currentConfig.remainingPremiumTokens ?? 0) > 0;
+
+    if (isPremiumPlan && hasPremiumTokens && input.type === 'reply_draft') {
       model = 'anthropic/claude-3.5-sonnet';
     } else {
       const modelKey = (input.type === 'reply_draft' && input.isAutoReply) ? 'auto_reply' : input.type;
@@ -664,7 +695,10 @@ export async function generateAiOutputStreaming(input: {
   let model = platform.model;
 
   if (provider === 'openrouter') {
-    if (currentConfig.planName === 'Enterprise' && input.type === 'reply_draft') {
+    const isPremiumPlan = ['Business', 'Enterprise'].includes(currentConfig.planName);
+    const hasPremiumTokens = (currentConfig.remainingPremiumTokens ?? 0) > 0;
+
+    if (isPremiumPlan && hasPremiumTokens && input.type === 'reply_draft') {
       model = 'anthropic/claude-3.5-sonnet';
     } else {
       model = OPENROUTER_HYBRID_MODELS[input.type] || model;
@@ -737,7 +771,7 @@ export async function generateAiOutputStreaming(input: {
 
   let fullText = '';
   await streamWithOpenaiCompat(
-    provider === 'openrouter' ? 'https://openrouter.ai/api/v1/chat/completions' : getProviderConfig(provider)?.baseUrl + '/chat/completions',
+    provider === 'openrouter' ? 'https://openrouter.ai/api/v1/chat/completions' : (getProviderConfig(provider)?.baseUrl || '') + '/chat/completions',
     apiKey,
     model,
     system,
@@ -798,6 +832,7 @@ export async function categorizeKnowledge(orgId: string, content: string) {
     outputTokens: usage.outputTokens,
     inputText: content,
     outputText: raw,
+    metadata: {},
   });
 
   try {

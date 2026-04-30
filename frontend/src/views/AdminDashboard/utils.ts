@@ -47,19 +47,22 @@ export const getPlanName = (org: Organization) => {
 
 export const getPlanColor = (name: string) => {
   if (name === 'Enterprise') return 'warning';
-  if (name === 'Pro') return 'primary';
+  if (name === 'Business') return 'primary';
+  if (name === 'Pro') return 'info';
   return 'secondary';
 };
 
 export const getPlanTint = (name: string) => {
   if (name === 'Enterprise') return 'warning-lighten-5';
-  if (name === 'Pro') return 'primary-lighten-5';
+  if (name === 'Business') return 'primary-lighten-5';
+  if (name === 'Pro') return 'info-lighten-5';
   return 'secondary-lighten-5';
 };
 
 export const getPlanDot = (name: string) => {
   if (name === 'Enterprise') return 'linear-gradient(135deg, #f59e0b, #f97316)';
-  if (name === 'Pro') return 'linear-gradient(135deg, #2563eb, #60a5fa)';
+  if (name === 'Business') return 'linear-gradient(135deg, #2563eb, #60a5fa)';
+  if (name === 'Pro') return 'linear-gradient(135deg, #0ea5e9, #38bdf8)';
   return 'linear-gradient(135deg, #64748b, #94a3b8)';
 };
 
