@@ -93,7 +93,11 @@ export function useChat() {
 
   async function fetchAiConfig() {
     try {
-      const res = await api.get('/ai/config');
+      const res = await api.get('/ai/config', {
+        params: {
+          zaloAccountId: selectedConv.value?.zaloAccount?.id || undefined,
+        },
+      });
       aiConfig.value = {
         provider: res.data.provider,
         model: res.data.model,
@@ -112,7 +116,10 @@ export function useChat() {
   }
 
   async function saveAiConfig(payload: { enabled: boolean }) {
-    const res = await api.put('/ai/config', payload);
+    const res = await api.put('/ai/config', {
+      ...payload,
+      zaloAccountId: selectedConv.value?.zaloAccount?.id || undefined,
+    });
     aiConfig.value = {
       provider: res.data.provider,
       model: res.data.model,

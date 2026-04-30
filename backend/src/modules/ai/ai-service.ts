@@ -25,6 +25,67 @@ const OPENROUTER_HYBRID_MODELS: Record<AiTaskType | 'auto_reply', string> = {
 
 type MessageContext = { senderType: string; senderName: string | null; content: string | null; sentAt: Date };
 type SentimentResult = { label: 'positive' | 'neutral' | 'negative'; confidence: number; reason: string };
+type AiConfigInput = {
+  enabled?: boolean;
+  instructions?: string | null;
+  languagePolicy?: string;
+  followUpEnabled?: boolean;
+  followUpInterval?: number;
+  followUpMaxMessages?: number;
+  followUpType?: string;
+  followUpManualContent?: string | null;
+  stopConditions?: Prisma.InputJsonValue;
+  autoResumeEnabled?: boolean;
+  autoResumeMinutes?: number;
+  aiWorkMode?: string;
+  aiResponseMode?: string;
+  aiWorkHours?: Prisma.InputJsonValue;
+  aiTimezone?: string;
+  autoExtractInfo?: boolean;
+  autoCreateLeads?: boolean;
+};
+
+const DEFAULT_AI_CONFIG: Required<AiConfigInput> = {
+  enabled: true,
+  instructions: null,
+  languagePolicy: 'auto',
+  followUpEnabled: false,
+  followUpInterval: 30,
+  followUpMaxMessages: 3,
+  followUpType: 'ai',
+  followUpManualContent: null,
+  stopConditions: [],
+  autoResumeEnabled: true,
+  autoResumeMinutes: 60,
+  aiWorkMode: 'always',
+  aiResponseMode: 'auto',
+  aiWorkHours: {},
+  aiTimezone: 'Asia/Ho_Chi_Minh',
+  autoExtractInfo: false,
+  autoCreateLeads: false,
+};
+
+const AI_CHANNEL_OVERRIDE_FIELDS = [
+  'enabled',
+  'instructions',
+  'languagePolicy',
+  'followUpEnabled',
+  'followUpInterval',
+  'followUpMaxMessages',
+  'followUpType',
+  'followUpManualContent',
+  'stopConditions',
+  'autoResumeEnabled',
+  'autoResumeMinutes',
+  'aiWorkMode',
+  'aiResponseMode',
+  'aiWorkHours',
+  'aiTimezone',
+  'autoExtractInfo',
+  'autoCreateLeads',
+] as const;
+
+type AiChannelOverrideField = typeof AI_CHANNEL_OVERRIDE_FIELDS[number];
 
 function detectLanguage(text: string): 'vi' | 'en' {
   if (/[ăâđêôơưáàảãạấầẩẫậắằẳẵặéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]/i.test(text)) return 'vi';
@@ -155,45 +216,95 @@ async function recordAiTokenUsage(input: {
   });
 }
 
-export async function getAiConfig(orgId: string) {
-  let aiConfig = await prisma.aiConfig.findUnique({ where: { orgId } });
-  const platform = getPlatformAiProvider({ requireKey: false });
-  const entitlement = await getAiEntitlement(orgId);
-  
-  if (!aiConfig) {
-    aiConfig = {
-      orgId,
-      provider: platform.provider,
-      model: platform.model,
-      maxDaily: entitlement.maxTokens,
-      enabled: true,
-      instructions: null,
-      languagePolicy: 'auto',
-      followUpEnabled: false,
-      followUpInterval: 30,
-      followUpMaxMessages: 3,
-      followUpType: 'ai',
-      followUpManualContent: null,
-      stopConditions: [],
-      autoResumeEnabled: true,
-      autoResumeMinutes: 60,
-      aiWorkMode: 'always',
-      aiWorkHours: {},
-      aiWorkTimezone: 'Asia/Ho_Chi_Minh',
-      autoExtractInfo: false,
-      autoCreateLeads: false,
-      aiResponseMode: 'auto',
-      totalAiReplies: 0,
-      totalDraftsAccepted: 0,
-      savedHumanHours: 0,
-    } as any;
-  }
+function buildDefaultAiConfig(orgId: string, platform: ReturnType<typeof getPlatformAiProvider>, entitlement: Awaited<ReturnType<typeof getAiEntitlement>>) {
+  return {
+    orgId,
+    provider: platform.provider,
+    model: platform.model,
+    maxDaily: entitlement.maxTokens,
+    totalAiReplies: 0,
+    totalDraftsAccepted: 0,
+    savedHumanHours: 0,
+    ...DEFAULT_AI_CONFIG,
+  };
+}
 
-  const finalConfig = aiConfig as any;
-  return { 
-    ...finalConfig, 
-    provider: finalConfig.provider || platform.provider,
-    model: finalConfig.model || platform.model,
+function sanitizeAiConfigInput(input: AiConfigInput) {
+  const normalized: Record<string, unknown> = {};
+
+  if (input.enabled !== undefined) normalized.enabled = Boolean(input.enabled);
+  if (input.instructions !== undefined) normalized.instructions = input.instructions ?? null;
+  if (input.languagePolicy !== undefined) normalized.languagePolicy = input.languagePolicy;
+  if (input.followUpEnabled !== undefined) normalized.followUpEnabled = Boolean(input.followUpEnabled);
+  if (input.followUpInterval !== undefined) normalized.followUpInterval = Number(input.followUpInterval);
+  if (input.followUpMaxMessages !== undefined) normalized.followUpMaxMessages = Number(input.followUpMaxMessages);
+  if (input.followUpType !== undefined) normalized.followUpType = input.followUpType;
+  if (input.followUpManualContent !== undefined) normalized.followUpManualContent = input.followUpManualContent ?? null;
+  if (input.stopConditions !== undefined) normalized.stopConditions = input.stopConditions;
+  if (input.autoResumeEnabled !== undefined) normalized.autoResumeEnabled = Boolean(input.autoResumeEnabled);
+  if (input.autoResumeMinutes !== undefined) normalized.autoResumeMinutes = Number(input.autoResumeMinutes);
+  if (input.aiWorkMode !== undefined) normalized.aiWorkMode = input.aiWorkMode;
+  if (input.aiResponseMode !== undefined) normalized.aiResponseMode = input.aiResponseMode;
+  if (input.aiWorkHours !== undefined) normalized.aiWorkHours = input.aiWorkHours;
+  if (input.aiTimezone !== undefined) normalized.aiTimezone = input.aiTimezone;
+  if (input.autoExtractInfo !== undefined) normalized.autoExtractInfo = Boolean(input.autoExtractInfo);
+  if (input.autoCreateLeads !== undefined) normalized.autoCreateLeads = Boolean(input.autoCreateLeads);
+
+  return normalized;
+}
+
+function pickChannelOverrideData(input: Record<string, unknown>) {
+  return AI_CHANNEL_OVERRIDE_FIELDS.reduce<Record<string, unknown>>((acc, field) => {
+    if (field in input) acc[field] = input[field];
+    return acc;
+  }, {});
+}
+
+async function assertScopedAccount(orgId: string, zaloAccountId: string) {
+  const account = await prisma.zaloAccount.findFirst({
+    where: { id: zaloAccountId, orgId },
+    select: { id: true, displayName: true, channelType: true },
+  });
+  if (!account) {
+    const error = new Error('Connected account not found');
+    (error as any).statusCode = 404;
+    throw error;
+  }
+  return account;
+}
+
+async function resolveConversationAccountId(orgId: string, conversationId: string) {
+  const conversation = await prisma.conversation.findFirst({
+    where: { id: conversationId, orgId },
+    select: { zaloAccountId: true },
+  });
+  if (!conversation) throw new Error('Conversation not found');
+  return conversation.zaloAccountId;
+}
+
+export async function getAiConfig(orgId: string, zaloAccountId?: string | null) {
+  const [orgConfig, platform, entitlement, channelConfig, scopeAccount] = await Promise.all([
+    prisma.aiConfig.findUnique({ where: { orgId } }),
+    Promise.resolve(getPlatformAiProvider({ requireKey: false })),
+    getAiEntitlement(orgId),
+    zaloAccountId
+      ? prisma.aiChannelConfig.findUnique({
+          where: { zaloAccountId },
+        })
+      : Promise.resolve(null),
+    zaloAccountId ? assertScopedAccount(orgId, zaloAccountId) : Promise.resolve(null),
+  ]);
+
+  const baseConfig = orgConfig
+    ? ({ ...buildDefaultAiConfig(orgId, platform, entitlement), ...orgConfig } as any)
+    : buildDefaultAiConfig(orgId, platform, entitlement);
+  const overrideData = channelConfig ? pickChannelOverrideData(channelConfig as unknown as Record<string, unknown>) : {};
+  const finalConfig = { ...baseConfig, ...overrideData } as any;
+
+  return {
+    ...finalConfig,
+    provider: baseConfig.provider || platform.provider,
+    model: baseConfig.model || platform.model,
     maxDaily: entitlement.maxTokens,
     managed: true,
     billingMode: 'platform_managed',
@@ -205,17 +316,41 @@ export async function getAiConfig(orgId: string) {
     remainingTokens: entitlement.remainingTokens,
     periodStart: entitlement.periodStart,
     periodEnd: entitlement.periodEnd,
+    scopeType: zaloAccountId ? 'channel' : 'org',
+    scopeAccountId: zaloAccountId ?? null,
+    scopeAccountName: scopeAccount?.displayName || null,
+    scopeChannelType: scopeAccount?.channelType || null,
+    hasChannelOverride: Boolean(channelConfig),
+    usesDefaultConfig: Boolean(zaloAccountId && !channelConfig),
   };
 }
 
-export async function updateAiConfig(orgId: string, input: { enabled?: boolean; instructions?: string; languagePolicy?: string }) {
+export async function updateAiConfig(orgId: string, input: AiConfigInput, zaloAccountId?: string | null) {
   try {
-    const enabledValue = input.enabled !== undefined ? Boolean(input.enabled) : undefined;
+    const normalizedInput = sanitizeAiConfigInput(input);
+
+    if (zaloAccountId) {
+      await assertScopedAccount(orgId, zaloAccountId);
+      const overrideData = pickChannelOverrideData(normalizedInput);
+
+      await prisma.aiChannelConfig.upsert({
+        where: { zaloAccountId },
+        update: overrideData,
+        create: {
+          orgId,
+          zaloAccountId,
+          ...DEFAULT_AI_CONFIG,
+          ...overrideData,
+        },
+      });
+
+      return await getAiConfig(orgId, zaloAccountId);
+    }
+
     const platform = getPlatformAiProvider({ requireKey: false });
     const entitlement = await getAiEntitlement(orgId);
-
     const existing = await prisma.aiConfig.findUnique({ where: { orgId } });
-    
+
     if (existing) {
       await prisma.aiConfig.update({
         where: { orgId },
@@ -223,23 +358,8 @@ export async function updateAiConfig(orgId: string, input: { enabled?: boolean; 
           provider: platform.provider,
           model: platform.model,
           maxDaily: entitlement.maxTokens,
-          instructions: input.instructions !== undefined ? input.instructions : undefined,
-          languagePolicy: input.languagePolicy !== undefined ? input.languagePolicy : undefined,
-          followUpEnabled: (input as any).followUpEnabled !== undefined ? Boolean((input as any).followUpEnabled) : undefined,
-          followUpInterval: (input as any).followUpInterval !== undefined ? Number((input as any).followUpInterval) : undefined,
-          followUpMaxMessages: (input as any).followUpMaxMessages !== undefined ? Number((input as any).followUpMaxMessages) : undefined,
-          followUpType: (input as any).followUpType !== undefined ? (input as any).followUpType : undefined,
-          followUpManualContent: (input as any).followUpManualContent !== undefined ? (input as any).followUpManualContent : undefined,
-          stopConditions: (input as any).stopConditions !== undefined ? (input as any).stopConditions : undefined,
-          autoResumeEnabled: (input as any).autoResumeEnabled !== undefined ? Boolean((input as any).autoResumeEnabled) : undefined,
-          autoResumeMinutes: (input as any).autoResumeMinutes !== undefined ? Number((input as any).autoResumeMinutes) : undefined,
-          aiWorkMode: (input as any).aiWorkMode !== undefined ? (input as any).aiWorkMode : undefined,
-          aiWorkHours: (input as any).aiWorkHours !== undefined ? (input as any).aiWorkHours : undefined,
-          aiTimezone: (input as any).aiTimezone !== undefined ? (input as any).aiTimezone : undefined,
-          autoExtractInfo: (input as any).autoExtractInfo !== undefined ? Boolean((input as any).autoExtractInfo) : undefined,
-          autoCreateLeads: (input as any).autoCreateLeads !== undefined ? Boolean((input as any).autoCreateLeads) : undefined,
-          aiResponseMode: (input as any).aiResponseMode !== undefined ? (input as any).aiResponseMode : undefined,
-        }
+          ...normalizedInput,
+        },
       });
     } else {
       await prisma.aiConfig.create({
@@ -248,24 +368,9 @@ export async function updateAiConfig(orgId: string, input: { enabled?: boolean; 
           provider: platform.provider,
           model: platform.model,
           maxDaily: entitlement.maxTokens,
-          enabled: enabledValue ?? true,
-          instructions: input.instructions ?? null,
-          languagePolicy: input.languagePolicy ?? 'auto',
-          followUpEnabled: (input as any).followUpEnabled ?? false,
-          followUpInterval: (input as any).followUpInterval ?? 30,
-          followUpMaxMessages: (input as any).followUpMaxMessages ?? 3,
-          followUpType: (input as any).followUpType ?? 'ai',
-          followUpManualContent: (input as any).followUpManualContent ?? null,
-          stopConditions: (input as any).stopConditions ?? [],
-          autoResumeEnabled: (input as any).autoResumeEnabled ?? true,
-          autoResumeMinutes: (input as any).autoResumeMinutes ?? 60,
-          aiWorkMode: (input as any).aiWorkMode ?? 'always',
-          aiWorkHours: (input as any).aiWorkHours ?? {},
-          aiTimezone: (input as any).aiTimezone ?? 'Asia/Ho_Chi_Minh',
-          autoExtractInfo: (input as any).autoExtractInfo ?? false,
-          autoCreateLeads: (input as any).autoCreateLeads ?? false,
-          aiResponseMode: (input as any).aiResponseMode ?? 'auto',
-        }
+          ...DEFAULT_AI_CONFIG,
+          ...normalizedInput,
+        },
       });
     }
 
@@ -273,6 +378,14 @@ export async function updateAiConfig(orgId: string, input: { enabled?: boolean; 
   } catch (err: any) {
     throw new Error(`Database error: ${err.message}`);
   }
+}
+
+export async function resetAiChannelConfig(orgId: string, zaloAccountId: string) {
+  await assertScopedAccount(orgId, zaloAccountId);
+  await prisma.aiChannelConfig.deleteMany({
+    where: { orgId, zaloAccountId },
+  });
+  return getAiConfig(orgId, zaloAccountId);
 }
 
 export async function getAiUsage(orgId: string) {
@@ -374,10 +487,8 @@ export async function generateAiOutput(input: {
   isAutoReply?: boolean;
   history?: MessageContext[];
 }) {
-  const [currentConfig, conversation] = await Promise.all([
-    getAiConfig(input.orgId),
-    loadConversation(input.conversationId, input.orgId),
-  ]);
+  const conversation = await loadConversation(input.conversationId, input.orgId);
+  const currentConfig = await getAiConfig(input.orgId, conversation.zaloAccountId);
 
   if (!currentConfig.enabled) throw new Error('AI is disabled for this organization');
 
@@ -541,10 +652,8 @@ export async function generateAiOutputStreaming(input: {
   history?: MessageContext[];
   onChunk: (text: string) => void;
 }) {
-  const [currentConfig, conversation] = await Promise.all([
-    getAiConfig(input.orgId),
-    loadConversation(input.conversationId, input.orgId),
-  ]);
+  const conversation = await loadConversation(input.conversationId, input.orgId);
+  const currentConfig = await getAiConfig(input.orgId, conversation.zaloAccountId);
 
   if (!currentConfig.enabled) throw new Error('AI is disabled');
   await assertAiTokenAvailable(input.orgId);
@@ -803,7 +912,8 @@ export async function generateRawOutput(orgId: string, system: string, history: 
  * Check if the current conversation should be paused based on stop conditions
  */
 export async function checkStopConditions(orgId: string, conversationId: string, messageContent: string) {
-  const config = await getAiConfig(orgId);
+  const zaloAccountId = await resolveConversationAccountId(orgId, conversationId);
+  const config = await getAiConfig(orgId, zaloAccountId);
   const stopConditions = (config.stopConditions as string[]) || [];
 
   if (!config.enabled || stopConditions.length === 0) return { shouldPause: false };
@@ -846,8 +956,8 @@ MESSAGE TO ANALYZE:
 /**
  * Check if current time is within AI working hours
  */
-export async function isAiInWorkHours(orgId: string): Promise<boolean> {
-  const config = await getAiConfig(orgId);
+export async function isAiInWorkHours(orgId: string, zaloAccountId?: string | null): Promise<boolean> {
+  const config = await getAiConfig(orgId, zaloAccountId);
   if (config.aiWorkMode === 'always') return true;
   if (config.aiWorkMode === 'manual') return false;
 
@@ -870,7 +980,8 @@ export async function isAiInWorkHours(orgId: string): Promise<boolean> {
  * Automatically extract contact info from message
  */
 export async function extractLeadInfo(orgId: string, conversationId: string, messageContent: string) {
-  const config = await getAiConfig(orgId);
+  const zaloAccountId = await resolveConversationAccountId(orgId, conversationId);
+  const config = await getAiConfig(orgId, zaloAccountId);
   if (!config.autoExtractInfo) return null;
 
   const systemPrompt = `You are a data extraction expert. Your goal is to find customer contact information in a message.
@@ -961,6 +1072,7 @@ export const AiService = {
   generateAiOutputStreaming,
   getAiConfig,
   updateAiConfig,
+  resetAiChannelConfig,
   generateRawOutput,
   checkStopConditions,
   isAiInWorkHours,

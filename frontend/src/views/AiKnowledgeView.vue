@@ -28,6 +28,58 @@
       </v-btn>
     </div>
 
+    <v-card class="scope-toolbar mb-4" elevation="0" border>
+      <div class="d-flex flex-wrap align-center ga-3">
+        <v-select
+          v-model="configScopeId"
+          :items="configScopeOptions"
+          label="Phạm vi cấu hình AI"
+          variant="outlined"
+          density="comfortable"
+          rounded="lg"
+          hide-details
+          class="scope-toolbar__select"
+          prepend-inner-icon="mdi-sitemap-outline"
+        />
+        <v-chip
+          size="small"
+          :color="configScopeMeta.usesDefaultConfig ? 'warning' : configScopeId ? 'success' : 'primary'"
+          variant="tonal"
+        >
+          {{
+            configScopeId
+              ? (configScopeMeta.usesDefaultConfig ? 'Đang kế thừa mặc định' : 'Đang dùng override riêng')
+              : 'Đây là cấu hình mặc định'
+          }}
+        </v-chip>
+        <v-chip
+          v-if="configScopeMeta.scopeType === 'channel'"
+          size="small"
+          color="secondary"
+          variant="outlined"
+        >
+          {{ configScopeMeta.scopeChannelType === 'facebook' ? 'Fanpage Facebook' : 'Kênh Zalo' }}
+        </v-chip>
+        <v-spacer />
+        <v-btn
+          v-if="configScopeId"
+          variant="text"
+          color="warning"
+          prepend-icon="mdi-backup-restore"
+          :disabled="!configScopeMeta.hasChannelOverride"
+          :loading="resettingScope"
+          @click="resetConfigScope"
+        >
+          Quay về mặc định
+        </v-btn>
+      </div>
+      <div class="scope-toolbar__hint text-body-2 text-medium-emphasis mt-3">
+        {{ configScopeId
+          ? `Bạn đang chỉnh AI cho ${currentConfigScopeName}. Persona, auto-reply, follow-up và stop-condition sẽ chỉ áp dụng cho kênh này.`
+          : 'Đây là lớp mặc định toàn workspace. Mọi kênh chưa có override riêng sẽ kế thừa cấu hình này.' }}
+      </div>
+    </v-card>
+
     <v-row dense class="mb-4">
       <v-col v-for="card in summaryCards" :key="card.key" cols="12" md="4">
         <v-card class="summary-card" elevation="0" border>
@@ -1100,7 +1152,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { api } from '@/api';
 import { useZaloAccounts } from '@/composables/use-zalo-accounts';
 
@@ -1118,6 +1170,14 @@ type KnowledgeItem = {
 };
 
 type AccountOption = { title: string; value: string | null };
+type ConfigScopeMeta = {
+  hasChannelOverride: boolean;
+  usesDefaultConfig: boolean;
+  scopeType: 'org' | 'channel';
+  scopeAccountId: string | null;
+  scopeAccountName: string | null;
+  scopeChannelType: 'zalo' | 'facebook' | null;
+};
 
 const { accounts, fetchAccounts } = useZaloAccounts();
 
@@ -1146,6 +1206,15 @@ const aiConfig = ref<any>({
   autoCreateLeads: false,
   aiResponseMode: 'auto',
 });
+const configScopeId = ref<string | null>(null);
+const configScopeMeta = ref<ConfigScopeMeta>({
+  hasChannelOverride: false,
+  usesDefaultConfig: false,
+  scopeType: 'org',
+  scopeAccountId: null,
+  scopeAccountName: null,
+  scopeChannelType: null,
+});
 
 const loading = ref(false);
 const aiSaving = ref(false);
@@ -1153,6 +1222,7 @@ const saving = ref(false);
 const deleting = ref(false);
 const testing = ref(false);
 const savingMagic = ref(false);
+const resettingScope = ref(false);
 
 const search = ref('');
 const filterCategory = ref('Tất cả');
@@ -1354,6 +1424,14 @@ const accountOptions = computed<AccountOption[]>(() => {
   return [{ title: 'Tất cả tài khoản', value: null }, ...scoped];
 });
 
+const configScopeOptions = computed<AccountOption[]>(() => {
+  const scoped = accounts.value.map((account) => ({
+    title: account.displayName || account.id,
+    value: account.id,
+  }));
+  return [{ title: 'Mặc định toàn workspace', value: null }, ...scoped];
+});
+
 const categories = computed(() => {
   const unique = new Set(
     items.value
@@ -1385,6 +1463,10 @@ const currentMagicAccountName = computed(() => {
 
 const currentSimAccountName = computed(() => {
   return accountOptions.value.find((option) => option.value === simAccountId.value)?.title || 'Tất cả tài khoản';
+});
+
+const currentConfigScopeName = computed(() => {
+  return configScopeOptions.value.find((option) => option.value === configScopeId.value)?.title || 'Mặc định toàn workspace';
 });
 
 const operationsModeLabel = computed(() => {
@@ -1505,15 +1587,36 @@ async function ensureKnownAccount(accountId: string | null) {
   return accountOptions.value.some((option) => option.value === accountId) ? accountId : null;
 }
 
+function applyLoadedConfig(config: any) {
+  aiConfig.value = config;
+  configScopeMeta.value = {
+    hasChannelOverride: Boolean(config?.hasChannelOverride),
+    usesDefaultConfig: Boolean(config?.usesDefaultConfig),
+    scopeType: config?.scopeType === 'channel' ? 'channel' : 'org',
+    scopeAccountId: config?.scopeAccountId ?? null,
+    scopeAccountName: config?.scopeAccountName ?? null,
+    scopeChannelType: config?.scopeChannelType ?? null,
+  };
+}
+
+async function loadKnowledge() {
+  const knowledgeRes = await api.get('/ai/knowledge');
+  items.value = knowledgeRes.data;
+}
+
+async function loadAiConfig() {
+  const configRes = await api.get('/ai/config', {
+    params: {
+      zaloAccountId: configScopeId.value || undefined,
+    },
+  });
+  applyLoadedConfig(configRes.data);
+}
+
 async function loadData() {
   loading.value = true;
   try {
-    const [knowledgeRes, configRes] = await Promise.all([
-      api.get('/ai/knowledge'),
-      api.get('/ai/config'),
-    ]);
-    items.value = knowledgeRes.data;
-    aiConfig.value = configRes.data;
+    await Promise.all([loadKnowledge(), loadAiConfig()]);
   } catch (err) {
     console.error('Failed to load data:', err);
   } finally {
@@ -1527,9 +1630,10 @@ async function saveAiConfig() {
     const configToSave = {
       ...aiConfig.value,
       stopConditions: stopConditions.value,
+      zaloAccountId: configScopeId.value,
     };
     const res = await api.put('/ai/config', configToSave);
-    aiConfig.value = res.data;
+    applyLoadedConfig(res.data);
     toast.value = {
       show: true,
       text: 'Đã lưu cấu hình AI',
@@ -1545,6 +1649,30 @@ async function saveAiConfig() {
     };
   } finally {
     aiSaving.value = false;
+  }
+}
+
+async function resetConfigScope() {
+  if (!configScopeId.value || resettingScope.value) return;
+  resettingScope.value = true;
+  try {
+    const res = await api.delete(`/ai/config/channel/${configScopeId.value}`);
+    applyLoadedConfig(res.data);
+    toast.value = {
+      show: true,
+      text: `Đã đưa ${currentConfigScopeName.value} về cấu hình mặc định`,
+      color: 'success',
+      icon: 'mdi-backup-restore',
+    };
+  } catch (err: any) {
+    toast.value = {
+      show: true,
+      text: getApiErrorMessage(err, 'Không thể đưa cấu hình kênh về mặc định'),
+      color: 'error',
+      icon: 'mdi-alert',
+    };
+  } finally {
+    resettingScope.value = false;
   }
 }
 
@@ -1822,6 +1950,11 @@ function getCategoryIcon(category: string) {
 onMounted(async () => {
   await Promise.all([fetchAccounts(), loadData()]);
 });
+
+watch(configScopeId, async () => {
+  if (loading.value) return;
+  await loadAiConfig();
+});
 </script>
 
 <style scoped>
@@ -1850,6 +1983,22 @@ onMounted(async () => {
 .summary-card {
   padding: 20px;
   height: 100%;
+}
+
+.scope-toolbar {
+  padding: 18px 20px;
+  background: var(--color-surface-elevated) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 18px !important;
+}
+
+.scope-toolbar__select {
+  min-width: 320px;
+  max-width: 480px;
+}
+
+.scope-toolbar__hint {
+  max-width: 900px;
 }
 
 .studio-shell__header {

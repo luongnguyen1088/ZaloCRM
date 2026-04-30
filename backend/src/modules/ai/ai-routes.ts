@@ -2,7 +2,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { authMiddleware } from '../auth/auth-middleware.js';
 import { requireRole } from '../auth/role-middleware.js';
 import { requireZaloAccess } from '../zalo/zalo-access-middleware.js';
-import { getAiConfig, getAiUsage, getAiUsageHistory, updateAiConfig, generateAiOutput, generateAiOutputStreaming, getAiAnalytics } from './ai-service.js';
+import { getAiConfig, getAiUsage, getAiUsageHistory, updateAiConfig, generateAiOutput, generateAiOutputStreaming, getAiAnalytics, resetAiChannelConfig } from './ai-service.js';
 import { getAvailableProviders } from './provider-registry.js';
 import { logger } from '../../shared/utils/logger.js';
 import { prisma } from '../../shared/database/prisma-client.js';
@@ -44,6 +44,33 @@ function sendHandledError(reply: FastifyReply, err: unknown, fallback: string) {
   return reply.status(handled.status).send({ error: safeMessage });
 }
 
+async function assertScopedAiConfigAccess(request: FastifyRequest, reply: FastifyReply, zaloAccountId?: string | null) {
+  if (!zaloAccountId) return true;
+
+  const user = request.user!;
+  const account = await prisma.zaloAccount.findFirst({
+    where: { id: zaloAccountId, orgId: user.orgId },
+    select: { id: true },
+  });
+
+  if (!account) {
+    reply.status(404).send({ error: 'Connected account not found' });
+    return false;
+  }
+
+  if (['owner', 'admin'].includes(user.role)) return true;
+
+  const access = await prisma.zaloAccountAccess.findFirst({
+    where: { zaloAccountId, userId: user.id },
+    select: { id: true },
+  });
+  if (!access) {
+    reply.status(403).send({ error: 'Khong co quyen truy cap tai khoan nay' });
+    return false;
+  }
+  return true;
+}
+
 export async function aiRoutes(app: FastifyInstance) {
   app.addHook('preHandler', authMiddleware);
 
@@ -54,20 +81,39 @@ export async function aiRoutes(app: FastifyInstance) {
 
   app.get('/api/v1/ai/config', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      return await getAiConfig(request.user!.orgId);
+      const { zaloAccountId } = request.query as { zaloAccountId?: string };
+      const allowed = await assertScopedAiConfigAccess(request, reply, zaloAccountId);
+      if (!allowed) return;
+      return await getAiConfig(request.user!.orgId, zaloAccountId);
     } catch (err) {
       logger.error('[ai] Get config error:', err);
-      return reply.status(500).send({ error: 'Failed to fetch AI config' });
+      return sendHandledError(reply, err, 'Failed to fetch AI config');
     }
   });
 
   app.put('/api/v1/ai/config', { preHandler: requireRole('owner', 'admin') }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const body = request.body as any;
-      return await updateAiConfig(request.user!.orgId, body);
+      const scopedAccountId = body?.zaloAccountId || (request.query as { zaloAccountId?: string }).zaloAccountId;
+      const allowed = await assertScopedAiConfigAccess(request, reply, scopedAccountId);
+      if (!allowed) return;
+      if (body && 'zaloAccountId' in body) delete body.zaloAccountId;
+      return await updateAiConfig(request.user!.orgId, body, scopedAccountId);
     } catch (err) {
       logger.error('[ai] Update config error:', err);
-      return reply.status(500).send({ error: 'Failed to update AI config' });
+      return sendHandledError(reply, err, 'Failed to update AI config');
+    }
+  });
+
+  app.delete('/api/v1/ai/config/channel/:zaloAccountId', { preHandler: requireRole('owner', 'admin') }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { zaloAccountId } = request.params as { zaloAccountId: string };
+      const allowed = await assertScopedAiConfigAccess(request, reply, zaloAccountId);
+      if (!allowed) return;
+      return await resetAiChannelConfig(request.user!.orgId, zaloAccountId);
+    } catch (err) {
+      logger.error('[ai] Reset channel config error:', err);
+      return sendHandledError(reply, err, 'Failed to reset channel AI config');
     }
   });
 

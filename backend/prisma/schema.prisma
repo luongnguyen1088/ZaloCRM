@@ -30,6 +30,7 @@ model Organization {
   automationRules AutomationRule[]
   messageTemplates MessageTemplate[]
   aiConfig      AiConfig?
+  aiChannelConfigs AiChannelConfig[]
   aiSuggestions AiSuggestion[]
   aiTokenUsages AiTokenUsage[]
   aiKnowledge   AiKnowledge[]
@@ -164,6 +165,7 @@ model ZaloAccount {
   conversations Conversation[]
   dailyStats    DailyMessageStat[]
   aiKnowledge   AiKnowledge[]
+  aiChannelConfig AiChannelConfig?
 
   @@schema("Claro")
   @@map("zalo_accounts")
@@ -507,6 +509,38 @@ model AiConfig {
 
   @@schema("Claro")
   @@map("ai_configs")
+}
+
+model AiChannelConfig {
+  id             String   @id @default(uuid())
+  orgId          String   @map("org_id")
+  zaloAccountId  String   @unique @map("zalo_account_id")
+  enabled        Boolean  @default(true)
+  instructions   String?  @db.Text
+  languagePolicy String   @default("auto") @map("language_policy")
+  followUpEnabled       Boolean @default(false) @map("follow_up_enabled")
+  followUpInterval      Int     @default(30)    @map("follow_up_interval")
+  followUpMaxMessages   Int     @default(3)     @map("follow_up_max_messages")
+  followUpType          String  @default("ai")  @map("follow_up_type")
+  followUpManualContent String? @db.Text        @map("follow_up_manual_content")
+  stopConditions        Json    @default("[]")  @map("stop_conditions")
+  autoResumeEnabled     Boolean @default(true)  @map("auto_resume_enabled")
+  autoResumeMinutes     Int     @default(60)    @map("auto_resume_minutes")
+  aiWorkMode            String  @default("always") @map("ai_work_mode")
+  aiResponseMode        String  @default("auto")   @map("ai_response_mode")
+  aiWorkHours           Json    @default("{}")     @map("ai_work_hours")
+  aiTimezone            String  @default("Asia/Ho_Chi_Minh") @map("ai_timezone")
+  autoExtractInfo       Boolean @default(false)   @map("auto_extract_info")
+  autoCreateLeads       Boolean @default(false)   @map("auto_create_leads")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  zaloAccount ZaloAccount  @relation(fields: [zaloAccountId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@schema("Claro")
+  @@map("ai_channel_configs")
 }
 
 model AiSuggestion {

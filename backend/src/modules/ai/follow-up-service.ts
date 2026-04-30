@@ -33,71 +33,46 @@ export class FollowUpService {
     try {
       const now = new Date();
 
-      // 1. Find all active AI configs with follow-up enabled
-      const activeConfigs = await prisma.aiConfig.findMany({
+      const conversations = await prisma.conversation.findMany({
         where: {
-          enabled: true,
-          followUpEnabled: true
-        }
+          OR: [
+            { isReplied: true, aiPaused: false },
+            { aiPaused: true },
+          ],
+        },
+        include: {
+          zaloAccount: true,
+          messages: {
+            orderBy: { sentAt: 'desc' },
+            take: 10,
+          },
+        },
       });
 
-      for (const config of activeConfigs) {
-        // 2. Find conversations for this org that need follow-up
-        const conversations = await prisma.conversation.findMany({
-          where: {
-            orgId: config.orgId,
-            isReplied: true, // Last message was from shop
-            aiPaused: false, // Skip paused conversations
-            followUpCount: { lt: config.followUpMaxMessages },
-            lastMessageAt: {
-              lt: new Date(now.getTime() - config.followUpInterval * 60 * 1000)
+      for (const conv of conversations) {
+        const config = await AiService.getAiConfig(conv.orgId, conv.zaloAccountId);
+
+        if (conv.aiPaused) {
+          if (!config.autoResumeEnabled || !conv.aiPausedAt) continue;
+          if (conv.aiPausedAt >= new Date(now.getTime() - config.autoResumeMinutes * 60 * 1000)) continue;
+
+          logger.info(`Auto-resuming AI for conversation ${conv.id} after ${config.autoResumeMinutes} minutes`);
+          await prisma.conversation.update({
+            where: { id: conv.id },
+            data: {
+              aiPaused: false,
+              aiPauseReason: null,
             },
-            // Ensure we don't follow up too quickly after the last follow up
-            OR: [
-              { lastFollowUpAt: null },
-              {
-                lastFollowUpAt: {
-                  lt: new Date(now.getTime() - config.followUpInterval * 60 * 1000)
-                }
-              }
-            ]
-          },
-          include: {
-            zaloAccount: true,
-            messages: {
-              orderBy: { sentAt: 'desc' },
-              take: 10
-            }
-          }
-        });
-
-        for (const conv of conversations) {
-          await this.processFollowUp(conv, config);
-        }
-
-        // 3. Auto-resume paused conversations if enabled
-        if (config.autoResumeEnabled) {
-          const pausedConvs = await prisma.conversation.findMany({
-            where: {
-              orgId: config.orgId,
-              aiPaused: true,
-              aiPausedAt: {
-                lt: new Date(now.getTime() - config.autoResumeMinutes * 60 * 1000)
-              }
-            }
           });
-
-          for (const conv of pausedConvs) {
-            logger.info(`Auto-resuming AI for conversation ${conv.id} after ${config.autoResumeMinutes} minutes`);
-            await prisma.conversation.update({
-              where: { id: conv.id },
-              data: {
-                aiPaused: false,
-                aiPauseReason: null
-              }
-            });
-          }
+          continue;
         }
+
+        if (!config.enabled || !config.followUpEnabled) continue;
+        if (conv.followUpCount >= config.followUpMaxMessages) continue;
+        if (!conv.lastMessageAt || conv.lastMessageAt >= new Date(now.getTime() - config.followUpInterval * 60 * 1000)) continue;
+        if (conv.lastFollowUpAt && conv.lastFollowUpAt >= new Date(now.getTime() - config.followUpInterval * 60 * 1000)) continue;
+
+        await this.processFollowUp(conv, config);
       }
     } catch (error) {
       logger.error('Error in checkFollowUps:', error);
