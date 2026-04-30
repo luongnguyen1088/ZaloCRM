@@ -200,16 +200,7 @@
 
         <!-- BILLING TAB -->
         <v-window-item value="billing">
-          <div class="pa-8 text-center">
-            <v-icon size="64" color="primary" class="mb-4">mdi-crown-outline</v-icon>
-            <h3 class="text-h5 font-weight-bold mb-2">Quản lý Gói cước & Thanh toán</h3>
-            <p class="text-body-1 text-medium-emphasis mb-8">
-              Xem chi tiết hạn mức, lịch sử hóa đơn và nâng cấp tính năng cho tổ chức của bạn.
-            </p>
-            <v-btn color="primary" size="large" rounded="xl" to="/pricing" class="px-10 font-weight-bold">
-              Đến trang Gói cước
-            </v-btn>
-          </div>
+          <PlanSummary />
         </v-window-item>
       </v-window>
     </v-card>
@@ -355,6 +346,7 @@ import { useAuthStore } from '@/stores/auth';
 import TeamManagement from '@/components/settings/TeamManagement.vue';
 import OrgSettings from '@/components/settings/OrgSettings.vue';
 import MyProfile from '@/components/settings/MyProfile.vue';
+import PlanSummary from '@/components/settings/PlanSummary.vue';
 
 const { users, loading, error, fetchUsers, updateUser, resetPassword, deleteUser } = useUsers();
 const { invitations, loading: invitingLoading, fetchInvitations, createInvitation } = useInvitations();
