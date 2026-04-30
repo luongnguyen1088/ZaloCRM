@@ -14,25 +14,38 @@
 
     <v-card class="glass-container overflow-visible">
       <v-tabs v-model="tab" color="primary" class="settings-tabs px-4 pt-2">
+        <v-tab value="profile" class="text-none pill-tab">
+          <v-icon start>mdi-account-circle-outline</v-icon>
+          Tài khoản
+        </v-tab>
         <v-tab value="users" class="text-none pill-tab">
           <v-icon start>mdi-account-group-outline</v-icon>
-          Nhân viên
-        </v-tab>
-        <v-tab value="teams" class="text-none pill-tab">
-          <v-icon start>mdi-office-building-cog-outline</v-icon>
-          Đội nhóm
+          Nhân sự
         </v-tab>
         <v-tab value="org" class="text-none pill-tab">
           <v-icon start>mdi-shield-check-outline</v-icon>
           Tổ chức
+        </v-tab>
+        <v-tab value="billing" class="text-none pill-tab">
+          <v-icon start>mdi-crown-outline</v-icon>
+          Gói cước
         </v-tab>
       </v-tabs>
 
       <v-divider />
 
       <v-window v-model="tab" class="pa-6">
+        <!-- PROFILE TAB -->
+        <v-window-item value="profile">
+          <MyProfile />
+        </v-window-item>
+
         <!-- USERS TAB -->
         <v-window-item value="users">
+          <div class="mb-8">
+            <TeamManagement />
+          </div>
+          <v-divider class="my-8" />
           <!-- Users List -->
           <div class="d-flex align-center gap-4 mb-6">
             <h3 class="text-subtitle-1 font-weight-bold">Danh sách nhân viên</h3>
@@ -184,6 +197,20 @@
         <v-window-item value="org">
           <OrgSettings />
         </v-window-item>
+
+        <!-- BILLING TAB -->
+        <v-window-item value="billing">
+          <div class="pa-8 text-center">
+            <v-icon size="64" color="primary" class="mb-4">mdi-crown-outline</v-icon>
+            <h3 class="text-h5 font-weight-bold mb-2">Quản lý Gói cước & Thanh toán</h3>
+            <p class="text-body-1 text-medium-emphasis mb-8">
+              Xem chi tiết hạn mức, lịch sử hóa đơn và nâng cấp tính năng cho tổ chức của bạn.
+            </p>
+            <v-btn color="primary" size="large" rounded="xl" to="/pricing" class="px-10 font-weight-bold">
+              Đến trang Gói cước
+            </v-btn>
+          </div>
+        </v-window-item>
       </v-window>
     </v-card>
 
@@ -327,12 +354,13 @@ import { useInvitations } from '@/composables/use-invitations';
 import { useAuthStore } from '@/stores/auth';
 import TeamManagement from '@/components/settings/TeamManagement.vue';
 import OrgSettings from '@/components/settings/OrgSettings.vue';
+import MyProfile from '@/components/settings/MyProfile.vue';
 
 const { users, loading, error, fetchUsers, updateUser, resetPassword, deleteUser } = useUsers();
 const { invitations, loading: invitingLoading, fetchInvitations, createInvitation } = useInvitations();
 const authStore = useAuthStore();
 
-const tab = ref('users');
+const tab = ref('profile');
 const search = ref('');
 const showInvite = ref(false);
 const showEdit = ref(false);

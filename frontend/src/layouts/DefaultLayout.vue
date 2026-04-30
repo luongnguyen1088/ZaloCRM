@@ -110,16 +110,22 @@
 
     <v-navigation-drawer v-model="drawer" :rail="rail" permanent @click="rail = false" color="background" class="border-right">
       <v-list density="compact" nav class="mt-2 sidebar-list">
-        <v-list-item
-          v-for="item in computedMenuItems"
-          :key="item.path"
-          :to="item.path"
-          :prepend-icon="item.icon"
-          :title="item.title"
-          :value="item.path"
-          rounded="xl"
-          class="mb-1 mx-2"
-        />
+        <template v-for="group in computedMenuGroups" :key="group.header">
+          <div v-if="!rail" class="px-4 py-2 text-overline text-placeholder font-weight-bold" style="font-size: 0.65rem; letter-spacing: 1.5px;">
+            {{ group.header }}
+          </div>
+          <v-list-item
+            v-for="item in group.items"
+            :key="item.path"
+            :to="item.path"
+            :prepend-icon="item.icon"
+            :title="item.title"
+            :value="item.path"
+            rounded="xl"
+            class="mb-1 mx-2"
+          />
+          <v-divider v-if="!rail" class="my-2 mx-4 opacity-10" />
+        </template>
       </v-list>
 
       <template #append>
@@ -182,30 +188,54 @@ onMounted(() => {
   theme.global.name.value = isDark.value ? 'dark' : 'light';
 });
 
-const menuItems = [
-  { title: 'Dashboard', icon: 'mdi-view-dashboard-outline', path: '/dashboard' },
-  { title: 'Tin nhắn', icon: 'mdi-message-text-outline', path: '/chat' },
-  { title: 'Khách hàng', icon: 'mdi-account-group-outline', path: '/contacts' },
-  { title: 'Kết nối đa kênh', icon: 'mdi-cellphone-link', path: '/zalo-accounts' },
-  { title: 'Lịch hẹn', icon: 'mdi-calendar-clock-outline', path: '/appointments' },
-  { title: 'Báo cáo', icon: 'mdi-chart-arc', path: '/reports' },
-  { title: 'Phân tích kinh doanh', icon: 'mdi-chart-timeline-variant-shimmer', path: '/analytics' },
-  { title: 'Nhân sự & Phân quyền', icon: 'mdi-account-cog-outline', path: '/settings' },
-  { title: 'Kết nối & Hạn mức AI', icon: 'mdi-cog-outline', path: '/api-settings' },
-  { title: 'Đào tạo AI', icon: 'mdi-school-outline', path: '/ai-training' },
-  { title: 'Hiệu quả AI', icon: 'mdi-chart-line', path: '/ai-usage' },
-  { title: 'Tích hợp', icon: 'mdi-connection', path: '/integrations' },
-  { title: 'Automation', icon: 'mdi-robot-outline', path: '/automation' },
-  { title: 'Gói cước', icon: 'mdi-crown-outline', path: '/pricing' },
+const menuGroups = [
+  {
+    header: 'TỔNG QUAN',
+    items: [
+      { title: 'Dashboard', icon: 'mdi-view-dashboard-outline', path: '/dashboard' },
+      { title: 'Báo cáo & Phân tích', icon: 'mdi-chart-arc', path: '/reports' },
+    ]
+  },
+  {
+    header: 'CRM & KẾT NỐI',
+    items: [
+      { title: 'Tin nhắn', icon: 'mdi-message-text-outline', path: '/chat' },
+      { title: 'Khách hàng', icon: 'mdi-account-group-outline', path: '/contacts' },
+      { title: 'Kênh kết nối', icon: 'mdi-cellphone-link', path: '/zalo-accounts' },
+      { title: 'Lịch hẹn', icon: 'mdi-calendar-clock-outline', path: '/appointments' },
+    ]
+  },
+  {
+    header: 'TRỢ LÝ AI',
+    items: [
+      { title: 'Đào tạo AI', icon: 'mdi-school-outline', path: '/ai-training' },
+      { title: 'Hiệu quả AI', icon: 'mdi-chart-line', path: '/ai-usage' },
+      { title: 'Automation', icon: 'mdi-robot-outline', path: '/automation' },
+    ]
+  },
+  {
+    header: 'HỆ THỐNG',
+    items: [
+      { title: 'Cài đặt & Nhân sự', icon: 'mdi-account-cog-outline', path: '/settings' },
+      { title: 'Hạn mức AI', icon: 'mdi-cog-outline', path: '/api-settings' },
+      { title: 'Tích hợp', icon: 'mdi-connection', path: '/integrations' },
+      { title: 'Gói cước', icon: 'mdi-crown-outline', path: '/pricing' },
+    ]
+  }
 ];
 
-const computedMenuItems = computed(() => {
-  const items = [...menuItems];
+const computedMenuGroups = computed(() => {
+  const groups = JSON.parse(JSON.stringify(menuGroups));
   if (authStore.isSuperAdmin) {
-    items.push({ title: 'Hệ thống Quản trị', icon: 'mdi-shield-crown-outline', path: '/admin' });
-    items.push({ title: 'Duyệt Thanh Toán', icon: 'mdi-receipt-text-check-outline', path: '/admin/orders' });
+    groups.push({
+      header: 'QUẢN TRỊ HỆ THỐNG',
+      items: [
+        { title: 'Admin Console', icon: 'mdi-shield-crown-outline', path: '/admin' },
+        { title: 'Duyệt Thanh Toán', icon: 'mdi-receipt-text-check-outline', path: '/admin/orders' },
+      ]
+    });
   }
-  return items;
+  return groups;
 });
 
 function toggleTheme() {
