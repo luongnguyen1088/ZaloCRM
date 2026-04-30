@@ -17,7 +17,11 @@ export async function orgRoutes(app: FastifyInstance): Promise<void> {
     try {
       const org = await prisma.organization.findUnique({
         where: { id: user.orgId },
-        select: { id: true, name: true, createdAt: true, updatedAt: true },
+        include: {
+          subscription: {
+            include: { plan: true }
+          }
+        }
       });
       if (!org) return reply.status(404).send({ error: 'Organization not found' });
       return org;

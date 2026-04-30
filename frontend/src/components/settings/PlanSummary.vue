@@ -74,7 +74,17 @@ const currentPlan = ref<any>(null);
 async function fetchPlan() {
   try {
     const res = await api.get('/organization');
-    currentPlan.value = res.data.subscription?.plan;
+    if (res.data.subscription?.plan) {
+      currentPlan.value = res.data.subscription.plan;
+    } else {
+      // Default Free Plan fallback if not explicitly subscribed
+      currentPlan.value = {
+        name: 'Gói Miễn phí',
+        maxZaloAcc: 1,
+        maxAiTokens: 50000,
+        priceMonth: 0
+      };
+    }
   } catch (err) {
     console.error('Failed to fetch plan:', err);
   } finally {
