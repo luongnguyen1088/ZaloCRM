@@ -128,14 +128,29 @@ class ZaloAccountPool {
       const ownId = await api.getOwnId();
       instance.zaloUid = ownId;
 
+      // Explicitly fetch profile info from API to ensure we have the real name/avatar
+      let finalName = instance.displayName;
+      let finalAvatar = instance.avatarUrl;
+      try {
+        const userInfo = await api.getUserInfo(ownId);
+        const profile = userInfo?.changed_profiles?.[ownId] || userInfo?.changed_profiles?.[`${ownId}_0`];
+        if (profile) {
+          finalName = profile.zaloName || profile.displayName || profile.display_name || finalName;
+          finalAvatar = profile.avatar || finalAvatar;
+          instance.displayName = finalName;
+          instance.avatarUrl = finalAvatar;
+        }
+      } catch (err) {
+        logger.warn(`[zalo:${accountId}] Failed to fetch own profile after login:`, err);
+      }
+
       this.attachListener(accountId, api);
-      const currentInst = this.instances.get(accountId);
       await this.updateAccountDB(
         accountId, 
         'connected', 
         ownId, 
-        currentInst?.displayName, 
-        currentInst?.avatarUrl
+        finalName && finalName !== 'Đang kết nối...' ? finalName : undefined, 
+        finalAvatar
       );
       this.io?.emit('zalo:connected', { accountId, zaloUid: ownId });
       // Emit webhook (orgId lookup is async, fire-and-forget)
@@ -188,8 +203,30 @@ class ZaloAccountPool {
       const ownId = await api.getOwnId();
       instance.zaloUid = ownId;
 
+      // Fetch profile info to update stale data (like 'Đang kết nối...')
+      let finalName: string | undefined;
+      let finalAvatar: string | undefined;
+      try {
+        const userInfo = await api.getUserInfo(ownId);
+        const profile = userInfo?.changed_profiles?.[ownId] || userInfo?.changed_profiles?.[`${ownId}_0`];
+        if (profile) {
+          finalName = profile.zaloName || profile.displayName || profile.display_name;
+          finalAvatar = profile.avatar;
+          instance.displayName = finalName;
+          instance.avatarUrl = finalAvatar;
+        }
+      } catch (err) {
+        logger.warn(`[zalo:${accountId}] Failed to fetch own profile after reconnect:`, err);
+      }
+
       this.attachListener(accountId, api);
-      await this.updateAccountDB(accountId, 'connected', ownId);
+      await this.updateAccountDB(
+        accountId, 
+        'connected', 
+        ownId,
+        finalName && finalName !== 'Đang kết nối...' ? finalName : undefined,
+        finalAvatar
+      );
       this.io?.emit('zalo:connected', { accountId, zaloUid: ownId });
       prisma.zaloAccount.findUnique({ where: { id: accountId }, select: { orgId: true } })
         .then((rec) => rec && emitWebhook(rec.orgId, 'zalo.connected', { accountId }))

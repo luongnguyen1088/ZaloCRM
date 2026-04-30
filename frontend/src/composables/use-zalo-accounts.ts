@@ -71,7 +71,7 @@ export function useZaloAccounts() {
   async function fetchAccounts() {
     loading.value = true;
     try {
-      const res = await api.get('/zalo-accounts');
+      const res = await api.get('/zalo-accounts', { params: { _t: Date.now() } });
       accounts.value = res.data;
     } catch (err) {
       console.error('Failed to fetch accounts:', err);
