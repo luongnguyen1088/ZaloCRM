@@ -211,7 +211,7 @@
                   </div>
 
                   <v-row dense class="mb-4">
-                    <v-col cols="12" md="5">
+                    <v-col cols="12" md="6">
                       <v-select
                         v-model="aiConfig.languagePolicy"
                         :items="languageOptions"
@@ -485,22 +485,11 @@
                         hide-details
                       />
                     </v-col>
-                    <v-col cols="6" md="3.5">
+                    <v-col cols="12" md="6">
                       <v-select
                         v-model="filterCategory"
                         :items="categories"
                         label="Danh mục"
-                        variant="outlined"
-                        density="comfortable"
-                        rounded="lg"
-                        hide-details
-                      />
-                    </v-col>
-                    <v-col cols="6" md="3.5">
-                      <v-select
-                        v-model="filterAccount"
-                        :items="accountOptions"
-                        label="Tài khoản"
                         variant="outlined"
                         density="comfortable"
                         rounded="lg"
@@ -1242,7 +1231,6 @@ const resettingScope = ref(false);
 
 const search = ref('');
 const filterCategory = ref('Tất cả');
-const filterAccount = ref<string | null>(null);
 const magicInput = ref('');
 const magicAccountId = ref<string | null>(null);
 const testQuestion = ref('');
@@ -1562,7 +1550,9 @@ const filteredItems = computed(() => {
     const text = `${item.title} ${item.content}`.toLowerCase();
     const matchesSearch = text.includes(search.value.toLowerCase());
     const matchesCategory = filterCategory.value === 'Tất cả' || item.category === filterCategory.value;
-    const matchesAccount = filterAccount.value === null || item.zaloAccountId === filterAccount.value;
+    const matchesAccount = configScopeId.value
+      ? !item.zaloAccountId || item.zaloAccountId === configScopeId.value
+      : true;
     return matchesSearch && matchesCategory && matchesAccount;
   });
 });
@@ -1978,7 +1968,6 @@ function jumpToKnowledge(id: string) {
   activeSection.value = 'knowledge';
   search.value = '';
   filterCategory.value = 'Tất cả';
-  filterAccount.value = null;
 
   nextTick(() => {
     const element = document.getElementById(`knowledge-${id}`);
