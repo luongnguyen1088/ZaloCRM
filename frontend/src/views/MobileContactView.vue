@@ -1,80 +1,150 @@
 <template>
-  <div class="mobile-contacts pa-3">
-    <!-- Search bar -->
-    <v-text-field
-      v-model="filters.search"
-      placeholder="Tìm khách hàng..."
-      prepend-inner-icon="mdi-magnify"
-      variant="outlined"
-      density="compact"
-      hide-details
-      clearable
-      rounded="xl"
-      class="mb-3"
-      @update:model-value="onSearch"
-    />
+  <div class="mobile-contacts">
+    <section class="mobile-contacts__hero">
+      <div class="mobile-contacts__hero-top">
+        <div>
+          <div class="text-overline font-weight-bold text-medium-emphasis">CRM khách hàng</div>
+          <h1 class="text-h5 font-weight-bold mb-1">Khách hàng</h1>
+          <p class="text-body-2 text-medium-emphasis mb-0">
+            {{ total.toLocaleString('vi-VN') }} hồ sơ • {{ interestedCount }} lead đang nóng
+          </p>
+        </div>
 
-    <!-- Filter chips -->
-    <div class="d-flex gap-2 mb-3 overflow-x-auto" style="flex-wrap: nowrap;">
-      <v-chip
-        v-for="status in STATUS_OPTIONS"
-        :key="status.value"
-        :color="filters.status === status.value ? statusColor(status.value) : undefined"
-        :variant="filters.status === status.value ? 'flat' : 'outlined'"
-        size="small"
-        @click="toggleStatus(status.value)"
-      >
-        {{ status.text }}
-      </v-chip>
-    </div>
+        <v-btn
+          variant="tonal"
+          color="primary"
+          rounded="pill"
+          prepend-icon="mdi-content-duplicate"
+          size="small"
+          @click="refreshDuplicates"
+        >
+          Trùng lặp
+        </v-btn>
+      </div>
 
-    <!-- Loading -->
+      <v-text-field
+        v-model="filters.search"
+        placeholder="Tìm khách hàng..."
+        prepend-inner-icon="mdi-magnify"
+        variant="outlined"
+        density="comfortable"
+        hide-details
+        clearable
+        rounded="xl"
+        class="mt-4"
+        @update:model-value="onSearch"
+      />
+
+      <div class="mobile-contacts__chips mt-4">
+        <v-chip
+          :color="filters.status === '' ? 'primary' : undefined"
+          :variant="filters.status === '' ? 'flat' : 'outlined'"
+          size="small"
+          @click="toggleStatus('')"
+        >
+          Tất cả
+        </v-chip>
+        <v-chip
+          v-for="status in STATUS_OPTIONS"
+          :key="status.value"
+          :color="filters.status === status.value ? statusColor(status.value) : undefined"
+          :variant="filters.status === status.value ? 'flat' : 'outlined'"
+          size="small"
+          @click="toggleStatus(status.value)"
+        >
+          {{ status.text }}
+        </v-chip>
+      </div>
+    </section>
+
+    <section class="mobile-contacts__summary">
+      <div class="summary-pill">
+        <span class="summary-pill__label">Quan tâm</span>
+        <strong>{{ interestedCount }}</strong>
+      </div>
+      <div class="summary-pill">
+        <span class="summary-pill__label">Sắp hẹn</span>
+        <strong>{{ followUpCount }}</strong>
+      </div>
+      <div class="summary-pill">
+        <span class="summary-pill__label">Im lặng</span>
+        <strong>{{ staleCount }}</strong>
+      </div>
+    </section>
+
     <div v-if="loading" class="d-flex justify-center py-8">
       <v-progress-circular indeterminate color="primary" />
     </div>
 
-    <!-- Contact cards -->
-    <div v-else class="d-flex flex-column gap-2">
+    <div v-else class="mobile-contacts__list">
       <v-card
         v-for="contact in contacts"
         :key="contact.id"
-        variant="tonal"
+        class="contact-mobile-card"
+        elevation="0"
         rounded="xl"
-        class="pa-3"
         @click="openContact(contact)"
       >
-        <div class="d-flex align-center">
-          <v-avatar size="40" color="grey-lighten-2" class="mr-3">
-            <v-img v-if="contact.avatarUrl" :src="contact.avatarUrl" />
-            <v-icon v-else size="20">mdi-account</v-icon>
-          </v-avatar>
-          <div style="flex: 1; min-width: 0;">
-            <div class="text-body-2 font-weight-medium text-truncate">{{ contact.fullName }}</div>
-            <div class="text-caption text-medium-emphasis">{{ contact.phone || 'Chưa có SĐT' }}</div>
+        <v-card-text class="pa-4">
+          <div class="d-flex align-center">
+            <v-avatar size="48" class="mr-3 contact-mobile-card__avatar">
+              <v-img v-if="contact.avatarUrl" :src="contact.avatarUrl" />
+              <v-icon v-else size="22">mdi-account</v-icon>
+            </v-avatar>
+
+            <div class="flex-grow-1 min-w-0">
+              <div class="text-body-1 font-weight-bold text-truncate">
+                {{ contact.fullName || 'Chưa đặt tên' }}
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                {{ contact.phone || 'Chưa có SĐT' }}
+              </div>
+            </div>
+
+            <v-chip
+              v-if="contact.status"
+              :color="statusColor(contact.status)"
+              size="x-small"
+              variant="tonal"
+            >
+              {{ statusLabel(contact.status) }}
+            </v-chip>
           </div>
-          <v-chip v-if="contact.status" :color="statusColor(contact.status)" size="x-small" variant="tonal">
-            {{ statusLabel(contact.status) }}
-          </v-chip>
-        </div>
+
+          <div class="d-flex flex-wrap ga-2 mt-4">
+            <v-chip v-if="contact.source" size="x-small" variant="tonal" :color="sourceColor(contact.source)">
+              {{ sourceLabel(contact.source) }}
+            </v-chip>
+            <v-chip size="x-small" variant="tonal" :color="scoreColor(contact.leadScore)">
+              Score {{ contact.leadScore ?? 0 }}
+            </v-chip>
+            <v-chip size="x-small" variant="outlined">
+              {{ contact._count?.conversations ?? 0 }} hội thoại
+            </v-chip>
+          </div>
+
+          <div class="d-flex align-center justify-space-between mt-4 text-caption text-medium-emphasis">
+            <span>{{ contact.nextAppointment ? `Hẹn ${formatDate(contact.nextAppointment)}` : 'Chưa có lịch hẹn' }}</span>
+            <span>{{ contact.lastActivity ? relativeTime(contact.lastActivity) : 'Chưa có hoạt động' }}</span>
+          </div>
+        </v-card-text>
       </v-card>
 
-      <div v-if="contacts.length === 0" class="text-center py-8 text-medium-emphasis">
-        Không tìm thấy khách hàng
+      <div v-if="contacts.length === 0" class="text-center py-10 text-medium-emphasis">
+        Không tìm thấy khách hàng phù hợp
       </div>
     </div>
 
-    <!-- FAB: add contact -->
     <v-btn
       icon
       color="primary"
       size="large"
-      style="position: fixed; bottom: 88px; right: 16px; z-index: 50;"
+      class="mobile-contacts__fab"
       @click="openCreate"
     >
       <v-icon>mdi-plus</v-icon>
     </v-btn>
 
-    <!-- Detail dialog -->
     <ContactDetailDialog
       v-model="showDialog"
       :contact="selectedContact"
@@ -85,26 +155,88 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import ContactDetailDialog from '@/components/contacts/ContactDetailDialog.vue';
-import { useContacts, STATUS_OPTIONS } from '@/composables/use-contacts';
+import { useContacts, STATUS_OPTIONS, useContactIntelligence, SOURCE_OPTIONS } from '@/composables/use-contacts';
 import type { Contact } from '@/composables/use-contacts';
 
-const { contacts, loading, filters, fetchContacts } = useContacts();
+const { contacts, total, loading, filters, fetchContacts } = useContacts();
+const { fetchDuplicateGroups } = useContactIntelligence();
 
 const showDialog = ref(false);
 const selectedContact = ref<Contact | null>(null);
 
+const interestedCount = computed(() => {
+  return contacts.value.filter((contact) => contact.status === 'interested' || (contact.leadScore ?? 0) >= 70).length;
+});
+
+const followUpCount = computed(() => {
+  const now = Date.now();
+  const nextWeek = now + 7 * 24 * 60 * 60 * 1000;
+  return contacts.value.filter((contact) => {
+    if (!contact.nextAppointment) return false;
+    const time = new Date(contact.nextAppointment).getTime();
+    return time >= now && time <= nextWeek;
+  }).length;
+});
+
+const staleCount = computed(() => {
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  return contacts.value.filter((contact) => !contact.lastActivity || new Date(contact.lastActivity).getTime() < sevenDaysAgo).length;
+});
+
 function statusColor(status: string) {
   const map: Record<string, string> = {
-    new: 'grey', contacted: 'blue', interested: 'orange',
-    converted: 'success', lost: 'error',
+    new: 'grey',
+    contacted: 'blue',
+    interested: 'orange',
+    converted: 'success',
+    lost: 'error',
   };
   return map[status] ?? 'grey';
 }
 
 function statusLabel(value: string) {
-  return STATUS_OPTIONS.find(o => o.value === value)?.text ?? value;
+  return STATUS_OPTIONS.find((o) => o.value === value)?.text ?? value;
+}
+
+function sourceLabel(value: string) {
+  const normalized = value.trim().toLowerCase();
+  const option = SOURCE_OPTIONS.find((item) => item.value === normalized);
+  if (option) return option.text;
+  if (['fb', 'facebook'].includes(normalized)) return 'Facebook';
+  if (['tt', 'tiktok'].includes(normalized)) return 'TikTok';
+  if (['gt', 'referral'].includes(normalized)) return 'Giới thiệu';
+  if (['cn', 'personal'].includes(normalized)) return 'Cá nhân';
+  return value;
+}
+
+function sourceColor(value: string) {
+  const normalized = value.trim().toLowerCase();
+  if (['fb', 'facebook'].includes(normalized)) return 'blue';
+  if (normalized === 'zalo') return 'cyan';
+  if (['tt', 'tiktok'].includes(normalized)) return 'pink';
+  if (['gt', 'referral'].includes(normalized)) return 'deep-orange';
+  return 'grey';
+}
+
+function scoreColor(score: number) {
+  if (score >= 70) return 'success';
+  if (score >= 40) return 'orange';
+  return 'error';
+}
+
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString('vi-VN');
+}
+
+function relativeTime(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  if (hours < 24) return `${Math.max(hours, 1)} giờ trước`;
+  if (days === 1) return 'Hôm qua';
+  return `${days} ngày trước`;
 }
 
 function toggleStatus(value: string) {
@@ -112,10 +244,10 @@ function toggleStatus(value: string) {
   fetchContacts();
 }
 
-let searchTimeout: ReturnType<typeof setTimeout>;
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 function onSearch() {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => fetchContacts(), 300);
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => fetchContacts(), 260);
 }
 
 function openContact(contact: Contact) {
@@ -128,9 +260,98 @@ function openCreate() {
   showDialog.value = true;
 }
 
-function onSaved() { fetchContacts(); }
-function onDeleted() { fetchContacts(); }
+function onSaved() {
+  fetchContacts();
+}
+
+function onDeleted() {
+  fetchContacts();
+}
+
+async function refreshDuplicates() {
+  await fetchDuplicateGroups();
+}
 
 onMounted(() => fetchContacts());
-onUnmounted(() => clearTimeout(searchTimeout));
+onUnmounted(() => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+});
 </script>
+
+<style scoped>
+.mobile-contacts {
+  padding: 12px;
+  padding-bottom: 96px;
+}
+
+.mobile-contacts__hero {
+  padding: 18px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.16), transparent 32%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96));
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 16px 42px rgba(15, 23, 42, 0.06);
+}
+
+.mobile-contacts__hero-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.mobile-contacts__chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.mobile-contacts__summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0 16px;
+}
+
+.summary-pill {
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  text-align: center;
+}
+
+.summary-pill__label {
+  display: block;
+  font-size: 0.72rem;
+  color: rgba(15, 23, 42, 0.62);
+  margin-bottom: 4px;
+}
+
+.mobile-contacts__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contact-mobile-card {
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
+}
+
+.contact-mobile-card__avatar {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.mobile-contacts__fab {
+  position: fixed;
+  right: 18px;
+  bottom: 88px;
+  z-index: 50;
+  box-shadow: 0 18px 34px rgba(37, 99, 235, 0.35);
+}
+</style>

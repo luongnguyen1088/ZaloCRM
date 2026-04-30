@@ -1,8 +1,8 @@
 /**
- * Composable for contact (khách hàng) management:
+ * Composable for contact management:
  * - List with filters, pagination
  * - CRUD operations
- * - CRM pipeline status
+ * - Duplicate review helpers
  */
 import { ref, reactive } from 'vue';
 import { api } from '@/api/index';
@@ -20,12 +20,16 @@ export interface Contact {
   notes: string | null;
   tags: string[];
   assignedUserId?: string | null;
-  assignedUser?: { fullName: string } | null;
+  assignedUser?: { fullName: string; email?: string | null } | null;
   createdAt?: string;
   firstContactDate?: string | null;
   leadScore: number;
   lastActivity: string | null;
   mergedInto: string | null;
+  _count?: {
+    conversations?: number;
+    appointments?: number;
+  };
 }
 
 export interface DuplicateGroup {
@@ -45,10 +49,11 @@ export interface ContactFilters {
 }
 
 export const SOURCE_OPTIONS = [
-  { text: 'Facebook', value: 'FB' },
-  { text: 'TikTok', value: 'TT' },
-  { text: 'Giới thiệu', value: 'GT' },
-  { text: 'Cá nhân', value: 'CN' },
+  { text: 'Facebook', value: 'facebook' },
+  { text: 'Zalo', value: 'zalo' },
+  { text: 'TikTok', value: 'tiktok' },
+  { text: 'Giới thiệu', value: 'referral' },
+  { text: 'Cá nhân', value: 'personal' },
 ];
 
 export const STATUS_OPTIONS = [
@@ -123,7 +128,7 @@ export function useContacts() {
     saving.value = true;
     try {
       const res = await api.put(`/contacts/${id}`, payload);
-      const idx = contacts.value.findIndex(c => c.id === id);
+      const idx = contacts.value.findIndex((c) => c.id === id);
       if (idx !== -1) contacts.value[idx] = res.data;
       return res.data;
     } catch (err) {
@@ -157,10 +162,18 @@ export function useContacts() {
   }
 
   return {
-    contacts, total, loading, saving, deleting,
-    filters, pagination,
-    fetchContacts, fetchContact,
-    createContact, updateContact, deleteContact,
+    contacts,
+    total,
+    loading,
+    saving,
+    deleting,
+    filters,
+    pagination,
+    fetchContacts,
+    fetchContact,
+    createContact,
+    updateContact,
+    deleteContact,
     resetFilters,
   };
 }
@@ -210,7 +223,12 @@ export function useContactIntelligence() {
   }
 
   return {
-    duplicateGroups, duplicateTotal, loadingDuplicates, merging,
-    fetchDuplicateGroups, mergeDuplicateGroup, recomputeIntelligence,
+    duplicateGroups,
+    duplicateTotal,
+    loadingDuplicates,
+    merging,
+    fetchDuplicateGroups,
+    mergeDuplicateGroup,
+    recomputeIntelligence,
   };
 }

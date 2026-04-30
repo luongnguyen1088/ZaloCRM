@@ -13,6 +13,19 @@ import { runAutomationRules } from '../automation/automation-service.js';
 
 type QueryParams = Record<string, string>;
 
+function resolveSourceFilter(source: string) {
+  const normalized = source.trim().toLowerCase();
+  const aliases: Record<string, string[]> = {
+    facebook: ['facebook', 'Facebook', 'FB'],
+    zalo: ['zalo', 'Zalo'],
+    tiktok: ['tiktok', 'TikTok', 'TT'],
+    referral: ['referral', 'Referral', 'GT'],
+    personal: ['personal', 'Personal', 'CN'],
+  };
+
+  return aliases[normalized] || [source];
+}
+
 export async function contactRoutes(app: FastifyInstance): Promise<void> {
   app.addHook('preHandler', authMiddleware);
 
@@ -30,7 +43,7 @@ export async function contactRoutes(app: FastifyInstance): Promise<void> {
       } = request.query as QueryParams;
 
       const where: any = { orgId: user.orgId, mergedInto: null };
-      if (source) where.source = source;
+      if (source) where.source = { in: resolveSourceFilter(source) };
       if (status) where.status = status;
       if (assignedUserId) where.assignedUserId = assignedUserId;
       if (search) {
