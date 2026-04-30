@@ -2,16 +2,36 @@
   <div class="api-settings-container pb-10">
     <div class="d-flex align-center mb-8">
       <div class="header-icon-box mr-4">
-        <v-icon size="32" color="primary">mdi-connection</v-icon>
+        <v-icon size="32" color="primary">mdi-code-braces</v-icon>
       </div>
       <div>
-        <h1 class="text-h4 font-weight-bold mb-1 outfit-font">Kết nối & AI</h1>
-        <p class="text-body-2 text-medium-emphasis mb-0">Quản lý AI platform, webhook và API hệ thống</p>
+        <h1 class="text-h4 font-weight-bold mb-1 outfit-font">Nhà phát triển</h1>
+        <p class="text-body-2 text-medium-emphasis mb-0">Webhook, API key và kết nối kỹ thuật cho AI Agent</p>
       </div>
     </div>
 
     <v-row>
       <v-col cols="12" md="7">
+        <v-card class="glass-card mb-6 context-note-card" elevation="0">
+          <v-card-text class="pa-6">
+            <div class="d-flex align-start">
+              <v-avatar color="warning" variant="tonal" size="44" class="mr-4 flex-shrink-0">
+                <v-icon color="warning">mdi-compass-outline</v-icon>
+              </v-avatar>
+              <div>
+                <div class="text-subtitle-1 font-weight-bold mb-2">Trang này dành cho cấu hình kỹ thuật</div>
+                <p class="text-body-2 text-medium-emphasis mb-3">
+                  Dùng khi bạn cần webhook hệ thống, API key riêng hoặc kết nối MCP cho AI Agent.
+                </p>
+                <p class="text-body-2 text-medium-emphasis mb-0">
+                  Các tích hợp nghiệp vụ như Google Sheets, Telegram, Zapier, n8n vẫn nằm ở trang
+                  <strong>Tích hợp</strong>.
+                </p>
+              </div>
+            </div>
+          </v-card-text>
+        </v-card>
+
         <v-card class="glass-card ai-control-card mb-6 overflow-hidden" elevation="0">
           <div class="card-glow"></div>
           <v-card-text class="pa-6">
@@ -20,18 +40,18 @@
                 <v-icon color="primary">mdi-robot-happy</v-icon>
               </v-avatar>
               <div>
-                <h2 class="text-h5 font-weight-bold outfit-font mb-0">AI Hub</h2>
-                <p class="text-caption text-medium-emphasis mb-0">Quản lý tri thức và hiệu quả vận hành AI</p>
+                <h2 class="text-h5 font-weight-bold outfit-font mb-0">Lối tắt AI</h2>
+                <p class="text-caption text-medium-emphasis mb-0">Đi tới các màn theo dõi usage và huấn luyện AI</p>
               </div>
               <v-spacer />
               <div class="d-flex ga-2">
                 <v-btn color="secondary" variant="tonal" rounded="lg" to="/ai-usage">
                   <v-icon start>mdi-chart-line</v-icon>
-                  Hiệu quả AI
+                  Mức dùng AI
                 </v-btn>
                 <v-btn color="primary" variant="flat" rounded="lg" to="/ai-training">
                   <v-icon start>mdi-brain</v-icon>
-                  Đào tạo AI
+                  Tri thức AI
                 </v-btn>
               </div>
             </div>
@@ -41,11 +61,11 @@
         <v-card class="glass-card mb-6" elevation="0">
           <v-card-title class="pa-6 pb-2 d-flex align-center">
             <v-icon size="24" color="primary" class="mr-3">mdi-webhook</v-icon>
-            <span class="outfit-font font-weight-bold">Webhook Events</span>
+            <span class="outfit-font font-weight-bold">Webhook hệ thống</span>
           </v-card-title>
           <v-card-text class="pa-6 pt-0">
             <p class="text-body-2 text-medium-emphasis mb-6">
-              Nhận thông báo thời gian thực khi có tin nhắn mới hoặc khách hàng mới.
+              Gửi sự kiện ra ngoài hệ thống khi có tin nhắn mới, khách hàng mới hoặc thay đổi quan trọng trong CRM.
             </p>
             <v-text-field
               v-model="webhookUrl"
@@ -82,11 +102,11 @@
           <div class="mcp-accent-bar"></div>
           <v-card-title class="pa-6 pb-2 d-flex align-center">
             <v-icon size="24" color="secondary" class="mr-3">mdi-robot-outline</v-icon>
-            <span class="outfit-font font-weight-bold">Kết nối AI Agent (MCP)</span>
+            <span class="outfit-font font-weight-bold">Kết nối AI Agent từ xa (MCP)</span>
           </v-card-title>
           <v-card-text class="pa-6 pt-0">
             <p class="text-body-2 text-medium-emphasis mb-4">
-              Dùng URL này để Antigravity hoặc Claude có thể tự động cấu hình và đào tạo AI cho bạn.
+              Tạo một URL tạm thời để agent như Antigravity hoặc Claude truy cập CRM qua giao thức MCP.
             </p>
             
             <div class="api-key-box pa-4 rounded-lg bg-black-opacity border-glow-secondary">
@@ -115,7 +135,7 @@
               class="mt-4 text-caption rounded-lg"
               icon="mdi-information-outline"
             >
-              Dán URL này vào phần cấu hình MCP của AI Agent để điều khiển CRM từ xa.
+              URL này có thời hạn ngắn và nên chỉ dùng trong quá trình cấu hình agent.
             </v-alert>
           </v-card-text>
         </v-card>
@@ -123,9 +143,12 @@
         <v-card class="glass-card mb-6 theme-dark-docs" elevation="0">
           <v-card-title class="pa-6 pb-2 d-flex align-center">
             <v-icon size="24" color="primary" class="mr-3">mdi-code-braces</v-icon>
-            <span class="outfit-font font-weight-bold">Dành cho lập trình viên</span>
+            <span class="outfit-font font-weight-bold">API riêng tư</span>
           </v-card-title>
           <v-card-text class="pa-6 pt-0">
+            <p class="text-body-2 text-medium-emphasis mb-4">
+              Dùng key này khi ứng dụng nội bộ hoặc script của bạn cần gọi API của Claro.
+            </p>
             <div class="api-key-box pa-4 mb-6 rounded-lg bg-black-opacity">
               <div class="d-flex align-center justify-space-between mb-2">
                 <span class="text-caption font-weight-bold text-medium-emphasis">PRIVATE API KEY</span>
@@ -156,8 +179,8 @@ POST /api/public/messages/send</pre>
               <v-icon color="primary">mdi-shield-check</v-icon>
             </div>
             <div>
-              <div class="text-subtitle-2 font-weight-bold">Bảo mật cấp cao</div>
-              <div class="text-caption text-medium-emphasis">AI key được quản lý tập trung trên hệ thống</div>
+              <div class="text-subtitle-2 font-weight-bold">Quyền truy cập kỹ thuật</div>
+              <div class="text-caption text-medium-emphasis">Webhook, MCP ticket và API key nên chỉ cấp cho người phụ trách kỹ thuật</div>
             </div>
           </v-card-text>
         </v-card>

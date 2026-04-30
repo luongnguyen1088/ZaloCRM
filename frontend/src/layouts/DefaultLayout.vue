@@ -97,8 +97,8 @@
 
       <span class="text-body-2 mr-3" v-if="authStore.user">{{ authStore.user.fullName }}</span>
       <NotificationBell />
-      <v-btn icon variant="text" to="/api-settings" class="mr-1">
-        <v-icon>mdi-cog-outline</v-icon>
+      <v-btn icon variant="text" to="/api-settings" class="mr-1" title="Nhà phát triển">
+        <v-icon>mdi-code-braces</v-icon>
       </v-btn>
       <v-btn icon variant="text" @click="toggleTheme">
         <v-icon>{{ isDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
@@ -217,7 +217,7 @@ const menuGroups = [
     header: 'HỆ THỐNG',
     items: [
       { title: 'Cài đặt & Nhân sự', icon: 'mdi-account-cog-outline', path: '/settings' },
-      { title: 'Hạn mức AI', icon: 'mdi-cog-outline', path: '/api-settings' },
+      { title: 'Nhà phát triển', icon: 'mdi-code-braces', path: '/api-settings' },
       { title: 'Tích hợp', icon: 'mdi-connection', path: '/integrations' },
       { title: 'Gói cước', icon: 'mdi-crown-outline', path: '/pricing' },
     ]
