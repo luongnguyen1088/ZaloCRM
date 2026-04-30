@@ -141,7 +141,8 @@
           v-for="(plan, index) in plans"
           :key="plan.id"
           cols="12"
-          md="4"
+          sm="6"
+          md="3"
           class="d-flex"
         >
           <v-card
@@ -248,7 +249,8 @@
             <tr>
               <th>Tính năng</th>
               <th class="text-center">Free</th>
-              <th class="text-center comparison-table__highlight">Pro</th>
+              <th class="text-center">Pro</th>
+              <th class="text-center comparison-table__highlight">Business</th>
               <th class="text-center">Enterprise</th>
             </tr>
           </thead>
@@ -256,7 +258,8 @@
             <tr v-for="row in comparisonRows" :key="row.label">
               <td class="comparison-table__label">{{ row.label }}</td>
               <td class="text-center">{{ renderComparisonValue(row.free) }}</td>
-              <td class="text-center comparison-table__highlight">{{ renderComparisonValue(row.pro) }}</td>
+              <td class="text-center">{{ renderComparisonValue(row.pro) }}</td>
+              <td class="text-center comparison-table__highlight">{{ renderComparisonValue(row.business) }}</td>
               <td class="text-center">{{ renderComparisonValue(row.enterprise) }}</td>
             </tr>
           </tbody>
@@ -478,24 +481,32 @@ const DEFAULT_PRICING_PLANS: SubscriptionPlan[] = [
     name: 'Free',
     priceMonth: 0,
     maxZaloAcc: 1,
-    maxAiTokens: 50000,
-    features: ['CRM cơ bản', '1 tài khoản Zalo', 'AI Assistant (Model cơ bản)', '~30 lượt phản hồi AI/tháng'],
+    maxAiTokens: 150000,
+    features: ['CRM cơ bản', '1 tài khoản Zalo', 'AI Assistant (Model cơ bản)', '~100 lượt phản hồi AI/tháng'],
   },
   {
     id: 'fallback-pro',
     name: 'Pro',
-    priceMonth: 200000,
-    maxZaloAcc: 5,
-    maxAiTokens: 1500000,
-    features: ['Đầy đủ CRM', '5 tài khoản Zalo', 'AI Assistant (Tốc độ cao)', 'Automation', '~1,000 lượt phản hồi AI/tháng'],
+    priceMonth: 250000,
+    maxZaloAcc: 3,
+    maxAiTokens: 2500000,
+    features: ['Đầy đủ CRM', '3 tài khoản Zalo', 'AI Assistant (Tốc độ cao)', 'Automation', '~1,600 lượt phản hồi AI/tháng'],
+  },
+  {
+    id: 'fallback-business',
+    name: 'Business',
+    priceMonth: 650000,
+    maxZaloAcc: 15,
+    maxAiTokens: 8000000,
+    features: ['Quản lý Team & Phân quyền', '15 tài khoản Zalo', 'AI Assistant (Tốc độ cao)', '500k Premium Tokens', '~5,300 lượt phản hồi AI/tháng'],
   },
   {
     id: 'fallback-enterprise',
     name: 'Enterprise',
-    priceMonth: 1000000,
+    priceMonth: 2000000,
     maxZaloAcc: 50,
-    maxAiTokens: 15000000,
-    features: ['Vô hạn CRM', '50 tài khoản Zalo', 'AI Assistant (Claude 3.5 Sonnet)', 'Ưu tiên hỗ trợ', '~10,000 lượt phản hồi AI/tháng'],
+    maxAiTokens: 30000000,
+    features: ['Vô hạn CRM', '50 tài khoản Zalo', 'Claude 3.5 Sonnet (5M Premium Tokens)', 'Ưu tiên hỗ trợ 24/7', '~20,000 lượt phản hồi AI/tháng'],
   },
 ];
 
@@ -573,53 +584,68 @@ const plansByKey = computed<Record<string, SubscriptionPlan | undefined>>(() => 
   }, {});
 });
 
-const comparisonRows = computed<Array<{ label: string; free: ComparisonValue; pro: ComparisonValue; enterprise: ComparisonValue }>>(() => {
+const comparisonRows = computed<Array<{ label: string; free: ComparisonValue; pro: ComparisonValue; business: ComparisonValue; enterprise: ComparisonValue }>>(() => {
   const freePlan = plansByKey.value.free;
   const proPlan = plansByKey.value.pro;
+  const businessPlan = plansByKey.value.business;
   const enterprisePlan = plansByKey.value.enterprise;
 
   return [
     {
       label: 'Số kênh kết nối tối đa',
       free: String(freePlan?.maxZaloAcc ?? 1),
-      pro: String(proPlan?.maxZaloAcc ?? 5),
+      pro: String(proPlan?.maxZaloAcc ?? 3),
+      business: String(businessPlan?.maxZaloAcc ?? 15),
       enterprise: String(enterprisePlan?.maxZaloAcc ?? 50),
     },
     {
       label: 'Lượt phản hồi AI / tháng',
-      free: `~${formatNumber(getAiReplies(freePlan?.maxAiTokens ?? 45000))}`,
-      pro: `~${formatNumber(getAiReplies(proPlan?.maxAiTokens ?? 1500000))}`,
-      enterprise: `~${formatNumber(getAiReplies(enterprisePlan?.maxAiTokens ?? 15000000))}`,
+      free: `~${formatNumber(getAiReplies(freePlan?.maxAiTokens ?? 150000))}`,
+      pro: `~${formatNumber(getAiReplies(proPlan?.maxAiTokens ?? 2500000))}`,
+      business: `~${formatNumber(getAiReplies(businessPlan?.maxAiTokens ?? 8000000))}`,
+      enterprise: `~${formatNumber(getAiReplies(enterprisePlan?.maxAiTokens ?? 30000000))}`,
     },
     {
       label: 'CRM & quản lý contact',
       free: 'Cơ bản',
       pro: 'Đầy đủ',
-      enterprise: 'Nâng cao',
+      business: 'Nâng cao',
+      enterprise: 'Chuyên sâu',
     },
     {
       label: 'Automation workflow',
       free: false,
       pro: true,
+      business: true,
       enterprise: true,
     },
     {
       label: 'Báo cáo & phân tích',
       free: false,
       pro: true,
+      business: true,
       enterprise: true,
     },
     {
       label: 'Knowledge base AI',
       free: 'Giới hạn',
       pro: true,
+      business: true,
       enterprise: true,
+    },
+    {
+      label: 'Model AI cao cấp (Sonnet)',
+      free: false,
+      pro: false,
+      business: '500k tokens',
+      enterprise: '5M tokens',
     },
     {
       label: 'Hỗ trợ triển khai',
       free: 'Cộng đồng',
       pro: 'Email / Chat',
-      enterprise: 'Ưu tiên',
+      business: 'Email / Chat / Call',
+      enterprise: 'Ưu tiên 24/7',
     },
   ];
 });
@@ -668,6 +694,7 @@ const getPlanIcon = (name: string) => {
   const planKey = normalizePlanKey(name);
   if (planKey === 'free') return 'mdi-sprout-outline';
   if (planKey === 'pro') return 'mdi-rocket-launch-outline';
+  if (planKey === 'business') return 'mdi-seal-variant';
   if (planKey === 'enterprise') return 'mdi-office-building-cog-outline';
   return 'mdi-cube-outline';
 };
@@ -676,6 +703,7 @@ const getPlanTone = (name: string) => {
   const planKey = normalizePlanKey(name);
   if (planKey === 'free') return 'neutral';
   if (planKey === 'pro') return 'primary';
+  if (planKey === 'business') return 'success';
   if (planKey === 'enterprise') return 'accent';
   return 'neutral';
 };
@@ -683,20 +711,22 @@ const getPlanTone = (name: string) => {
 const getPlanBadge = (name: string) => {
   const planKey = normalizePlanKey(name);
   if (planKey === 'free') return 'Khởi động';
-  if (planKey === 'pro') return 'Khuyên dùng';
-  if (planKey === 'enterprise') return 'Mở rộng';
+  if (planKey === 'pro') return 'Cá nhân';
+  if (planKey === 'business') return 'Khuyên dùng';
+  if (planKey === 'enterprise') return 'Doanh nghiệp';
   return 'Gói dịch vụ';
 };
 
 const getPlanDescription = (name: string) => {
   const planKey = normalizePlanKey(name);
-  if (planKey === 'free') return 'Phù hợp để trải nghiệm hệ thống và triển khai quy trình cơ bản.';
-  if (planKey === 'pro') return 'Dành cho team bán hàng hoặc CSKH cần AI và automation chạy thường xuyên.';
-  if (planKey === 'enterprise') return 'Phù hợp tổ chức nhiều tài khoản, cần quy mô lớn và hỗ trợ ưu tiên.';
+  if (planKey === 'free') return 'Dùng thử các tính năng AI và CRM cơ bản.';
+  if (planKey === 'pro') return 'Phù hợp cho cá nhân kinh doanh hoặc shop nhỏ.';
+  if (planKey === 'business') return 'Dành cho các team bán hàng đang tăng trưởng nhanh.';
+  if (planKey === 'enterprise') return 'Quy mô lớn với AI cao cấp và hỗ trợ ưu tiên.';
   return 'Gói dịch vụ dành cho tổ chức của bạn.';
 };
 
-const isFeaturedPlan = (plan: SubscriptionPlan) => normalizePlanKey(plan.name) === 'pro';
+const isFeaturedPlan = (plan: SubscriptionPlan) => normalizePlanKey(plan.name) === 'business';
 const isCurrentPlan = (plan: SubscriptionPlan) => {
   if (currentPlanId.value && plan.id === currentPlanId.value) return true;
   return currentPlanName.value ? normalizePlanKey(plan.name) === normalizePlanKey(currentPlanName.value) : false;
