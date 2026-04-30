@@ -1,760 +1,884 @@
 <template>
-  <v-container fluid class="pa-6 fill-height d-flex flex-column">
-    <!-- Header -->
-    <div class="d-flex align-center mb-4 flex-shrink-0">
+  <v-container fluid class="ai-studio pa-6">
+    <div class="d-flex align-center mb-4 flex-wrap ga-3">
       <div>
         <h1 class="text-h4 font-weight-bold mb-1 gradient-text">Đào tạo AI</h1>
-        <p class="text-medium-emphasis mb-0">Xây dựng "bộ não" riêng cho trợ lý Zalo của bạn</p>
+        <p class="text-medium-emphasis mb-0">
+          Điều khiển cách AI nói, AI biết và AI được phép tự vận hành.
+        </p>
       </div>
       <v-spacer />
-      <v-btn variant="text" color="medium-emphasis" prepend-icon="mdi-help-circle-outline" rounded="xl" @click="showGuide = true" class="mr-2">
+      <v-btn
+        variant="text"
+        color="medium-emphasis"
+        prepend-icon="mdi-help-circle-outline"
+        rounded="xl"
+        @click="showGuide = true"
+      >
         Hướng dẫn
       </v-btn>
-      <v-btn variant="outlined" color="primary" prepend-icon="mdi-plus" rounded="xl" @click="openAddDialog" class="mr-2">
+      <v-btn
+        variant="outlined"
+        color="primary"
+        prepend-icon="mdi-plus"
+        rounded="xl"
+        @click="openAddDialog"
+      >
         Thêm thủ công
       </v-btn>
     </div>
 
-    <!-- Main Content Area -->
-    <v-row class="flex-grow-1 overflow-hidden">
-      <!-- Left Side: Training & Management -->
-      <v-col cols="12" md="7" class="d-flex flex-column h-100 overflow-hidden">
-        
-        <!-- Tab Navigation -->
-        <v-tabs v-model="activeTab" color="primary" class="mb-4 flex-shrink-0" align-tabs="start">
-          <v-tab :value="0" class="text-none font-weight-bold">
-            <v-icon start>mdi-robot-confused-outline</v-icon>
-            Chỉ dẫn & Cá tính
-          </v-tab>
-          <v-tab :value="1" class="text-none font-weight-bold">
-            <v-icon start>mdi-database-outline</v-icon>
-            Kho tri thức
-          </v-tab>
-          <v-tab :value="2" class="text-none font-weight-bold">
-            <v-icon start>mdi-account-arrow-right-outline</v-icon>
-            Tự động bám đuổi
-          </v-tab>
-          <v-tab :value="3" class="text-none font-weight-bold">
-            <v-icon start>mdi-hand-stop-outline</v-icon>
-            Dừng/Tiếp tục AI
-          </v-tab>
-          <v-tab :value="4" class="text-none font-weight-bold">
-            <v-icon start>mdi-cog-outline</v-icon>
-            Nâng cao
-          </v-tab>
-        </v-tabs>
-
-        <v-window v-model="activeTab" class="flex-grow-1 overflow-hidden">
-          <!-- Tab 1: Instructions & Persona -->
-          <v-window-item :value="0" class="h-100 overflow-y-auto pr-2 custom-scrollbar">
-            <v-card class="glass-container pa-6 mb-4" border variant="flat">
-              <div class="d-flex align-center mb-6">
-                <v-icon color="primary" size="32" class="mr-4">mdi-comment-quote-outline</v-icon>
-                <div>
-                  <h3 class="text-h6 font-weight-bold">Tầng 2: Hành vi phản hồi</h3>
-                  <p class="text-caption text-medium-emphasis mb-0">Cài đặt phong cách, cách xưng hô và ngôn ngữ của AI.</p>
-                </div>
+    <v-row dense class="mb-4">
+      <v-col v-for="card in summaryCards" :key="card.key" cols="12" md="4">
+        <v-card class="summary-card" elevation="0" border>
+          <div class="d-flex align-start justify-space-between mb-4">
+            <div>
+              <div class="text-caption text-medium-emphasis text-uppercase">
+                {{ card.label }}
               </div>
+              <div class="text-h6 font-weight-bold mt-1">
+                {{ card.value }}
+              </div>
+            </div>
+            <v-avatar :color="card.color" variant="tonal" size="42">
+              <v-icon :icon="card.icon" />
+            </v-avatar>
+          </div>
+          <p class="text-body-2 text-medium-emphasis mb-3">
+            {{ card.description }}
+          </p>
+          <div class="d-flex flex-wrap ga-2">
+            <v-chip
+              v-for="chip in card.chips"
+              :key="chip"
+              size="small"
+              variant="tonal"
+              color="primary"
+            >
+              {{ chip }}
+            </v-chip>
+          </div>
+        </v-card>
+      </v-col>
+    </v-row>
 
-              <v-select
-                v-model="aiConfig.languagePolicy"
-                :items="languageOptions"
-                label="Chính sách ngôn ngữ"
-                variant="outlined"
-                density="comfortable"
-                rounded="lg"
-                class="mb-4"
-                prepend-inner-icon="mdi-translate"
-              />
+    <v-row>
+      <v-col cols="12" :md="showSimulator ? 7 : 12">
+        <v-card class="studio-shell" elevation="0" border>
+          <div class="studio-shell__header">
+            <div>
+              <div class="text-caption text-medium-emphasis text-uppercase">
+                AI Studio
+              </div>
+              <div class="text-subtitle-1 font-weight-bold">
+                {{ currentSectionTitle }}
+              </div>
+            </div>
+            <v-tabs
+              v-model="activeSection"
+              color="primary"
+              align-tabs="start"
+              class="studio-tabs"
+            >
+              <v-tab value="behavior" class="text-none font-weight-bold">
+                <v-icon start>mdi-comment-quote-outline</v-icon>
+                Cá tính
+              </v-tab>
+              <v-tab value="knowledge" class="text-none font-weight-bold">
+                <v-icon start>mdi-database-outline</v-icon>
+                Tri thức
+              </v-tab>
+              <v-tab value="operations" class="text-none font-weight-bold">
+                <v-icon start>mdi-robot-cog-outline</v-icon>
+                Vận hành
+              </v-tab>
+            </v-tabs>
+          </div>
 
-              <div class="text-caption font-weight-bold mb-2 opacity-70">GỢI Ý MẪU CÁ TÍNH:</div>
-              <v-row dense class="mb-4">
-                <v-col v-for="t in personaTemplates" :key="t.name" cols="12" sm="6">
-                  <v-card 
-                    variant="outlined" 
-                    class="persona-template-card pa-3 h-100" 
-                    @click="applyPersona(t)"
-                    hover
-                  >
-                    <div class="d-flex align-center">
-                      <v-icon color="primary" class="mr-3">{{ t.icon }}</v-icon>
-                      <div class="overflow-hidden">
-                        <div class="text-caption font-weight-bold text-truncate">{{ t.name }}</div>
-                        <div class="text-xxs text-medium-emphasis text-truncate">{{ t.description }}</div>
+          <v-window v-model="activeSection" class="studio-window">
+            <v-window-item value="behavior">
+              <div class="section-stack">
+                <v-card class="section-card" elevation="0" border>
+                  <div class="section-card__headline">
+                    <div>
+                      <div class="text-caption text-medium-emphasis text-uppercase">
+                        Lớp 1
                       </div>
+                      <h2 class="text-h6 font-weight-bold mb-1">AI nói như thế nào</h2>
+                      <p class="text-body-2 text-medium-emphasis mb-0">
+                        Thiết lập giọng điệu, cách xưng hô và nguyên tắc trả lời mặc định.
+                      </p>
                     </div>
-                  </v-card>
-                </v-col>
-              </v-row>
+                    <v-switch
+                      v-model="aiConfig.enabled"
+                      color="success"
+                      hide-details
+                      inset
+                      label="Bật AI"
+                    />
+                  </div>
 
-              <v-textarea
-                v-model="aiConfig.instructions"
-                label="Chỉ dẫn cá tính & Cách trả lời"
-                placeholder="Ví dụ: Luôn gọi khách là 'anh/chị', xưng là 'em'. Luôn sử dụng icon 🌸 và văn phong chuyên nghiệp..."
-                variant="outlined"
-                rows="10"
-                rounded="lg"
-                persistent-hint
-                class="mb-6"
-              >
-                <template #prepend-inner>
-                  <v-icon color="primary" class="mt-1">mdi-robot-outline</v-icon>
-                </template>
-              </v-textarea>
-
-              <div class="d-flex align-center justify-space-between pt-4 border-top">
-                <v-switch
-                  v-model="aiConfig.enabled"
-                  label="Kích hoạt trợ lý AI"
-                  color="success"
-                  hide-details
-                  inset
-                />
-                <v-btn 
-                  color="primary" 
-                  variant="flat" 
-                  rounded="lg" 
-                  size="large" 
-                  class="px-10"
-                  :loading="aiSaving"
-                  @click="saveAiConfig"
-                >
-                  Lưu thay đổi
-                </v-btn>
-              </div>
-            </v-card>
-
-            <!-- Usage Info Card -->
-            <v-card class="glass-container pa-4 border-dashed" variant="flat">
-              <div class="d-flex align-center justify-space-between">
-                <div class="d-flex align-center">
-                  <v-icon color="secondary" class="mr-2">mdi-shield-check-outline</v-icon>
-                  <span class="text-caption font-weight-bold opacity-70">QUY TẮC HỆ THỐNG (TẦNG 1): ĐANG KÍCH HOẠT</span>
-                </div>
-                <v-chip size="x-small" color="secondary" variant="flat">{{ aiConfig.planName }} Plan</v-chip>
-              </div>
-              <p class="text-xxs text-medium-emphasis mt-2 mb-0">
-                Hệ thống luôn tự động áp dụng các quy tắc bảo mật, cấm lộ thông tin và cấm sử dụng định dạng Markdown để đảm bảo AI hoạt động an toàn.
-              </p>
-            </v-card>
-          </v-window-item>
-
-          <!-- Tab 3: Auto Follow-up -->
-          <v-window-item :value="2" class="h-100 overflow-y-auto pr-2 custom-scrollbar">
-            <v-card class="glass-container pa-6 mb-4" border variant="flat">
-              <div class="d-flex align-center mb-6">
-                <v-icon color="secondary" size="32" class="mr-4">mdi-bullseye-arrow</v-icon>
-                <div>
-                  <h3 class="text-h6 font-weight-bold">Chiến dịch Bám đuổi tự động</h3>
-                  <p class="text-caption text-medium-emphasis mb-0">Tự động gửi tin nhắn nhắc nhở khi khách hàng im lặng.</p>
-                </div>
-              </div>
-
-              <v-alert
-                type="info"
-                variant="tonal"
-                density="compact"
-                class="mb-6 rounded-lg text-caption"
-              >
-                Hệ thống sẽ kiểm tra định kỳ mỗi phút. Nếu khách hàng không phản hồi sau thời gian thiết lập, AI sẽ gửi tin nhắn theo dõi.
-              </v-alert>
-
-              <v-row>
-                <v-col cols="12" sm="6">
-                  <v-select
-                    v-model="aiConfig.followUpInterval"
-                    :items="intervalOptions"
-                    label="Gửi tin nhắn sau khi khách im lặng"
-                    variant="outlined"
-                    density="comfortable"
-                    rounded="lg"
-                    prepend-inner-icon="mdi-clock-outline"
-                  />
-                </v-col>
-                <v-col cols="12" sm="6">
-                  <v-select
-                    v-model="aiConfig.followUpMaxMessages"
-                    :items="[1, 2, 3, 4, 5]"
-                    label="Số lượng tin nhắc tối đa"
-                    variant="outlined"
-                    density="comfortable"
-                    rounded="lg"
-                    prepend-inner-icon="mdi-numeric"
-                  />
-                </v-col>
-              </v-row>
-
-              <div class="text-subtitle-2 font-weight-bold mb-3">Nội dung tin nhắn bám đuổi:</div>
-              <v-radio-group v-model="aiConfig.followUpType" inline class="mb-4">
-                <v-radio label="Tự động bằng AI (Khuyên dùng)" value="ai" color="primary"></v-radio>
-                <v-radio label="Dùng mẫu cố định" value="manual" color="secondary"></v-radio>
-              </v-radio-group>
-
-              <v-textarea
-                v-if="aiConfig.followUpType === 'manual'"
-                v-model="aiConfig.followUpManualContent"
-                label="Nội dung mẫu cố định"
-                placeholder="Ví dụ: Dạ Anh/Chị có cần em tư vấn thêm gì về sản phẩm không ạ?"
-                variant="outlined"
-                rows="4"
-                rounded="lg"
-                class="mb-6"
-              />
-              
-              <v-card v-else variant="tonal" color="primary" class="pa-4 mb-6 rounded-lg">
-                <div class="d-flex align-center mb-2">
-                  <v-icon size="18" class="mr-2">mdi-robot-outline</v-icon>
-                  <span class="text-caption font-weight-bold">LOGIC AI BÁM ĐUỔI:</span>
-                </div>
-                <p class="text-xxs mb-0 opacity-80">
-                  AI sẽ đọc lại toàn bộ lịch sử trò chuyện gần nhất để viết một câu nhắc nhở "tinh tế" và "đúng ngữ cảnh" nhất, tránh tạo cảm giác spam cho khách hàng.
-                </p>
-              </v-card>
-
-              <div class="d-flex align-center justify-space-between pt-4 border-top">
-                <v-switch
-                  v-model="aiConfig.followUpEnabled"
-                  label="Kích hoạt Bám đuổi"
-                  color="success"
-                  hide-details
-                  inset
-                />
-                <v-btn 
-                  color="primary" 
-                  variant="flat" 
-                  rounded="lg" 
-                  size="large" 
-                  class="px-10"
-                  :loading="aiSaving"
-                  @click="saveAiConfig"
-                >
-                  Lưu thiết lập
-                </v-btn>
-              </div>
-            </v-card>
-          </v-window-item>
-
-          <!-- Tab 4: Smart Pause -->
-          <v-window-item :value="3" class="h-100 overflow-y-auto pr-2 custom-scrollbar">
-            <v-card class="glass-container pa-6 mb-4" border variant="flat">
-              <div class="d-flex align-center mb-6">
-                <v-icon color="error" size="32" class="mr-4">mdi-shield-alert-outline</v-icon>
-                <div>
-                  <h3 class="text-h6 font-weight-bold">Cấu hình Dừng/Tiếp tục thông minh</h3>
-                  <p class="text-caption text-medium-emphasis mb-0">Tự động nhường quyền cho nhân viên khi gặp điều kiện nhạy cảm.</p>
-                </div>
-              </div>
-
-              <div class="text-subtitle-2 font-weight-bold mb-4">Các điều kiện để AI ngừng phản hồi:</div>
-              
-              <div v-if="!aiConfig.stopConditions || aiConfig.stopConditions.length === 0" class="text-center pa-8 border rounded-lg border-dashed mb-4">
-                <v-icon color="medium-emphasis" size="48" class="mb-2">mdi-text-box-search-outline</v-icon>
-                <div class="text-caption text-medium-emphasis">Chưa có điều kiện dừng nào được thiết lập.</div>
-              </div>
-
-              <div v-else class="mb-4">
-                <div v-for="(_, index) in aiConfig.stopConditions" :key="index" class="d-flex align-center mb-2">
-                  <v-text-field
-                    v-model="aiConfig.stopConditions[index]"
-                    placeholder="Ví dụ: Khách hàng hỏi về giá sỉ..."
-                    variant="outlined"
-                    density="compact"
-                    rounded="lg"
-                    hide-details
-                    prepend-inner-icon="mdi-circle-medium"
-                  >
-                    <template v-slot:append>
-                      <v-btn icon="mdi-delete-outline" variant="text" color="error" size="small" @click="removeStopCondition(Number(index))"></v-btn>
-                    </template>
-                  </v-text-field>
-                </div>
-              </div>
-
-              <v-btn 
-                variant="outlined" 
-                color="primary" 
-                rounded="lg" 
-                prepend-icon="mdi-plus" 
-                class="mb-8"
-                @click="addStopCondition"
-              >
-                Thêm điều kiện mới
-              </v-btn>
-
-              <div class="text-caption font-weight-bold opacity-60 mb-3">MẪU GỢI Ý (BẤM ĐỂ THÊM NHANH):</div>
-              <div class="d-flex flex-wrap ga-2 mb-8">
-                <v-chip
-                  v-for="t in stopTemplates"
-                  :key="t.title"
-                  size="small"
-                  variant="tonal"
-                  :color="t.color"
-                  class="px-3"
-                  @click="addStopFromTemplate(t.content)"
-                >
-                  <v-icon start size="14">{{ t.icon }}</v-icon>
-                  {{ t.title }}
-                </v-chip>
-              </div>
-
-              <v-divider class="mb-6"></v-divider>
-
-              <div class="text-subtitle-2 font-weight-bold mb-4">Cấu hình Tiếp tục phản hồi:</div>
-              
-              <v-switch
-                v-model="aiConfig.autoResumeEnabled"
-                label="Tự động tiếp tục phản hồi (Resume)"
-                color="primary"
-                hide-details
-                inset
-                class="mb-2"
-              />
-              
-              <v-expand-transition>
-                <div v-if="aiConfig.autoResumeEnabled" class="pl-14">
-                  <v-row align="center">
-                    <v-col cols="auto" class="text-caption">Tiếp tục sau:</v-col>
-                    <v-col cols="4">
+                  <v-row dense class="mb-4">
+                    <v-col cols="12" md="5">
                       <v-select
-                        v-model="aiConfig.autoResumeMinutes"
-                        :items="resumeIntervalOptions"
+                        v-model="aiConfig.languagePolicy"
+                        :items="languageOptions"
+                        label="Chính sách ngôn ngữ"
+                        variant="outlined"
+                        rounded="lg"
+                        prepend-inner-icon="mdi-translate"
+                      />
+                    </v-col>
+                    <v-col cols="12" md="7">
+                      <v-alert
+                        variant="tonal"
+                        color="info"
+                        density="comfortable"
+                        rounded="lg"
+                        class="behavior-alert"
+                      >
+                        Mẫu cá tính chỉ là điểm khởi đầu. Bạn vẫn nên chỉnh lại theo đúng thương hiệu
+                        và tập khách hàng của mình.
+                      </v-alert>
+                    </v-col>
+                  </v-row>
+
+                  <div class="text-caption font-weight-bold mb-3 opacity-70">
+                    MẪU CÁ TÍNH
+                  </div>
+                  <v-row dense class="mb-4">
+                    <v-col v-for="template in personaTemplates" :key="template.name" cols="12" md="6">
+                      <v-card
+                        class="preset-card"
+                        elevation="0"
+                        border
+                        hover
+                        @click="applyPersona(template)"
+                      >
+                        <div class="d-flex align-center ga-3 mb-2">
+                          <v-avatar size="38" color="primary" variant="tonal">
+                            <v-icon :icon="template.icon" />
+                          </v-avatar>
+                          <div class="overflow-hidden">
+                            <div class="font-weight-bold text-body-2 text-truncate">
+                              {{ template.name }}
+                            </div>
+                            <div class="text-caption text-medium-emphasis text-truncate">
+                              {{ template.description }}
+                            </div>
+                          </div>
+                        </div>
+                        <div class="text-caption text-medium-emphasis line-clamp-3">
+                          {{ template.preview }}
+                        </div>
+                      </v-card>
+                    </v-col>
+                  </v-row>
+
+                  <v-textarea
+                    v-model="aiConfig.instructions"
+                    label="Chỉ dẫn cá tính và cách trả lời"
+                    variant="outlined"
+                    rows="10"
+                    rounded="lg"
+                    persistent-hint
+                    hint="Viết như một playbook: AI nên xưng hô ra sao, ưu tiên điều gì, tránh điều gì."
+                  />
+
+                  <div class="d-flex justify-end mt-4">
+                    <v-btn
+                      color="primary"
+                      variant="flat"
+                      rounded="lg"
+                      size="large"
+                      :loading="aiSaving"
+                      @click="saveAiConfig"
+                    >
+                      Lưu cá tính AI
+                    </v-btn>
+                  </div>
+                </v-card>
+
+                <v-card class="section-card section-card--soft" elevation="0" border>
+                  <div class="d-flex align-center justify-space-between flex-wrap ga-3">
+                    <div>
+                      <div class="text-caption text-medium-emphasis text-uppercase">
+                        Luôn bật
+                      </div>
+                      <div class="text-subtitle-1 font-weight-bold">
+                        Quy tắc hệ thống nền
+                      </div>
+                      <p class="text-body-2 text-medium-emphasis mb-0">
+                        AI vẫn bị ràng buộc bởi các quy tắc an toàn, bảo mật và kiểm soát định dạng.
+                      </p>
+                    </div>
+                    <v-chip size="small" color="secondary" variant="flat">
+                      {{ aiConfig.planName || 'Plan' }}
+                    </v-chip>
+                  </div>
+                </v-card>
+              </div>
+            </v-window-item>
+
+            <v-window-item value="knowledge">
+              <div class="section-stack">
+                <v-card class="section-card" elevation="0" border>
+                  <div class="section-card__headline">
+                    <div>
+                      <div class="text-caption text-medium-emphasis text-uppercase">
+                        Lớp 2
+                      </div>
+                      <h2 class="text-h6 font-weight-bold mb-1">AI biết gì</h2>
+                      <p class="text-body-2 text-medium-emphasis mb-0">
+                        Dạy AI về giá, vận chuyển, bảo hành, kịch bản chốt đơn và tri thức riêng
+                        theo từng kênh kết nối.
+                      </p>
+                    </div>
+                    <div class="d-flex ga-2 flex-wrap justify-end">
+                      <v-chip size="small" color="primary" variant="tonal">
+                        {{ activeKnowledgeCount }} mục đang học
+                      </v-chip>
+                      <v-chip size="small" color="secondary" variant="tonal">
+                        {{ scopedKnowledgeCount }} mục theo kênh
+                      </v-chip>
+                    </div>
+                  </div>
+
+                  <div class="text-caption font-weight-bold mb-3 opacity-70">
+                    GỢI Ý NỘI DUNG NÊN NẠP
+                  </div>
+                  <v-slide-group show-arrows class="mb-4">
+                    <v-slide-group-item
+                      v-for="template in knowledgeTemplates"
+                      :key="template.name"
+                    >
+                      <v-card
+                        class="knowledge-template-card ma-1"
+                        elevation="0"
+                        border
+                        hover
+                        @click="applyKnowledgeTemplate(template)"
+                      >
+                        <v-icon
+                          :icon="template.icon"
+                          :color="template.group === 'Bán hàng' ? 'secondary' : 'primary'"
+                          class="mb-2"
+                        />
+                        <div class="text-caption font-weight-bold truncate-2 text-center">
+                          {{ template.name }}
+                        </div>
+                        <v-chip
+                          size="x-small"
+                          :color="template.group === 'Bán hàng' ? 'secondary' : 'primary'"
+                          variant="tonal"
+                          class="mt-2"
+                        >
+                          {{ template.group }}
+                        </v-chip>
+                      </v-card>
+                    </v-slide-group-item>
+                  </v-slide-group>
+
+                  <v-card class="magic-console pa-4 mb-4" elevation="0" border>
+                    <div class="d-flex align-center justify-space-between flex-wrap ga-3 mb-3">
+                      <div>
+                        <div class="text-subtitle-1 font-weight-bold primary--text">
+                          Nạp nhanh bằng AI
+                        </div>
+                        <div class="text-caption text-medium-emphasis">
+                          Dán một đoạn nội dung bất kỳ. Hệ thống sẽ tự phân loại trước khi lưu.
+                        </div>
+                      </div>
+                      <v-menu>
+                        <template #activator="{ props }">
+                          <v-btn
+                            v-bind="props"
+                            variant="text"
+                            size="small"
+                            color="secondary"
+                            prepend-icon="mdi-text-box-plus-outline"
+                          >
+                            Dùng mẫu
+                          </v-btn>
+                        </template>
+                        <v-list density="compact" class="glass-list">
+                          <v-list-item
+                            v-for="template in knowledgeTemplates"
+                            :key="template.name"
+                            :title="template.name"
+                            @click="applyTemplate(template)"
+                          >
+                            <template #prepend>
+                              <v-icon :icon="template.icon" size="small" />
+                            </template>
+                          </v-list-item>
+                        </v-list>
+                      </v-menu>
+                    </div>
+
+                    <v-textarea
+                      v-model="magicInput"
+                      variant="plain"
+                      rows="4"
+                      hide-details
+                      class="magic-textarea"
+                      :disabled="savingMagic"
+                      placeholder="Ví dụ: Shop miễn phí ship từ 500k. Đơn dưới 500k tính 20k nội thành, 30k ngoại thành..."
+                      @keyup.ctrl.enter="runMagicAdd"
+                    />
+
+                    <div class="d-flex align-center mt-3 flex-wrap ga-3">
+                      <v-select
+                        v-model="magicAccountId"
+                        :items="accountOptions"
+                        label="Áp dụng cho"
                         variant="outlined"
                         density="compact"
+                        hide-details
+                        rounded="lg"
+                        class="knowledge-account-select"
+                        prepend-inner-icon="mdi-account-star-outline"
+                      />
+                      <v-spacer />
+                      <v-btn
+                        color="primary"
+                        variant="flat"
+                        rounded="lg"
+                        :loading="savingMagic"
+                        :disabled="!magicInput.trim()"
+                        @click="runMagicAdd"
+                      >
+                        Nạp kiến thức
+                      </v-btn>
+                    </div>
+                  </v-card>
+
+                  <div class="scope-note">
+                    <v-icon icon="mdi-account-switch-outline" color="warning" class="mr-2" />
+                    <span>
+                      Nếu bạn vận hành nhiều kênh với sản phẩm khác nhau, hãy gắn tri thức đúng theo
+                      tài khoản để tránh AI trả lời nhầm giá hoặc chính sách.
+                    </span>
+                  </div>
+                </v-card>
+
+                <v-card class="section-card section-card--stretch" elevation="0" border>
+                  <v-row dense class="mb-4">
+                    <v-col cols="12" md="5">
+                      <v-text-field
+                        v-model="search"
+                        prepend-inner-icon="mdi-magnify"
+                        label="Tìm kiếm nội dung"
+                        variant="outlined"
+                        density="comfortable"
+                        rounded="lg"
+                        hide-details
+                      />
+                    </v-col>
+                    <v-col cols="6" md="3.5">
+                      <v-select
+                        v-model="filterCategory"
+                        :items="categories"
+                        label="Danh mục"
+                        variant="outlined"
+                        density="comfortable"
+                        rounded="lg"
+                        hide-details
+                      />
+                    </v-col>
+                    <v-col cols="6" md="3.5">
+                      <v-select
+                        v-model="filterAccount"
+                        :items="accountOptions"
+                        label="Tài khoản"
+                        variant="outlined"
+                        density="comfortable"
                         rounded="lg"
                         hide-details
                       />
                     </v-col>
                   </v-row>
-                </div>
-              </v-expand-transition>
 
-              <div class="d-flex justify-end pt-8 mt-4 border-top">
-                <v-btn 
-                  color="primary" 
-                  variant="flat" 
-                  rounded="lg" 
-                  size="large" 
-                  class="px-10"
-                  :loading="aiSaving"
-                  @click="saveAiConfig"
-                >
-                  Lưu thiết lập
-                </v-btn>
-              </div>
-            </v-card>
-          </v-window-item>
+                  <div class="knowledge-list custom-scrollbar">
+                    <template v-if="loading">
+                      <v-skeleton-loader
+                        v-for="index in 4"
+                        :key="index"
+                        type="list-item-three-line"
+                        class="mb-4"
+                      />
+                    </template>
 
-          <!-- Tab 5: Advanced -->
-          <v-window-item :value="4" class="h-100 overflow-y-auto pr-2 custom-scrollbar">
-            <v-card class="glass-container pa-6 mb-4" border variant="flat">
-              <div class="d-flex align-center mb-6">
-                <v-icon color="indigo" size="32" class="mr-4">mdi-auto-fix</v-icon>
-                <div>
-                  <h3 class="text-h6 font-weight-bold">Cấu hình Nâng cao</h3>
-                  <p class="text-caption text-medium-emphasis mb-0">Tự động hóa sâu hơn và tối ưu hóa thời gian vận hành AI.</p>
-                </div>
-              </div>
+                    <template v-else-if="filteredItems.length">
+                      <v-card
+                        v-for="item in filteredItems"
+                        :id="`knowledge-${item.id}`"
+                        :key="item.id"
+                        class="knowledge-card mb-3"
+                        elevation="0"
+                        border
+                      >
+                        <div class="d-flex pa-4 ga-4">
+                          <v-avatar size="42" color="primary" variant="tonal">
+                            <v-icon :icon="getCategoryIcon(item.category)" />
+                          </v-avatar>
+                          <div class="flex-grow-1 overflow-hidden">
+                            <div class="d-flex align-center ga-2 mb-2 flex-wrap">
+                              <div class="text-subtitle-1 font-weight-bold truncate-1">
+                                {{ item.title }}
+                              </div>
+                              <v-spacer />
+                              <v-chip
+                                size="x-small"
+                                :color="item.isActive ? 'success' : 'grey'"
+                                variant="tonal"
+                              >
+                                {{ item.isActive ? 'Đang học' : 'Tạm ẩn' }}
+                              </v-chip>
+                            </div>
 
-              <!-- AI Scheduling -->
-              <div class="text-subtitle-2 font-weight-bold mb-4 d-flex align-center">
-                <v-icon size="18" class="mr-2" color="indigo">mdi-clock-check-outline</v-icon>
-                Giờ làm việc của AI
-              </div>
-              
-              <v-radio-group v-model="aiConfig.aiWorkMode" class="mb-4">
-                <v-radio label="Luôn luôn hoạt động (24/7)" value="always" color="indigo"></v-radio>
-                <v-radio label="Chỉ hoạt động ngoài giờ hành chính (Human off-hours)" value="off_hours" color="indigo"></v-radio>
-                <v-radio label="Chỉ hoạt động trong giờ hành chính (Human on-hours)" value="on_hours" color="indigo"></v-radio>
-                <v-radio label="Tạm tắt hoàn toàn (Chỉ dùng thủ công)" value="manual" color="indigo"></v-radio>
-              </v-radio-group>
+                            <p class="text-body-2 text-medium-emphasis line-clamp-2 mb-3">
+                              {{ item.content }}
+                            </p>
 
-              <v-divider class="my-6"></v-divider>
-
-              <div class="text-subtitle-2 font-weight-bold mb-4 d-flex align-center">
-                <v-icon size="18" class="mr-2" color="indigo">mdi-robot-excited-outline</v-icon>
-                Chế độ phản hồi (Hybrid vs Auto)
-              </div>
-              
-              <v-radio-group v-model="aiConfig.aiResponseMode" class="mb-4">
-                <v-radio value="auto" color="indigo">
-                  <template v-slot:label>
-                    <div>
-                      <div class="text-body-2 font-weight-bold">Tự động hoàn toàn (Auto Mode)</div>
-                      <div class="text-caption">AI sẽ trực tiếp gửi tin nhắn cho khách hàng mà không cần duyệt.</div>
-                    </div>
-                  </template>
-                </v-radio>
-                <v-radio value="hybrid" color="indigo" class="mt-2">
-                  <template v-slot:label>
-                    <div>
-                      <div class="text-body-2 font-weight-bold">Chế độ Hỗ trợ (Hybrid Mode)</div>
-                      <div class="text-caption">AI sẽ soạn sẵn câu trả lời dưới dạng bản thảo (Draft). Nhân viên nhấn "Gửi" để hoàn tất.</div>
-                    </div>
-                  </template>
-                </v-radio>
-              </v-radio-group>
-
-              <v-alert
-                v-if="aiConfig.aiWorkMode === 'off_hours' || aiConfig.aiWorkMode === 'on_hours'"
-                type="info"
-                variant="tonal"
-                density="compact"
-                class="mb-6 rounded-lg text-caption"
-              >
-                AI sẽ tự động kiểm tra giờ hệ thống để quyết định có phản hồi hay không. 
-                Giờ hành chính mặc định: 08:00 - 18:00 (Thứ 2 - Thứ 7).
-              </v-alert>
-
-              <v-divider class="my-6"></v-divider>
-
-              <!-- Lead Extraction -->
-              <div class="text-subtitle-2 font-weight-bold mb-4 d-flex align-center">
-                <v-icon size="18" class="mr-2" color="success">mdi-database-import-outline</v-icon>
-                Tự động trích xuất thông tin (Lead Extraction)
-              </div>
-              
-              <v-list bg-color="transparent" class="pa-0">
-                <v-list-item class="pa-0 mb-2">
-                  <template v-slot:prepend>
-                    <v-icon color="success">mdi-account-details-outline</v-icon>
-                  </template>
-                  <v-list-item-title class="text-body-2">Tự động lấy SĐT và Địa chỉ</v-list-item-title>
-                  <v-list-item-subtitle class="text-xxs">AI sẽ quét tin nhắn khách gửi để cập nhật vào CRM.</v-list-item-subtitle>
-                  <template v-slot:append>
-                    <v-switch v-model="aiConfig.autoExtractInfo" color="success" hide-details inset density="compact" />
-                  </template>
-                </v-list-item>
-
-                <v-list-item class="pa-0">
-                  <template v-slot:prepend>
-                    <v-icon color="success">mdi-lightning-bolt-outline</v-icon>
-                  </template>
-                  <v-list-item-title class="text-body-2">Tự động phân loại Tiềm năng (Leads)</v-list-item-title>
-                  <v-list-item-subtitle class="text-xxs">Đánh dấu khách hàng là "Tiềm năng" khi có đủ thông tin liên hệ.</v-list-item-subtitle>
-                  <template v-slot:append>
-                    <v-switch v-model="aiConfig.autoCreateLeads" color="success" hide-details inset density="compact" />
-                  </template>
-                </v-list-item>
-              </v-list>
-
-              <div class="d-flex justify-end pt-8 mt-4 border-top">
-                <v-btn 
-                  color="indigo" 
-                  variant="flat" 
-                  rounded="lg" 
-                  size="large" 
-                  class="px-10"
-                  :loading="aiSaving"
-                  @click="saveAiConfig"
-                >
-                  Lưu thiết lập
-                </v-btn>
-              </div>
-            </v-card>
-          </v-window-item>
-
-          <!-- Tab 2: Knowledge Base -->
-          <v-window-item :value="1" class="h-100 d-flex flex-column overflow-hidden">
-            <div class="d-flex align-center justify-space-between mb-2">
-              <div class="text-caption font-weight-bold opacity-70">GỢI Ý NỘI DUNG NÊN NẠP:</div>
-              <div class="d-flex ga-1">
-                <v-chip size="x-small" variant="flat" color="primary" class="px-2">Thông tin</v-chip>
-                <v-chip size="x-small" variant="flat" color="secondary" class="px-2">Bán hàng</v-chip>
-              </div>
-            </div>
-            
-            <v-slide-group
-              show-arrows
-              class="mb-2"
-            >
-              <v-slide-group-item
-                v-for="t in knowledgeTemplates"
-                :key="t.name"
-              >
-                <v-card 
-                  variant="outlined" 
-                  :class="['persona-template-card pa-2 ma-1 text-center', t.group === 'Bán hàng' ? 'border-secondary-light' : '']" 
-                  @click="applyKnowledgeTemplate(t)"
-                  width="105"
-                  min-height="85"
-                  hover
-                >
-                  <v-icon :color="t.group === 'Bán hàng' ? 'secondary' : 'primary'" size="16" class="mb-1">{{ t.icon }}</v-icon>
-                  <div class="text-xxs font-weight-bold truncate-2" style="line-height: 1.1; min-height: 2.2em">{{ t.name }}</div>
-                  <div 
-                    :class="['mt-1 px-1 rounded-pill text-xxxxs font-weight-bold text-uppercase', t.group === 'Bán hàng' ? 'bg-secondary-soft secondary--text' : 'bg-primary-soft primary--text']"
-                  >
-                    {{ t.group }}
-                  </div>
-                </v-card>
-              </v-slide-group-item>
-            </v-slide-group>
-
-            <!-- Magic Add Console -->
-            <v-card class="magic-console mb-6 pa-1 flex-shrink-0" elevation="12">
-          <div class="d-flex align-center pa-2 px-4 justify-space-between">
-            <div class="d-flex align-center">
-              <v-icon color="primary" class="mr-2 animate-sparkle">mdi-sparkles</v-icon>
-              <span class="text-subtitle-2 font-weight-bold primary--text">NẠP NHANH BẰNG AI (1-CLICK)</span>
-            </div>
-            
-            <div class="d-flex align-center">
-              <!-- Templates Dropdown -->
-              <v-menu>
-                <template v-slot:activator="{ props }">
-                  <v-btn v-bind="props" variant="text" size="small" color="secondary" prepend-icon="mdi-text-box-plus-outline" class="mr-2">
-                    Dùng mẫu
-                  </v-btn>
-                </template>
-                <v-list class="glass-list" density="compact">
-                  <v-list-item v-for="(t, i) in knowledgeTemplates" :key="i" :title="t.name" @click="applyTemplate(t)">
-                    <template v-slot:prepend><v-icon size="small">{{ t.icon }}</v-icon></template>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-            </div>
-          </div>
-          
-          <div class="pa-3 pt-1">
-            <v-textarea
-              v-model="magicInput"
-              placeholder="Dán nội dung bất kỳ... AI sẽ tự động phân tích và gán cho đúng Zalo shop."
-              variant="plain"
-              bg-color="transparent"
-              rows="3"
-              hide-details
-              class="magic-textarea"
-              :disabled="savingMagic"
-              @keyup.ctrl.enter="runMagicAdd"
-            />
-            
-            <div class="d-flex align-center mt-2 px-1">
-              <v-select
-                v-model="magicAccountId"
-                :items="accountOptions"
-                label="Áp dụng cho"
-                variant="outlined"
-                density="compact"
-                hide-details
-                rounded="lg"
-                class="account-selector-mini"
-                prepend-inner-icon="mdi-account-star-outline"
-                style="max-width: 200px"
-              ></v-select>
-              <v-spacer />
-              <v-btn 
-                color="primary" 
-                variant="flat" 
-                rounded="lg" 
-                size="small" 
-                :loading="savingMagic"
-                :disabled="!magicInput.trim()"
-                @click="runMagicAdd"
-              >
-                Nạp kiến thức
-              </v-btn>
-            </div>
-          </div>
-        </v-card>
-
-        <div class="glass-container pa-4 flex-grow-1 d-flex flex-column overflow-hidden">
-          <!-- Search & Filters -->
-          <v-row dense class="mb-4 flex-shrink-0">
-            <v-col cols="12" sm="5">
-              <v-text-field
-                v-model="search"
-                prepend-inner-icon="mdi-magnify"
-                label="Tìm kiếm nội dung..."
-                variant="outlined"
-                density="comfortable"
-                rounded="lg"
-                hide-details
-                class="search-input"
-              />
-            </v-col>
-            <v-col cols="6" sm="3.5">
-              <v-select
-                v-model="filterCategory"
-                :items="categories"
-                label="Danh mục"
-                variant="outlined"
-                density="comfortable"
-                rounded="lg"
-                hide-details
-              />
-            </v-col>
-            <v-col cols="6" sm="3.5">
-              <v-select
-                v-model="filterAccount"
-                :items="accountOptions"
-                label="Tài khoản Zalo"
-                variant="outlined"
-                density="comfortable"
-                rounded="lg"
-                hide-details
-              />
-            </v-col>
-          </v-row>
-
-          <!-- Scrollable List -->
-          <div class="overflow-y-auto pr-2 flex-grow-1 custom-scrollbar">
-            <v-row v-if="loading">
-              <v-col v-for="i in 4" :key="i" cols="12">
-                <v-skeleton-loader type="list-item-three-line" class="glass-card mb-4" />
-              </v-col>
-            </v-row>
-
-            <v-row v-else-if="filteredItems.length" dense>
-              <v-col v-for="item in filteredItems" :key="item.id" cols="12">
-                <v-card :id="`knowledge-${item.id}`" class="knowledge-card mb-3" elevation="0" border>
-                  <div class="d-flex pa-4">
-                    <div class="mr-4 mt-1">
-                      <v-avatar color="primary-lighten-4" size="40">
-                        <v-icon color="primary" size="20">{{ getCategoryIcon(item.category) }}</v-icon>
-                      </v-avatar>
-                    </div>
-                    <div class="flex-grow-1 overflow-hidden">
-                      <div class="d-flex align-center mb-1">
-                        <span class="text-subtitle-1 font-weight-bold truncate-1">{{ item.title }}</span>
-                        <v-spacer />
-                        <v-chip size="x-small" :color="item.isActive ? 'success' : 'grey'" variant="tonal" class="ml-2 px-2">
-                          {{ item.isActive ? 'Đang học' : 'Tạm ẩn' }}
-                        </v-chip>
-                      </div>
-                      
-                      <p class="text-body-2 text-medium-emphasis line-clamp-2 mb-2">
-                        {{ item.content }}
-                      </p>
-                      
-                      <div class="d-flex align-center flex-wrap gap-2">
-                        <v-chip size="x-small" variant="outlined" class="mr-2 px-2 opacity-60">
-                          {{ item.category }}
-                        </v-chip>
-                        
-                        <!-- Account specific badge -->
-                        <v-chip size="x-small" :color="item.zaloAccountId ? 'secondary' : 'primary'" variant="tonal" class="mr-2 px-2">
-                          <v-icon size="12" class="mr-1">{{ item.zaloAccountId ? 'mdi-account-check-outline' : 'mdi-earth' }}</v-icon>
-                          {{ item.zaloAccount?.displayName || 'Tất cả tài khoản' }}
-                        </v-chip>
-
-                        <div class="stats-badge mr-2" v-if="item.useCount > 0">
-                          <v-icon size="14" class="mr-1">mdi-head-cog-outline</v-icon>
-                          <span>{{ item.useCount }}</span>
+                            <div class="d-flex align-center flex-wrap ga-2">
+                              <v-chip size="x-small" variant="outlined">
+                                {{ item.category }}
+                              </v-chip>
+                              <v-chip
+                                size="x-small"
+                                :color="item.zaloAccountId ? 'secondary' : 'primary'"
+                                variant="tonal"
+                              >
+                                <v-icon
+                                  size="12"
+                                  class="mr-1"
+                                  :icon="item.zaloAccountId ? 'mdi-account-check-outline' : 'mdi-earth'"
+                                />
+                                {{ item.zaloAccount?.displayName || 'Tất cả tài khoản' }}
+                              </v-chip>
+                              <div v-if="item.useCount > 0" class="stats-badge">
+                                <v-icon size="14" icon="mdi-head-cog-outline" class="mr-1" />
+                                {{ item.useCount }}
+                              </div>
+                              <v-spacer />
+                              <v-btn icon size="x-small" variant="text" color="primary" @click="editItem(item)">
+                                <v-icon icon="mdi-pencil-outline" />
+                              </v-btn>
+                              <v-btn icon size="x-small" variant="text" color="error" @click="confirmDelete(item)">
+                                <v-icon icon="mdi-trash-can-outline" />
+                              </v-btn>
+                            </div>
+                          </div>
                         </div>
-                        
-                        <v-spacer />
-                        <v-btn icon size="x-small" variant="text" color="primary" @click="editItem(item)">
-                          <v-icon>mdi-pencil-outline</v-icon>
-                        </v-btn>
-                        <v-btn icon size="x-small" variant="text" color="error" @click="confirmDelete(item)">
-                          <v-icon>mdi-trash-can-outline</v-icon>
-                        </v-btn>
+                      </v-card>
+                    </template>
+
+                    <div v-else class="empty-state">
+                      <v-icon size="54" icon="mdi-brain-outline" class="mb-3" />
+                      <div class="text-h6 mb-1">Chưa tìm thấy tri thức phù hợp</div>
+                      <div class="text-body-2 text-medium-emphasis">
+                        Hãy thử đổi bộ lọc hoặc thêm tri thức mới cho AI.
                       </div>
                     </div>
                   </div>
                 </v-card>
-              </v-col>
-            </v-row>
+              </div>
+            </v-window-item>
 
-            <div v-else class="text-center py-16 opacity-40">
-              <v-icon size="64" class="mb-4">mdi-brain-outline</v-icon>
-              <div class="text-h6">Không tìm thấy kiến thức phù hợp</div>
-            </div>
-            </div>
-          </div>
-        </v-window-item>
-      </v-window>
-    </v-col>
+            <v-window-item value="operations">
+              <div class="section-stack">
+                <v-card class="section-card" elevation="0" border>
+                  <div class="section-card__headline">
+                    <div>
+                      <div class="text-caption text-medium-emphasis text-uppercase">
+                        Lớp 3
+                      </div>
+                      <h2 class="text-h6 font-weight-bold mb-1">AI được phép tự làm gì</h2>
+                      <p class="text-body-2 text-medium-emphasis mb-0">
+                        Thiết lập chế độ phản hồi, lịch hoạt động, auto follow-up và điều kiện dừng.
+                      </p>
+                    </div>
+                    <v-chip color="indigo" variant="tonal">
+                      {{ operationsModeLabel }}
+                    </v-chip>
+                  </div>
 
-      <!-- Right Side: simulator -->
-      <v-col cols="12" md="5" class="d-flex flex-column h-100 overflow-hidden">
-        <div class="simulator-panel pa-0 flex-grow-1 d-flex flex-column position-relative overflow-hidden">
-          <div class="pa-4 flex-shrink-0 d-flex align-center border-bottom glass-header">
-            <v-icon color="secondary" class="mr-2">mdi-microsoft-xbox-controller</v-icon>
-            <span class="text-subtitle-1 font-weight-bold">Trình giả lập AI</span>
-            
-            <v-spacer />
-            
+                  <v-row dense>
+                    <v-col cols="12" md="6">
+                      <div class="settings-block">
+                        <div class="settings-block__title">Chế độ phản hồi</div>
+                        <v-radio-group v-model="aiConfig.aiResponseMode" density="compact">
+                          <v-radio value="auto" color="indigo" label="Tự động hoàn toàn" />
+                          <v-radio value="hybrid" color="indigo" label="Soạn nháp để nhân viên duyệt" />
+                        </v-radio-group>
+                      </div>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <div class="settings-block">
+                        <div class="settings-block__title">Khung giờ làm việc của AI</div>
+                        <v-radio-group v-model="aiConfig.aiWorkMode" density="compact">
+                          <v-radio value="always" color="indigo" label="Luôn hoạt động 24/7" />
+                          <v-radio value="off_hours" color="indigo" label="Chỉ ngoài giờ hành chính" />
+                          <v-radio value="on_hours" color="indigo" label="Chỉ trong giờ hành chính" />
+                          <v-radio value="manual" color="indigo" label="Tắt vận hành tự động" />
+                        </v-radio-group>
+                      </div>
+                    </v-col>
+                  </v-row>
+
+                  <div class="d-flex justify-end mt-4">
+                    <v-btn
+                      color="indigo"
+                      variant="flat"
+                      rounded="lg"
+                      :loading="aiSaving"
+                      @click="saveAiConfig"
+                    >
+                      Lưu chế độ vận hành
+                    </v-btn>
+                  </div>
+                </v-card>
+
+                <v-card class="section-card" elevation="0" border>
+                  <div class="section-card__headline">
+                    <div>
+                      <div class="text-subtitle-1 font-weight-bold">Tự động bám đuổi</div>
+                      <p class="text-body-2 text-medium-emphasis mb-0">
+                        AI chủ động nhắc khách khi cuộc trò chuyện bị ngắt quãng.
+                      </p>
+                    </div>
+                    <v-switch
+                      v-model="aiConfig.followUpEnabled"
+                      color="secondary"
+                      hide-details
+                      inset
+                    />
+                  </div>
+
+                  <v-row dense class="mb-3">
+                    <v-col cols="12" md="6">
+                      <v-select
+                        v-model="aiConfig.followUpInterval"
+                        :items="intervalOptions"
+                        label="Gửi sau khi khách im lặng"
+                        variant="outlined"
+                        rounded="lg"
+                        prepend-inner-icon="mdi-clock-outline"
+                      />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-select
+                        v-model="aiConfig.followUpMaxMessages"
+                        :items="[1, 2, 3, 4, 5]"
+                        label="Số tin bám đuổi tối đa"
+                        variant="outlined"
+                        rounded="lg"
+                        prepend-inner-icon="mdi-counter"
+                      />
+                    </v-col>
+                  </v-row>
+
+                  <v-radio-group v-model="aiConfig.followUpType" inline class="mb-4">
+                    <v-radio value="ai" color="secondary" label="AI tự viết nội dung" />
+                    <v-radio value="manual" color="secondary" label="Dùng mẫu cố định" />
+                  </v-radio-group>
+
+                  <v-textarea
+                    v-if="aiConfig.followUpType === 'manual'"
+                    v-model="aiConfig.followUpManualContent"
+                    label="Nội dung mẫu follow-up"
+                    variant="outlined"
+                    rows="4"
+                    rounded="lg"
+                  />
+                  <v-alert
+                    v-else
+                    variant="tonal"
+                    color="secondary"
+                    rounded="lg"
+                    density="comfortable"
+                  >
+                    AI sẽ đọc lại ngữ cảnh gần nhất để viết một câu follow-up phù hợp, tránh spam.
+                  </v-alert>
+
+                  <div class="d-flex justify-end mt-4">
+                    <v-btn
+                      color="secondary"
+                      variant="flat"
+                      rounded="lg"
+                      :loading="aiSaving"
+                      @click="saveAiConfig"
+                    >
+                      Lưu bám đuổi
+                    </v-btn>
+                  </div>
+                </v-card>
+
+                <v-card class="section-card" elevation="0" border>
+                  <div class="section-card__headline">
+                    <div>
+                      <div class="text-subtitle-1 font-weight-bold">Dừng và tiếp tục AI</div>
+                      <p class="text-body-2 text-medium-emphasis mb-0">
+                        Khi gặp tình huống nhạy cảm, AI nên nhường quyền lại cho người thật.
+                      </p>
+                    </div>
+                    <v-chip size="small" color="error" variant="tonal">
+                      {{ stopConditionCount }} điều kiện
+                    </v-chip>
+                  </div>
+
+                  <div v-if="!stopConditions.length" class="empty-inline mb-4">
+                    <v-icon icon="mdi-shield-alert-outline" size="22" class="mr-2" />
+                    Chưa có điều kiện dừng nào được thiết lập.
+                  </div>
+
+                  <div v-else class="mb-4">
+                    <div
+                      v-for="(_, index) in aiConfig.stopConditions"
+                      :key="`stop-${index}`"
+                      class="mb-2"
+                    >
+                      <v-text-field
+                        v-model="aiConfig.stopConditions[index]"
+                        variant="outlined"
+                        density="compact"
+                        rounded="lg"
+                        hide-details
+                        prepend-inner-icon="mdi-circle-medium"
+                      >
+                        <template #append>
+                          <v-btn
+                            icon="mdi-delete-outline"
+                            variant="text"
+                            color="error"
+                            size="small"
+                            @click="removeStopCondition(Number(index))"
+                          />
+                        </template>
+                      </v-text-field>
+                    </div>
+                  </div>
+
+                  <div class="d-flex flex-wrap ga-2 mb-4">
+                    <v-btn
+                      variant="outlined"
+                      color="primary"
+                      rounded="lg"
+                      prepend-icon="mdi-plus"
+                      @click="addStopCondition"
+                    >
+                      Thêm điều kiện
+                    </v-btn>
+                    <v-chip
+                      v-for="template in stopTemplates"
+                      :key="template.title"
+                      :color="template.color"
+                      variant="tonal"
+                      @click="addStopFromTemplate(template.content)"
+                    >
+                      <v-icon start :icon="template.icon" size="14" />
+                      {{ template.title }}
+                    </v-chip>
+                  </div>
+
+                  <v-switch
+                    v-model="aiConfig.autoResumeEnabled"
+                    label="Tự động tiếp tục phản hồi"
+                    color="primary"
+                    hide-details
+                    inset
+                    class="mb-3"
+                  />
+
+                  <v-select
+                    v-if="aiConfig.autoResumeEnabled"
+                    v-model="aiConfig.autoResumeMinutes"
+                    :items="resumeIntervalOptions"
+                    label="Tiếp tục sau"
+                    variant="outlined"
+                    density="comfortable"
+                    rounded="lg"
+                    class="mb-4"
+                  />
+
+                  <div class="d-flex justify-end">
+                    <v-btn
+                      color="primary"
+                      variant="flat"
+                      rounded="lg"
+                      :loading="aiSaving"
+                      @click="saveAiConfig"
+                    >
+                      Lưu điều kiện
+                    </v-btn>
+                  </div>
+                </v-card>
+
+                <v-card class="section-card" elevation="0" border>
+                  <div class="section-card__headline">
+                    <div>
+                      <div class="text-subtitle-1 font-weight-bold">Tự động trích xuất CRM</div>
+                      <p class="text-body-2 text-medium-emphasis mb-0">
+                        Cho phép AI cập nhật dữ liệu khách hàng ngay trong lúc trò chuyện.
+                      </p>
+                    </div>
+                  </div>
+
+                  <v-list bg-color="transparent" class="pa-0">
+                    <v-list-item class="px-0">
+                      <template #prepend>
+                        <v-icon icon="mdi-account-details-outline" color="success" />
+                      </template>
+                      <v-list-item-title>Tự động lấy số điện thoại và địa chỉ</v-list-item-title>
+                      <v-list-item-subtitle>
+                        Cập nhật lại CRM khi khách đã cung cấp thông tin đủ rõ.
+                      </v-list-item-subtitle>
+                      <template #append>
+                        <v-switch
+                          v-model="aiConfig.autoExtractInfo"
+                          color="success"
+                          hide-details
+                          inset
+                          density="compact"
+                        />
+                      </template>
+                    </v-list-item>
+                    <v-list-item class="px-0">
+                      <template #prepend>
+                        <v-icon icon="mdi-lightning-bolt-outline" color="success" />
+                      </template>
+                      <v-list-item-title>Tự động đánh dấu khách tiềm năng</v-list-item-title>
+                      <v-list-item-subtitle>
+                        Phù hợp khi đội sales muốn CRM tự gom lead đủ điều kiện.
+                      </v-list-item-subtitle>
+                      <template #append>
+                        <v-switch
+                          v-model="aiConfig.autoCreateLeads"
+                          color="success"
+                          hide-details
+                          inset
+                          density="compact"
+                        />
+                      </template>
+                    </v-list-item>
+                  </v-list>
+
+                  <div class="d-flex justify-end mt-4">
+                    <v-btn
+                      color="success"
+                      variant="flat"
+                      rounded="lg"
+                      :loading="aiSaving"
+                      @click="saveAiConfig"
+                    >
+                      Lưu tự động hóa
+                    </v-btn>
+                  </div>
+                </v-card>
+              </div>
+            </v-window-item>
+          </v-window>
+        </v-card>
+      </v-col>
+
+      <v-col v-if="showSimulator" cols="12" md="5">
+        <v-card class="simulator-panel" elevation="0" border>
+          <div class="simulator-panel__header">
+            <div>
+              <div class="text-caption text-medium-emphasis text-uppercase">
+                Sandbox
+              </div>
+              <div class="text-subtitle-1 font-weight-bold">Trình giả lập AI</div>
+            </div>
             <v-select
               v-model="simAccountId"
               :items="accountOptions"
-              label="Chat với tư cách"
+              label="Kiểm thử theo tài khoản"
               variant="outlined"
               density="compact"
               hide-details
               rounded="pill"
-              class="account-selector-sim"
-              style="max-width: 180px"
+              class="sim-account-select"
               @update:model-value="testMessages = []"
-            ></v-select>
+            />
           </div>
 
-          <!-- Chat Area -->
-          <div ref="chatContainer" class="flex-grow-1 overflow-y-auto pa-4 d-flex flex-column custom-scrollbar bg-dots">
-            <div v-if="testMessages.length === 0" class="ma-auto text-center opacity-40 px-8">
-              <v-icon size="48" class="mb-4">mdi-chat-question-outline</v-icon>
-              <p class="text-body-2">Hỏi thử một câu bất kỳ để xem AI tại tài khoản <strong>{{ currentSimAccountName }}</strong> sẽ trả lời thế nào.</p>
+          <div ref="chatContainer" class="simulator-messages custom-scrollbar">
+            <div v-if="testMessages.length === 0" class="empty-state compact">
+              <v-icon size="48" icon="mdi-chat-question-outline" class="mb-3" />
+              <div class="text-body-1 font-weight-medium mb-2">
+                Hỏi thử AI trước khi áp dụng thật
+              </div>
+              <div class="text-body-2 text-medium-emphasis">
+                Simulator này phù hợp nhất để kiểm tra cá tính trả lời và chất lượng tri thức mới nạp
+                cho {{ currentSimAccountName }}.
+              </div>
             </div>
-            
-            <div v-for="(msg, i) in testMessages" :key="i" 
-                 :class="['d-flex mb-4 fade-in', msg.role === 'user' ? 'justify-end' : 'justify-start']">
-              <div :class="['message-bubble-wrapper', msg.role === 'user' ? 'user-wrapper' : 'ai-wrapper']">
-                <div v-if="msg.role === 'ai'" class="text-caption font-weight-bold mb-1 primary--text d-flex align-center">
-                  <v-icon size="14" class="mr-1">mdi-robot-outline</v-icon>
+
+            <div
+              v-for="(message, index) in testMessages"
+              :key="`${message.role}-${index}`"
+              :class="['d-flex mb-4 fade-in', message.role === 'user' ? 'justify-end' : 'justify-start']"
+            >
+              <div :class="['message-bubble-wrapper', message.role === 'user' ? 'user-wrapper' : 'ai-wrapper']">
+                <div
+                  v-if="message.role === 'ai'"
+                  class="text-caption font-weight-bold mb-1 primary--text d-flex align-center"
+                >
+                  <v-icon size="14" class="mr-1" icon="mdi-robot-outline" />
                   AI Agent ({{ currentSimAccountName }})
                 </div>
-                
-                <div :class="['message-bubble', msg.role === 'user' ? 'zalo-user-bubble' : 'zalo-ai-bubble']">
-                  {{ msg.content }}
+
+                <div :class="['message-bubble', message.role === 'user' ? 'zalo-user-bubble' : 'zalo-ai-bubble']">
+                  {{ message.content }}
                 </div>
 
-                <!-- Sources display -->
-                <div v-if="msg.sources && msg.sources.length" class="sources-container mt-2">
+                <div v-if="message.sources?.length" class="sources-container mt-2">
                   <div class="text-xxs font-weight-bold opacity-60 mb-1 d-flex align-center">
-                    <v-icon size="10" class="mr-1">mdi-book-open-variant</v-icon> TRÍ THỨC ĐÃ DÙNG:
+                    <v-icon size="10" icon="mdi-book-open-variant" class="mr-1" />
+                    TRI THỨC ĐÃ DÙNG
                   </div>
-                  <div class="d-flex flex-wrap gap-1">
-                    <v-chip 
-                      v-for="src in msg.sources" 
-                      :key="src.id" 
-                      size="x-small" 
-                      variant="tonal" 
-                      color="secondary" 
-                      class="px-2 source-chip"
-                      @click="jumpToKnowledge(src.id)"
+                  <div class="d-flex flex-wrap ga-1">
+                    <v-chip
+                      v-for="source in message.sources"
+                      :key="source.id"
+                      size="x-small"
+                      variant="tonal"
+                      color="secondary"
+                      class="source-chip"
+                      @click="jumpToKnowledge(source.id)"
                     >
-                      {{ src.title }}
-                      <v-icon end size="10" class="ml-1">mdi-arrow-right</v-icon>
+                      {{ source.title }}
+                      <v-icon end size="10" icon="mdi-arrow-right" class="ml-1" />
                     </v-chip>
                   </div>
                 </div>
 
-                <!-- RLHF Action -->
-                <div v-if="msg.role === 'ai'" class="mt-1">
-                  <v-btn 
-                    variant="text" 
-                    size="x-small" 
-                    color="primary" 
-                    prepend-icon="mdi-auto-fix" 
-                    class="px-1 opacity-60 hover-opacity-100"
-                    @click="openCorrectDialog(msg, i)"
+                <div v-if="message.role === 'ai'" class="mt-1">
+                  <v-btn
+                    variant="text"
+                    size="x-small"
+                    color="primary"
+                    prepend-icon="mdi-auto-fix"
+                    class="px-1 opacity-70"
+                    @click="openCorrectDialog(message, index)"
                   >
-                    Chưa hài lòng? Sửa câu trả lời
+                    Chưa ổn? Sửa câu trả lời
                   </v-btn>
                 </div>
               </div>
             </div>
 
             <div v-if="testing" class="d-flex justify-start mb-4">
-              <div class="message-bubble ai-bubble d-flex align-center">
+              <div class="message-bubble zalo-ai-bubble d-flex align-center">
                 <v-progress-circular indeterminate size="16" width="2" color="primary" class="mr-2" />
-                <span class="text-caption">Đang tra cứu tri thức riêng...</span>
+                <span class="text-caption">AI đang tra cứu tri thức riêng...</span>
               </div>
             </div>
           </div>
 
-          <!-- Input Area -->
-          <div class="pa-4 flex-shrink-0 glass-footer">
+          <div class="simulator-panel__footer">
             <v-text-field
               v-model="testQuestion"
               placeholder="Bạn muốn hỏi gì?"
@@ -763,29 +887,36 @@
               flat
               rounded="pill"
               hide-details
-              @keyup.enter="runTest"
               :disabled="testing"
-              class="simulator-input"
+              @keyup.enter="runTest"
             >
-              <template v-slot:append-inner>
-                <v-btn icon size="small" color="primary" variant="flat" :loading="testing" @click="runTest">
-                  <v-icon>mdi-send</v-icon>
+              <template #append-inner>
+                <v-btn
+                  icon
+                  size="small"
+                  color="primary"
+                  variant="flat"
+                  :loading="testing"
+                  @click="runTest"
+                >
+                  <v-icon icon="mdi-send" />
                 </v-btn>
               </template>
             </v-text-field>
           </div>
-        </div>
+        </v-card>
       </v-col>
     </v-row>
 
-    <!-- Knowledge Form Dialog -->
-    <v-dialog v-model="editDialog.show" max-width="800" persistent>
+    <v-dialog v-model="editDialog.show" max-width="820" persistent>
       <v-card class="form-dialog">
         <v-toolbar color="primary" density="comfortable">
           <v-toolbar-title class="text-subtitle-1 font-weight-bold">
             {{ editDialog.isEdit ? 'Cập nhật tri thức' : 'Nạp tri thức mới' }}
           </v-toolbar-title>
-          <v-btn icon @click="editDialog.show = false"><v-icon>mdi-close</v-icon></v-btn>
+          <v-btn icon @click="editDialog.show = false">
+            <v-icon icon="mdi-close" />
+          </v-btn>
         </v-toolbar>
 
         <v-card-text class="pa-6">
@@ -796,8 +927,7 @@
                   v-model="editDialog.item.title"
                   label="Tiêu đề gợi nhớ"
                   variant="outlined"
-                  required
-                  :rules="[v => !!v || 'Cần có tiêu đề']"
+                  :rules="[requiredRule('Cần có tiêu đề')]"
                 />
               </v-col>
               <v-col cols="12" md="3">
@@ -822,14 +952,13 @@
                   label="Nội dung tri thức"
                   variant="outlined"
                   rows="8"
-                  required
-                  :rules="[v => !!v || 'Bạn chưa nhập kiến thức']"
+                  :rules="[requiredRule('Bạn chưa nhập kiến thức')]"
                 />
               </v-col>
               <v-col cols="12">
                 <v-switch
                   v-model="editDialog.item.isActive"
-                  label="Kích hoạt kiến thức này"
+                  label="Kích hoạt tri thức này"
                   color="success"
                   hide-details
                 />
@@ -841,12 +970,13 @@
         <v-card-actions class="pa-6 bg-grey-lighten-4">
           <v-spacer />
           <v-btn variant="text" @click="editDialog.show = false">Hủy</v-btn>
-          <v-btn color="primary" variant="flat" :loading="saving" @click="saveItem">Lưu tri thức</v-btn>
+          <v-btn color="primary" variant="flat" :loading="saving" @click="saveItem">
+            Lưu tri thức
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
-    <!-- Delete Dialog -->
     <v-dialog v-model="deleteDialog.show" max-width="400">
       <v-card>
         <v-card-title class="bg-error text-white pa-4">Xóa tri thức?</v-card-title>
@@ -854,193 +984,146 @@
         <v-card-actions class="pa-6 pt-0">
           <v-spacer />
           <v-btn variant="text" @click="deleteDialog.show = false">Quay lại</v-btn>
-          <v-btn color="error" variant="flat" :loading="deleting" @click="doDelete">Xóa vĩnh viễn</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Guide Dialog -->
-    <v-dialog v-model="showGuide" max-width="800" scrollable>
-      <v-card class="guide-dialog overflow-hidden">
-        <v-toolbar color="surface" density="comfortable" class="border-bottom">
-          <v-icon color="primary" class="ml-4">mdi-brain</v-icon>
-          <v-toolbar-title class="text-subtitle-1 font-weight-bold ml-2">Hướng dẫn Đào tạo AI Agent</v-toolbar-title>
-          <v-spacer />
-          <v-btn icon @click="showGuide = false"><v-icon>mdi-close</v-icon></v-btn>
-        </v-toolbar>
-
-        <v-card-text class="pa-6 guide-content overflow-y-auto">
-          <!-- Phần 1: Nguyên lý hoạt động -->
-          <section class="mb-10">
-            <h2 class="text-h5 font-weight-bold mb-4 primary--text d-flex align-center">
-              <v-icon class="mr-2">mdi-brain-outline</v-icon> Nguyên lý "Tư duy" của AI
-            </h2>
-            <p class="text-body-1 mb-4">AI của bạn hoạt động theo cơ chế <strong>RAG (Tìm kiếm ngữ nghĩa)</strong>. Khi khách hỏi, nó sẽ quét qua kho tri thức này, chọn ra 3-5 đoạn liên quan nhất rồi mới soạn câu trả lời.</p>
-            <v-alert variant="tonal" color="info" border="start" class="rounded-lg">
-              <div class="text-caption">
-                <strong>Mẹo:</strong> AI giống như một nhân viên mới, nó chỉ trả lời tốt những gì bạn đã "viết vào sổ tay" này. Nội dung càng cụ thể, phản hồi càng ít sai sót.
-              </div>
-            </v-alert>
-          </section>
-
-          <!-- Phần 2: Kỹ thuật viết tri thức hiệu quả -->
-          <section class="mb-10">
-            <h2 class="text-h5 font-weight-bold mb-4 primary--text d-flex align-center">
-              <v-icon class="mr-2">mdi-pencil-box-multiple-outline</v-icon> Kỹ thuật viết tri thức "Sạch"
-            </h2>
-            
-            <div class="mb-6">
-              <div class="font-weight-bold text-subtitle-1 mb-2 d-flex align-center text-secondary">
-                <v-icon size="18" class="mr-2">mdi-numeric-1-circle</v-icon> Quy tắc 1 Tri thức - 1 Vấn đề
-              </div>
-              <p class="text-body-2 mb-2">Đừng viết một đoạn dài 500 chữ nói về cả giá, ship và bảo hành. Hãy chia làm 3 thẻ riêng biệt.</p>
-              <div class="d-flex ga-2">
-                <v-chip size="small" color="error" variant="flat">Sai: Một thẻ nói mọi thứ</v-chip>
-                <v-chip size="small" color="success" variant="flat">Đúng: Tách nhỏ kiến thức</v-chip>
-              </div>
-            </div>
-
-            <div class="mb-6">
-              <div class="font-weight-bold text-subtitle-1 mb-2 d-flex align-center text-secondary">
-                <v-icon size="18" class="mr-2">mdi-numeric-2-circle</v-icon> Cấu trúc Câu hỏi - Câu trả lời (Q&A)
-              </div>
-              <p class="text-body-2 mb-2">Viết dưới dạng câu hỏi giả định sẽ giúp AI tìm kiếm chính xác hơn khi khách hàng hỏi câu tương tự.</p>
-              <v-card variant="outlined" class="pa-3 bg-slate-50 rounded-lg border-dashed">
-                <div class="text-caption font-italic text-slate-600">
-                   "Khách hỏi: Shop mình có chi nhánh ở Sài Gòn không?<br>
-                   Trả lời: Hiện tại shop chỉ có kho chính tại Hà Nội, nhưng có ship COD vào HCM trong 2-3 ngày."
-                </div>
-              </v-card>
-            </div>
-
-            <div>
-              <div class="font-weight-bold text-subtitle-1 mb-2 d-flex align-center text-secondary">
-                <v-icon size="18" class="mr-2">mdi-numeric-3-circle</v-icon> Sử dụng từ khóa (Keywords)
-              </div>
-              <p class="text-body-2">Hãy đưa các từ khóa đồng nghĩa vào kiến thức. Ví dụ: "Giao hàng", "Vận chuyển", "Ship", "Gửi đồ" nên cùng xuất hiện trong một thẻ về vận chuyển.</p>
-            </div>
-          </section>
-
-          <!-- Phần 3: So sánh trực quan -->
-          <section class="mb-10">
-             <h2 class="text-h5 font-weight-bold mb-4 primary--text d-flex align-center">
-              <v-icon class="mr-2">mdi-compare-horizontal</v-icon> So sánh: Tri thức Tốt vs Sơ sài
-            </h2>
-            <v-table class="border rounded-lg bg-transparent">
-              <thead>
-                <tr>
-                  <th class="text-error" style="width: 40%">⚠️ Sơ sài (Dễ hiểu lầm)</th>
-                  <th class="text-success">💎 Chất lượng (AI cực chuẩn)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="text-caption py-4">Shop bán áo phông 200k.</td>
-                  <td class="text-caption py-4">
-                    <strong>Tên SP:</strong> Áo phông Unisex Cotton 100%.<br>
-                    <strong>Giá:</strong> 200.000đ (Chưa bao gồm ship).<br>
-                    <strong>Size:</strong> M (45-55kg), L (55-65kg), XL (65-80kg).
-                  </td>
-                </tr>
-                <tr>
-                  <td class="text-caption py-4">Thứ 7 chủ nhật nghỉ.</td>
-                  <td class="text-caption py-4">
-                    <strong>Giờ làm việc:</strong> Thứ 2 đến Thứ 6 (8h-18h).<br>
-                    <strong>Nghỉ lễ:</strong> Thứ 7 và CN shop dừng xử lý đơn nhưng AI vẫn sẽ hỗ trợ giải đáp thắc mắc 24/7.
-                  </td>
-                </tr>
-              </tbody>
-            </v-table>
-          </section>
-
-          <!-- Phần 4: Quản lý theo tài khoản Zalo -->
-          <section class="mb-4">
-            <h2 class="text-h5 font-weight-bold mb-4 primary--text d-flex align-center">
-              <v-icon class="mr-2">mdi-account-switch-outline</v-icon> Tri thức riêng theo tài khoản
-            </h2>
-            <v-row dense>
-              <v-col cols="12">
-                <v-card variant="tonal" color="warning" class="pa-4">
-                  <div class="text-body-2">
-                    Nếu bạn có 2 Zalo bán 2 dòng hàng khác nhau, hãy tuyệt đối sử dụng tính năng <strong>"Gán tài khoản"</strong>. Điều này ngăn chặn việc AI lấy nhầm giá của Shop A trả lời cho khách ở Shop B.
-                  </div>
-                </v-card>
-              </v-col>
-            </v-row>
-          </section>
-        </v-card-text>
-
-        <v-card-actions class="pa-6 border-top">
-          <v-spacer />
-          <v-btn color="primary" variant="flat" rounded="lg" block @click="showGuide = false">Đã hiểu!</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- RLHF Correction Dialog -->
-    <v-dialog v-model="correctDialog.show" max-width="600">
-      <v-card class="form-dialog">
-        <v-toolbar color="secondary" density="comfortable">
-          <v-toolbar-title class="text-subtitle-1 font-weight-bold">Dạy AI trả lời đúng</v-toolbar-title>
-          <v-btn icon @click="correctDialog.show = false"><v-icon>mdi-close</v-icon></v-btn>
-        </v-toolbar>
-        <v-card-text class="pa-6">
-          <div class="mb-4">
-            <div class="text-caption font-weight-bold mb-1 opacity-60">CÂU HỎI CỦA KHÁCH:</div>
-            <div class="pa-3 bg-grey-lighten-4 rounded-lg text-body-2">{{ correctDialog.question }}</div>
-          </div>
-          <div class="mb-4">
-            <div class="text-caption font-weight-bold mb-1 opacity-60">AI ĐÃ TRẢ LỜI (CHƯA TỐT):</div>
-            <div class="pa-3 bg-grey-lighten-4 rounded-lg text-body-2 italic opacity-60">{{ correctDialog.originalAnswer }}</div>
-          </div>
-          <v-textarea
-            v-model="correctDialog.desiredAnswer"
-            label="Câu trả lời bạn mong muốn"
-            placeholder="Hãy viết cách bạn muốn AI trả lời trong trường hợp này..."
-            variant="outlined"
-            rows="4"
-            hide-details
-            class="mb-2"
-          />
-          <div v-if="correctDialog.proposalReason" class="mt-2 pa-2 bg-primary-lighten-5 rounded border-s-4 border-primary">
-            <div class="text-xxs font-weight-bold primary--text mb-1">GỢI Ý TỪ AI:</div>
-            <div class="text-caption italic">{{ correctDialog.proposalReason }}</div>
-          </div>
-          <p v-else class="text-xxs text-medium-emphasis mt-1">AI sẽ dựa vào các tri thức cũ và câu trả lời mới để đề xuất cách sửa tối ưu nhất.</p>
-        </v-card-text>
-        <v-card-actions class="pa-6 pt-0">
-          <v-spacer />
-          <v-btn variant="text" @click="correctDialog.show = false">Hủy</v-btn>
-          <v-btn 
-            color="primary" 
-            variant="flat" 
-            :loading="correctDialog.loading"
-            :disabled="!correctDialog.desiredAnswer.trim()"
-            @click="proposeFix"
-          >
-            Phân tích & Đề xuất
+          <v-btn color="error" variant="flat" :loading="deleting" @click="doDelete">
+            Xóa vĩnh viễn
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
-    <!-- Success Snackbar -->
+    <v-dialog v-model="showGuide" max-width="760" scrollable>
+      <v-card class="guide-dialog overflow-hidden">
+        <v-toolbar color="surface" density="comfortable" class="border-bottom">
+          <v-icon color="primary" class="ml-4" icon="mdi-brain" />
+          <v-toolbar-title class="text-subtitle-1 font-weight-bold ml-2">
+            Hướng dẫn vận hành AI Studio
+          </v-toolbar-title>
+          <v-spacer />
+          <v-btn icon @click="showGuide = false">
+            <v-icon icon="mdi-close" />
+          </v-btn>
+        </v-toolbar>
+
+        <v-card-text class="pa-6 guide-content">
+          <div class="guide-block">
+            <h3 class="text-h6 font-weight-bold mb-2 primary--text">1. Cá tính</h3>
+            <p class="mb-0">
+              Đây là nơi quyết định AI nói như thế nào: xưng hô ra sao, có mềm hay sắc, ưu tiên
+              tư vấn hay chốt đơn.
+            </p>
+          </div>
+          <div class="guide-block">
+            <h3 class="text-h6 font-weight-bold mb-2 primary--text">2. Tri thức</h3>
+            <p class="mb-2">
+              Đây là nơi quyết định AI biết gì. Mỗi thẻ tri thức nên chỉ giải quyết một chủ đề:
+              giá, ship, đổi trả, bảng size, quy trình đặt hàng...
+            </p>
+            <v-alert variant="tonal" color="info" rounded="lg">
+              Nếu bạn có nhiều kênh bán khác nhau, hãy gắn tri thức theo đúng tài khoản để tránh AI
+              dùng nhầm dữ liệu.
+            </v-alert>
+          </div>
+          <div class="guide-block">
+            <h3 class="text-h6 font-weight-bold mb-2 primary--text">3. Vận hành</h3>
+            <p class="mb-0">
+              Đây là nơi quyết định AI được phép tự làm gì: tự reply, chỉ soạn nháp, follow-up,
+              khi nào phải dừng và nhường người thật.
+            </p>
+          </div>
+        </v-card-text>
+
+        <v-card-actions class="pa-6 border-top">
+          <v-spacer />
+          <v-btn color="primary" variant="flat" rounded="lg" @click="showGuide = false">
+            Đã hiểu
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="correctDialog.show" max-width="620">
+      <v-card class="form-dialog">
+        <v-toolbar color="secondary" density="comfortable">
+          <v-toolbar-title class="text-subtitle-1 font-weight-bold">
+            Dạy AI trả lời tốt hơn
+          </v-toolbar-title>
+          <v-btn icon @click="correctDialog.show = false">
+            <v-icon icon="mdi-close" />
+          </v-btn>
+        </v-toolbar>
+        <v-card-text class="pa-6">
+          <div class="mb-4">
+            <div class="text-caption font-weight-bold mb-1 opacity-60">CÂU HỎI CỦA KHÁCH</div>
+            <div class="pa-3 bg-grey-lighten-4 rounded-lg text-body-2">
+              {{ correctDialog.question }}
+            </div>
+          </div>
+          <div class="mb-4">
+            <div class="text-caption font-weight-bold mb-1 opacity-60">AI ĐÃ TRẢ LỜI</div>
+            <div class="pa-3 bg-grey-lighten-4 rounded-lg text-body-2 italic opacity-70">
+              {{ correctDialog.originalAnswer }}
+            </div>
+          </div>
+          <v-textarea
+            v-model="correctDialog.desiredAnswer"
+            label="Câu trả lời bạn mong muốn"
+            variant="outlined"
+            rows="4"
+            hide-details
+            class="mb-2"
+          />
+          <p class="text-caption text-medium-emphasis mt-2 mb-0">
+            AI sẽ đề xuất cập nhật hoặc tạo mới tri thức dựa trên câu trả lời chuẩn mà bạn mong muốn.
+          </p>
+        </v-card-text>
+        <v-card-actions class="pa-6 pt-0">
+          <v-spacer />
+          <v-btn variant="text" @click="correctDialog.show = false">Hủy</v-btn>
+          <v-btn
+            color="primary"
+            variant="flat"
+            :loading="correctDialog.loading"
+            :disabled="!correctDialog.desiredAnswer.trim()"
+            @click="proposeFix"
+          >
+            Phân tích và đề xuất
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-snackbar v-model="toast.show" :color="toast.color" rounded="pill">
-      <v-icon class="mr-2">{{ toast.icon }}</v-icon> {{ toast.text }}
+      <v-icon class="mr-2">{{ toast.icon }}</v-icon>
+      {{ toast.text }}
     </v-snackbar>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, nextTick } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import { api } from '@/api';
 import { useZaloAccounts } from '@/composables/use-zalo-accounts';
 
+type StudioSection = 'behavior' | 'knowledge' | 'operations';
+
+type KnowledgeItem = {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  isActive: boolean;
+  zaloAccountId: string | null;
+  zaloAccount?: { displayName?: string | null } | null;
+  useCount: number;
+};
+
+type AccountOption = { title: string; value: string | null };
+
 const { accounts, fetchAccounts } = useZaloAccounts();
 
-
 const showGuide = ref(false);
-const items = ref<any[]>([]);
+const activeSection = ref<StudioSection>('behavior');
+const items = ref<KnowledgeItem[]>([]);
 const aiConfig = ref<any>({
   enabled: true,
   instructions: '',
@@ -1061,91 +1144,42 @@ const aiConfig = ref<any>({
   aiTimezone: 'Asia/Ho_Chi_Minh',
   autoExtractInfo: false,
   autoCreateLeads: false,
+  aiResponseMode: 'auto',
 });
-const activeTab = ref(0);
-const aiSaving = ref(false);
 
-// State missing from previous refactor
-const search = ref('');
-const filterCategory = ref('Tất cả');
-const filterAccount = ref('Tất cả tài khoản');
 const loading = ref(false);
+const aiSaving = ref(false);
 const saving = ref(false);
 const deleting = ref(false);
 const testing = ref(false);
 const savingMagic = ref(false);
 
-// Accounts logic
-const accountOptions = computed(() => {
-  const opts = accounts.value.map(a => ({ title: a.displayName || a.id, value: a.id }));
-  return [{ title: 'Tất cả tài khoản', value: null }, ...opts];
-});
-
-const currentMagicAccountName = computed(() => {
-  const acc = accountOptions.value.find(o => o.value === magicAccountId.value);
-  return acc ? acc.title : 'Tat ca tai khoan';
-});
-
-const currentSimAccountName = computed(() => {
-  const acc = accountOptions.value.find(o => o.value === simAccountId.value);
-  return acc ? acc.title : '...';
-});
-
-// Knowledge Templates
-const knowledgeTemplates = [
-  // Nhóm 1: Thông tin cơ bản
-  { group: 'Cơ bản', name: '🚚 Vận chuyển', icon: 'mdi-truck-delivery', content: 'Shop mình miễn phí ship cho đơn hàng từ 500k. Với đơn dưới 500k, phí ship nội thành là 20k, ngoại thành là 30k. Thời gian giao hàng: Nội thành 1-2 ngày, Ngoại thành 3-5 ngày.' },
-  { group: 'Cơ bản', name: '💰 Thanh toán', icon: 'mdi-bank', content: 'Thông tin chuyển khoản:\n- Chủ TK: NGUYEN VAN A\n- Số TK: 123456789\n- Ngân hàng: Vietcombank\n- Nội dung: [Họ tên] [Số điện thoại]' },
-  { group: 'Cơ bản', name: '🏢 Thông tin Shop', icon: 'mdi-store-marker', content: 'Địa chỉ: 123 Đường ABC, Quận X, TP. Hồ Chí Minh.\nGiờ làm việc: 8h00 - 21h00 (Tất cả các ngày trong tuần).\nChi nhánh 2: 456 Đường XYZ, Quận Y, Hà Nội.' },
-  { group: 'Cơ bản', name: '📞 Liên hệ', icon: 'mdi-phone-in-talk', content: 'Hotline hỗ trợ: 0901.234.567\nEmail: contact@claro.vn\nWebsite: www.claro.vn\nZalo hỗ trợ kỹ thuật: 0908.765.432' },
-  { group: 'Cơ bản', name: '🏷️ Bảng giá', icon: 'mdi-tag-text-outline', content: 'Bảng giá sản phẩm hiện tại:\n1. Sản phẩm A: 200.000đ\n2. Sản phẩm B: 350.000đ\nƯu đãi: Mua từ 2 sản phẩm giảm ngay 10%.' },
-  
-  // Nhóm 2: Marketing & Bán hàng
-  { group: 'Bán hàng', name: '🚀 Chốt đơn', icon: 'mdi-cart-arrow-right', content: 'Kịch bản chốt đơn: Khi khách đã ưng ý, hãy phản hồi: "Dạ sản phẩm này đang rất hot và chỉ còn vài chiếc cuối cùng trong kho thôi ạ. Anh/Chị cho em xin [Số điện thoại] và [Địa chỉ] để em giữ hàng và lên đơn gửi đi ngay cho mình trong chiều nay nhé!"' },
-  { group: 'Bán hàng', name: '💎 Xử lý giá cao', icon: 'mdi-diamond-stone', content: 'Xử lý khi khách chê giá cao: "Dạ em hiểu băn khoăn của mình ạ. Tuy nhiên sản phẩm bên em là hàng [Loại 1/Chính hãng], đường may/chất liệu rất cao cấp và có bảo hành lên đến [12 tháng]. Đầu tư một lần dùng bền lâu và an tâm vẫn là kinh tế nhất Anh/Chị ạ!"' },
-  { group: 'Bán hàng', name: '🎁 Ưu đãi Upsell', icon: 'mdi-gift-outline', content: 'Kịch bản Upsell: "Dạ hiện tại shop đang có chương trình: Mua thêm 1 sản phẩm bất kỳ sẽ được [Giảm 10% tổng đơn] và [Miễn phí vận chuyển] toàn quốc ạ. Anh/Chị có muốn xem thêm mẫu nào để nhận ưu đãi này không ạ?"' },
-  { group: 'Bán hàng', name: '🛡️ Cam kết uy tín', icon: 'mdi-shield-check-outline', content: 'Cam kết bán hàng: Shop cam kết hàng chính hãng 100%, phát hiện hàng giả đền gấp 10 lần. Đặc biệt, shop cho phép Anh/Chị [Kiểm tra hàng thoải mái] trước khi thanh toán, đúng mẫu đúng chất lượng mới cần nhận hàng ạ.' },
-  { group: 'Bán hàng', name: '🔄 Đổi trả', icon: 'mdi-cached', content: 'Chính sách đổi trả: Shop hỗ trợ đổi size/mẫu trong vòng 7 ngày kể từ khi nhận hàng. Yêu cầu sản phẩm còn nguyên tem mác và chưa qua sử dụng.' }
-];
-
-function applyKnowledgeTemplate(t: any) {
-  magicInput.value = t.content;
-  toast.value = { show: true, text: `Đã dán mẫu: ${t.name}`, color: 'info', icon: 'mdi-content-paste' };
-}
-
-// Simulator & Magic State
+const search = ref('');
+const filterCategory = ref('Tất cả');
+const filterAccount = ref<string | null>(null);
 const magicInput = ref('');
-const magicAccountId = ref(null);
-const simAccountId = ref(null);
+const magicAccountId = ref<string | null>(null);
+const simAccountId = ref<string | null>(null);
 const testQuestion = ref('');
 const testMessages = ref<any[]>([]);
 const chatContainer = ref<HTMLElement | null>(null);
 const toast = ref({ show: false, text: '', color: 'success', icon: 'mdi-check-circle' });
 
-const categories = computed(() => {
-  const cats = new Set(items.value.map(i => i.category).filter(Boolean));
-  return ['Tất cả', ...Array.from(cats)];
-});
-
-const filterCategoriesOnly = computed(() => categories.value.filter(c => c !== 'Tất cả'));
-
-const filteredItems = computed(() => {
-  return items.value.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(search.value.toLowerCase()) || 
-                         item.content.toLowerCase().includes(search.value.toLowerCase());
-    const matchesCat = filterCategory.value === 'Tất cả' || item.category === filterCategory.value;
-    const matchesAcc = filterAccount.value === 'Tất cả tài khoản' || item.zaloAccountId === filterAccount.value;
-    return matchesSearch && matchesCat && matchesAcc;
-  });
-});
-
 const editDialog = ref({
   show: false,
   isEdit: false,
   valid: true,
-  item: { id: '', title: '', content: '', category: 'Chung', isActive: true, zaloAccountId: null as string | null }
+  item: {
+    id: '',
+    title: '',
+    content: '',
+    category: 'Chung',
+    isActive: true,
+    zaloAccountId: null as string | null,
+  },
 });
 
+const deleteDialog = ref({ show: false, item: null as KnowledgeItem | null });
 const correctDialog = ref({
   show: false,
   loading: false,
@@ -1153,18 +1187,314 @@ const correctDialog = ref({
   originalAnswer: '',
   desiredAnswer: '',
   sourceIds: [] as string[],
-  proposalReason: '',
-  index: -1
+  index: -1,
 });
 
-const deleteDialog = ref({ show: false, item: null as any });
+const languageOptions = [
+  { title: 'Tự động nhận diện', value: 'auto' },
+  { title: 'Luôn dùng tiếng Việt', value: 'vi' },
+  { title: 'Luôn dùng tiếng Anh', value: 'en' },
+];
+
+const intervalOptions = [
+  { title: '5 phút', value: 5 },
+  { title: '15 phút', value: 15 },
+  { title: '30 phút', value: 30 },
+  { title: '1 giờ', value: 60 },
+  { title: '2 giờ', value: 120 },
+  { title: '4 giờ', value: 240 },
+  { title: '12 giờ', value: 720 },
+  { title: '24 giờ', value: 1440 },
+];
+
+const resumeIntervalOptions = [
+  { title: '30 phút', value: 30 },
+  { title: '1 giờ', value: 60 },
+  { title: '2 giờ', value: 120 },
+  { title: '4 giờ', value: 240 },
+  { title: '12 giờ', value: 720 },
+  { title: '24 giờ', value: 1440 },
+];
+
+const personaTemplates = [
+  {
+    name: 'Shop thời trang / mỹ phẩm',
+    description: 'Thân thiện, trẻ trung, thiên về chốt đơn',
+    icon: 'mdi-sparkles',
+    preview: 'Nhiệt tình, khen khách vừa đủ, luôn kết bằng một câu hỏi mở.',
+    content:
+      "Bạn là trợ lý bán hàng của shop thời trang/mỹ phẩm.\n- Xưng hô linh hoạt, ưu tiên thân thiện nhưng không suồng sã.\n- Văn phong tươi, ngắn, dễ chốt đơn.\n- Khi trả lời nên chủ động gợi ý bước tiếp theo như chọn mẫu, chọn màu, chốt size.",
+  },
+  {
+    name: 'Chuyên nghiệp và lịch sự',
+    description: 'Phù hợp B2B, tài chính, tư vấn cần độ tin cậy',
+    icon: 'mdi-briefcase-outline',
+    preview: 'Lịch thiệp, chắc thông tin, hạn chế cảm xúc thừa.',
+    content:
+      "Bạn là một chuyên viên tư vấn chuyên nghiệp.\n- Xưng hô Anh/Chị - Em.\n- Ưu tiên thông tin rõ ràng, đúng trọng tâm, tránh dùng quá nhiều icon.\n- Khi chưa chắc dữ liệu, phải nói rõ và đề xuất bước xác minh tiếp theo.",
+  },
+  {
+    name: 'Kỹ thuật và gia dụng',
+    description: 'Rõ ràng, có cấu trúc, hợp hỗ trợ sau bán',
+    icon: 'mdi-tools',
+    preview: 'Đi thẳng vấn đề, có bullet points, tránh khoa trương.',
+    content:
+      "Bạn là chuyên gia hỗ trợ kỹ thuật và tư vấn thiết bị.\n- Xưng hô Anh/Chị - Shop.\n- Trả lời theo cấu trúc bullet points khi nói về thông số, lắp đặt hoặc bảo hành.\n- Ngôn ngữ trung thực, ngắn gọn, tránh tô vẽ.",
+  },
+  {
+    name: 'Tận tâm và thấu hiểu',
+    description: 'Hợp spa, giáo dục, tư vấn cần nhiều khai thác nhu cầu',
+    icon: 'mdi-heart-pulse',
+    preview: 'Mềm, hỏi lại khéo, ưu tiên hiểu đúng tình trạng khách.',
+    content:
+      "Bạn là tư vấn viên tận tâm.\n- Xưng hô Anh/Chị - Em.\n- Trước khi đề xuất giải pháp, hãy hỏi thêm 1-2 câu để hiểu rõ bối cảnh của khách.\n- Trả lời nhẹ nhàng, giải thích vì sao đề xuất này phù hợp.",
+  },
+];
+
+const knowledgeTemplates = [
+  {
+    group: 'Thông tin',
+    name: 'Vận chuyển',
+    icon: 'mdi-truck-delivery',
+    content:
+      'Chính sách giao hàng: Shop miễn phí ship cho đơn từ 500k. Đơn dưới 500k tính 20k nội thành và 30k ngoại thành. Thời gian giao hàng: nội thành 1-2 ngày, ngoại thành 3-5 ngày.',
+  },
+  {
+    group: 'Thông tin',
+    name: 'Thanh toán',
+    icon: 'mdi-bank',
+    content:
+      'Thông tin thanh toán: chuyển khoản vào tài khoản của shop hoặc thanh toán COD. Khi chuyển khoản, khách cần ghi rõ họ tên và số điện thoại để đối soát đơn.',
+  },
+  {
+    group: 'Thông tin',
+    name: 'Thông tin shop',
+    icon: 'mdi-store-marker',
+    content:
+      'Địa chỉ shop, giờ làm việc, khu vực giao hàng, chính sách hỗ trợ đổi trả và hotline chăm sóc khách hàng.',
+  },
+  {
+    group: 'Thông tin',
+    name: 'Liên hệ',
+    icon: 'mdi-phone-in-talk',
+    content:
+      'Hotline hỗ trợ, email, website, các kênh chat chính và thời gian phản hồi của bộ phận tư vấn.',
+  },
+  {
+    group: 'Bán hàng',
+    name: 'Bảng giá',
+    icon: 'mdi-tag-text-outline',
+    content:
+      'Bảng giá sản phẩm hiện tại, combo khuyến mại, điều kiện áp dụng mã giảm giá và mốc miễn phí vận chuyển.',
+  },
+  {
+    group: 'Bán hàng',
+    name: 'Chốt đơn',
+    icon: 'mdi-cart-arrow-right',
+    content:
+      'Kịch bản chốt đơn: xác nhận mẫu, màu, size, số lượng, địa chỉ, số điện thoại và nhắc lại ưu đãi còn hiệu lực.',
+  },
+  {
+    group: 'Bán hàng',
+    name: 'Xử lý giá cao',
+    icon: 'mdi-diamond-stone',
+    content:
+      'Kịch bản xử lý phản đối về giá: nhấn vào chất lượng, bảo hành, độ bền, dịch vụ hậu mãi và so sánh giá trị dài hạn.',
+  },
+];
+
+const stopTemplates = [
+  {
+    title: 'Khách đang khiếu nại',
+    icon: 'mdi-alert-octagon-outline',
+    color: 'error',
+    content: 'Khách đang bức xúc, khiếu nại, đòi hoàn tiền hoặc yêu cầu xử lý sự cố gấp.',
+  },
+  {
+    title: 'Muốn gặp người thật',
+    icon: 'mdi-account-voice',
+    color: 'secondary',
+    content: 'Khách yêu cầu gặp tư vấn viên, gọi điện trực tiếp hoặc muốn nói chuyện với quản lý.',
+  },
+  {
+    title: 'Thông tin nhạy cảm',
+    icon: 'mdi-lock-outline',
+    color: 'warning',
+    content: 'Khách hỏi về dữ liệu cá nhân, bảo mật, giấy tờ, hợp đồng hoặc thông tin ngoài phạm vi AI nên trả lời.',
+  },
+  {
+    title: 'Mặc cả quá sâu',
+    icon: 'mdi-tag-remove-outline',
+    color: 'info',
+    content: 'Khách đòi giảm giá vượt quá chính sách hiện hành hoặc ép giá nhiều lần.',
+  },
+];
+
+const accountOptions = computed<AccountOption[]>(() => {
+  const scoped = accounts.value.map((account) => ({
+    title: account.displayName || account.id,
+    value: account.id,
+  }));
+  return [{ title: 'Tất cả tài khoản', value: null }, ...scoped];
+});
+
+const categories = computed(() => {
+  const unique = new Set(
+    items.value
+      .map((item) => item.category)
+      .filter((category): category is string => Boolean(category)),
+  );
+  return ['Tất cả', ...Array.from(unique)];
+});
+
+const filterCategoriesOnly = computed(() => categories.value.filter((category) => category !== 'Tất cả'));
+const stopConditions = computed(() =>
+  (aiConfig.value.stopConditions || []).filter((condition: string) => condition && condition.trim()),
+);
+const activeKnowledgeCount = computed(() => items.value.filter((item) => item.isActive).length);
+const scopedKnowledgeCount = computed(() => items.value.filter((item) => Boolean(item.zaloAccountId)).length);
+const globalKnowledgeCount = computed(() => items.value.filter((item) => !item.zaloAccountId).length);
+const stopConditionCount = computed(() => stopConditions.value.length);
+const showSimulator = computed(() => activeSection.value !== 'operations');
+
+const currentSectionTitle = computed(() => {
+  if (activeSection.value === 'behavior') return 'Cá tính và nguyên tắc trả lời';
+  if (activeSection.value === 'knowledge') return 'Kho tri thức và kiểm thử phản hồi';
+  return 'Vận hành, tự động hóa và ranh giới của AI';
+});
+
+const currentMagicAccountName = computed(() => {
+  return accountOptions.value.find((option) => option.value === magicAccountId.value)?.title || 'Tất cả tài khoản';
+});
+
+const currentSimAccountName = computed(() => {
+  return accountOptions.value.find((option) => option.value === simAccountId.value)?.title || 'Tất cả tài khoản';
+});
+
+const operationsModeLabel = computed(() => {
+  return aiConfig.value.aiResponseMode === 'hybrid' ? 'Hybrid mode' : 'Auto mode';
+});
+
+const summaryCards = computed(() => [
+  {
+    key: 'behavior',
+    label: 'AI nói như thế nào',
+    value: aiConfig.value.enabled ? 'Đang bật' : 'Tạm tắt',
+    description: aiConfig.value.instructions
+      ? 'Trang này đang có chỉ dẫn cá tính tùy biến cho AI.'
+      : 'AI đang chạy với playbook mặc định và chưa có chỉ dẫn riêng.',
+    icon: 'mdi-comment-quote-outline',
+    color: 'primary',
+    chips: [
+      aiConfig.value.languagePolicy === 'en'
+        ? 'Tiếng Anh'
+        : aiConfig.value.languagePolicy === 'vi'
+          ? 'Tiếng Việt'
+          : 'Tự động ngôn ngữ',
+      aiConfig.value.instructions ? 'Có custom prompt' : 'Chưa có custom prompt',
+    ],
+  },
+  {
+    key: 'knowledge',
+    label: 'AI biết gì',
+    value: `${items.value.length} mục tri thức`,
+    description: 'Tri thức có thể dùng toàn workspace hoặc gắn riêng cho từng tài khoản kết nối.',
+    icon: 'mdi-database-outline',
+    color: 'secondary',
+    chips: [`${globalKnowledgeCount.value} toàn cục`, `${scopedKnowledgeCount.value} theo kênh`],
+  },
+  {
+    key: 'operations',
+    label: 'AI được phép làm gì',
+    value: operationsModeLabel.value,
+    description: 'Quyết định AI tự gửi, chỉ soạn nháp hay nhường lại cho nhân viên trong từng tình huống.',
+    icon: 'mdi-robot-cog-outline',
+    color: 'indigo',
+    chips: [
+      aiConfig.value.followUpEnabled ? 'Có bám đuổi' : 'Không bám đuổi',
+      stopConditionCount.value > 0 ? `${stopConditionCount.value} điều kiện dừng` : 'Chưa có điều kiện dừng',
+    ],
+  },
+]);
+
+const filteredItems = computed(() => {
+  return items.value.filter((item) => {
+    const text = `${item.title} ${item.content}`.toLowerCase();
+    const matchesSearch = text.includes(search.value.toLowerCase());
+    const matchesCategory = filterCategory.value === 'Tất cả' || item.category === filterCategory.value;
+    const matchesAccount = filterAccount.value === null || item.zaloAccountId === filterAccount.value;
+    return matchesSearch && matchesCategory && matchesAccount;
+  });
+});
+
+function requiredRule(message: string) {
+  return (value: string) => Boolean(value) || message;
+}
+
+function applyPersona(template: (typeof personaTemplates)[number]) {
+  aiConfig.value.instructions = template.content;
+  toast.value = {
+    show: true,
+    text: `Đã áp dụng mẫu cá tính: ${template.name}`,
+    color: 'info',
+    icon: 'mdi-cached',
+  };
+}
+
+function applyKnowledgeTemplate(template: (typeof knowledgeTemplates)[number]) {
+  magicInput.value = template.content;
+  activeSection.value = 'knowledge';
+  toast.value = {
+    show: true,
+    text: `Đã dán mẫu tri thức: ${template.name}`,
+    color: 'info',
+    icon: 'mdi-content-paste',
+  };
+}
+
+function applyTemplate(template: (typeof knowledgeTemplates)[number]) {
+  magicInput.value = template.content;
+}
+
+function addStopCondition() {
+  if (!aiConfig.value.stopConditions) aiConfig.value.stopConditions = [];
+  aiConfig.value.stopConditions.push('');
+}
+
+function removeStopCondition(index: number) {
+  aiConfig.value.stopConditions.splice(index, 1);
+}
+
+function addStopFromTemplate(content: string) {
+  if (!aiConfig.value.stopConditions) aiConfig.value.stopConditions = [];
+  if (!aiConfig.value.stopConditions.includes(content)) {
+    aiConfig.value.stopConditions.push(content);
+    toast.value = {
+      show: true,
+      text: 'Đã thêm điều kiện dừng mẫu',
+      color: 'success',
+      icon: 'mdi-plus-circle',
+    };
+  }
+}
+
+function getApiErrorMessage(err: any, fallback: string) {
+  return err?.response?.data?.error || err?.response?.data?.message || err?.message || fallback;
+}
+
+async function ensureKnownAccount(accountId: string | null) {
+  if (!accountId) return null;
+  if (accountOptions.value.some((option) => option.value === accountId)) return accountId;
+  await fetchAccounts();
+  return accountOptions.value.some((option) => option.value === accountId) ? accountId : null;
+}
 
 async function loadData() {
   loading.value = true;
   try {
     const [knowledgeRes, configRes] = await Promise.all([
       api.get('/ai/knowledge'),
-      api.get('/ai/config')
+      api.get('/ai/config'),
     ]);
     items.value = knowledgeRes.data;
     aiConfig.value = configRes.data;
@@ -1180,118 +1510,26 @@ async function saveAiConfig() {
   try {
     const configToSave = {
       ...aiConfig.value,
-      stopConditions: (aiConfig.value.stopConditions || []).filter((c: string) => c && c.trim())
+      stopConditions: stopConditions.value,
     };
     const res = await api.put('/ai/config', configToSave);
     aiConfig.value = res.data;
-    toast.value = { show: true, text: 'Đã lưu cấu hình AI', color: 'success', icon: 'mdi-check-circle' };
-  } catch (err) {
-    toast.value = { show: true, text: 'Lưu cấu hình thất bại', color: 'error', icon: 'mdi-alert' };
+    toast.value = {
+      show: true,
+      text: 'Đã lưu cấu hình AI',
+      color: 'success',
+      icon: 'mdi-check-circle',
+    };
+  } catch (err: any) {
+    toast.value = {
+      show: true,
+      text: getApiErrorMessage(err, 'Lưu cấu hình AI thất bại'),
+      color: 'error',
+      icon: 'mdi-alert',
+    };
   } finally {
     aiSaving.value = false;
   }
-}
-
-const addStopCondition = () => {
-  if (!aiConfig.value.stopConditions) aiConfig.value.stopConditions = [];
-  aiConfig.value.stopConditions.push('');
-};
-
-const removeStopCondition = (index: number) => {
-  aiConfig.value.stopConditions.splice(index, 1);
-};
-
-const languageOptions = [
-  { title: 'Tự động nhận diện (Khuyên dùng)', value: 'auto' },
-  { title: 'Luôn dùng Tiếng Việt', value: 'vi' },
-  { title: 'Luôn dùng Tiếng Anh', value: 'en' },
-];
-
-const intervalOptions = [
-  { title: '5 phút', value: 5 },
-  { title: '15 phút', value: 15 },
-  { title: '30 phút', value: 30 },
-  { title: '1 giờ', value: 60 },
-  { title: '2 giờ', value: 120 },
-  { title: '4 giờ', value: 240 },
-  { title: '12 giờ', value: 720 },
-  { title: '24 giờ (1 ngày)', value: 1440 },
-];
-
-const resumeIntervalOptions = [
-  { title: '30 phút', value: 30 },
-  { title: '1 giờ', value: 60 },
-  { title: '2 giờ', value: 120 },
-  { title: '4 giờ', value: 240 },
-  { title: '12 giờ', value: 720 },
-  { title: '24 giờ (1 ngày)', value: 1440 },
-];
-
-const personaTemplates = [
-  {
-    name: '🌸 Shop Thời trang/Mỹ phẩm',
-    description: 'Trẻ trung, dùng "bạn yêu", nhiều icon',
-    icon: 'mdi-sparkles',
-    content: "Bạn là một trợ lý bán hàng cực kỳ dễ thương và năng động của shop thời trang/mỹ phẩm.\n- Cách xưng hô: Gọi khách là 'bạn yêu', 'nàng', 'mỹ nhân'. Xưng là 'mình' hoặc 'shop'.\n- Phong cách: Luôn sử dụng icon (🌸, ✨, 💖) ở cuối mỗi câu. Trả lời ngọt ngào, khen ngợi khách hàng khi có thể.\n- Luôn kết thúc bằng một câu hỏi gợi mở để chốt đơn."
-  },
-  {
-    name: '💼 Chuyên nghiệp & Lịch sự',
-    description: 'Phù hợp BĐS, Tài chính, Dịch vụ B2B',
-    icon: 'mdi-briefcase-outline',
-    content: "Bạn là một chuyên viên tư vấn chuyên nghiệp, lịch thiệp và đáng tin cậy.\n- Cách xưng hô: Gọi khách là 'Anh/Chị'. Xưng là 'Em'.\n- Phong cách: Luôn có từ 'Dạ' ở đầu câu. Ngôn ngữ trang trọng, điềm đạm. Không dùng quá nhiều icon, chỉ dùng các icon tối giản như (✅, 📍).\n- Tập trung vào việc cung cấp thông tin chính xác và hẹn lịch tư vấn."
-  },
-  {
-    name: '🛠️ Kỹ thuật & Gia dụng',
-    description: 'Rõ ràng, chi tiết, dùng Bullet points',
-    icon: 'mdi-tools',
-    content: "Bạn là chuyên gia hỗ trợ kỹ thuật và tư vấn thiết bị gia dụng.\n- Cách xưng hô: Gọi khách là 'Anh/Chị'. Xưng là 'Shop'.\n- Phong cách: Trả lời thẳng vào vấn đề, sử dụng gạch đầu dòng (bullet points) để liệt kê thông số kỹ thuật hoặc quy trình bảo hành.\n- Ngôn ngữ rõ ràng, trung thực, tránh dùng từ hoa mỹ."
-  },
-  {
-    name: '🏥 Tận tâm & Thấu hiểu',
-    description: 'Phù hợp Y tế, Spa, Giáo dục',
-    icon: 'mdi-heart-pulse',
-    content: "Bạn là một tư vấn viên tận tâm, luôn lắng nghe và thấu hiểu khách hàng.\n- Cách xưng hô: Gọi khách là 'Anh/Chị'. Xưng là 'Em' hoặc 'Tư vấn viên'.\n- Phong cách: Nhẹ nhàng, ân cần. Thường xuyên đặt các câu hỏi quan tâm đến tình trạng của khách trước khi tư vấn sản phẩm.\n- Giải thích cặn kẽ lý do tại sao sản phẩm/dịch vụ này phù hợp với họ."
-  }
-];
-
-function applyPersona(template: any) {
-  aiConfig.value.instructions = template.content;
-  toast.value = { show: true, text: `Đã áp dụng mẫu: ${template.name}`, color: 'info', icon: 'mdi-cached' };
-}
-
-const stopTemplates = [
-  { title: 'Bán sỉ/Đại lý', icon: 'mdi-handshake-outline', color: 'primary', content: 'Khách hỏi về giá sỉ, mua số lượng lớn hoặc muốn làm đại lý/nhà phân phối.' },
-  { title: 'Khiếu nại/Căng thẳng', icon: 'mdi-alert-octagon-outline', color: 'error', content: 'Khách hàng đang phàn nàn, mắng chửi, thái độ tiêu cực hoặc đòi trả hàng/hoàn tiền.' },
-  { title: 'Yêu cầu gặp người', icon: 'mdi-account-voice', color: 'secondary', content: 'Khách yêu cầu gặp nhân viên tư vấn, gọi điện trực tiếp hoặc đòi gặp quản lý/chủ shop.' },
-  { title: 'Thông tin nhạy cảm', icon: 'mdi-lock-outline', color: 'warning', content: 'Khách hỏi các vấn đề bảo mật, thông tin cá nhân hoặc các yêu cầu nằm ngoài quy định của shop.' },
-  { title: 'Mặc cả quá sâu', icon: 'mdi-tag-remove-outline', color: 'info', content: 'Khách hàng mặc cả, đòi giảm giá quá mức so với các chương trình khuyến mãi hiện có.' }
-];
-
-const addStopFromTemplate = (content: string) => {
-  if (!aiConfig.value.stopConditions) aiConfig.value.stopConditions = [];
-  // Tránh thêm trùng
-  if (!aiConfig.value.stopConditions.includes(content)) {
-    aiConfig.value.stopConditions.push(content);
-    toast.value = { show: true, text: 'Đã thêm mẫu điều kiện dừng', color: 'success', icon: 'mdi-plus-circle' };
-  }
-};
-
-function applyTemplate(t: any) {
-  magicInput.value = t.content;
-}
-
-function getApiErrorMessage(err: any, fallback: string) {
-  return err?.response?.data?.error || err?.response?.data?.message || err?.message || fallback;
-}
-
-async function ensureKnownAccount(accountId: string | null) {
-  if (!accountId) return null;
-
-  const hasAccount = accountOptions.value.some(option => option.value === accountId);
-  if (hasAccount) return accountId;
-
-  await fetchAccounts();
-  return accountOptions.value.some(option => option.value === accountId) ? accountId : null;
 }
 
 async function runMagicAdd() {
@@ -1309,27 +1547,53 @@ async function runMagicAdd() {
       category: analysis.data.category,
       zaloAccountId: selectedAccountId,
       content: magicInput.value,
-      isActive: true
+      isActive: true,
     });
-    toast.value = { show: true, text: `Đã nạp xong tri thức cho ${currentMagicAccountName.value}`, color: 'success', icon: 'mdi-sparkles' };
     magicInput.value = '';
     await loadData();
+    toast.value = {
+      show: true,
+      text: `Đã nạp xong tri thức cho ${currentMagicAccountName.value}`,
+      color: 'success',
+      icon: 'mdi-sparkles',
+    };
   } catch (err: any) {
-    toast.value = { show: true, text: getApiErrorMessage(err, 'Nạp nhanh thất bại'), color: 'error', icon: 'mdi-alert' };
+    toast.value = {
+      show: true,
+      text: getApiErrorMessage(err, 'Nạp nhanh thất bại'),
+      color: 'error',
+      icon: 'mdi-alert',
+    };
   } finally {
     savingMagic.value = false;
   }
 }
 
 function openAddDialog() {
+  activeSection.value = 'knowledge';
   editDialog.value = {
-    show: true, isEdit: false, valid: true,
-    item: { id: '', title: '', content: '', category: 'Chung', isActive: true, zaloAccountId: null }
+    show: true,
+    isEdit: false,
+    valid: true,
+    item: {
+      id: '',
+      title: '',
+      content: '',
+      category: 'Chung',
+      isActive: true,
+      zaloAccountId: null,
+    },
   };
 }
 
-function editItem(item: any) {
-  editDialog.value = { show: true, isEdit: true, valid: true, item: { ...item } };
+function editItem(item: KnowledgeItem) {
+  activeSection.value = 'knowledge';
+  editDialog.value = {
+    show: true,
+    isEdit: true,
+    valid: true,
+    item: { ...item },
+  };
 }
 
 async function saveItem() {
@@ -1351,17 +1615,29 @@ async function saveItem() {
     } else {
       await api.post('/ai/knowledge', payload);
     }
+
     await loadData();
     editDialog.value.show = false;
+    toast.value = {
+      show: true,
+      text: 'Đã lưu tri thức',
+      color: 'success',
+      icon: 'mdi-check-circle',
+    };
   } catch (err: any) {
     console.error('Failed to save knowledge:', err);
-    toast.value = { show: true, text: getApiErrorMessage(err, 'Không thể lưu tri thức'), color: 'error', icon: 'mdi-alert' };
+    toast.value = {
+      show: true,
+      text: getApiErrorMessage(err, 'Không thể lưu tri thức'),
+      color: 'error',
+      icon: 'mdi-alert',
+    };
   } finally {
     saving.value = false;
   }
 }
 
-function confirmDelete(item: any) {
+function confirmDelete(item: KnowledgeItem) {
   deleteDialog.value = { show: true, item };
 }
 
@@ -1372,59 +1648,73 @@ async function doDelete() {
     await api.delete(`/ai/knowledge/${deleteDialog.value.item.id}`);
     await loadData();
     deleteDialog.value.show = false;
-  } catch (err) {
-    console.error('Failed to delete knowledge:', err);
+    toast.value = {
+      show: true,
+      text: 'Đã xóa tri thức',
+      color: 'success',
+      icon: 'mdi-check-circle',
+    };
+  } catch (err: any) {
+    toast.value = {
+      show: true,
+      text: getApiErrorMessage(err, 'Không thể xóa tri thức'),
+      color: 'error',
+      icon: 'mdi-alert',
+    };
   } finally {
     deleting.value = false;
   }
 }
 
 async function runTest() {
-  if (!testQuestion.value || testing.value) return;
-  const q = testQuestion.value;
-  testMessages.value.push({ role: 'user', content: q });
+  if (!testQuestion.value.trim() || testing.value) return;
+  const question = testQuestion.value;
+  testMessages.value.push({ role: 'user', content: question });
   testQuestion.value = '';
   testing.value = true;
   scrollToBottom();
+
   try {
-    // Map existing messages to backend format for context
-    const history = testMessages.value.map(m => ({
-      senderType: m.role === 'user' ? 'other' : 'self',
-      senderName: m.role === 'user' ? 'customer' : 'AI Agent',
-      content: m.content,
-      sentAt: new Date()
+    const history = testMessages.value.map((message) => ({
+      senderType: message.role === 'user' ? 'other' : 'self',
+      senderName: message.role === 'user' ? 'customer' : 'AI Agent',
+      content: message.content,
+      sentAt: new Date(),
     }));
 
-    const res = await api.post('/ai/knowledge/test', { 
-      question: q, 
+    const res = await api.post('/ai/knowledge/test', {
+      question,
       zaloAccountId: simAccountId.value,
-      history // Send the full history
+      history,
     });
-    testMessages.value.push({ 
-      role: 'ai', 
+
+    testMessages.value.push({
+      role: 'ai',
       content: res.data.content,
       sources: res.data.sources || [],
-      question: q // Store question for RLHF
+      question,
     });
-    loadData();
+    void loadData();
   } catch (err: any) {
-    testMessages.value.push({ role: 'ai', content: 'Lỗi: ' + (err.response?.data?.error || 'Không tìm thấy ngữ cảnh') });
+    testMessages.value.push({
+      role: 'ai',
+      content: `Lỗi: ${err.response?.data?.error || 'Không tìm thấy ngữ cảnh phù hợp'}`,
+    });
   } finally {
     testing.value = false;
     scrollToBottom();
   }
 }
 
-function openCorrectDialog(msg: any, index: number) {
+function openCorrectDialog(message: any, index: number) {
   correctDialog.value = {
     show: true,
     loading: false,
-    question: msg.question || (index > 0 ? testMessages.value[index-1].content : 'Câu hỏi không xác định'),
-    originalAnswer: msg.content,
+    question: message.question || (index > 0 ? testMessages.value[index - 1]?.content : 'Câu hỏi không xác định'),
+    originalAnswer: message.content,
     desiredAnswer: '',
-    sourceIds: msg.sources?.map((s: any) => s.id) || [],
-    proposalReason: '',
-    index
+    sourceIds: message.sources?.map((source: any) => source.id) || [],
+    index,
   };
 }
 
@@ -1435,65 +1725,63 @@ async function proposeFix() {
       question: correctDialog.value.question,
       originalAnswer: correctDialog.value.originalAnswer,
       desiredAnswer: correctDialog.value.desiredAnswer,
-      sourceIds: correctDialog.value.sourceIds
+      sourceIds: correctDialog.value.sourceIds,
     });
-    
+
     const proposal = res.data;
-    
-    // Close correct dialog and open edit dialog with proposal
     correctDialog.value.show = false;
-    
-    const isUpdate = proposal.action === 'update' && proposal.targetId;
-    
+    activeSection.value = 'knowledge';
+
     editDialog.value = {
       show: true,
-      isEdit: !!isUpdate,
+      isEdit: proposal.action === 'update' && Boolean(proposal.targetId),
       valid: true,
-      item: { 
-        id: proposal.targetId || '', 
-        title: proposal.title, 
-        content: proposal.content, 
-        category: proposal.category, 
-        isActive: true, 
-        zaloAccountId: simAccountId.value 
-      }
+      item: {
+        id: proposal.targetId || '',
+        title: proposal.title,
+        content: proposal.content,
+        category: proposal.category,
+        isActive: true,
+        zaloAccountId: simAccountId.value,
+      },
     };
-    
-    const toastMsg = isUpdate 
-      ? `AI đề xuất CẬP NHẬT thẻ: ${proposal.title}` 
-      : 'AI đề xuất TẠO MỚI thẻ tri thức';
-      
-    toast.value = { 
-      show: true, 
-      text: toastMsg, 
-      color: isUpdate ? 'secondary' : 'success', 
-      icon: 'mdi-sparkles' 
+
+    toast.value = {
+      show: true,
+      text:
+        proposal.action === 'update'
+          ? `AI đề xuất cập nhật tri thức: ${proposal.title}`
+          : 'AI đề xuất tạo mới một thẻ tri thức',
+      color: proposal.action === 'update' ? 'secondary' : 'success',
+      icon: 'mdi-sparkles',
     };
-  } catch (err) {
-    toast.value = { show: true, text: 'Không thể tạo đề xuất sửa lỗi', color: 'error', icon: 'mdi-alert' };
+  } catch (err: any) {
+    toast.value = {
+      show: true,
+      text: getApiErrorMessage(err, 'Không thể tạo đề xuất sửa lỗi'),
+      color: 'error',
+      icon: 'mdi-alert',
+    };
   } finally {
     correctDialog.value.loading = false;
   }
 }
 
 function jumpToKnowledge(id: string) {
+  activeSection.value = 'knowledge';
   search.value = '';
   filterCategory.value = 'Tất cả';
-  filterAccount.value = 'Tất cả tài khoản';
-  
+  filterAccount.value = null;
+
   nextTick(() => {
-    const item = items.value.find(i => i.id === id);
-    if (item) {
-      // Highlight the item briefly
-      const el = document.getElementById(`knowledge-${id}`);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.classList.add('highlight-pulse');
-        setTimeout(() => el.classList.remove('highlight-pulse'), 2000);
-      } else {
-        // If not in DOM yet (e.g. filtered), edit it
-        editItem(item);
-      }
+    const element = document.getElementById(`knowledge-${id}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.classList.add('highlight-pulse');
+      window.setTimeout(() => element.classList.remove('highlight-pulse'), 1800);
+    } else {
+      const item = items.value.find((knowledge) => knowledge.id === id);
+      if (item) editItem(item);
     }
   });
 }
@@ -1506,33 +1794,132 @@ function scrollToBottom() {
   });
 }
 
-function getCategoryIcon(cat: string) {
-  const c = cat?.toLowerCase() || '';
-  if (c.includes('giá')) return 'mdi-currency-usd';
-  if (c.includes('giao')) return 'mdi-truck-delivery';
-  if (c.includes('bảo hành')) return 'mdi-shield-check';
+function getCategoryIcon(category: string) {
+  const normalized = category?.toLowerCase() || '';
+  if (normalized.includes('giá')) return 'mdi-currency-usd';
+  if (normalized.includes('bảo hành')) return 'mdi-shield-check';
+  if (normalized.includes('giao') || normalized.includes('ship')) return 'mdi-truck-delivery';
+  if (normalized.includes('bán')) return 'mdi-tag-text-outline';
   return 'mdi-database-outline';
 }
 
-
-onMounted(() => {
-  fetchAccounts();
-  loadData();
+onMounted(async () => {
+  await Promise.all([fetchAccounts(), loadData()]);
 });
 </script>
 
 <style scoped>
+.ai-studio {
+  min-height: 100%;
+}
+
 .gradient-text {
   background: var(--gradient-brand);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
+.summary-card,
+.studio-shell,
+.section-card,
+.simulator-panel,
+.guide-dialog,
+.form-dialog {
+  background: var(--color-surface-elevated) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.summary-card {
+  padding: 20px;
+  height: 100%;
+}
+
+.studio-shell__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 20px 24px 0;
+  flex-wrap: wrap;
+}
+
+.studio-tabs {
+  width: 100%;
+}
+
+.studio-window {
+  padding: 20px 24px 24px;
+}
+
+.section-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section-card {
+  padding: 20px;
+}
+
+.section-card--soft {
+  background: var(--color-surface-glass) !important;
+}
+
+.section-card--stretch {
+  min-height: 420px;
+}
+
+.section-card__headline {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.preset-card,
+.knowledge-template-card,
+.knowledge-card {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  transition: all 0.2s ease;
+}
+
+.preset-card {
+  border-radius: 16px !important;
+  padding: 16px;
+  height: 100%;
+}
+
+.knowledge-template-card {
+  width: 112px;
+  min-height: 110px;
+  border-radius: 16px !important;
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.preset-card:hover,
+.knowledge-template-card:hover,
+.knowledge-card:hover {
+  border-color: var(--color-primary) !important;
+  transform: translateY(-2px);
+}
+
+.behavior-alert {
+  height: 100%;
+}
+
 .magic-console {
   background: linear-gradient(135deg, var(--color-primary-soft), var(--color-surface)) !important;
   border: 1px solid var(--color-border) !important;
-  border-radius: 16px !important;
-  box-shadow: var(--shadow-sm) !important;
+  border-radius: 18px !important;
 }
 
 .magic-textarea :deep(.v-field__input) {
@@ -1540,41 +1927,70 @@ onMounted(() => {
   color: var(--color-text);
 }
 
-.glass-container {
-  background: var(--color-surface-elevated);
-  border: 1px solid var(--color-border);
-  border-radius: 20px;
-  box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(16px);
+.knowledge-account-select {
+  max-width: 240px;
 }
 
-.knowledge-card {
-  background: var(--color-surface) !important;
-  border: 1px solid var(--color-border) !important;
-  border-radius: 12px;
-  transition: all 0.3s ease;
+.scope-note {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(var(--v-theme-warning), 0.08);
+  color: var(--color-text-secondary);
+  font-size: 13px;
 }
 
-.knowledge-card:hover {
-  border-color: var(--color-primary) !important;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+.knowledge-list {
+  max-height: 560px;
+  overflow-y: auto;
+  padding-right: 6px;
 }
 
 .stats-badge {
+  display: inline-flex;
+  align-items: center;
   background: var(--color-success-soft);
   color: var(--color-success);
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: 999px;
   font-size: 11px;
 }
 
 .simulator-panel {
-  background: var(--color-surface-elevated);
-  border: 1px solid var(--color-border);
-  border-radius: 0 20px 20px 0;
-  box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(16px);
+  min-height: 760px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.simulator-panel__header,
+.simulator-panel__footer {
+  padding: 16px;
+  background: var(--color-surface-glass);
+  backdrop-filter: blur(12px);
+}
+
+.simulator-panel__header {
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sim-account-select {
+  max-width: 220px;
+}
+
+.simulator-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
+  background:
+    radial-gradient(circle at 1px 1px, var(--color-border) 1px, transparent 0);
+  background-size: 18px 18px;
 }
 
 .message-bubble-wrapper {
@@ -1583,29 +1999,31 @@ onMounted(() => {
   flex-direction: column;
 }
 
-.user-wrapper { align-items: flex-end; }
-.ai-wrapper { align-items: flex-start; }
+.user-wrapper {
+  align-items: flex-end;
+}
+
+.ai-wrapper {
+  align-items: flex-start;
+}
 
 .message-bubble {
   padding: 10px 14px;
+  line-height: 1.55;
   font-size: 14px;
-  line-height: 1.5;
-  position: relative;
 }
 
 .zalo-user-bubble {
-  background: #0068ff; /* Zalo Blue */
-  color: white;
+  background: #0068ff;
+  color: #fff;
   border-radius: 18px 18px 4px 18px;
-  box-shadow: 0 2px 4px rgba(0, 104, 255, 0.2);
 }
 
 .zalo-ai-bubble {
-  background: white;
+  background: #fff;
   color: #1e1e1e;
   border-radius: 18px 18px 18px 4px;
   border: 1px solid #e0e0e0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .sources-container {
@@ -1614,46 +2032,48 @@ onMounted(() => {
 
 .source-chip {
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 10px !important;
-  background: rgba(var(--v-theme-secondary), 0.1) !important;
+  transition: transform 0.2s ease;
 }
 
 .source-chip:hover {
-  background: rgba(var(--v-theme-secondary), 0.2) !important;
-  transform: scale(1.05);
+  transform: scale(1.04);
 }
 
-.text-xxs {
-  font-size: 9px;
+.settings-block {
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  height: 100%;
 }
 
-.fade-in {
-  animation: fadeIn 0.3s ease forwards;
+.settings-block__title {
+  font-weight: 700;
+  margin-bottom: 10px;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+.empty-state,
+.empty-inline {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--color-text-secondary);
+  opacity: 0.78;
 }
 
-.highlight-pulse {
-  animation: pulseHighlight 2s ease;
+.empty-state.compact {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-@keyframes pulseHighlight {
-  0% { border-color: var(--color-primary); box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0.4); }
-  50% { border-color: var(--color-primary); box-shadow: 0 0 0 10px rgba(var(--v-theme-primary), 0); }
-  100% { border-color: var(--color-border); }
+.guide-content {
+  color: var(--color-text-secondary);
+  line-height: 1.65;
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--color-primary-soft-strong);
-  border-radius: 10px;
+.guide-block + .guide-block {
+  margin-top: 20px;
 }
 
 .glass-list {
@@ -1662,57 +2082,51 @@ onMounted(() => {
   box-shadow: var(--shadow-sm);
 }
 
-.animate-sparkle {
-  animation: sparkle 2s infinite;
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
 }
 
-@keyframes sparkle {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-primary-soft-strong);
+  border-radius: 999px;
 }
 
-.primary--text {
-  color: var(--color-primary);
+.text-xxs {
+  font-size: 10px;
 }
 
-.truncate-1 {
+.truncate-1,
+.truncate-2,
+.line-clamp-2,
+.line-clamp-3 {
   display: -webkit-box;
-  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.account-selector-mini :deep(.v-field__input) {
-  font-size: 12px;
+.truncate-1 {
+  -webkit-line-clamp: 1;
 }
 
-.guide-dialog {
-  background: var(--color-surface) !important;
-  border-radius: 20px !important;
-  border: 1px solid var(--color-border) !important;
+.truncate-2,
+.line-clamp-2 {
+  -webkit-line-clamp: 2;
 }
 
-.guide-content {
-  line-height: 1.6;
-  color: var(--color-text-secondary);
+.line-clamp-3 {
+  -webkit-line-clamp: 3;
 }
 
-.guide-content section {
-  padding-bottom: 8px;
+.fade-in {
+  animation: fadeIn 0.25s ease forwards;
 }
 
-.glass-header,
-.glass-footer {
-  background: var(--color-surface-glass);
-  backdrop-filter: blur(12px);
+.highlight-pulse {
+  animation: pulseHighlight 1.8s ease;
 }
 
-.glass-header {
-  border-bottom: 1px solid var(--color-border);
-}
-
-.glass-footer {
-  border-top: 1px solid var(--color-border);
+.primary--text {
+  color: var(--color-primary);
 }
 
 .border-bottom {
@@ -1723,87 +2137,44 @@ onMounted(() => {
   border-top: 1px solid var(--color-border);
 }
 
-.bg-dots {
-  background:
-    radial-gradient(circle at 1px 1px, var(--color-border) 1px, transparent 0);
-  background-size: 18px 18px;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.form-dialog {
-  background: var(--color-surface) !important;
-  border: 1px solid var(--color-border) !important;
+@keyframes pulseHighlight {
+  0% {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0.35);
+  }
+  100% {
+    border-color: var(--color-border);
+    box-shadow: 0 0 0 14px rgba(var(--v-theme-primary), 0);
+  }
 }
 
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
+@media (max-width: 959px) {
+  .studio-shell__header,
+  .studio-window,
+  .section-card {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
 
-.gap-2,
-.ga-2 {
-  gap: 8px;
-}
+  .simulator-panel {
+    min-height: 620px;
+  }
 
-.border-dashed {
-  border-style: dashed !important;
-}
-
-.bg-slate-50 {
-  background: var(--color-surface-muted);
-}
-
-.text-slate-600 {
-  color: var(--color-text-secondary);
-}
-.persona-template-card {
-  border-radius: 12px;
-  background: var(--color-surface);
-  transition: all 0.3s ease;
-  border: 1px solid var(--color-border);
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.persona-template-card:hover {
-  border-color: var(--color-primary);
-  background: var(--color-primary-soft);
-  transform: translateY(-2px);
-}
-
-.border-secondary-light {
-  border-color: rgba(var(--v-theme-secondary), 0.3) !important;
-}
-
-.v-slide-group__content {
-  padding: 4px 0;
-}
-
-.text-xxs {
-  font-size: 0.65rem;
-}
-
-.text-xxxxs {
-  font-size: 0.55rem;
-  letter-spacing: 0.05em;
-}
-
-.truncate-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.bg-primary-soft {
-  background: var(--color-primary-soft) !important;
-}
-
-.bg-secondary-soft {
-  background: var(--color-secondary-soft) !important;
+  .sim-account-select,
+  .knowledge-account-select {
+    max-width: 100%;
+    width: 100%;
+  }
 }
 </style>
