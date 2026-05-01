@@ -687,6 +687,8 @@ const integrationPoints = [
   background: rgba(255, 255, 255, 0.48);
   border: 1px solid rgba(148, 163, 184, 0.12);
   white-space: nowrap;
+}
+
 .nav-links a:hover,
 .landing-footer__links a:hover,
 .closing-link:hover {
