@@ -58,63 +58,41 @@
         <v-container class="hero-shell">
           <div class="hero-grid">
             <div class="hero-copy">
-              <div class="eyebrow-chip">
+              <div class="eyebrow-chip reveal-on-scroll">
                 <span class="eyebrow-chip__dot"></span>
-                CRM cho đội sale vận hành trên Zalo, Facebook và POS
+                Hệ điều hành Zalo + AI cho doanh nghiệp
               </div>
 
-              <h1 class="hero-title">
+              <h1 class="hero-title reveal-on-scroll">
                 Biến Zalo thành
                 <span>Cỗ máy chốt đơn AI</span>
               </h1>
 
-              <p class="hero-subtitle">
-                Claro hợp nhất Zalo OA, Facebook, Pancake POS và tri thức doanh nghiệp vào một
-                workspace thông minh. Giảm 70% thời gian phản hồi, tăng 2x tỷ lệ chuyển đổi với AI chuyên gia.
-              </p>
-
-              <div class="hero-actions">
-                <v-btn
-                  size="x-large"
-                  color="primary"
-                  class="text-none hero-primary"
-                  :to="isAuthenticated ? '/dashboard' : '/register'"
-                >
-                  {{ isAuthenticated ? 'Mở dashboard' : 'Dùng thử miễn phí' }}
-                  <v-icon end>mdi-arrow-top-right</v-icon>
-                </v-btn>
-                <v-btn
-                  size="x-large"
-                  variant="outlined"
-                  color="primary"
-                  class="text-none hero-secondary"
-                  to="/login"
-                >
-                  Xem workspace mẫu
-                </v-btn>
+              <div class="hero-value-grid reveal-on-scroll">
+                <div class="value-block">
+                  <div class="value-block__header">VẬN HÀNH TẬP TRUNG</div>
+                  <p>Hợp nhất Zalo OA, Facebook và POS vào một luồng làm việc duy nhất.</p>
+                </div>
+                <div class="value-block">
+                  <div class="value-block__header">OMNICHANNEL AI</div>
+                  <p>AI hiểu ngữ cảnh toàn diện từ mọi kênh để đề xuất phản hồi tối ưu.</p>
+                </div>
+                <div class="value-block">
+                  <div class="value-block__header">CLEAN CRM</div>
+                  <p>Tự động hóa việc phân loại lead và làm sạch dữ liệu khách hàng.</p>
+                </div>
               </div>
 
-              <div class="hero-proof">
-                <div class="proof-line">
-                  <span class="proof-line__label">Phù hợp cho</span>
-                  <div class="proof-tags">
-                    <span>Retail</span>
-                    <span>Telesales</span>
-                    <span>CSKH</span>
-                    <span>Social commerce</span>
-                  </div>
-                </div>
-
-                <div class="hero-stats">
-                  <article
-                    v-for="stat in heroStats"
-                    :key="stat.label"
-                    class="hero-stat"
-                  >
-                    <div class="hero-stat__value">{{ stat.value }}</div>
-                    <div class="hero-stat__label">{{ stat.label }}</div>
-                  </article>
-                </div>
+              <div class="hero-actions reveal-on-scroll">
+                <v-btn
+                  size="x-large"
+                  color="primary"
+                  class="text-none hero-primary shimmer-btn"
+                  :to="isAuthenticated ? '/dashboard' : '/register'"
+                >
+                  {{ isAuthenticated ? 'Mở dashboard' : 'Tạo workspace ngay' }}
+                  <v-icon end>mdi-arrow-top-right</v-icon>
+                </v-btn>
               </div>
             </div>
 
@@ -321,46 +299,38 @@
 
       <section id="integrations" class="integration-section">
         <v-container>
-          <div class="integration-shell">
-            <div class="integration-copy">
-              <div class="section-kicker">Tích hợp thực dụng</div>
-              <h2>Kết nối Zalo, Facebook và Pancake POS trong một nhịp làm việc liên tục</h2>
-              <p>
-                Nhân viên có thể xem lịch sử chat, kiểm tra tồn kho, lên đơn và cập nhật trạng thái
-                mà không rời khỏi workspace. Đó là điểm khác biệt giữa một CRM đẹp và một CRM dùng
-                được hàng ngày.
-              </p>
+          <div class="section-header text-center mb-12 mx-auto">
+            <div class="section-kicker mx-auto">Tích hợp thực dụng</div>
+            <h2 class="section-title">Kết nối hoàn hảo với hệ sinh thái của bạn</h2>
+          </div>
 
-              <div class="integration-list">
-                <div v-for="point in integrationPoints" :key="point" class="integration-point">
-                  <v-icon size="18" color="success">mdi-check-circle</v-icon>
-                  <span>{{ point }}</span>
+          <div class="integration-grid">
+            <div class="integration-info reveal-on-scroll">
+              <div class="info-card">
+                <h3>Pancake POS Sync</h3>
+                <p>Tra cứu tồn kho và lên đơn hàng ngay trong hội thoại chat.</p>
+              </div>
+              <div class="info-card">
+                <h3>Zalo & FB Hub</h3>
+                <p>Gom tin nhắn và bình luận từ tất cả fanpage về một nơi.</p>
+              </div>
+            </div>
+
+            <div class="integration-visual reveal-on-scroll">
+              <div class="diagram-shell">
+                <div class="diagram-center">Claro Hub</div>
+                <div class="diagram-orbit">
+                  <div class="orbit-node node--zalo">Zalo</div>
+                  <div class="orbit-node node--fb">FB</div>
+                  <div class="orbit-node node--pos">POS</div>
                 </div>
               </div>
             </div>
 
-            <div class="integration-diagram">
-              <div class="diagram-core">
-                <div class="diagram-core__label">Control layer</div>
-                <div class="diagram-core__title">Claro Workspace</div>
-                <div class="diagram-core__text">Tin nhắn, khách hàng, AI, lịch hẹn, báo cáo</div>
-              </div>
-
-              <div class="diagram-node diagram-node--zalo">
-                <div class="diagram-node__title">Zalo OA</div>
-                <div class="diagram-node__meta">Inbox + nhãn + lịch sử</div>
-              </div>
-              <div class="diagram-node diagram-node--facebook">
-                <div class="diagram-node__title">Facebook</div>
-                <div class="diagram-node__meta">Page chat + comment</div>
-              </div>
-              <div class="diagram-node diagram-node--pos">
-                <div class="diagram-node__title">Pancake POS</div>
-                <div class="diagram-node__meta">Kho, đơn hàng, trạng thái</div>
-              </div>
-              <div class="diagram-node diagram-node--team">
-                <div class="diagram-node__title">Sales team</div>
-                <div class="diagram-node__meta">Phân việc và follow-up</div>
+            <div class="integration-points reveal-on-scroll">
+              <div v-for="point in integrationPoints" :key="point" class="point-item">
+                <v-icon size="18" color="primary">mdi-check-circle-outline</v-icon>
+                <span>{{ point }}</span>
               </div>
             </div>
           </div>
@@ -723,8 +693,6 @@ const integrationPoints = [
   background: rgba(255, 255, 255, 0.48);
   border: 1px solid rgba(148, 163, 184, 0.12);
   white-space: nowrap;
-}
-
 .nav-links a:hover,
 .landing-footer__links a:hover,
 .closing-link:hover {
@@ -732,90 +700,55 @@ const integrationPoints = [
   background: rgba(255, 255, 255, 0.72);
 }
 
-.v-theme--dark .nav-links a {
-  background: rgba(15, 23, 42, 0.36);
-}
-
-.v-theme--dark .nav-links a:hover {
-  background: rgba(15, 23, 42, 0.58);
-}
-
-.nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.hero-primary {
-  padding-inline: 2rem !important;
-  border-radius: 999px !important;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8 58%, #0f172a) !important;
-  box-shadow: 0 20px 40px rgba(37, 99, 235, 0.2);
-  font-weight: 700 !important;
-}
-
-.nav-button {
-  color: var(--color-text);
-  opacity: 0.88;
-  font-weight: 600 !important;
-}
-
-.nav-cta {
-  min-width: 140px;
-  height: 44px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.01em !important;
-}
-
-/* Shimmer Effect */
-.shimmer-btn {
-  position: relative;
-  overflow: hidden;
-}
-
-.shimmer-btn::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    rgba(255, 255, 255, 0.4),
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
-  transform: rotate(25deg);
-  animation: shimmer 4s infinite;
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-150%) rotate(25deg); }
-  20%, 100% { transform: translateX(150%) rotate(25deg); }
-}
-
 .hero-section {
   position: relative;
-  padding: 52px 0 34px;
-}
-
-.hero-shell {
-  position: relative;
-  z-index: 1;
+  padding: 100px 0 120px;
 }
 
 .hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
-  gap: 44px;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
   align-items: center;
 }
 
 .hero-copy {
-  padding-top: 26px;
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-value-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  margin: 48px 0;
+}
+
+.value-block {
+  padding-left: 24px;
+  border-left: 2px solid rgba(37, 99, 235, 0.2);
+  transition: all 0.3s ease;
+}
+
+.value-block:hover {
+  border-left-color: #2563eb;
+  transform: translateX(8px);
+}
+
+.value-block__header {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: #2563eb;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.value-block p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  margin: 0;
 }
 
 .eyebrow-chip {
@@ -1042,67 +975,110 @@ const integrationPoints = [
   border-width: 1px !important;
 }
 
-.hero-proof {
-  margin-top: 42px;
+/* Integration Grid System */
+.integration-grid {
   display: grid;
-  gap: 20px;
+  grid-template-columns: 1fr 1.5fr 1fr;
+  gap: 60px;
+  align-items: center;
+  margin-top: 80px;
 }
 
-.proof-line {
-  display: grid;
-  gap: 12px;
+.info-card {
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 32px;
+  margin-bottom: 32px;
+  transition: all 0.4s ease;
 }
 
-.proof-line__label,
-.mini-label,
-.section-kicker,
-.spotlight-card__label,
-.diagram-core__label {
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  font-size: 0.74rem;
+.v-theme--dark .info-card {
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.info-card:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: translateY(-5px);
+}
+
+.info-card h3 {
+  font-size: 1.5rem;
   font-weight: 800;
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
 }
 
-.proof-line__label,
-.section-kicker,
-.spotlight-card__label,
-.diagram-core__label {
-  color: var(--color-text-muted);
-}
-
-.proof-tags {
+.diagram-shell {
+  height: 460px;
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  align-items: center;
+  justify-content: center;
 }
 
-.proof-tags span {
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.68);
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  color: var(--color-text);
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.v-theme--dark .proof-tags span {
-  background: rgba(19, 32, 59, 0.72);
-}
-
-.hero-stats {
+.diagram-center {
+  width: 160px;
+  height: 160px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  place-items: center;
+  border-radius: 50%;
+  font-weight: 900;
+  font-size: 1.2rem;
+  box-shadow: 0 30px 60px rgba(37, 99, 235, 0.35);
+  z-index: 5;
 }
 
-.hero-stat {
-  padding: 18px;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.06);
+.diagram-orbit {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border: 1.5px dashed rgba(37, 99, 235, 0.15);
+  border-radius: 50%;
+  animation: rotateOrbit 60s linear infinite;
+}
+
+@keyframes rotateOrbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.orbit-node {
+  position: absolute;
+  padding: 14px 24px;
+  background: white;
+  border-radius: 99px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+  white-space: nowrap;
+}
+
+.v-theme--dark .orbit-node {
+  background: #1e293b;
+  color: white;
+}
+
+.node--zalo { top: -20px; left: 50%; transform: translateX(-50%); }
+.node--fb { bottom: 20%; right: -30px; }
+.node--pos { bottom: 20%; left: -30px; }
+
+.point-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 1100px) {
+  .integration-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .v-theme--dark .hero-stat {
