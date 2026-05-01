@@ -173,9 +173,47 @@
 
           <!-- Config Fields -->
           <div v-if="form.type === 'google_sheets'">
-             <v-text-field v-model="form.config.spreadsheetId" label="Spreadsheet ID *" variant="outlined" rounded="lg" class="mb-4" />
-             <v-text-field v-model="form.config.sheetName" label="Tên Sheet (VD: Sheet1)" variant="outlined" rounded="lg" class="mb-4" />
-             <v-text-field v-model="form.config.apiKey" label="API Key (Nếu không dùng OAuth)" type="password" variant="outlined" rounded="lg" />
+             <div v-if="!isGoogleLinked" class="pa-4 border rounded-lg text-center mb-6 bg-surface-muted border-dashed">
+                <v-icon size="40" color="primary" class="mb-2">mdi-google</v-icon>
+                <div class="text-subtitle-2 font-weight-bold mb-1">Chưa kết nối Google</div>
+                <p class="text-caption text-medium-emphasis mb-4">Kết nối để tự động liệt kê Spreadsheet của bạn.</p>
+                <v-btn color="primary" size="small" rounded="pill" prepend-icon="mdi-link" :loading="linkingGoogle" @click="linkGoogleAccount">Kết nối ngay</v-btn>
+             </div>
+             <div v-else class="pa-3 border rounded-lg mb-6 bg-success-soft d-flex align-center">
+                <v-icon color="success" class="mr-3">mdi-google</v-icon>
+                <div class="flex-grow-1 text-caption font-weight-bold">Đã kết nối tài khoản Google</div>
+                <v-btn size="x-small" color="error" variant="text" :loading="unlinkingGoogle" @click="unlinkGoogle">Hủy</v-btn>
+             </div>
+
+             <v-autocomplete
+                v-if="isGoogleLinked"
+                v-model="form.config.spreadsheetId"
+                :items="spreadsheetOptions"
+                item-title="name"
+                item-value="id"
+                label="Chọn Spreadsheet *"
+                variant="outlined"
+                rounded="lg"
+                class="mb-4"
+                :loading="loadingSpreadsheets"
+                @click:control="fetchSpreadsheets"
+              />
+             <v-text-field v-else v-model="form.config.spreadsheetId" label="Spreadsheet ID *" variant="outlined" rounded="lg" class="mb-4" />
+             
+             <v-select
+                v-if="isGoogleLinked"
+                v-model="form.config.sheetName"
+                :items="sheetNameOptions"
+                label="Chọn Sheet (Bảng) *"
+                variant="outlined"
+                rounded="lg"
+                class="mb-4"
+                :loading="loadingSheetNames"
+                :disabled="!form.config.spreadsheetId"
+              />
+             <v-text-field v-else v-model="form.config.sheetName" label="Tên Sheet (VD: Sheet1)" variant="outlined" rounded="lg" class="mb-4" />
+             
+             <v-text-field v-if="!isGoogleLinked" v-model="form.config.apiKey" label="API Key (Nếu không dùng OAuth)" type="password" variant="outlined" rounded="lg" />
           </div>
 
           <div v-else-if="form.type === 'telegram'">
