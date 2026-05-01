@@ -43,6 +43,8 @@ type AiConfigInput = {
   aiTimezone?: string;
   autoExtractInfo?: boolean;
   autoCreateLeads?: boolean;
+  autoReplyDelay?: number;
+  confidenceThreshold?: number;
 };
 
 const DEFAULT_AI_CONFIG: Required<AiConfigInput> = {
