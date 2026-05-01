@@ -129,9 +129,9 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: '/ai-usage',
-    name: 'AiUsage',
-    component: () => import('@/views/AiUsageView.vue'),
+    path: '/usage',
+    name: 'UsageDashboard',
+    component: () => import('@/views/UsageDashboardView.vue'),
     meta: { requiresAuth: true },
   },
   {
