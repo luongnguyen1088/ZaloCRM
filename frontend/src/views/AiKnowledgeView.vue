@@ -625,6 +625,56 @@
                       </div>
                     </v-col>
                   </v-row>
+                  <v-divider class="my-4 opacity-10" />
+
+                  <div class="settings-block">
+                    <div class="settings-block__title d-flex align-center">
+                      <v-icon start size="18" color="indigo" class="mr-2">mdi-cog-sync-outline</v-icon>
+                      Thông số AI phản hồi
+                    </div>
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <div class="d-flex flex-column ga-2">
+                          <div class="d-flex justify-space-between align-center">
+                            <span class="text-body-2 font-weight-medium">Độ trễ phản hồi</span>
+                            <v-chip size="x-small" color="indigo" variant="flat">{{ aiConfig.autoReplyDelay }} giây</v-chip>
+                          </div>
+                          <v-slider
+                            v-model="aiConfig.autoReplyDelay"
+                            min="0"
+                            max="60"
+                            step="1"
+                            color="indigo"
+                            hide-details
+                            thumb-label
+                          />
+                          <div class="text-caption text-medium-emphasis">
+                            Trì hoãn một chút để gom tin nhắn của khách, giúp AI trả lời tự nhiên hơn.
+                          </div>
+                        </div>
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <div class="d-flex flex-column ga-2">
+                          <div class="d-flex justify-space-between align-center">
+                            <span class="text-body-2 font-weight-medium">Ngưỡng độ tin cậy</span>
+                            <v-chip size="x-small" color="indigo" variant="flat">{{ Math.round(aiConfig.confidenceThreshold * 100) }}%</v-chip>
+                          </div>
+                          <v-slider
+                            v-model="aiConfig.confidenceThreshold"
+                            min="0.1"
+                            max="1.0"
+                            step="0.05"
+                            color="indigo"
+                            hide-details
+                            thumb-label
+                          />
+                          <div class="text-caption text-medium-emphasis">
+                            AI chỉ tự động trả lời khi chắc chắn trên mức này. Nếu thấp hơn, AI sẽ im lặng.
+                          </div>
+                        </div>
+                      </v-col>
+                    </v-row>
+                  </div>
 
                   <div class="d-flex justify-end mt-4">
                     <v-btn
@@ -1210,6 +1260,8 @@ const aiConfig = ref<any>({
   autoExtractInfo: false,
   autoCreateLeads: false,
   aiResponseMode: 'auto',
+  autoReplyDelay: 0,
+  confidenceThreshold: 0.8,
 });
 const configScopeId = ref<string | null>(null);
 const configScopeMeta = ref<ConfigScopeMeta>({

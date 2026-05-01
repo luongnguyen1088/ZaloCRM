@@ -16,8 +16,11 @@ export async function aiReplyAction(input: {
   if (!input.threadId) return null;
 
   try {
-    logger.info(`[automation] Generating AI Reply for conv: ${input.conversationId}`);
-    // 1. Generate response using AI Service (RAG)
+    // 1. Get AI Config for threshold fallback
+    const { getAiConfig } = await import('../../ai/ai-service.js');
+    const aiConfig = await getAiConfig(input.orgId, input.zaloAccountId);
+
+    // 2. Generate response using AI Service (RAG)
     const result = await generateAiOutput({
       orgId: input.orgId,
       conversationId: input.conversationId,
@@ -26,8 +29,8 @@ export async function aiReplyAction(input: {
     });
     logger.info(`[automation] AI Result confidence: ${result.confidence}`);
 
-    // 2. Check confidence threshold
-    const threshold = input.confidenceThreshold ?? 0.8;
+    // 3. Check confidence threshold (Action override > Global config > 0.8)
+    const threshold = input.confidenceThreshold ?? aiConfig.confidenceThreshold ?? 0.8;
     if (result.confidence < threshold) {
       logger.info(`[automation] AI Reply suppressed: confidence ${result.confidence} < threshold ${threshold}`);
       return null;

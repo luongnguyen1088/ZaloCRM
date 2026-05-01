@@ -63,6 +63,8 @@ const DEFAULT_AI_CONFIG: Required<AiConfigInput> = {
   aiTimezone: 'Asia/Ho_Chi_Minh',
   autoExtractInfo: false,
   autoCreateLeads: false,
+  autoReplyDelay: 0,
+  confidenceThreshold: 0.8,
 };
 
 const AI_CHANNEL_OVERRIDE_FIELDS = [
@@ -83,6 +85,8 @@ const AI_CHANNEL_OVERRIDE_FIELDS = [
   'aiTimezone',
   'autoExtractInfo',
   'autoCreateLeads',
+  'autoReplyDelay',
+  'confidenceThreshold',
 ] as const;
 
 type AiChannelOverrideField = typeof AI_CHANNEL_OVERRIDE_FIELDS[number];
@@ -271,6 +275,8 @@ function sanitizeAiConfigInput(input: AiConfigInput) {
   if (input.aiTimezone !== undefined) normalized.aiTimezone = input.aiTimezone;
   if (input.autoExtractInfo !== undefined) normalized.autoExtractInfo = Boolean(input.autoExtractInfo);
   if (input.autoCreateLeads !== undefined) normalized.autoCreateLeads = Boolean(input.autoCreateLeads);
+  if (input.autoReplyDelay !== undefined) normalized.autoReplyDelay = Number(input.autoReplyDelay);
+  if (input.confidenceThreshold !== undefined) normalized.confidenceThreshold = Number(input.confidenceThreshold);
 
   return normalized;
 }
