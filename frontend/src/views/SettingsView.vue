@@ -6,243 +6,288 @@
           <div class="title-icon-wrapper mr-4">
             <v-icon color="white" size="28">mdi-account-cog</v-icon>
           </div>
-          Nhân sự & Phân quyền
+          Cấu hình hệ thống
         </h1>
-        <p class="text-subtitle-1 text-medium-emphasis ml-15">Quản lý đội ngũ nhân viên và phân quyền truy cập hệ thống</p>
+        <p class="text-subtitle-1 text-medium-emphasis ml-15">Quản lý tài khoản cá nhân, đội ngũ và thiết lập tổ chức</p>
       </div>
     </div>
 
-    <v-card class="glass-container overflow-visible">
-      <v-tabs v-model="tab" color="primary" class="settings-tabs px-4 pt-2">
-        <v-tab value="profile" class="text-none pill-tab">
-          <v-icon start>mdi-account-circle-outline</v-icon>
-          Tài khoản
-        </v-tab>
-        <v-tab value="users" class="text-none pill-tab">
-          <v-icon start>mdi-account-group-outline</v-icon>
-          Nhân sự
-        </v-tab>
-        <v-tab value="org" class="text-none pill-tab">
-          <v-icon start>mdi-shield-check-outline</v-icon>
-          Tổ chức
-        </v-tab>
-        <v-tab value="billing" class="text-none pill-tab">
-          <v-icon start>mdi-crown-outline</v-icon>
-          Gói cước
-        </v-tab>
-      </v-tabs>
-
-      <v-divider />
-
-      <v-window v-model="tab" class="pa-6">
-        <!-- PROFILE TAB -->
-        <v-window-item value="profile">
-          <MyProfile />
-        </v-window-item>
-
-        <!-- USERS TAB -->
-        <v-window-item value="users">
-          <div class="mb-8">
-            <TeamManagement />
-          </div>
-          <v-divider class="my-8" />
-          <!-- Users List -->
-          <div class="d-flex align-center gap-4 mb-6">
-            <h3 class="text-subtitle-1 font-weight-bold">Danh sách nhân viên</h3>
-            <v-spacer />
-            <v-text-field
-              v-model="search"
-              prepend-inner-icon="mdi-magnify"
-              label="Tìm kiếm..."
-              variant="solo-filled"
-              flat
-              density="compact"
-              hide-details
-              class="search-bar"
-              rounded="lg"
+    <v-row class="fill-height mt-2">
+      <!-- Sidebar Navigation -->
+      <v-col cols="12" md="3" lg="2">
+        <v-card class="settings-nav-card pa-2 mb-4">
+          <v-list density="comfortable" nav class="bg-transparent pa-0">
+            <v-list-item
+              v-for="nav in settingsNavigation"
+              :key="nav.value"
+              :value="nav.value"
+              :active="tab === nav.value"
+              @click="tab = nav.value"
+              rounded="xl"
+              class="mb-2 nav-item"
+              :color="tab === nav.value ? 'primary' : ''"
+              variant="text"
+            >
+              <template v-slot:prepend>
+                <v-icon :icon="nav.icon" class="mr-2" :color="tab === nav.value ? 'primary' : 'medium-emphasis'"></v-icon>
+              </template>
+              <v-list-item-title class="font-weight-bold">{{ nav.title }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+          
+          <v-divider class="my-4 opacity-10" />
+          
+          <v-list density="compact" nav class="bg-transparent pa-0">
+            <v-list-item
+              prepend-icon="mdi-help-circle-outline"
+              title="Trung tâm hỗ trợ"
+              class="text-caption font-weight-medium opacity-70"
+              rounded="xl"
+              href="https://docs.claro.vn"
+              target="_blank"
             />
-            <v-btn
-              v-if="authStore.isAdmin"
-              color="primary"
-              prepend-icon="mdi-email-plus-outline"
-              @click="openInvite"
-              class="text-none px-6 action-btn"
-              rounded="lg"
-              elevation="0"
-            >
-              Mời nhân viên
-            </v-btn>
-          </div>
+          </v-list>
+        </v-card>
+      </v-col>
 
-          <v-alert v-if="error" type="error" variant="tonal" class="mb-4 rounded-xl" closable @click:close="error = ''">
-            {{ error }}
-          </v-alert>
+      <!-- Main Content Area -->
+      <v-col cols="12" md="9" lg="10">
+        <v-card class="glass-container fill-height min-h-600">
+          <v-window v-model="tab" class="pa-8">
+            <!-- PROFILE TAB -->
+            <v-window-item value="profile">
+              <div class="content-header mb-8">
+                <h2 class="text-h5 font-weight-bold mb-1">Hồ sơ cá nhân</h2>
+                <p class="text-body-2 text-medium-emphasis">Cập nhật thông tin cá nhân và quản lý bảo mật tài khoản</p>
+              </div>
+              <MyProfile />
+            </v-window-item>
 
-          <v-data-table
-            :headers="headers"
-            :items="users"
-            :loading="loading"
-            :search="search"
-            no-data-text="Chưa có nhân viên nào"
-            class="user-table mb-8"
-            hover
-          >
-            <template #item.fullName="{ item }">
-              <div class="d-flex align-center py-2">
-                <v-avatar color="primary-lighten-4" size="42" class="mr-3 glass-avatar">
-                  <span class="text-primary font-weight-bold text-body-2">{{ getInitials(item.fullName) }}</span>
-                </v-avatar>
+            <!-- USERS TAB -->
+            <v-window-item value="users">
+              <div class="content-header mb-8 d-flex align-center">
                 <div>
-                  <div class="font-weight-bold text-body-1">{{ item.fullName }}</div>
-                  <div class="text-caption text-medium-emphasis">{{ item.email }}</div>
+                  <h2 class="text-h5 font-weight-bold mb-1">Quản lý nhân sự</h2>
+                  <p class="text-body-2 text-medium-emphasis">Mời và phân quyền truy cập cho các thành viên trong đội ngũ</p>
                 </div>
-              </div>
-            </template>
-
-            <template #item.role="{ item }">
-              <v-chip :color="roleColor(item.role)" size="small" variant="tonal" class="font-weight-bold px-3">
-                {{ roleLabel(item.role) }}
-              </v-chip>
-            </template>
-
-            <template #item.isActive="{ item }">
-              <div class="d-flex align-center">
-                <v-badge
-                  dot
-                  :color="item.isActive ? 'success' : 'grey'"
-                  inline
-                  class="mr-2 status-badge"
-                  :class="{ 'status-active': item.isActive }"
-                />
-                <span :class="item.isActive ? 'text-success' : 'text-medium-emphasis'" class="text-caption font-weight-bold">
-                  {{ item.isActive ? 'Đang hoạt động' : 'Đã vô hiệu' }}
-                </span>
-              </div>
-            </template>
-
-            <template #item.actions="{ item }">
-              <div class="d-flex justify-end gap-1">
+                <v-spacer />
                 <v-btn
                   v-if="authStore.isAdmin"
-                  icon="mdi-pencil-outline"
-                  size="small"
-                  variant="text"
                   color="primary"
-                  title="Chỉnh sửa"
-                  @click="openEdit(item)"
-                  class="hover-scale"
-                />
-                <v-btn
-                  v-if="authStore.isAdmin"
-                  icon="mdi-key-reset"
-                  size="small"
-                  variant="text"
-                  color="warning"
-                  title="Đặt lại mật khẩu"
-                  @click="openPassword(item)"
-                  class="hover-scale"
-                />
-                <v-btn
-                  v-if="authStore.isOwner && item.id !== authStore.user?.id"
-                  icon="mdi-delete-outline"
-                  size="small"
-                  variant="text"
-                  color="error"
-                  title="Vô hiệu hóa"
-                  @click="confirmDelete(item)"
-                  class="hover-scale"
+                  prepend-icon="mdi-email-plus-outline"
+                  @click="openInvite"
+                  class="text-none px-6 action-btn"
+                  rounded="lg"
+                  elevation="0"
+                  size="large"
+                >
+                  Mời nhân viên
+                </v-btn>
+              </div>
+
+              <div class="mb-10">
+                <TeamManagement />
+              </div>
+
+              <v-divider class="my-10 opacity-10" />
+
+              <!-- Users List Table Section -->
+              <div class="d-flex align-center gap-4 mb-6">
+                <h3 class="text-h6 font-weight-bold">Danh sách nhân viên</h3>
+                <v-spacer />
+                <v-text-field
+                  v-model="search"
+                  prepend-inner-icon="mdi-magnify"
+                  label="Tìm kiếm nhân viên..."
+                  variant="solo"
+                  flat
+                  density="comfortable"
+                  hide-details
+                  class="search-bar"
+                  rounded="lg"
+                  bg-color="surface-light"
                 />
               </div>
-            </template>
-          </v-data-table>
 
-          <!-- Pending Invitations Section -->
-          <template v-if="authStore.isAdmin">
-            <div class="d-flex align-center gap-4 mb-4 mt-8">
-              <h3 class="text-subtitle-1 font-weight-bold">Lời mời đang chờ ({{ pendingInvitations.length }})</h3>
-            </div>
-            
-            <v-data-table
-              :headers="invitationHeaders"
-              :items="pendingInvitations"
-              :loading="invitingLoading"
-              no-data-text="Không có lời mời nào đang chờ"
-              class="user-table"
-              density="comfortable"
-            >
-               <template #item.status="{ item }">
-                  <v-chip size="x-small" :color="inviteStatusColor(item.status)" variant="flat" class="text-uppercase font-weight-bold">
-                    {{ item.status }}
+              <v-alert v-if="error" type="error" variant="tonal" class="mb-6 rounded-xl" closable @click:close="error = ''">
+                {{ error }}
+              </v-alert>
+
+              <v-data-table
+                :headers="headers"
+                :items="users"
+                :loading="loading"
+                :search="search"
+                no-data-text="Chưa có nhân viên nào"
+                class="user-table mb-8 custom-data-table"
+                hover
+              >
+                <template #item.fullName="{ item }">
+                  <div class="d-flex align-center py-3">
+                    <v-avatar color="primary-lighten-4" size="44" class="mr-4 glass-avatar border-glow">
+                      <span class="text-primary font-weight-bold text-body-2">{{ getInitials(item.fullName) }}</span>
+                    </v-avatar>
+                    <div>
+                      <div class="font-weight-bold text-body-1">{{ item.fullName }}</div>
+                      <div class="text-caption text-medium-emphasis">{{ item.email }}</div>
+                    </div>
+                  </div>
+                </template>
+
+                <template #item.role="{ item }">
+                  <v-chip :color="roleColor(item.role)" size="small" variant="flat" class="font-weight-bold px-3">
+                    {{ roleLabel(item.role) }}
                   </v-chip>
-               </template>
-               <template #item.expiresAt="{ item }">
-                  <span class="text-caption">{{ formatDate(item.expiresAt) }}</span>
-               </template>
-               <template #item.role="{ item }">
-                  <span class="text-caption font-weight-bold text-uppercase">{{ item.role }}</span>
-               </template>
-               <template #item.actions="{ item }">
-                  <v-btn icon="mdi-content-copy" size="x-small" variant="text" title="Copy link mời" @click="copyInviteLink(item.token)" />
-               </template>
-            </v-data-table>
-          </template>
-        </v-window-item>
+                </template>
 
-        <!-- TEAMS TAB -->
-        <v-window-item value="teams">
-          <TeamManagement />
-        </v-window-item>
+                <template #item.isActive="{ item }">
+                  <div class="d-flex align-center">
+                    <v-badge
+                      dot
+                      :color="item.isActive ? 'success' : 'grey'"
+                      inline
+                      class="mr-2 status-badge"
+                      :class="{ 'status-active': item.isActive }"
+                    />
+                    <span :class="item.isActive ? 'text-success' : 'text-medium-emphasis'" class="text-caption font-weight-bold">
+                      {{ item.isActive ? 'Đang hoạt động' : 'Đã vô hiệu' }}
+                    </span>
+                  </div>
+                </template>
 
-        <!-- ORG TAB -->
-        <v-window-item value="org">
-          <OrgSettings />
-        </v-window-item>
+                <template #item.actions="{ item }">
+                  <div class="d-flex justify-end gap-1">
+                    <v-btn
+                      v-if="authStore.isAdmin"
+                      icon="mdi-pencil-outline"
+                      size="small"
+                      variant="tonal"
+                      color="primary"
+                      title="Chỉnh sửa"
+                      @click="openEdit(item)"
+                      class="mr-1"
+                    />
+                    <v-btn
+                      v-if="authStore.isAdmin"
+                      icon="mdi-key-reset"
+                      size="small"
+                      variant="tonal"
+                      color="warning"
+                      title="Đặt lại mật khẩu"
+                      @click="openPassword(item)"
+                      class="mr-1"
+                    />
+                    <v-btn
+                      v-if="authStore.isOwner && item.id !== authStore.user?.id"
+                      icon="mdi-delete-outline"
+                      size="small"
+                      variant="tonal"
+                      color="error"
+                      title="Vô hiệu hóa"
+                      @click="confirmDelete(item)"
+                    />
+                  </div>
+                </template>
+              </v-data-table>
 
-        <!-- BILLING TAB -->
-        <v-window-item value="billing">
-          <PlanSummary />
-        </v-window-item>
-      </v-window>
-    </v-card>
+              <!-- Pending Invitations Section -->
+              <template v-if="authStore.isAdmin && pendingInvitations.length > 0">
+                <div class="d-flex align-center gap-4 mb-4 mt-12">
+                  <h3 class="text-h6 font-weight-bold">Lời mời đang chờ ({{ pendingInvitations.length }})</h3>
+                </div>
+                
+                <v-card variant="outlined" class="rounded-xl border-dashed bg-surface-light overflow-hidden">
+                  <v-data-table
+                    :headers="invitationHeaders"
+                    :items="pendingInvitations"
+                    :loading="invitingLoading"
+                    no-data-text="Không có lời mời nào đang chờ"
+                    class="bg-transparent"
+                    density="comfortable"
+                  >
+                    <template #item.status="{ item }">
+                        <v-chip size="x-small" :color="inviteStatusColor(item.status)" variant="flat" class="text-uppercase font-weight-bold">
+                          {{ item.status }}
+                        </v-chip>
+                    </template>
+                    <template #item.expiresAt="{ item }">
+                        <span class="text-caption">{{ formatDate(item.expiresAt) }}</span>
+                    </template>
+                    <template #item.role="{ item }">
+                        <v-chip size="x-small" variant="outlined" class="text-uppercase font-weight-bold">{{ item.role }}</v-chip>
+                    </template>
+                    <template #item.actions="{ item }">
+                        <v-btn icon="mdi-content-copy" size="small" variant="text" color="primary" title="Copy link mời" @click="copyInviteLink(item.token)" />
+                    </template>
+                  </v-data-table>
+                </v-card>
+              </template>
+            </v-window-item>
 
-    <!-- New Invite Dialog (Generic Link Style) -->
+            <!-- ORG TAB -->
+            <v-window-item value="org">
+              <div class="content-header mb-8">
+                <h2 class="text-h5 font-weight-bold mb-1">Thông tin tổ chức</h2>
+                <p class="text-body-2 text-medium-emphasis">Quản lý thông tin chung và cấu hình cấp doanh nghiệp</p>
+              </div>
+              <OrgSettings />
+            </v-window-item>
+
+            <!-- BILLING TAB -->
+            <v-window-item value="billing">
+              <div class="content-header mb-8">
+                <h2 class="text-h5 font-weight-bold mb-1">Gói cước & Thanh toán</h2>
+                <p class="text-body-2 text-medium-emphasis">Theo dõi hạn mức sử dụng và quản lý các giao dịch</p>
+              </div>
+              <PlanSummary />
+            </v-window-item>
+          </v-window>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- Dialogs remain similar but with slightly polished UI -->
+    <!-- New Invite Dialog -->
     <v-dialog v-model="showInvite" max-width="820" persistent transition="dialog-bottom-transition">
-      <v-card class="rounded-xl pa-2 dialog-glass overflow-hidden">
-        <v-card-title class="d-flex align-center px-6 pt-4">
+      <v-card class="rounded-xl pa-2 dialog-glass-premium overflow-hidden">
+        <v-card-title class="d-flex align-center px-6 pt-6">
           <v-spacer />
-          <span class="text-h6 font-weight-bold">Mời quản lý</span>
+          <span class="text-h5 font-weight-bold">Mời thành viên mới</span>
           <v-spacer />
           <v-btn icon="mdi-close" variant="text" density="comfortable" @click="showInvite = false" />
         </v-card-title>
         
-        <v-divider class="mx-6 opacity-50" />
-
-        <v-card-text class="pa-8">
+        <v-card-text class="pa-8 pt-4">
           <v-row>
-            <!-- Left Info Column -->
-            <v-col cols="12" md="6" class="pr-md-8 border-right">
-              <h3 class="text-h6 font-weight-bold mb-2">Vai trò</h3>
-              <p class="text-body-2 text-medium-emphasis leading-relaxed">
-                {{ selectedRoleInfo.description }}
-              </p>
+            <v-col cols="12" md="5" class="pr-md-8 border-right-dashed">
+              <h3 class="text-h6 font-weight-bold mb-4 d-flex align-center">
+                <v-icon color="primary" class="mr-2">mdi-shield-account-outline</v-icon>
+                Chi tiết vai trò
+              </h3>
+              <div class="role-info-card pa-4 rounded-xl bg-primary-soft-strong">
+                <div class="text-subtitle-1 font-weight-bold text-primary mb-2">{{ selectedRoleInfo.label }}</div>
+                <p class="text-body-2 text-medium-emphasis leading-relaxed">
+                  {{ selectedRoleInfo.description }}
+                </p>
+              </div>
             </v-col>
 
-            <!-- Right Selection Column -->
-            <v-col cols="12" md="6" class="pl-md-8">
-              <v-radio-group v-model="inviteForm.role" class="role-radio-group" hide-details>
-                <v-radio
-                  v-for="opt in roleDetailOptions"
-                  :key="opt.value"
-                  :value="opt.value"
-                  color="primary"
-                  class="mb-3 role-radio-item"
-                >
-                  <template #label>
-                    <div class="ml-2">
-                      <div class="text-body-1 font-weight-bold">{{ opt.label }}</div>
-                    </div>
-                  </template>
-                </v-radio>
+            <v-col cols="12" md="7" class="pl-md-8">
+              <h3 class="text-h6 font-weight-bold mb-4">Chọn vai trò truy cập</h3>
+              <v-radio-group v-model="inviteForm.role" class="role-radio-group-modern" hide-details>
+                <div v-for="opt in roleDetailOptions" :key="opt.value" class="mb-3">
+                  <v-radio
+                    :value="opt.value"
+                    color="primary"
+                    class="role-radio-item-modern"
+                  >
+                    <template #label>
+                      <div class="ml-2">
+                        <div class="text-body-1 font-weight-bold">{{ opt.label }}</div>
+                      </div>
+                    </template>
+                  </v-radio>
+                </div>
               </v-radio-group>
             </v-col>
           </v-row>
@@ -250,36 +295,36 @@
           <v-alert v-if="inviteError" type="error" variant="tonal" density="compact" class="mt-8 rounded-lg">{{ inviteError }}</v-alert>
           
           <v-expand-transition>
-            <div v-if="generatedLink" class="mt-8 pa-4 invite-link-box rounded-xl border-dashed">
+            <div v-if="generatedLink" class="mt-8 pa-6 invite-link-box-premium rounded-xl border-dashed">
               <div class="d-flex align-center">
-                <div class="mr-4 invite-link-icon">
-                  <v-icon color="primary">mdi-link-variant</v-icon>
+                <div class="mr-5 invite-link-icon-premium">
+                  <v-icon color="primary" size="28">mdi-link-variant</v-icon>
                 </div>
                 <div class="flex-grow-1 overflow-hidden">
-                  <div class="text-caption font-weight-bold text-primary mb-1">LINK MỜI ĐÃ SẴN SÀNG:</div>
-                  <div class="text-body-2 text-truncate font-weight-medium">{{ generatedLink }}</div>
+                  <div class="text-caption font-weight-black text-primary mb-1 uppercase letter-spacing-1">LINK MỜI ĐÃ SẴN SÀNG</div>
+                  <div class="text-body-1 text-truncate font-weight-bold text-high-emphasis">{{ generatedLink }}</div>
                 </div>
-                <v-btn color="primary" variant="flat" class="ml-4 rounded-lg px-6" @click="copyText(generatedLink)">Sao chép</v-btn>
+                <v-btn color="primary" variant="flat" class="ml-6 rounded-pill px-8" height="48" @click="copyText(generatedLink)">Sao chép</v-btn>
               </div>
             </div>
           </v-expand-transition>
         </v-card-text>
 
-        <v-divider class="mx-6 opacity-30" />
+        <v-divider class="opacity-10" />
 
-        <v-card-actions class="pa-6">
+        <v-card-actions class="pa-8">
           <v-btn 
             block 
             color="primary" 
             :loading="invitingLoading" 
             variant="flat" 
-            size="large"
-            class="text-none font-weight-bold create-link-btn" 
+            height="56"
+            class="text-none font-weight-bold text-h6" 
             rounded="pill" 
             @click="handleInvite"
           >
-            <v-icon start>mdi-link-variant</v-icon>
-            Tạo một link
+            <v-icon start size="24">mdi-plus-circle</v-icon>
+            Tạo mã mời
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -395,13 +440,18 @@ const selectedRoleInfo = computed(() => {
   return roleDetailOptions.find(opt => opt.value === inviteForm.value.role) || roleDetailOptions[0];
 });
 
-const roleOptions = roleDetailOptions.map(opt => ({ label: opt.label, value: opt.value }));
+const settingsNavigation = [
+  { title: 'Hồ sơ cá nhân', value: 'profile', icon: 'mdi-account-circle-outline' },
+  { title: 'Nhân sự & Đội ngũ', value: 'users', icon: 'mdi-account-group-outline' },
+  { title: 'Thiết lập tổ chức', value: 'org', icon: 'mdi-shield-check-outline' },
+  { title: 'Gói cước & Billing', value: 'billing', icon: 'mdi-crown-outline' },
+];
 
 const headers = [
   { title: 'Nhân viên', key: 'fullName', sortable: true },
   { title: 'Vai trò', key: 'role', sortable: true },
   { title: 'Trạng thái', key: 'isActive', sortable: true },
-  { title: 'Hành động', key: 'actions', sortable: false, align: 'end' as const },
+  { title: '', key: 'actions', sortable: false, align: 'end' as const },
 ];
 
 const invitationHeaders = [
@@ -530,7 +580,7 @@ onMounted(() => {
 
 <style scoped>
 .settings-shell {
-  min-height: 100%;
+  min-height: 100vh;
   background: var(--color-canvas);
 }
 
@@ -546,69 +596,59 @@ onMounted(() => {
   animation: liquid-morph 8s infinite var(--liquid-ease);
 }
 
+.settings-nav-card {
+  background: var(--color-surface-glass) !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border) !important;
+  border-radius: 20px !important;
+}
+
+.nav-item {
+  transition: all 0.3s ease;
+}
+
+.nav-item :deep(.v-list-item-title) {
+  font-size: 0.95rem;
+}
+
 .glass-container {
   background: var(--color-surface-glass) !important;
   backdrop-filter: blur(20px);
   border: 1px solid var(--color-border) !important;
   border-radius: 24px !important;
   box-shadow: var(--shadow-md) !important;
-  overflow: hidden;
 }
 
-.settings-tabs {
-  border-bottom: none;
-}
-
-.pill-tab {
-  opacity: 0.7;
-  transition: all 0.3s var(--liquid-ease);
-}
-
-.v-tab--selected.pill-tab {
-  opacity: 1;
-  font-weight: 700;
+.min-h-600 {
+  min-height: 600px;
 }
 
 .search-bar {
   max-width: 320px;
 }
 
-.user-table {
+.custom-data-table {
   background: transparent !important;
 }
 
-:deep(.v-data-table__th) {
-  font-weight: 700 !important;
+:deep(.v-data-table-header__content) {
+  font-weight: 800 !important;
   text-transform: uppercase;
-  font-size: 0.7rem !important;
-  letter-spacing: 0.08em;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.05em;
   color: var(--color-text-muted) !important;
-  background: transparent !important;
-  padding: 16px !important;
-  border-bottom: 2px solid var(--color-border) !important;
-}
-
-:deep(.v-data-table__tr) {
-  transition: all 0.2s var(--liquid-ease);
 }
 
 :deep(.v-data-table__tr:hover) {
   background: var(--color-primary-soft) !important;
-  transform: scale(1.002);
-}
-
-:deep(.v-data-table__td) {
-  padding: 16px !important;
-  border-bottom: 1px solid var(--color-border) !important;
 }
 
 .glass-avatar {
-  border: 1px solid var(--color-primary-soft-strong);
-  box-shadow: var(--shadow-sm);
+  border: 2px solid var(--color-primary-soft-strong);
 }
 
-.status-badge {
-  transform: scale(1.2);
+.border-glow {
+  box-shadow: 0 0 15px var(--color-primary-soft);
 }
 
 .status-active :deep(.v-badge__badge) {
@@ -618,82 +658,72 @@ onMounted(() => {
 
 @keyframes pulse-success {
   0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-  70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+  70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
   100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }
 
-.border-right {
-  border-right: 1px solid var(--color-border);
+.dialog-glass-premium {
+  background: rgba(var(--v-theme-surface), 0.85) !important;
+  backdrop-filter: blur(32px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
 }
 
-.role-radio-item {
-  padding: 12px 16px;
-  border-radius: 12px;
+.border-right-dashed {
+  border-right: 1px dashed var(--color-border-strong);
+}
+
+.role-info-card {
+  border: 1px solid var(--color-primary-soft-strong);
+}
+
+.role-radio-item-modern {
+  padding: 16px;
+  border-radius: 16px;
   background: var(--color-surface-elevated);
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
 }
 
-.role-radio-item:hover {
+.role-radio-item-modern:hover {
   background: var(--color-primary-soft);
 }
 
-:deep(.v-selection-control--active) .role-radio-item {
+:deep(.v-selection-control--active) .role-radio-item-modern {
   border-color: var(--color-primary);
-  background: var(--color-primary-soft);
+  background: var(--color-primary-soft-strong);
 }
 
-.invite-link-box {
-  background: var(--color-primary-soft);
-  border: 2px dashed var(--color-primary-soft-strong);
+.invite-link-box-premium {
+  background: linear-gradient(135deg, var(--color-primary-soft), transparent);
+  border-color: var(--color-primary-soft-strong) !important;
 }
 
-.invite-link-icon {
-  width: 48px;
-  height: 48px;
+.invite-link-icon-premium {
+  width: 64px;
+  height: 64px;
   background: white;
-  border-radius: 12px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-sm);
-}
-
-.create-link-btn {
-  height: 56px !important;
-  font-size: 1.1rem !important;
-  letter-spacing: 0.02em;
-  text-transform: none;
+  box-shadow: var(--shadow-md);
 }
 
 .action-btn {
-  transition: all 0.3s var(--liquid-ease);
+  transition: all 0.4s var(--liquid-ease);
 }
 
 .action-btn:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px) scale(1.02);
   box-shadow: var(--glow-brand);
 }
-
-.hover-scale:hover {
-  transform: scale(1.15);
-}
-
-.dialog-glass {
-  background: var(--color-surface-glass) !important;
-  backdrop-filter: blur(24px) !important;
-  border: 1px solid var(--color-border-strong) !important;
-}
-
-.bg-primary-soft {
-  background: var(--color-primary-soft);
-}
-
-.gap-4 { gap: 1rem; }
-.gap-1 { gap: 0.25rem; }
 
 @keyframes liquid-morph {
   0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
   50% { border-radius: 30% 60% 70% 30% / 50% 60% 30% 50%; }
 }
+
+.uppercase { text-transform: uppercase; }
+.letter-spacing-1 { letter-spacing: 1px; }
 </style>

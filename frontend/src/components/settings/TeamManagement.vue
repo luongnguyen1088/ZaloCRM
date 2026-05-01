@@ -1,25 +1,29 @@
 <template>
   <div class="team-management">
-    <div class="d-flex align-center mb-6">
+    <div class="d-flex align-center mb-8">
+      <div class="section-icon-box mr-4">
+        <v-icon color="primary">mdi-account-group</v-icon>
+      </div>
       <div>
-        <h3 class="text-h6 font-weight-bold mb-0">Danh sách các đội nhóm</h3>
-        <p class="text-caption text-medium-emphasis">Tổ chức nhân sự theo phòng ban hoặc dự án</p>
+        <h3 class="text-h6 font-weight-bold mb-0">Quản lý đội nhóm</h3>
+        <p class="text-caption text-medium-emphasis">Phân bổ nhân sự theo phòng ban hoặc dự án chuyên biệt</p>
       </div>
       <v-spacer />
       <v-btn
         v-if="authStore.isAdmin"
         color="primary"
         prepend-icon="mdi-plus"
-        variant="tonal"
+        variant="flat"
         @click="openCreate"
-        class="text-none"
-        rounded="lg"
+        class="text-none px-6"
+        rounded="pill"
+        elevation="0"
       >
-        Tạo đội nhóm
+        Tạo đội nhóm mới
       </v-btn>
     </div>
 
-    <v-alert v-if="error" type="error" variant="tonal" class="mb-4 rounded-xl" closable @click:close="error = ''">
+    <v-alert v-if="error" type="error" variant="tonal" class="mb-6 rounded-xl" closable @click:close="error = ''">
       {{ error }}
     </v-alert>
 
@@ -27,61 +31,65 @@
       <v-progress-circular indeterminate color="primary" />
     </div>
 
-    <div v-if="teams.length === 0 && !loading" class="text-center py-12 empty-state rounded-xl">
-      <v-icon size="64" color="grey-lighten-2" class="mb-4">mdi-account-group-outline</v-icon>
-      <div class="text-h6 text-medium-emphasis">Chưa có đội nhóm nào</div>
-      <div class="text-body-2 text-disabled mb-6">Hãy tạo đội nhóm đầu tiên để quản lý nhân viên hiệu quả hơn</div>
+    <div v-if="teams.length === 0 && !loading" class="text-center py-12 empty-state-modern rounded-xl border-dashed">
+      <v-icon size="64" color="primary-lighten-3" class="mb-4">mdi-account-group-outline</v-icon>
+      <div class="text-h6 font-weight-bold text-medium-emphasis">Chưa có đội nhóm nào</div>
+      <div class="text-body-2 text-disabled mb-6">Hãy tạo đội nhóm đầu tiên để tối ưu hóa quy trình làm việc</div>
       <v-btn
         v-if="authStore.isAdmin"
         color="primary"
-        variant="flat"
+        variant="tonal"
         prepend-icon="mdi-plus"
         @click="openCreate"
-        class="text-none px-6"
-        rounded="lg"
+        class="text-none px-8"
+        rounded="pill"
       >
-        Tạo đội nhóm ngay
+        Khởi tạo ngay
       </v-btn>
     </div>
 
-    <v-expansion-panels v-model="expandedPanel" variant="accordion" class="custom-panels">
+    <v-expansion-panels v-model="expandedPanel" variant="accordion" class="custom-panels-modern">
       <v-expansion-panel
         v-for="team in teams"
         :key="team.id"
         @click="onPanelClick(team.id)"
-        class="mb-3 team-panel"
+        class="mb-4 team-panel-modern"
       >
-        <v-expansion-panel-title>
-          <div class="d-flex align-center w-100 py-1">
-            <div class="team-icon-avatar mr-4">
+        <v-expansion-panel-title collapse-icon="mdi-chevron-up" expand-icon="mdi-chevron-down">
+          <div class="d-flex align-center w-100 py-2">
+            <div class="team-avatar-box mr-4" :class="{ 'active-box': expandedPanel === teams.indexOf(team) }">
               <v-icon color="primary" size="24">mdi-account-group</v-icon>
             </div>
             <div>
-              <span class="font-weight-bold text-body-1">{{ team.name }}</span>
+              <span class="font-weight-bold text-h6 text-high-emphasis">{{ team.name }}</span>
               <div class="d-flex align-center mt-1">
-                <v-chip size="x-small" color="primary" variant="flat" class="mr-2 px-2">
-                  {{ memberMap[team.id]?.length ?? 0 }} thành viên
+                <v-chip size="x-small" color="primary" variant="flat" class="mr-3 px-3 font-weight-black uppercase">
+                  {{ memberMap[team.id]?.length ?? 0 }} nhân sự
                 </v-chip>
-                <span class="text-caption text-disabled">ID: {{ team.id.substring(0, 8) }}</span>
+                <span class="text-caption text-disabled font-weight-medium">ID: {{ team.id.substring(0, 8) }}</span>
               </div>
             </div>
             <v-spacer />
             <template v-if="authStore.isAdmin">
-              <div class="actions-wrapper">
-                <v-btn icon size="small" variant="text" color="primary" class="mr-1 hover-scale" @click.stop="openEdit(team)" title="Sửa">
-                  <v-icon size="20">mdi-pencil-outline</v-icon>
+              <div class="actions-group">
+                <v-btn icon size="small" variant="tonal" color="primary" class="mr-2 action-icon-btn" @click.stop="openEdit(team)" title="Chỉnh sửa">
+                  <v-icon size="18">mdi-pencil-outline</v-icon>
                 </v-btn>
-                <v-btn icon size="small" variant="text" color="error" class="hover-scale" @click.stop="openDelete(team)" title="Xóa">
-                  <v-icon size="20">mdi-delete-outline</v-icon>
+                <v-btn icon size="small" variant="tonal" color="error" class="action-icon-btn" @click.stop="openDelete(team)" title="Xóa nhóm">
+                  <v-icon size="18">mdi-trash-can-outline</v-icon>
                 </v-btn>
               </div>
             </template>
           </div>
         </v-expansion-panel-title>
+        
         <v-expansion-panel-text class="mt-2">
-          <div class="members-container pa-2 rounded-xl">
-            <div class="d-flex align-center mb-4">
-              <span class="text-subtitle-2 font-weight-bold text-medium-emphasis">Thành viên đội nhóm</span>
+          <div class="members-inner-box pa-4 rounded-xl">
+            <div class="d-flex align-center mb-6">
+              <div class="d-flex align-center">
+                <v-icon size="18" color="medium-emphasis" class="mr-2">mdi-account-check-outline</v-icon>
+                <span class="text-subtitle-2 font-weight-bold text-medium-emphasis uppercase letter-spacing-1">Thành viên trong nhóm</span>
+              </div>
               <v-spacer />
               <v-btn
                 v-if="authStore.isAdmin"
@@ -90,36 +98,45 @@
                 color="primary"
                 prepend-icon="mdi-account-plus-outline"
                 @click="openAddMember(team)"
-                class="text-none font-weight-bold"
+                class="text-none font-weight-bold px-4"
+                rounded="pill"
               >
                 Thêm thành viên
               </v-btn>
             </div>
 
-            <div class="d-flex flex-wrap gap-2">
-              <v-chip
-                v-for="m in memberMap[team.id] ?? []"
-                :key="m.userId"
-                closable
-                :close-label="'Xóa ' + m.fullName"
-                @click:close="authStore.isAdmin && handleRemoveMember(team.id, m.userId)"
-                class="member-chip py-4"
-                variant="outlined"
-              >
-                <v-avatar start color="primary-lighten-4" class="mr-2">
-                  <span class="text-primary text-caption font-weight-bold">{{ m.fullName[0].toUpperCase() }}</span>
-                </v-avatar>
-                <span class="font-weight-medium">{{ m.fullName }}</span>
-              </v-chip>
-              <div v-if="!memberMap[team.id]?.length && !loading" class="py-4 px-2 text-medium-emphasis text-body-2 d-flex align-center">
-                <v-icon start size="18">mdi-information-outline</v-icon>
-                Chưa có thành viên nào trong nhóm này
-              </div>
+            <v-row dense>
+              <v-col v-for="m in memberMap[team.id] ?? []" :key="m.userId" cols="12" sm="6" lg="4">
+                <v-card variant="flat" class="member-mini-card pa-3 rounded-lg d-flex align-center mb-1">
+                  <v-avatar size="32" color="primary-lighten-4" class="mr-3">
+                    <span class="text-primary text-caption font-weight-black">{{ m.fullName[0].toUpperCase() }}</span>
+                  </v-avatar>
+                  <div class="flex-grow-1 overflow-hidden">
+                    <div class="text-body-2 font-weight-bold text-truncate">{{ m.fullName }}</div>
+                  </div>
+                  <v-btn
+                    v-if="authStore.isAdmin"
+                    icon="mdi-close"
+                    size="x-small"
+                    variant="text"
+                    color="grey-lighten-1"
+                    class="ml-2 remove-member-btn"
+                    @click="handleRemoveMember(team.id, m.userId)"
+                  />
+                </v-card>
+              </v-col>
+            </v-row>
+            
+            <div v-if="!memberMap[team.id]?.length && !loading" class="py-8 px-4 text-center border-dashed rounded-lg opacity-50">
+              <v-icon size="32" class="mb-2">mdi-account-off-outline</v-icon>
+              <div class="text-body-2 font-weight-medium">Chưa có nhân sự nào được phân bổ</div>
             </div>
           </div>
         </v-expansion-panel-text>
       </v-expansion-panel>
     </v-expansion-panels>
+
+    <!-- Dialogs stay mostly the same but use the new tokens -->
 
     <!-- Create team dialog -->
     <v-dialog v-model="showCreate" max-width="440" transition="dialog-bottom-transition">
@@ -347,62 +364,96 @@ onMounted(async () => {
   color: var(--color-text);
 }
 
-.empty-state {
-  background: var(--color-surface-muted);
-  border: 2px dashed var(--color-border);
-}
-
-.custom-panels {
-  background: transparent !important;
-}
-
-.team-panel {
-  background: var(--color-surface) !important;
-  border: 1px solid var(--color-border) !important;
-  border-radius: 16px !important;
-  overflow: hidden;
-  transition: all 0.3s var(--liquid-ease) !important;
-}
-
-.team-panel:hover {
-  border-color: var(--color-primary-soft-strong) !important;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
-
-.v-expansion-panel--active.team-panel {
-  border-color: var(--color-primary) !important;
-  box-shadow: var(--shadow-md);
-}
-
-.team-icon-avatar {
+.section-icon-box {
+  width: 44px;
+  height: 44px;
   background: var(--color-primary-soft);
-  width: 48px;
-  height: 48px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.members-container {
-  background: var(--color-surface-muted);
+.empty-state-modern {
+  background: var(--color-surface-glass);
+  border: 2px dashed var(--color-border);
+  transition: all 0.3s ease;
+}
+
+.custom-panels-modern {
+  background: transparent !important;
+}
+
+.team-panel-modern {
+  background: var(--color-surface-glass) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 20px !important;
+  overflow: hidden;
+  transition: all 0.3s var(--liquid-ease) !important;
+  backdrop-filter: blur(8px);
+}
+
+.team-panel-modern:hover {
+  border-color: var(--color-primary-soft-strong) !important;
+  transform: translateY(-2px);
+}
+
+.v-expansion-panel--active.team-panel-modern {
+  border-color: var(--color-primary) !important;
+  box-shadow: var(--shadow-md);
+}
+
+.team-avatar-box {
+  background: var(--color-surface-elevated);
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
   border: 1px solid var(--color-border);
 }
 
-.member-chip {
+.active-box {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary-soft-strong);
+  transform: scale(1.05);
+}
+
+.members-inner-box {
+  background: var(--color-surface-light);
+  border: 1px solid var(--color-border);
+}
+
+.member-mini-card {
   background: var(--color-surface) !important;
   border: 1px solid var(--color-border) !important;
-  transition: all 0.2s var(--liquid-ease);
+  transition: all 0.2s ease;
 }
 
-.member-chip:hover {
+.member-mini-card:hover {
   border-color: var(--color-primary) !important;
-  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+  transform: scale(1.02);
 }
 
-.hover-scale:hover {
-  transform: scale(1.2);
+.remove-member-btn {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.member-mini-card:hover .remove-member-btn {
+  opacity: 1;
+}
+
+.action-icon-btn {
+  background: var(--color-surface-elevated) !important;
+  transition: all 0.2s ease;
+}
+
+.action-icon-btn:hover {
+  transform: scale(1.1);
 }
 
 .dialog-glass {
@@ -420,5 +471,6 @@ onMounted(async () => {
   box-shadow: var(--glow-brand);
 }
 
-.gap-2 { gap: 0.5rem; }
+.uppercase { text-transform: uppercase; }
+.letter-spacing-1 { letter-spacing: 1px; }
 </style>
