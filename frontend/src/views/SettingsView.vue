@@ -241,6 +241,16 @@
               </div>
               <PlanSummary />
             </v-window-item>
+
+            <!-- INTEGRATIONS TAB -->
+            <v-window-item value="integrations">
+              <Integrations />
+            </v-window-item>
+
+            <!-- DEVELOPER TAB -->
+            <v-window-item value="developer">
+              <ApiDeveloper />
+            </v-window-item>
           </v-window>
         </v-card>
       </v-col>
@@ -384,7 +394,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useUsers, type OrgUser } from '@/composables/use-users';
 import { useInvitations } from '@/composables/use-invitations';
 import { useAuthStore } from '@/stores/auth';
@@ -392,12 +403,25 @@ import TeamManagement from '@/components/settings/TeamManagement.vue';
 import OrgSettings from '@/components/settings/OrgSettings.vue';
 import MyProfile from '@/components/settings/MyProfile.vue';
 import PlanSummary from '@/components/settings/PlanSummary.vue';
+import Integrations from '@/components/settings/Integrations.vue';
+import ApiDeveloper from '@/components/settings/ApiDeveloper.vue';
 
 const { users, loading, error, fetchUsers, updateUser, resetPassword, deleteUser } = useUsers();
 const { invitations, loading: invitingLoading, fetchInvitations, createInvitation } = useInvitations();
 const authStore = useAuthStore();
+const route = useRoute();
+const router = useRouter();
 
-const tab = ref('profile');
+const tab = ref(route.query.tab?.toString() || 'profile');
+
+// Sync tab with query param
+watch(() => route.query.tab, (newTab) => {
+  if (newTab) tab.value = newTab.toString();
+});
+
+watch(tab, (newVal) => {
+  router.replace({ query: { ...route.query, tab: newVal } });
+});
 const search = ref('');
 const showInvite = ref(false);
 const showEdit = ref(false);
@@ -447,6 +471,8 @@ const settingsNavigation = [
   { title: 'Nhân sự & Đội ngũ', value: 'users', icon: 'mdi-account-group-outline' },
   { title: 'Thiết lập tổ chức', value: 'org', icon: 'mdi-shield-check-outline' },
   { title: 'Gói cước & Billing', value: 'billing', icon: 'mdi-crown-outline' },
+  { title: 'Tích hợp hệ thống', value: 'integrations', icon: 'mdi-transit-connection-variant' },
+  { title: 'Nhà phát triển', value: 'developer', icon: 'mdi-code-braces' },
 ];
 
 const headers = [

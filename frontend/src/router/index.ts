@@ -100,9 +100,11 @@ const routes = [
   },
   {
     path: '/api-settings',
-    name: 'ApiSettings',
-    component: () => import('@/views/ApiSettingsView.vue'),
-    meta: { requiresAuth: true },
+    redirect: '/settings?tab=developer'
+  },
+  {
+    path: '/integrations',
+    redirect: '/settings?tab=integrations'
   },
   {
     path: '/ai-training',
@@ -120,12 +122,6 @@ const routes = [
     path: '/usage',
     name: 'UsageDashboard',
     component: () => import('@/views/UsageDashboardView.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/integrations',
-    name: 'Integrations',
-    component: () => import('@/views/IntegrationsView.vue'),
     meta: { requiresAuth: true },
   },
   {
