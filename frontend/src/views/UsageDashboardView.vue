@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="pa-6 fill-height d-flex flex-column usage-dashboard">
+  <v-container fluid class="pa-4 pa-md-6 fill-height d-flex flex-column usage-dashboard">
     <!-- Header -->
     <div class="d-flex align-center mb-6 flex-shrink-0">
       <div>
@@ -42,7 +42,7 @@
           </div>
           
           <div class="plan-price mb-6">
-            <span class="text-h3 font-weight-black">{{ formatPrice(subscription?.plan?.priceMonth || 0) }}</span>
+            <span class="text-h4 font-weight-bold">{{ formatPrice(subscription?.plan?.priceMonth || 0) }}</span>
             <span class="text-caption text-medium-emphasis ml-1">/ tháng</span>
           </div>
 
@@ -143,7 +143,7 @@
           </v-avatar>
           <div>
             <div class="text-caption opacity-70">Tổng phản hồi AI</div>
-            <div class="text-h5 font-weight-black">{{ analyticsData.stats.totalAiReplies }}</div>
+            <div class="text-h6 font-weight-bold">{{ analyticsData.stats.totalAiReplies }}</div>
           </div>
         </v-card>
       </v-col>
@@ -154,7 +154,7 @@
           </v-avatar>
           <div>
             <div class="text-caption opacity-70">Nhân lực tiết kiệm</div>
-            <div class="text-h5 font-weight-black">{{ analyticsData.stats.savedHumanHours.toFixed(1) }}h</div>
+            <div class="text-h6 font-weight-bold">{{ analyticsData.stats.savedHumanHours.toFixed(1) }}h</div>
           </div>
         </v-card>
       </v-col>
@@ -165,7 +165,7 @@
           </v-avatar>
           <div>
             <div class="text-caption opacity-70">Tỷ lệ tin tưởng</div>
-            <div class="text-h5 font-weight-black">{{ analyticsData.acceptanceRate.toFixed(0) }}%</div>
+            <div class="text-h6 font-weight-bold">{{ analyticsData.acceptanceRate.toFixed(0) }}%</div>
           </div>
         </v-card>
       </v-col>
@@ -176,7 +176,7 @@
           </v-avatar>
           <div>
             <div class="text-caption opacity-70">Đội ngũ (Staff)</div>
-            <div class="text-h5 font-weight-black">{{ userCount }}</div>
+            <div class="text-h6 font-weight-bold">{{ userCount }}</div>
           </div>
         </v-card>
       </v-col>

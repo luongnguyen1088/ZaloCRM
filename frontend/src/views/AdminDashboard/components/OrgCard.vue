@@ -1,6 +1,6 @@
 
 <template>
-  <v-card class="org-card pa-5 pa-md-6 mb-4">
+  <v-card class="org-card pa-4 pa-md-5 mb-4">
     <div class="org-card__header">
       <div class="org-card__identity">
         <v-avatar size="52" rounded="xl" :color="getPlanTint(getPlanName(org))">
@@ -275,8 +275,8 @@ const isAiNearLimit = (org: Organization) => isAiEnabled(org) && getAiUsagePerce
 .org-card__name {
   margin: 0;
   color: var(--color-text);
-  font-size: 1.3rem;
-  font-weight: 850;
+  font-size: 1.25rem;
+  font-weight: 750;
 }
 
 .org-card__subtitle {
@@ -291,8 +291,8 @@ const isAiNearLimit = (org: Organization) => isAiEnabled(org) && getAiUsagePerce
 
 .org-card__initial {
   color: var(--color-text);
-  font-size: 1.1rem;
-  font-weight: 900;
+  font-size: 1rem;
+  font-weight: 800;
 }
 
 .org-meta-grid {
@@ -317,10 +317,10 @@ const isAiNearLimit = (org: Organization) => isAiEnabled(org) && getAiUsagePerce
 
 .meta-tile__value {
   display: block;
-  margin-top: 8px;
+  margin-top: 6px;
   color: var(--color-text);
-  font-size: 1.16rem;
-  font-weight: 900;
+  font-size: 1.1rem;
+  font-weight: 800;
   line-height: 1.1;
 }
 
@@ -348,8 +348,8 @@ const isAiNearLimit = (org: Organization) => isAiEnabled(org) && getAiUsagePerce
 
 .ai-insight-card__title {
   color: var(--color-text);
-  font-size: 1.35rem;
-  font-weight: 900;
+  font-size: 1.25rem;
+  font-weight: 800;
   line-height: 1.15;
 }
 
@@ -393,10 +393,10 @@ const isAiNearLimit = (org: Organization) => isAiEnabled(org) && getAiUsagePerce
 
 .ai-mini-stat__value {
   display: block;
-  margin-top: 8px;
+  margin-top: 6px;
   color: var(--color-text);
-  font-size: 1rem;
-  font-weight: 850;
+  font-size: 0.95rem;
+  font-weight: 750;
 }
 
 .ai-insight-card__note {
@@ -451,6 +451,9 @@ const isAiNearLimit = (org: Organization) => isAiEnabled(org) && getAiUsagePerce
 
 @media (max-width: 1360px) {
   .org-meta-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ai-insight-card__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

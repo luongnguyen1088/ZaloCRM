@@ -73,6 +73,27 @@
   --gradient-hero: linear-gradient(135deg, #0f172a 0%, #13203b 45%, #1e293b 100%);
 }
 
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (max-width: 1600px) {
+  html { font-size: 15.5px; }
+}
+
+@media (max-width: 1440px) {
+  html { font-size: 15px; }
+}
+
+@media (max-width: 1280px) {
+  html { font-size: 14.5px; }
+}
+
+@media (max-width: 1024px) {
+  html { font-size: 14px; }
+}
+
 html,
 body {
   margin: 0;
@@ -82,6 +103,9 @@ body {
   scroll-behavior: smooth;
   background: var(--color-canvas);
   color: var(--color-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #app {

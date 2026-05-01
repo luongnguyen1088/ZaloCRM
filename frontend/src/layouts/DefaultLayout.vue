@@ -1,6 +1,6 @@
 <template>
   <v-app :class="{ 'liquid-bg': isDark }">
-    <v-app-bar density="comfortable" flat>
+    <v-app-bar density="compact" flat>
       <v-app-bar-nav-icon @click="drawer = !drawer" />
 
       <div class="brand-lockup d-flex align-center">
@@ -111,7 +111,7 @@
     <v-navigation-drawer v-model="drawer" :rail="rail" permanent @click="rail = false" color="background" class="border-right">
       <v-list density="compact" nav class="mt-2 sidebar-list">
         <template v-for="group in computedMenuGroups" :key="group.header">
-          <div v-if="!rail" class="px-4 py-2 text-overline text-placeholder font-weight-bold" style="font-size: 0.65rem; letter-spacing: 1.5px;">
+          <div v-if="!rail" class="px-4 py-2 text-overline text-placeholder font-weight-bold" style="font-size: 0.7rem; letter-spacing: 1.5px;">
             {{ group.header }}
           </div>
           <v-list-item

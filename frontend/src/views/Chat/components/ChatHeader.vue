@@ -7,7 +7,7 @@
     </v-avatar>
 
     <div class="flex-grow-1 min-width-0">
-      <h3 class="text-subtitle-1 font-weight-black text-truncate mb-0">
+      <h3 class="text-subtitle-1 font-weight-bold text-truncate mb-0">
         {{ conversation?.contact?.fullName || 'Hội thoại' }}
       </h3>
       <div class="d-flex align-center text-caption text-grey">
