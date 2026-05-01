@@ -116,6 +116,15 @@
           <v-chip v-if="configScopeId" size="small" color="secondary" variant="outlined">
             {{ configScopeMeta.scopeChannelType === 'facebook' ? 'Fanpage Facebook' : 'Kênh Zalo' }}
           </v-chip>
+          <v-divider vertical class="mx-2" />
+          <v-switch
+            v-model="aiConfig.enabled"
+            color="success"
+            hide-details
+            inset
+            label="Kích hoạt trợ lý AI"
+            class="mt-n1"
+          />
         </div>
       </div>
     </v-card>
@@ -201,13 +210,6 @@
                         Thiết lập giọng điệu, cách xưng hô và nguyên tắc trả lời mặc định.
                       </p>
                     </div>
-                    <v-switch
-                      v-model="aiConfig.enabled"
-                      color="success"
-                      hide-details
-                      inset
-                      label="Bật AI"
-                    />
                   </div>
 
                   <v-row dense class="mb-4">
