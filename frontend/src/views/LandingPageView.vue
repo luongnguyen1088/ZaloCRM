@@ -573,13 +573,24 @@ const integrationPoints = [
   min-height: 90px;
   display: flex;
   align-items: center;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   background: transparent;
+}
+
+.landing-navbar__container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  transition: all 0.5s ease;
 }
 
 .landing-navbar--scrolled {
   top: 16px;
-  margin: 0 auto;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
   max-width: 1100px;
   min-height: 72px;
   background: rgba(255, 255, 255, 0.72);
@@ -587,9 +598,12 @@ const integrationPoints = [
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 999px;
   box-shadow: 
-    0 20px 40px rgba(15, 23, 42, 0.08),
-    0 1px 2px rgba(15, 23, 42, 0.05);
-  padding: 0 12px;
+    0 20px 40px rgba(15, 23, 42, 0.08);
+}
+
+.landing-navbar--scrolled .landing-navbar__container {
+  max-width: 100%;
+  padding: 0 16px;
 }
 
 .v-theme--dark .landing-navbar--scrolled {
