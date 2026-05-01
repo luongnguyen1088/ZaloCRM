@@ -16,9 +16,28 @@ export async function aiReplyAction(input: {
   if (!input.threadId) return null;
 
   try {
-    // 1. Get AI Config for threshold fallback
-    const { getAiConfig } = await import('../../ai/ai-service.js');
+    // 1. Get AI config and runtime state
+    const { getAiConfig, isAiInWorkHours } = await import('../../ai/ai-service.js');
     const aiConfig = await getAiConfig(input.orgId, input.zaloAccountId);
+    if (!aiConfig.enabled) {
+      logger.info(`[automation] AI Reply stopped for ${input.zaloAccountId}: AI is disabled`);
+      return null;
+    }
+
+    const inWorkHours = await isAiInWorkHours(input.orgId, input.zaloAccountId);
+    if (!inWorkHours) {
+      logger.info(`[automation] AI Reply stopped for ${input.zaloAccountId}: outside configured work hours`);
+      return null;
+    }
+
+    const conversation = await prisma.conversation.findUnique({
+      where: { id: input.conversationId },
+      select: { aiPaused: true },
+    });
+    if (conversation?.aiPaused) {
+      logger.info(`[automation] AI Reply stopped for ${input.zaloAccountId}: conversation is paused`);
+      return null;
+    }
 
     // 2. Generate response using AI Service (RAG)
     const result = await generateAiOutput({

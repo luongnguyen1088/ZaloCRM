@@ -6,6 +6,7 @@ import { logger } from '../../../shared/utils/logger.js';
 import { config } from '../../../config/index.js';
 import { runAutomationRules } from '../../automation/automation-service.js';
 import { AiService } from '../../ai/ai-service.js';
+import { maybeScheduleBuiltInAiReply } from '../../ai/auto-reply-service.js';
 import { FacebookApi } from './facebook-api.js';
 
 export async function facebookWebhookRoutes(app: FastifyInstance) {
@@ -159,7 +160,7 @@ async function handleIncomingMessage(app: FastifyInstance, event: any, pageId: s
       },
     });
 
-    void runAutomationRules({
+    const automationContext = {
       trigger: 'message_received',
       orgId,
       org,
@@ -183,7 +184,10 @@ async function handleIncomingMessage(app: FastifyInstance, event: any, pageId: s
           }
         : null,
       message: { id: message.id, content: messageText, contentType: 'text', senderType: 'contact' }
-    });
+    } as const;
+
+    void runAutomationRules(automationContext);
+    void maybeScheduleBuiltInAiReply(automationContext);
 
     void AiService.checkStopConditions(orgId, conversation.id, messageText);
     void AiService.extractLeadInfo(orgId, conversation.id, messageText);

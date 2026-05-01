@@ -64,34 +64,48 @@ export async function runAutomationRules(context: AutomationContext): Promise<vo
     });
 
     for (const rule of rules) {
-    const delayMs = (rule.delaySeconds || 0) * 1000;
-    
-    // If there is a delay, we use debouncing logic (especially for message_received)
-    if (delayMs > 0 && context.conversation?.id) {
-      const timerKey = `${context.orgId}:${context.conversation.id}:${rule.id}`;
+      const delayMs = (rule.delaySeconds || 0) * 1000;
       
-      // Clear existing timer if any (reset the clock)
-      if (activeTimers.has(timerKey)) {
-        clearTimeout(activeTimers.get(timerKey));
-        activeTimers.delete(timerKey);
+      // If there is a delay, we use debouncing logic (especially for message_received)
+      if (delayMs > 0 && context.conversation?.id) {
+        const timerKey = `${context.orgId}:${context.conversation.id}:${rule.id}`;
+        
+        // Clear existing timer if any (reset the clock)
+        if (activeTimers.has(timerKey)) {
+          clearTimeout(activeTimers.get(timerKey));
+          activeTimers.delete(timerKey);
+        }
+        
+        // Set a new timer
+        const timeout = setTimeout(async () => {
+          activeTimers.delete(timerKey);
+          await executeRule(rule, context);
+        }, delayMs);
+        
+        activeTimers.set(timerKey, timeout);
+        continue;
       }
-      
-      // Set a new timer
-      const timeout = setTimeout(async () => {
-        activeTimers.delete(timerKey);
-        await executeRule(rule, context);
-      }, delayMs);
-      
-      activeTimers.set(timerKey, timeout);
-      continue;
-    }
 
-    // Immediate execution for rules without delay
-    await executeRule(rule, context);
+      // Immediate execution for rules without delay
+      await executeRule(rule, context);
+    }
+  } catch (error) {
+    logger.error('[automation] runAutomationRules critical error:', error);
   }
-} catch (error) {
-  logger.error('[automation] runAutomationRules critical error:', error);
 }
+
+export async function hasMatchingAiReplyRule(context: AutomationContext): Promise<boolean> {
+  const rules = await prisma.automationRule.findMany({
+    where: { orgId: context.orgId, trigger: context.trigger, enabled: true },
+    select: { conditions: true, actions: true },
+  });
+
+  return rules.some((rule) => {
+    const actions = Array.isArray(rule.actions) ? (rule.actions as unknown as AutomationAction[]) : [];
+    const conditions = Array.isArray(rule.conditions) ? (rule.conditions as unknown as AutomationCondition[]) : [];
+    const hasAiReplyAction = actions.some((action) => action?.type === 'ai_reply');
+    return hasAiReplyAction && matchesConditions(conditions, context);
+  });
 }
 
 async function executeRule(rule: any, context: AutomationContext): Promise<void> {

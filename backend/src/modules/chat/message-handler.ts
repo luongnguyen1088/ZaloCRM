@@ -8,6 +8,7 @@ import { randomUUID } from 'node:crypto';
 import { emitWebhook } from '../api/webhook-service.js';
 import { runAutomationRules } from '../automation/automation-service.js';
 import { AiService } from '../ai/ai-service.js';
+import { maybeScheduleBuiltInAiReply } from '../ai/auto-reply-service.js';
 
 export interface IncomingMessage {
   accountId: string;
@@ -120,7 +121,7 @@ export async function handleIncomingMessage(
         select: { id: true, unreadCount: true, externalThreadId: true, threadType: true, zaloAccountId: true },
       });
 
-      void runAutomationRules({
+      const automationContext = {
         trigger: 'message_received',
         orgId: account.orgId,
         org,
@@ -135,7 +136,10 @@ export async function handleIncomingMessage(
             }
           : null,
         message: { id: message.id, content: message.content, contentType: message.contentType, senderType: message.senderType },
-      });
+      } as const;
+
+      void runAutomationRules(automationContext);
+      void maybeScheduleBuiltInAiReply(automationContext);
 
       // Run Smart Pause check
       void AiService.checkStopConditions(account.orgId, conversation.id, msg.content);
