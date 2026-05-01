@@ -52,8 +52,10 @@
             :contact="selectedConv.contact"
             :ai-summary="aiSummary"
             :ai-summary-loading="aiSummaryLoading"
+            :ai-summary-error="aiSummaryError"
             :ai-sentiment="aiSentiment"
             :ai-sentiment-loading="aiSentimentLoading"
+            :ai-sentiment-error="aiSentimentError"
             @refresh-ai-summary="generateAiSummary"
             @refresh-ai-sentiment="generateAiSentiment"
             @close="showContactPanel = false"
@@ -86,7 +88,9 @@ const { isMobile } = useMobile();
 const {
   conversations, selectedConvId, selectedConv, messages,
   loadingConvs, loadingMsgs, sendingMsg, searchQuery, accountFilter, statusFilter,
-  aiSuggestion, aiSuggestionSources, aiSuggestionLoading, aiSummary, aiSummaryLoading, aiSentiment, aiSentimentLoading,
+  aiSuggestion, aiSuggestionSources, aiSuggestionLoading, 
+  aiSummary, aiSummaryLoading, aiSummaryError,
+  aiSentiment, aiSentimentLoading, aiSentimentError,
   isAiQuotaExceeded,
   fetchConversations, fetchAiConfig, selectConversation, sendMessage,
   generateAiSuggestion, refineAiSuggestion, generateAiSummary, generateAiSentiment,

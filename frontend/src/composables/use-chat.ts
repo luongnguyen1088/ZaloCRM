@@ -36,9 +36,11 @@ export function useChat() {
   const aiSuggestionLoading = ref(false);
   const aiSuggestionError = ref('');
   const aiSummary = ref('');
+  const aiSummaryError = ref('');
   const aiSummaryLoading = ref(false);
   const aiSentiment = ref<AiSentiment | null>(null);
   const aiSentimentLoading = ref(false);
+  const aiSentimentError = ref('');
   const aiUsage = ref({ usedToday: 0, maxDaily: 500000, remaining: 500000, usedTokens: 0, maxTokens: 500000, remainingTokens: 500000, enabled: true });
   const aiConfig = ref<AiConfig>({ provider: 'anthropic', model: 'claude-sonnet-4-6', maxDaily: 500000, enabled: true, managed: true });
   const isAiQuotaExceeded = ref(false);
@@ -229,6 +231,7 @@ export function useChat() {
   async function generateAiSummary() {
     if (!selectedConvId.value) return;
     aiSummaryLoading.value = true;
+    aiSummaryError.value = '';
     try {
       const res = await api.post(`/ai/summarize/${selectedConvId.value}`);
       aiSummary.value = res.data.content || '';
@@ -237,6 +240,7 @@ export function useChat() {
       if (err.response?.status === 429) {
         isAiQuotaExceeded.value = true;
       }
+      aiSummaryError.value = err.response?.data?.error || err.message || 'Lỗi không xác định khi tóm tắt';
       console.error('Failed to summarize conversation:', err);
     } finally {
       aiSummaryLoading.value = false;
@@ -246,6 +250,7 @@ export function useChat() {
   async function generateAiSentiment() {
     if (!selectedConvId.value) return;
     aiSentimentLoading.value = true;
+    aiSentimentError.value = '';
     try {
       const res = await api.post(`/ai/sentiment/${selectedConvId.value}`);
       aiSentiment.value = res.data;
@@ -254,6 +259,7 @@ export function useChat() {
       if (err.response?.status === 429) {
         isAiQuotaExceeded.value = true;
       }
+      aiSentimentError.value = err.response?.data?.error || err.message || 'Lỗi không xác định khi phân tích cảm xúc';
       console.error('Failed to analyze sentiment:', err);
     } finally {
       aiSentimentLoading.value = false;

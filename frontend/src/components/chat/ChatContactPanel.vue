@@ -69,7 +69,13 @@
 
       <v-divider class="mb-4" />
 
-      <AiSummaryCard :summary="aiSummary" :loading="aiSummaryLoading" @refresh="$emit('refresh-ai-summary')" class="mb-4" />
+      <AiSummaryCard 
+        :summary="aiSummary" 
+        :loading="aiSummaryLoading" 
+        :error="aiSummaryError"
+        @refresh="$emit('refresh-ai-summary')" 
+        class="mb-4" 
+      />
 
       <v-card variant="flat" class="sentiment-card mb-4 rounded-xl">
         <v-card-title class="d-flex align-center text-subtitle-2 font-weight-bold pa-3">
@@ -86,7 +92,11 @@
             </div>
           </div>
           <div v-else class="text-center py-2">
-            <div class="text-caption text-grey mb-2">Chưa có dữ liệu tâm trạng</div>
+            <div v-if="aiSentimentError" class="text-caption text-error mb-2 px-2">
+              <v-icon size="14" color="error" class="mr-1">mdi-alert-circle-outline</v-icon>
+              {{ aiSentimentError }}
+            </div>
+            <div v-else class="text-caption text-grey mb-2">Chưa có dữ liệu tâm trạng</div>
             <v-btn
               variant="tonal"
               size="small"
@@ -126,8 +136,10 @@ const props = defineProps<{
   contact: Contact | null;
   aiSummary: string;
   aiSummaryLoading: boolean;
+  aiSummaryError: string;
   aiSentiment: AiSentiment | null;
   aiSentimentLoading: boolean;
+  aiSentimentError: string;
 }>();
 
 const emit = defineEmits<{ close: []; saved: []; 'refresh-ai-summary': []; 'refresh-ai-sentiment': [] }>();

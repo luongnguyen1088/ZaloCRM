@@ -38,15 +38,19 @@
       </div>
 
       <div v-else class="pa-8 text-center text-placeholder">
-        <v-icon size="32" class="mb-2 opacity-20">mdi-text-box-search-outline</v-icon>
-        <p class="text-caption">Chưa có tóm tắt hội thoại.</p>
+        <v-icon size="32" class="mb-2" :class="error ? 'text-error opacity-100' : 'opacity-20'">
+          {{ error ? 'mdi-alert-circle-outline' : 'mdi-text-box-search-outline' }}
+        </v-icon>
+        <p v-if="error" class="text-caption text-error px-4">{{ error }}</p>
+        <p v-else class="text-caption">Chưa có tóm tắt hội thoại.</p>
         <v-btn
           variant="outlined"
           size="small"
+          :color="error ? 'error' : 'primary'"
           class="mt-3 summary-outline-btn"
           @click="$emit('refresh')"
         >
-          Phân tích ngay
+          {{ error ? 'Thử lại' : 'Phân tích ngay' }}
         </v-btn>
       </div>
     </div>
@@ -59,6 +63,7 @@ import { computed } from 'vue';
 const props = defineProps<{
   summary: string;
   loading: boolean;
+  error?: string;
   updatedAt?: string;
 }>();
 
