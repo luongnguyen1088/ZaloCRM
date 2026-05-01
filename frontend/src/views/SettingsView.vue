@@ -6,7 +6,7 @@
           <div class="title-icon-wrapper mr-4">
             <v-icon color="white" size="28">mdi-account-cog</v-icon>
           </div>
-          Cấu hình hệ thống
+          Cài đặt
         </h1>
         <p class="text-subtitle-1 text-medium-emphasis ml-15">Quản lý tài khoản cá nhân, đội ngũ và thiết lập tổ chức</p>
       </div>

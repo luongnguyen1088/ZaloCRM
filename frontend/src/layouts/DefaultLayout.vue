@@ -216,7 +216,7 @@ const menuGroups = [
     header: 'HỆ THỐNG',
     items: [
       { title: 'Kênh kết nối', icon: 'mdi-cellphone-link', path: '/zalo-accounts' },
-      { title: 'Cài đặt & Nhân sự', icon: 'mdi-account-cog-outline', path: '/settings' },
+      { title: 'Cài đặt', icon: 'mdi-account-cog-outline', path: '/settings' },
       { title: 'Tích hợp', icon: 'mdi-connection', path: '/integrations' },
       { title: 'Nhà phát triển', icon: 'mdi-code-braces', path: '/api-settings' },
     ]
