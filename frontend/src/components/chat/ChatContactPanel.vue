@@ -79,8 +79,26 @@
           <v-btn icon="mdi-refresh" size="x-small" variant="text" :loading="aiSentimentLoading" @click="$emit('refresh-ai-sentiment')" />
         </v-card-title>
         <v-card-text class="pa-3 pt-0">
-          <AiSentimentBadge :sentiment="aiSentiment" />
-          <div v-if="aiSentiment?.reason" class="text-caption mt-2 text-grey-darken-1">{{ aiSentiment.reason }}</div>
+          <div v-if="aiSentiment" class="animate__animated animate__fadeIn">
+            <AiSentimentBadge :sentiment="aiSentiment" />
+            <div v-if="aiSentiment?.reason" class="text-caption mt-2 text-grey-darken-1 line-height-1-4">
+              {{ aiSentiment.reason }}
+            </div>
+          </div>
+          <div v-else class="text-center py-2">
+            <div class="text-caption text-grey mb-2">Chưa có dữ liệu tâm trạng</div>
+            <v-btn
+              variant="tonal"
+              size="small"
+              color="primary"
+              rounded="pill"
+              prepend-icon="mdi-brain"
+              :loading="aiSentimentLoading"
+              @click="$emit('refresh-ai-sentiment')"
+            >
+              Phân tích ngay
+            </v-btn>
+          </div>
         </v-card-text>
       </v-card>
 
@@ -178,5 +196,8 @@ function relativeTime(dateStr: string) {
 .sentiment-card {
   background: var(--color-surface-muted) !important;
   border: 1px solid var(--color-border) !important;
+}
+.line-height-1-4 {
+  line-height: 1.4 !important;
 }
 </style>
