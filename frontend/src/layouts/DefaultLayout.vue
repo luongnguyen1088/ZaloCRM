@@ -97,8 +97,8 @@
 
       <span class="text-body-2 mr-3" v-if="authStore.user">{{ authStore.user.fullName }}</span>
       <NotificationBell />
-      <v-btn icon variant="text" to="/api-settings" class="mr-1" title="Nhà phát triển">
-        <v-icon>mdi-code-braces</v-icon>
+      <v-btn icon variant="text" to="/zalo-accounts" class="mr-1" title="Kênh kết nối">
+        <v-icon size="small">mdi-cellphone-link</v-icon>
       </v-btn>
       <v-btn icon variant="text" @click="toggleTheme">
         <v-icon>{{ isDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
