@@ -2,50 +2,53 @@
   <div class="landing-page">
     <div class="landing-noise"></div>
 
-    <header class="landing-navbar px-4 px-md-8">
-      <div class="landing-navbar__shell">
-        <div class="brand-mark" @click="$router.push('/')">
-          <div class="brand-mark__icon">
-            <v-icon size="20">mdi-lightning-bolt</v-icon>
+    <header :class="['landing-navbar', { 'landing-navbar--scrolled': isScrolled }]">
+      <div class="landing-navbar__container">
+        <div class="landing-navbar__shell">
+          <div class="brand-mark" @click="$router.push('/')">
+            <div class="brand-mark__icon">
+              <div class="brand-mark__glow"></div>
+              <v-icon size="20">mdi-lightning-bolt</v-icon>
+            </div>
+            <div class="brand-mark__copy">
+              <div class="brand-mark__name">Claro</div>
+              <div class="brand-mark__meta">AI workspace</div>
+            </div>
           </div>
-          <div class="brand-mark__copy">
-            <div class="brand-mark__name">Claro</div>
-            <div class="brand-mark__meta">AI sales workspace</div>
+
+          <nav class="nav-links">
+            <a href="#overview">Tổng quan</a>
+            <a href="#workflow">Vận hành</a>
+            <a href="#features">Tính năng</a>
+            <a href="#integrations">Tích hợp</a>
+          </nav>
+
+          <div class="nav-actions">
+            <v-btn
+              v-if="!isAuthenticated"
+              variant="text"
+              class="text-none nav-button d-none d-sm-flex"
+              to="/login"
+            >
+              Đăng nhập
+            </v-btn>
+            <v-btn
+              v-if="!isAuthenticated"
+              color="primary"
+              class="text-none nav-cta shimmer-btn"
+              to="/register"
+            >
+              Tạo workspace
+            </v-btn>
+            <v-btn
+              v-else
+              color="primary"
+              class="text-none nav-cta"
+              to="/dashboard"
+            >
+              Vào dashboard
+            </v-btn>
           </div>
-        </div>
-
-        <div class="nav-links">
-          <a href="#overview">Tổng quan</a>
-          <a href="#workflow">Vận hành</a>
-          <a href="#features">Tính năng</a>
-          <a href="#integrations">Tích hợp</a>
-        </div>
-
-        <div class="nav-actions">
-          <v-btn
-            v-if="!isAuthenticated"
-            variant="text"
-            class="text-none nav-button"
-            to="/login"
-          >
-            Đăng nhập
-          </v-btn>
-          <v-btn
-            v-if="!isAuthenticated"
-            color="primary"
-            class="text-none nav-cta"
-            to="/register"
-          >
-            Tạo workspace
-          </v-btn>
-          <v-btn
-            v-else
-            color="primary"
-            class="text-none nav-cta"
-            to="/dashboard"
-          >
-            Vào dashboard
-          </v-btn>
         </div>
       </div>
     </header>
@@ -421,13 +424,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref, onUnmounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
+const isScrolled = ref(false);
+
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 20;
+};
 
 onMounted(() => {
+  window.addEventListener('scroll', handleScroll);
+  
   const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -444,6 +454,10 @@ onMounted(() => {
   document.querySelectorAll('.reveal-on-scroll').forEach(el => {
     observer.observe(el);
   });
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
 });
 
 const heroStats = [
@@ -630,11 +644,10 @@ const integrationPoints = [
 }
 
 .brand-mark {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   cursor: pointer;
-  transition: gap 0.25s ease;
 }
 
 .brand-mark__copy {
@@ -733,21 +746,55 @@ const integrationPoints = [
   gap: 12px;
 }
 
-.nav-button {
-  color: var(--color-text);
-  opacity: 0.88;
-}
-
-.nav-cta,
 .hero-primary {
-  padding-inline: 1.5rem !important;
+  padding-inline: 2rem !important;
   border-radius: 999px !important;
   background: linear-gradient(135deg, #2563eb, #1d4ed8 58%, #0f172a) !important;
   box-shadow: 0 20px 40px rgba(37, 99, 235, 0.2);
+  font-weight: 700 !important;
+}
+
+.nav-button {
+  color: var(--color-text);
+  opacity: 0.88;
+  font-weight: 600 !important;
 }
 
 .nav-cta {
-  min-width: 146px;
+  min-width: 140px;
+  height: 44px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* Shimmer Effect */
+.shimmer-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-btn::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.4),
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transform: rotate(25deg);
+  animation: shimmer 4s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-150%) rotate(25deg); }
+  20%, 100% { transform: translateX(150%) rotate(25deg); }
 }
 
 .hero-section {
