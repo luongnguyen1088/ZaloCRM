@@ -65,7 +65,7 @@ const routes = [
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: () => import('@/views/DashboardView.vue'),
+    component: () => import('@/views/AnalyticsHubView.vue'),
     meta: { requiresAuth: true },
   },
   {
@@ -90,18 +90,6 @@ const routes = [
     path: '/appointments',
     name: 'Appointments',
     component: () => import('@/views/AppointmentsView.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/reports',
-    name: 'Reports',
-    component: () => import('@/views/ReportsView.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/analytics',
-    name: 'Analytics',
-    component: () => import('@/views/AnalyticsView.vue'),
     meta: { requiresAuth: true },
   },
   {
@@ -171,38 +159,24 @@ const routes = [
   },
 ];
 
-export const router = createRouter({
-  history: createWebHistory(),
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+  scrollBehavior() {
+    return { top: 0 };
+  },
 });
 
-// Auth guard
-router.beforeEach(async (to, _from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
-
-  // Skip guard for public pages
-  if (['LandingPage', 'Setup', 'Login', 'Register', 'AcceptInvite', 'ForgotPassword', 'ResetPassword', 'FacebookOAuthCallback', 'PrivacyPolicy', 'DataDeletion'].includes(to.name as string)) {
-    return next();
+  
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    next('/login');
+  } else if (to.meta.requiresAdmin && !authStore.isSuperAdmin) {
+    next('/dashboard');
+  } else {
+    next();
   }
-
-  // Check auth for protected routes
-  if (to.meta.requiresAuth) {
-    if (!authStore.token) {
-      return next('/login');
-    }
-    // Fetch profile if not loaded yet
-    if (!authStore.user) {
-      await authStore.init();
-      if (!authStore.isAuthenticated) {
-        return next('/login');
-      }
-    }
-
-    // Check admin privilege if required
-    if (to.meta.requiresAdmin && !authStore.user?.isSystemAdmin) {
-      return next('/');
-    }
-  }
-
-  next();
 });
+
+export default router;

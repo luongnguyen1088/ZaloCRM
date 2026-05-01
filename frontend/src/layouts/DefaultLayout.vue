@@ -192,8 +192,7 @@ const menuGroups = [
   {
     header: 'TỔNG QUAN',
     items: [
-      { title: 'Dashboard', icon: 'mdi-view-dashboard-outline', path: '/dashboard' },
-      { title: 'Báo cáo & Phân tích', icon: 'mdi-chart-arc', path: '/reports' },
+      { title: 'Trung tâm Phân tích', icon: 'mdi-view-dashboard-outline', path: '/dashboard' },
       { title: 'Mức dùng & Gói cước', icon: 'mdi-chart-line', path: '/usage' },
     ]
   },
