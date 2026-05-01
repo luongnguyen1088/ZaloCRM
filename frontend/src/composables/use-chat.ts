@@ -55,7 +55,9 @@ export function useChat() {
     aiSuggestionSources.value = [];
     aiSuggestionError.value = '';
     aiSummary.value = '';
+    aiSummaryError.value = '';
     aiSentiment.value = null;
+    aiSentimentError.value = '';
   }
 
   const statusFilter = ref<string>('all');
@@ -352,8 +354,10 @@ export function useChat() {
     aiSuggestionError,
     aiSummary,
     aiSummaryLoading,
+    aiSummaryError,
     aiSentiment,
     aiSentimentLoading,
+    aiSentimentError,
     isAiQuotaExceeded,
     aiUsage,
     aiConfig,
