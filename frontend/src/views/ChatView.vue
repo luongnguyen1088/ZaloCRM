@@ -37,8 +37,12 @@
             :ai-suggestion="aiSuggestion"
             :ai-suggestion-sources="aiSuggestionSources"
             :ai-loading="aiSuggestionLoading"
+            :ai-summary-loading="aiSummaryLoading"
+            :ai-sentiment-loading="aiSentimentLoading"
             @send="sendMessage"
             @ask-ai="generateAiSuggestion"
+            @ask-summary="handleGenerateSummary"
+            @ask-sentiment="handleGenerateSentiment"
             @refine-ai="(data) => refineAiSuggestion(data.content, data.instruction)"
             @clear-ai="clearAiState"
           />
@@ -116,6 +120,16 @@ function onFilterAccount(id: string | null) {
 
 watch(statusFilter, () => fetchConversations());
 watch(showContactPanel, (val) => localStorage.setItem('chat-show-contact', String(val)));
+
+async function handleGenerateSummary() {
+  showContactPanel.value = true;
+  await generateAiSummary();
+}
+
+async function handleGenerateSentiment() {
+  showContactPanel.value = true;
+  await generateAiSentiment();
+}
 
 // Resizable panel widths
 const leftWidth = ref(parseInt(localStorage.getItem('chat-left-width') || '360'));

@@ -242,7 +242,12 @@ export function useChat() {
       if (err.response?.status === 429) {
         isAiQuotaExceeded.value = true;
       }
-      aiSummaryError.value = err.response?.data?.error || err.message || 'Lỗi không xác định khi tóm tắt';
+      const errMsg = err.response?.data?.error || err.message || '';
+      if (errMsg.includes('disabled')) {
+        aiSummaryError.value = 'AI đang bị tắt trong Cài đặt. Vui lòng kích hoạt trong mục Đào tạo AI.';
+      } else {
+        aiSummaryError.value = errMsg || 'Lỗi không xác định khi tóm tắt';
+      }
       console.error('Failed to summarize conversation:', err);
     } finally {
       aiSummaryLoading.value = false;
@@ -261,7 +266,12 @@ export function useChat() {
       if (err.response?.status === 429) {
         isAiQuotaExceeded.value = true;
       }
-      aiSentimentError.value = err.response?.data?.error || err.message || 'Lỗi không xác định khi phân tích cảm xúc';
+      const errMsg = err.response?.data?.error || err.message || '';
+      if (errMsg.includes('disabled')) {
+        aiSentimentError.value = 'AI đang bị tắt cho kênh này. Vui lòng bật lại trong mục Đào tạo AI.';
+      } else {
+        aiSentimentError.value = errMsg || 'Lỗi không xác định khi phân tích cảm xúc';
+      }
       console.error('Failed to analyze sentiment:', err);
     } finally {
       aiSentimentLoading.value = false;

@@ -200,7 +200,31 @@
             >
               <v-icon size="18" class="mr-1">mdi-sparkles</v-icon>
               <span class="text-caption font-weight-black d-none d-sm-inline">Gợi ý AI</span>
-              <v-tooltip activator="parent">Tạo gợi ý AI</v-tooltip>
+              <v-tooltip activator="parent">Tạo gợi ý phản hồi AI</v-tooltip>
+            </v-btn>
+
+            <v-btn
+              icon
+              variant="tonal"
+              color="primary"
+              size="small"
+              :loading="aiSummaryLoading"
+              @click="$emit('ask-summary')"
+            >
+              <v-icon size="18">mdi-text-box-search-outline</v-icon>
+              <v-tooltip activator="parent">Tóm tắt hội thoại</v-tooltip>
+            </v-btn>
+
+            <v-btn
+              icon
+              variant="tonal"
+              color="primary"
+              size="small"
+              :loading="aiSentimentLoading"
+              @click="$emit('ask-sentiment')"
+            >
+              <v-icon size="18">mdi-brain-outline</v-icon>
+              <v-tooltip activator="parent">Phân tích tâm trạng</v-tooltip>
             </v-btn>
             <v-btn 
               icon 
@@ -251,11 +275,15 @@ const props = defineProps<{
   aiSuggestion: string;
   aiSuggestionSources: any[];
   aiLoading: boolean;
+  aiSummaryLoading?: boolean;
+  aiSentimentLoading?: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: 'send', content: string): void;
   (e: 'ask-ai'): void;
+  (e: 'ask-summary'): void;
+  (e: 'ask-sentiment'): void;
   (e: 'refine-ai', data: { content: string, instruction: string }): void;
   (e: 'clear-ai'): void;
   (e: 'insert-ai', content: string): void;
