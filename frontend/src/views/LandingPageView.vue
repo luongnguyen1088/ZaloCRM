@@ -1959,125 +1959,99 @@ const integrationPoints = [
   }
 }
 
-@media (max-width: 959px) {
+@media (max-width: 960px) {
+  .landing-main {
+    padding-top: 100px;
+  }
+
   .hero-section {
-    padding-top: 26px;
+    padding: 40px 0 60px;
+  }
+
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 48px;
   }
 
   .hero-title {
-    max-width: none;
+    font-size: 3rem;
+    line-height: 1.1;
   }
 
-  .hero-stats,
-  .stage-window,
-  .activity-grid,
-  .spotlight-card-grid,
-  .feature-grid,
-  .workflow-track {
+  .hero-value-grid {
+    gap: 20px;
+    margin: 32px 0;
+  }
+
+  .value-block {
+    padding-left: 18px;
+  }
+
+  .value-block p {
+    font-size: 1rem;
+  }
+
+  .integration-grid {
     grid-template-columns: 1fr;
+    gap: 32px;
   }
 
-  .command-board {
-    padding: 18px;
-    border-radius: 28px;
+  .diagram-shell {
+    height: auto;
+    padding: 20px 0;
   }
 
-  .command-board__top,
-  .assistant-footer,
-  .landing-footer__inner {
-    flex-direction: column;
-    align-items: flex-start;
+  .diagram-orbit {
+    display: none;
   }
 
-  .integration-diagram {
-    min-height: auto;
-    display: grid;
-    gap: 14px;
+  .diagram-center {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 32px;
   }
 
-  .diagram-core,
-  .diagram-node {
+  .orbit-node {
     position: static;
+    transform: none !important;
+    margin-bottom: 12px;
     width: 100%;
-    transform: none;
+    text-align: center;
+  }
+
+  .info-card {
+    padding: 24px;
+  }
+
+  .section-title {
+    font-size: 2.4rem;
   }
 }
 
 @media (max-width: 599px) {
-  .landing-navbar {
-    min-height: 154px;
-    padding-inline: 12px !important;
-  }
-
-  .landing-main {
-    padding-top: 182px;
-  }
-
-  .landing-navbar__shell {
-    grid-template-columns: 1fr;
-    gap: 10px;
-    align-items: stretch;
-  }
-
-  .brand-mark {
-    gap: 10px;
-  }
-
-  .brand-mark__icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-  }
-
-  .brand-mark__name {
-    font-size: 0.94rem;
-  }
-
-  .brand-mark__copy {
-    gap: 0;
-  }
-
-  .nav-actions {
-    gap: 6px;
-    justify-content: flex-end;
-  }
-
-  .nav-cta {
-    min-width: 0;
-    padding-inline: 1rem !important;
-  }
-
   .nav-links {
-    justify-content: flex-start;
-    padding-bottom: 2px;
+    display: none;
+  }
+
+  .landing-navbar--scrolled {
+    width: calc(100% - 20px);
+    top: 10px;
+  }
+
+  .brand-mark__meta {
+    display: none;
   }
 
   .hero-actions .v-btn {
     width: 100%;
   }
 
-  .eyebrow-chip,
-  .hero-stat,
-  .proof-item,
-  .workflow-card,
-  .feature-card,
-  .spotlight-card,
-  .integration-point,
-  .closing-panel,
-  .command-board,
-  .queue-column,
-  .assistant-panel,
-  .activity-card {
-    border-radius: 22px;
+  .bento-content, .bento-item--large .bento-content {
+    padding: 24px;
   }
 
-  .proof-band {
-    padding: 18px;
-    border-radius: 24px;
-  }
-
-  .closing-panel {
-    padding: 22px;
+  .bento-item h3 {
+    font-size: 1.4rem;
   }
 }
 </style>
