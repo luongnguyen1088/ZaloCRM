@@ -61,14 +61,13 @@
               </div>
 
               <h1 class="hero-title">
-                Chốt đơn nhanh hơn với
-                <span>AI điều phối toàn bộ hội thoại</span>
+                Biến Zalo thành
+                <span>Cỗ máy chốt đơn AI</span>
               </h1>
 
               <p class="hero-subtitle">
-                Claro gom chat, khách hàng, lịch hẹn, tự động hóa và dữ liệu bán hàng vào một
-                workspace duy nhất. Nhân sự không còn phải nhảy tab, AI không còn đứng ngoài quy
-                trình vận hành.
+                Claro hợp nhất Zalo OA, Facebook, Pancake POS và tri thức doanh nghiệp vào một
+                workspace thông minh. Giảm 70% thời gian phản hồi, tăng 2x tỷ lệ chuyển đổi với AI chuyên gia.
               </p>
 
               <div class="hero-actions">
@@ -250,51 +249,68 @@
       <section id="features" class="feature-section">
         <v-container>
           <div class="feature-layout">
-            <div class="feature-spotlight">
-              <div class="section-kicker">Năng lực cốt lõi</div>
-              <h2>Không chỉ là inbox hợp kênh, mà là một hệ điều hành bán hàng nhỏ gọn</h2>
-              <p>
-                Claro được thiết kế cho các team vận hành thực tế: cần nhìn nhanh khách nào nóng,
-                ai đang phụ trách, đơn nào đang vướng và lịch follow-up nào sắp trễ.
+            <div class="section-header text-center mb-12">
+              <div class="section-kicker mx-auto">Năng lực cốt lõi</div>
+              <h2 class="section-title">Hệ điều hành bán hàng thế hệ mới</h2>
+              <p class="section-subtitle mx-auto">
+                Không chỉ là inbox hợp kênh, Claro cung cấp bộ công cụ toàn diện để vận hành đội ngũ sale chuyên nghiệp.
               </p>
+            </div>
 
-              <div class="spotlight-stack">
-                <div class="spotlight-card spotlight-card--wide">
-                  <div class="spotlight-card__label">AI Knowledge</div>
-                  <h3>Huấn luyện từ tài liệu nội bộ, chính sách và bảng giá riêng</h3>
-                  <p>
-                    Tạo câu trả lời có ngữ cảnh thay vì dùng mẫu tĩnh. Phù hợp khi sản phẩm nhiều
-                    biến thể, giá thay đổi hoặc có quy trình xử lý riêng theo team.
-                  </p>
-                </div>
-
-                <div class="spotlight-card-grid">
-                  <div class="spotlight-card">
-                    <div class="spotlight-card__label">Lead scoring</div>
-                    <h3>Tự ưu tiên khách có khả năng mua cao</h3>
-                    <p>Đẩy lead nóng lên đầu hàng đợi để trưởng nhóm phân việc chính xác hơn.</p>
-                  </div>
-                  <div class="spotlight-card">
-                    <div class="spotlight-card__label">Follow-up</div>
-                    <h3>Lịch hẹn, nhắc việc và activity log</h3>
-                    <p>Mỗi cuộc hội thoại đều có bước tiếp theo rõ ràng, hạn chế rơi khách.</p>
+            <div class="bento-grid">
+              <!-- Cột trái: AI Knowledge (Lớn) -->
+              <div class="bento-item bento-item--large reveal-on-scroll">
+                <div class="bento-content">
+                  <div class="bento-label">AI Knowledge Base</div>
+                  <h3>Huấn luyện AI từ tri thức riêng</h3>
+                  <p>Tải lên PDF, Word hoặc liên kết Website. AI sẽ tự học chính sách, bảng giá để tư vấn khách hàng chuẩn xác như một chuyên gia thực thụ.</p>
+                  <div class="bento-visual bento-visual--ai">
+                    <div class="ai-node ai-node--1"></div>
+                    <div class="ai-node ai-node--2"></div>
+                    <div class="ai-node ai-node--3"></div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="feature-grid">
-              <article
-                v-for="feature in featureCards"
-                :key="feature.title"
-                class="feature-card"
-              >
-                <div class="feature-card__icon">
-                  <v-icon :icon="feature.icon" size="22"></v-icon>
+              <!-- Cột phải: Grid các tính năng nhỏ -->
+              <div class="bento-subgrid">
+                <div class="bento-item reveal-on-scroll">
+                  <div class="bento-content">
+                    <v-icon color="primary" class="mb-4">mdi-target-variant</v-icon>
+                    <h3>Lead Scoring</h3>
+                    <p>Tự động chấm điểm và ưu tiên khách hàng có khả năng chốt đơn cao nhất.</p>
+                  </div>
                 </div>
-                <h3>{{ feature.title }}</h3>
-                <p>{{ feature.description }}</p>
-              </article>
+                <div class="bento-item reveal-on-scroll">
+                  <div class="bento-content">
+                    <v-icon color="warning" class="mb-4">mdi-calendar-check</v-icon>
+                    <h3>Lịch hẹn thông minh</h3>
+                    <p>Đặt lịch tư vấn, nhắc việc và tự động follow-up khách hàng cũ.</p>
+                  </div>
+                </div>
+                <div class="bento-item bento-item--wide reveal-on-scroll">
+                  <div class="bento-content">
+                    <div class="d-flex align-center gap-4 mb-4">
+                      <v-icon color="success">mdi-sync</v-icon>
+                      <h3>Đồng bộ Pancake POS</h3>
+                    </div>
+                    <p>Kiểm tra tồn kho, tạo đơn hàng và cập nhật trạng thái vận chuyển ngay trong màn hình chat mà không cần chuyển ứng dụng.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Hàng dưới: 3 tính năng còn lại -->
+              <div class="bento-footer-grid">
+                <div v-for="(feature, idx) in featureCards.slice(3)" :key="feature.title" 
+                     class="bento-item bento-item--small reveal-on-scroll"
+                     :style="{ transitionDelay: (idx * 100) + 'ms' }">
+                  <div class="bento-content">
+                    <v-icon :icon="feature.icon" size="20" class="mb-3"></v-icon>
+                    <h4>{{ feature.title }}</h4>
+                    <p>{{ feature.description }}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </v-container>
@@ -405,11 +421,30 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
+
+onMounted(() => {
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('active');
+      }
+    });
+  }, observerOptions);
+
+  document.querySelectorAll('.reveal-on-scroll').forEach(el => {
+    observer.observe(el);
+  });
+});
 
 const heroStats = [
   { value: '1 workspace', label: 'gom chat, CRM và AI vào cùng màn hình' },
@@ -764,36 +799,194 @@ const integrationPoints = [
 }
 
 .hero-title {
-  margin: 22px 0 18px;
-  max-width: 10ch;
-  font-size: clamp(3.15rem, 7vw, 5.65rem);
-  line-height: 0.95;
-  font-weight: 900;
-  letter-spacing: -0.065em;
+  margin: 22px 0 24px;
+  max-width: 12ch;
+  font-size: clamp(3.5rem, 8vw, 6.2rem);
+  line-height: 0.9;
+  font-weight: 950;
+  letter-spacing: -0.07em;
   color: var(--color-text);
-}
-
-.hero-title span {
-  display: block;
-  color: #1d4ed8;
-}
-
-.v-theme--dark .hero-title span {
-  color: #93c5fd;
+  animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hero-subtitle {
-  max-width: 58ch;
-  font-size: 1.08rem;
-  line-height: 1.8;
+  max-width: 54ch;
+  font-size: 1.15rem;
+  line-height: 1.7;
   color: var(--color-text-secondary);
+  animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;
 }
 
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
-  margin-top: 34px;
+  gap: 16px;
+  margin-top: 40px;
+  animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;
+}
+
+/* Bento Grid System */
+.bento-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24px;
+  margin-top: 48px;
+}
+
+.bento-subgrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 24px;
+}
+
+.bento-footer-grid {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.bento-item {
+  position: relative;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 32px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.v-theme--dark .bento-item {
+  background: rgba(15, 23, 42, 0.4);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.bento-item:hover {
+  transform: translateY(-8px);
+  border-color: rgba(37, 99, 235, 0.3);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.v-theme--dark .bento-item:hover {
+  background: rgba(15, 23, 42, 0.6);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.bento-content {
+  padding: 40px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.bento-item--large .bento-content {
+  padding: 48px;
+}
+
+.bento-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #2563eb;
+  margin-bottom: 16px;
+}
+
+.bento-item h3 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+.bento-item p {
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.bento-item--wide {
+  grid-column: 1 / -1;
+}
+
+/* AI Visual Decoration */
+.bento-visual--ai {
+  margin-top: auto;
+  padding-top: 40px;
+  height: 180px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-node {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.2), transparent 70%);
+  filter: blur(20px);
+  animation: float 6s infinite ease-in-out;
+}
+
+.ai-node--1 { left: 10%; animation-delay: 0s; }
+.ai-node--2 { right: 10%; animation-delay: -2s; background: radial-gradient(circle, rgba(245, 158, 11, 0.15), transparent 70%); }
+.ai-node--3 { bottom: 0; animation-delay: -4s; background: radial-gradient(circle, rgba(16, 185, 129, 0.15), transparent 70%); }
+
+/* Animations */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(10px, -15px); }
+}
+
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-on-scroll.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Section Header Styles */
+.section-header {
+  max-width: 800px;
+}
+
+.section-title {
+  font-size: 3.5rem;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 1.1;
+  margin: 16px 0 24px;
+}
+
+.section-subtitle {
+  font-size: 1.25rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+@media (max-width: 960px) {
+  .bento-grid, .bento-footer-grid {
+    grid-template-columns: 1fr;
+  }
+  .bento-subgrid {
+    grid-template-columns: 1fr;
+  }
+  .section-title {
+    font-size: 2.5rem;
+  }
 }
 
 .hero-secondary {
@@ -1233,6 +1426,170 @@ const integrationPoints = [
   max-width: 62ch;
   color: var(--color-text-secondary);
   line-height: 1.75;
+}
+
+/* Bento Grid System */
+.bento-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24px;
+  margin-top: 48px;
+}
+
+.bento-subgrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 24px;
+}
+
+.bento-footer-grid {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.bento-item {
+  position: relative;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 32px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.v-theme--dark .bento-item {
+  background: rgba(15, 23, 42, 0.4);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.bento-item:hover {
+  transform: translateY(-8px);
+  border-color: rgba(37, 99, 235, 0.3);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.v-theme--dark .bento-item:hover {
+  background: rgba(15, 23, 42, 0.6);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.bento-content {
+  padding: 40px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.bento-item--large .bento-content {
+  padding: 48px;
+}
+
+.bento-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #2563eb;
+  margin-bottom: 16px;
+}
+
+.bento-item h3 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+.bento-item p {
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.bento-item--wide {
+  grid-column: 1 / -1;
+}
+
+/* AI Visual Decoration */
+.bento-visual--ai {
+  margin-top: auto;
+  padding-top: 40px;
+  height: 180px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-node {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.2), transparent 70%);
+  filter: blur(20px);
+  animation: float 6s infinite ease-in-out;
+}
+
+.ai-node--1 { left: 10%; animation-delay: 0s; }
+.ai-node--2 { right: 10%; animation-delay: -2s; background: radial-gradient(circle, rgba(245, 158, 11, 0.15), transparent 70%); }
+.ai-node--3 { bottom: 0; animation-delay: -4s; background: radial-gradient(circle, rgba(16, 185, 129, 0.15), transparent 70%); }
+
+/* Animations */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(10px, -15px); }
+}
+
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-on-scroll.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Section Header Styles */
+.section-header {
+  max-width: 800px;
+}
+
+.section-title {
+  font-size: 3.5rem;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 1.1;
+  margin: 16px 0 24px;
+}
+
+.section-subtitle {
+  font-size: 1.25rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+@media (max-width: 960px) {
+  .bento-grid, .bento-footer-grid {
+    grid-template-columns: 1fr;
+  }
+  .bento-subgrid {
+    grid-template-columns: 1fr;
+  }
+  .section-title {
+    font-size: 2.5rem;
+  }
 }
 
 .workflow-track {
