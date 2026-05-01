@@ -280,7 +280,7 @@ export function useChat() {
     } catch {
       // Ignore mark-read errors
     }
-    await Promise.allSettled([generateAiSummary(), generateAiSentiment(), fetchAiUsage()]);
+    await Promise.allSettled([fetchAiUsage()]);
   }
 
   async function sendMessage(content: string) {
