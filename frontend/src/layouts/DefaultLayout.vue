@@ -194,6 +194,7 @@ const menuGroups = [
     items: [
       { title: 'Dashboard', icon: 'mdi-view-dashboard-outline', path: '/dashboard' },
       { title: 'Báo cáo & Phân tích', icon: 'mdi-chart-arc', path: '/reports' },
+      { title: 'Mức dùng & Gói cước', icon: 'mdi-chart-line', path: '/usage' },
     ]
   },
   {
@@ -210,7 +211,6 @@ const menuGroups = [
     items: [
       { title: 'Đào tạo AI', icon: 'mdi-school-outline', path: '/ai-training' },
       { title: 'Hướng dẫn AI', icon: 'mdi-book-open-page-variant-outline', path: '/ai-guide' },
-      { title: 'Mức dùng & Gói cước', icon: 'mdi-chart-line', path: '/usage' },
       { title: 'Automation', icon: 'mdi-robot-outline', path: '/automation' },
     ]
   },
@@ -220,7 +220,6 @@ const menuGroups = [
       { title: 'Cài đặt & Nhân sự', icon: 'mdi-account-cog-outline', path: '/settings' },
       { title: 'Nhà phát triển', icon: 'mdi-code-braces', path: '/api-settings' },
       { title: 'Tích hợp', icon: 'mdi-connection', path: '/integrations' },
-
     ]
   }
 ];
