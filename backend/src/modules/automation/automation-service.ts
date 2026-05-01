@@ -48,20 +48,22 @@ export interface AutomationContext {
 const MAX_AUTOMATION_DEPTH = 3;
 
 export async function runAutomationRules(context: AutomationContext): Promise<void> {
-  if (context.initiatedByAutomation) return;
+  logger.info(`[automation] Triggering ${context.trigger} for Org ${context.orgId}`);
+  try {
+    if (context.initiatedByAutomation) return;
 
-  const depth = context._depth ?? 0;
-  if (depth >= MAX_AUTOMATION_DEPTH) {
-    logger.warn('[automation] Max recursion depth reached, skipping');
-    return;
-  }
+    const depth = context._depth ?? 0;
+    if (depth >= MAX_AUTOMATION_DEPTH) {
+      logger.warn('[automation] Max recursion depth reached, skipping');
+      return;
+    }
 
-  const rules = await prisma.automationRule.findMany({
-    where: { orgId: context.orgId, trigger: context.trigger, enabled: true },
-    orderBy: [{ priority: 'desc' }, { createdAt: 'asc' }],
-  });
+    const rules = await prisma.automationRule.findMany({
+      where: { orgId: context.orgId, trigger: context.trigger, enabled: true },
+      orderBy: [{ priority: 'desc' }, { createdAt: 'asc' }],
+    });
 
-  for (const rule of rules) {
+    for (const rule of rules) {
     const delayMs = (rule.delaySeconds || 0) * 1000;
     
     // If there is a delay, we use debouncing logic (especially for message_received)
@@ -87,6 +89,9 @@ export async function runAutomationRules(context: AutomationContext): Promise<vo
     // Immediate execution for rules without delay
     await executeRule(rule, context);
   }
+} catch (error) {
+  logger.error('[automation] runAutomationRules critical error:', error);
+}
 }
 
 async function executeRule(rule: any, context: AutomationContext): Promise<void> {

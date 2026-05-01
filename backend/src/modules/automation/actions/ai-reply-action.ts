@@ -27,16 +27,24 @@ export async function aiReplyAction(input: {
       type: 'reply_draft',
       isAutoReply: true,
     });
-    logger.info(`[automation] AI Result confidence: ${result.confidence}`);
-
-    // 3. Check confidence threshold (Action override > Global config > 0.8)
+    
     const threshold = input.confidenceThreshold ?? aiConfig.confidenceThreshold ?? 0.8;
+    logger.info(`[automation] AI for ${input.zaloAccountId}: Confidence ${result.confidence.toFixed(2)} (Threshold: ${threshold}), Mode: ${aiConfig.aiResponseMode}`);
+
+    // 3. IF mode is HYBRID, we STOP HERE (Suggestion is already saved by generateAiOutput)
+    if (aiConfig.aiResponseMode === 'hybrid') {
+      logger.info(`[automation] AI Reply stopped: mode is HYBRID (draft only)`);
+      return null;
+    }
+
+    // 4. Check confidence threshold
     if (result.confidence < threshold) {
-      logger.info(`[automation] AI Reply suppressed: confidence ${result.confidence} < threshold ${threshold}`);
+      logger.info(`[automation] AI Reply suppressed: confidence too low`);
       return null;
     }
 
     if (!('content' in result)) {
+      logger.warn(`[automation] AI Result has no content`);
       return null;
     }
 
