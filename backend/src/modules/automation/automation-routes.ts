@@ -8,7 +8,7 @@ import { hasLegacyAiReplyAction, sanitizeAutomationActions } from './automation-
 
 const VALID_TRIGGERS = ['message_received', 'contact_created', 'status_changed'];
 
-async function sanitizeLegacyRule(rule: {
+function normalizeRuleForResponse(rule: {
   id: string;
   description: string | null;
   actions: unknown;
@@ -16,23 +16,16 @@ async function sanitizeLegacyRule(rule: {
 }) {
   const cleanedActions = sanitizeAutomationActions(rule.actions);
   const hadLegacyAiReply = hasLegacyAiReplyAction(rule.actions);
-  const originalCount = Array.isArray(rule.actions) ? rule.actions.length : 0;
-  const changed = hadLegacyAiReply || cleanedActions.length !== originalCount;
-
-  if (!changed) return null;
-
-  return prisma.automationRule.update({
-    where: { id: rule.id },
-    data: {
-      actions: cleanedActions,
-      enabled: cleanedActions.length > 0 ? rule.enabled : false,
-      description: hadLegacyAiReply
-        ? [rule.description?.trim(), 'AI auto-reply da duoc chuyen sang AI Studio.']
-            .filter(Boolean)
-            .join(' | ')
-        : rule.description,
-    },
-  });
+  return {
+    ...rule,
+    actions: cleanedActions,
+    enabled: cleanedActions.length > 0 ? rule.enabled : false,
+    description: hadLegacyAiReply
+      ? [rule.description?.trim(), 'AI auto-reply đã được chuyển sang AI Studio.']
+          .filter(Boolean)
+          .join(' | ')
+      : rule.description,
+  };
 }
 
 export async function automationRoutes(app: FastifyInstance): Promise<void> {
@@ -44,10 +37,7 @@ export async function automationRoutes(app: FastifyInstance): Promise<void> {
       where: { orgId: user.orgId },
       orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
     });
-    const normalizedRules = await Promise.all(
-      storedRules.map(async (rule) => (await sanitizeLegacyRule(rule)) ?? { ...rule, actions: sanitizeAutomationActions(rule.actions) })
-    );
-    const rules = normalizedRules.filter((rule) => Array.isArray(rule.actions));
+    const rules = storedRules.map((rule) => normalizeRuleForResponse(rule));
     return { rules };
   });
 
@@ -86,11 +76,20 @@ export async function automationRoutes(app: FastifyInstance): Promise<void> {
       const { id } = request.params as { id: string };
       const body = request.body as Record<string, any>;
       if (body.trigger && !VALID_TRIGGERS.includes(body.trigger)) return reply.status(400).send({ error: `trigger must be one of: ${VALID_TRIGGERS.join(', ')}` });
-      const existing = await prisma.automationRule.findFirst({ where: { id, orgId: user.orgId }, select: { id: true } });
+      const existing = await prisma.automationRule.findFirst({
+        where: { id, orgId: user.orgId },
+        select: { id: true, actions: true },
+      });
       if (!existing) return reply.status(404).send({ error: 'Automation rule not found' });
       const actions = body.actions !== undefined ? sanitizeAutomationActions(body.actions) : undefined;
       if (body.actions !== undefined && actions && actions.length === 0) {
         return reply.status(400).send({ error: 'Rule must include at least one supported action' });
+      }
+      if (body.enabled === true) {
+        const effectiveActions = actions ?? sanitizeAutomationActions(existing.actions);
+        if (effectiveActions.length === 0) {
+          return reply.status(400).send({ error: 'Không thể bật rule không còn hành động hợp lệ' });
+        }
       }
 
       const rule = await prisma.automationRule.update({

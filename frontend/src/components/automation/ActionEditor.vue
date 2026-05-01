@@ -1,6 +1,10 @@
 <template>
   <div class="action-editor ga-4 d-flex flex-column">
-    <div v-for="(action, index) in modelValue" :key="index" class="action-card pa-4 rounded-xl border position-relative">
+    <div
+      v-for="(action, index) in modelValue"
+      :key="index"
+      class="action-card pa-4 rounded-xl border position-relative"
+    >
       <div class="d-flex ga-3 align-center mb-4">
         <div class="action-icon-circle" :class="getActionColor(action.type)">
           <v-icon size="20">{{ getActionIcon(action.type) }}</v-icon>
@@ -10,7 +14,7 @@
           :items="actionOptions"
           item-title="title"
           item-value="value"
-          label="Hanh dong"
+          label="Hành động"
           variant="filled"
           density="comfortable"
           hide-details
@@ -33,7 +37,7 @@
         <v-text-field
           v-if="action.type === 'assign_user'"
           :model-value="action.userId || ''"
-          label="User ID nhan vien"
+          label="User ID nhân viên"
           variant="outlined"
           density="comfortable"
           prepend-inner-icon="mdi-account-arrow-right"
@@ -46,7 +50,7 @@
           :items="templateItems"
           item-title="title"
           item-value="value"
-          label="Chon mau tin nhan"
+          label="Chọn mẫu tin nhắn"
           variant="outlined"
           density="comfortable"
           prepend-inner-icon="mdi-email-outline"
@@ -59,7 +63,7 @@
           :items="statusItems"
           item-title="title"
           item-value="value"
-          label="Trang thai hoi thoai moi"
+          label="Trạng thái contact mới"
           variant="outlined"
           density="comfortable"
           prepend-inner-icon="mdi-tag-outline"
@@ -70,24 +74,34 @@
           <div class="d-flex ga-3 flex-wrap">
             <v-text-field
               :model-value="String(action.offsetHours ?? 24)"
-              label="So gio sau khi kich hoat"
+              label="Số giờ sau khi kích hoạt"
               variant="outlined"
               density="comfortable"
               type="number"
               class="flex-1-1"
-              style="min-width: 150px"
+              style="min-width: 160px"
               prepend-inner-icon="mdi-clock-outline"
               @update:model-value="updateNumericAction(index, 'offsetHours', $event)"
             />
             <v-text-field
               :model-value="action.typeLabel || ''"
-              label="Loai lich hen"
+              label="Loại lịch hẹn"
               variant="outlined"
               density="comfortable"
               class="flex-1-1"
-              style="min-width: 150px"
+              style="min-width: 180px"
               prepend-inner-icon="mdi-calendar-check"
               @update:model-value="updateAction(index, 'typeLabel', $event)"
+            />
+            <v-text-field
+              :model-value="action.notes || ''"
+              label="Ghi chú"
+              variant="outlined"
+              density="comfortable"
+              class="flex-1-1"
+              style="min-width: 220px"
+              prepend-inner-icon="mdi-note-text-outline"
+              @update:model-value="updateAction(index, 'notes', $event)"
             />
           </div>
         </template>
@@ -104,7 +118,7 @@
         class="add-action-btn"
         @click="addAction"
       >
-        Them hanh dong tiep theo
+        Thêm hành động tiếp theo
       </v-btn>
     </div>
   </div>
@@ -125,21 +139,23 @@ const emit = defineEmits<{
 }>();
 
 const actionOptions = [
-  { title: 'Chuyen cho nhan vien', value: 'assign_user' },
-  { title: 'Gui mau tin nhan', value: 'send_template' },
-  { title: 'Cap nhat trang thai', value: 'update_status' },
-  { title: 'Tao lich hen', value: 'create_appointment' },
+  { title: 'Chuyển cho nhân viên', value: 'assign_user' },
+  { title: 'Gửi mẫu tin nhắn', value: 'send_template' },
+  { title: 'Cập nhật trạng thái', value: 'update_status' },
+  { title: 'Tạo lịch hẹn', value: 'create_appointment' },
 ];
 
 const statusItems = [
-  { title: 'Moi', value: 'new' },
-  { title: 'Da lien he', value: 'contacted' },
-  { title: 'Quan tam', value: 'interested' },
-  { title: 'Chuyen doi', value: 'converted' },
-  { title: 'Mat', value: 'lost' },
+  { title: 'Mới', value: 'new' },
+  { title: 'Đã liên hệ', value: 'contacted' },
+  { title: 'Quan tâm', value: 'interested' },
+  { title: 'Chuyển đổi', value: 'converted' },
+  { title: 'Mất', value: 'lost' },
 ];
 
-const templateItems = computed(() => props.templates.map((template) => ({ title: template.name, value: template.id })));
+const templateItems = computed(() =>
+  props.templates.map((template) => ({ title: template.name, value: template.id }))
+);
 
 function getActionIcon(type: string) {
   const icons: Record<string, string> = {

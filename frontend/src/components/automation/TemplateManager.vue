@@ -2,19 +2,29 @@
   <div class="d-flex flex-column ga-4">
     <div class="d-flex align-center">
       <v-spacer />
-      <v-btn v-if="canManage" color="primary" prepend-icon="mdi-plus" @click="openCreate">Thêm template</v-btn>
+      <v-btn v-if="canManage" color="primary" prepend-icon="mdi-plus" @click="openCreate">
+        Thêm template
+      </v-btn>
     </div>
 
     <v-data-table :headers="headers" :items="templates" :loading="loading" no-data-text="Chưa có template nào">
       <template #item.content="{ item }">
-        <div class="text-body-2 text-medium-emphasis" style="max-width: 480px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+        <div
+          class="text-body-2 text-medium-emphasis"
+          style="max-width: 480px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+        >
           {{ item.content }}
         </div>
       </template>
+
       <template #item.actions="{ item }">
         <div v-if="canManage">
-          <v-btn icon size="small" @click="openEdit(item)"><v-icon>mdi-pencil</v-icon></v-btn>
-          <v-btn icon size="small" color="error" @click="remove(item.id)"><v-icon>mdi-delete</v-icon></v-btn>
+          <v-btn icon size="small" @click="openEdit(item)">
+            <v-icon>mdi-pencil</v-icon>
+          </v-btn>
+          <v-btn icon size="small" color="error" @click="remove(item.id)">
+            <v-icon>mdi-delete</v-icon>
+          </v-btn>
         </div>
       </template>
     </v-data-table>
@@ -25,7 +35,14 @@
         <v-card-text class="d-flex flex-column ga-3">
           <v-text-field v-model="form.name" label="Tên template *" :rules="[v => !!v || 'Bắt buộc']" />
           <v-text-field v-model="form.category" label="Nhóm" />
-          <v-textarea v-model="form.content" label="Nội dung *" rows="6" :rules="[v => !!v || 'Bắt buộc']" hint="Hỗ trợ {{contact.fullName}}, {{contact.phone}}, {{contact.status}}, {{conversation.id}}, {{org.name}}" persistent-hint />
+          <v-textarea
+            v-model="form.content"
+            label="Nội dung *"
+            rows="6"
+            :rules="[v => !!v || 'Bắt buộc']"
+            hint="Hỗ trợ {{contact.fullName}}, {{contact.phone}}, {{contact.status}}, {{conversation.id}}, {{org.name}}"
+            persistent-hint
+          />
         </v-card-text>
         <v-card-actions>
           <v-spacer />

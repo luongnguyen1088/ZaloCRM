@@ -1,33 +1,83 @@
 <template>
-  <v-dialog :model-value="modelValue" max-width="900" transition="dialog-bottom-transition" @update:model-value="emit('update:modelValue', $event)">
+  <v-dialog
+    :model-value="modelValue"
+    max-width="900"
+    transition="dialog-bottom-transition"
+    @update:model-value="emit('update:modelValue', $event)"
+  >
     <v-card class="rule-builder-card rounded-xl">
       <v-card-title class="pa-6 pb-2 d-flex align-center">
         <v-icon color="primary" class="mr-3">mdi-auto-fix</v-icon>
-        <span class="text-h5 font-weight-bold">{{ rule?.id ? 'Chỉnh sửa Quy tắc' : 'Thiết lập Quy tắc mới' }}</span>
+        <span class="text-h5 font-weight-bold">
+          {{ rule?.id ? 'Chỉnh sửa quy tắc' : 'Thiết lập quy tắc mới' }}
+        </span>
       </v-card-title>
-      
+
       <v-card-text class="pa-6 pt-2 d-flex flex-column ga-6">
         <v-alert
           variant="tonal"
           color="info"
           density="comfortable"
-          text="AI auto-reply da duoc chuyen sang AI Studio. Automation chi con dung cho rule van hanh va mau tin nhan."
+          text="AI auto-reply đã được chuyển sang AI Studio. Automation chỉ còn dùng cho rule vận hành và mẫu tin nhắn."
         />
 
-        <!-- Basic Info Section -->
         <section>
           <div class="d-flex align-center mb-4">
             <div class="section-number mr-3">1</div>
             <div class="text-subtitle-1 font-weight-bold">Thông tin cơ bản</div>
           </div>
           <div class="d-flex flex-column ga-4 pl-9">
-            <v-text-field v-model="localRule.name" label="Tên quy tắc *" variant="filled" density="comfortable" hide-details :rules="[v => !!v || 'Bắt buộc']" />
-            <v-textarea v-model="localRule.description" label="Mô tả mục đích của quy tắc này" variant="filled" density="comfortable" rows="2" hide-details />
-            
+            <v-text-field
+              v-model="localRule.name"
+              label="Tên quy tắc *"
+              variant="filled"
+              density="comfortable"
+              hide-details
+              :rules="[v => !!v || 'Bắt buộc']"
+            />
+            <v-textarea
+              v-model="localRule.description"
+              label="Mô tả mục đích của quy tắc này"
+              variant="filled"
+              density="comfortable"
+              rows="2"
+              hide-details
+            />
+
             <div class="d-flex ga-4 flex-wrap mt-2">
-              <v-select v-model="localRule.trigger" :items="triggerItems" item-title="title" item-value="value" label="Sự kiện kích hoạt (Trigger)" variant="filled" density="comfortable" hide-details style="min-width: 250px" />
-              <v-text-field v-model="priorityValue" type="number" label="Ưu tiên" variant="filled" density="comfortable" hide-details style="max-width: 110px" prepend-inner-icon="mdi-sort-variant" />
-              <v-text-field v-model="delayValue" type="number" label="Độ trễ (giây)" variant="filled" density="comfortable" hide-details style="max-width: 140px" prepend-inner-icon="mdi-clock-fast" persistent-hint hint="Chờ khách nhắn xong mới chạy" />
+              <v-select
+                v-model="localRule.trigger"
+                :items="triggerItems"
+                item-title="title"
+                item-value="value"
+                label="Sự kiện kích hoạt"
+                variant="filled"
+                density="comfortable"
+                hide-details
+                style="min-width: 250px"
+              />
+              <v-text-field
+                v-model="priorityValue"
+                type="number"
+                label="Ưu tiên"
+                variant="filled"
+                density="comfortable"
+                hide-details
+                style="max-width: 110px"
+                prepend-inner-icon="mdi-sort-variant"
+              />
+              <v-text-field
+                v-model="delayValue"
+                type="number"
+                label="Độ trễ (giây)"
+                variant="filled"
+                density="comfortable"
+                hide-details
+                style="max-width: 150px"
+                prepend-inner-icon="mdi-clock-fast"
+                persistent-hint
+                hint="Dùng cho trigger tin nhắn đến để chờ khách nhắn xong rồi mới chạy."
+              />
               <div class="d-flex align-center ml-2">
                 <span class="text-body-2 mr-2">Trạng thái:</span>
                 <v-switch v-model="localRule.enabled" color="success" hide-details inset density="compact" />
@@ -38,7 +88,6 @@
 
         <v-divider class="opacity-10" />
 
-        <!-- Conditions Section -->
         <section>
           <div class="d-flex align-center mb-4">
             <div class="section-number mr-3">2</div>
@@ -51,7 +100,6 @@
 
         <v-divider class="opacity-10" />
 
-        <!-- Actions Section -->
         <section>
           <div class="d-flex align-center mb-4">
             <div class="section-number mr-3">3</div>
@@ -69,7 +117,15 @@
       <v-card-actions class="pa-6">
         <v-spacer />
         <v-btn variant="text" rounded="lg" class="px-6" @click="emit('update:modelValue', false)">Hủy bỏ</v-btn>
-        <v-btn color="primary" variant="flat" size="large" rounded="lg" class="px-10 font-weight-bold" :loading="saving" @click="submit">
+        <v-btn
+          color="primary"
+          variant="flat"
+          size="large"
+          rounded="lg"
+          class="px-10 font-weight-bold"
+          :loading="saving"
+          @click="submit"
+        >
           Lưu thay đổi
         </v-btn>
       </v-card-actions>
@@ -113,47 +169,61 @@ const localRule = reactive<Partial<AutomationRule>>({
   enabled: true,
   priority: 0,
 });
+
 const submitError = ref('');
 
 const priorityValue = computed({
   get: () => String(localRule.priority ?? 0),
-  set: (value: string) => { localRule.priority = Number(value || 0); },
+  set: (value: string) => {
+    localRule.priority = Number(value || 0);
+  },
 });
 
 const delayValue = computed({
   get: () => String(localRule.delaySeconds ?? 0),
-  set: (value: string) => { localRule.delaySeconds = Number(value || 0); },
+  set: (value: string) => {
+    localRule.delaySeconds = Number(value || 0);
+  },
 });
 
 const ruleConditions = computed<AutomationCondition[]>({
   get: () => localRule.conditions ?? [],
-  set: (value) => { localRule.conditions = value; },
+  set: (value) => {
+    localRule.conditions = value;
+  },
 });
 
 const ruleActions = computed<AutomationAction[]>({
   get: () => localRule.actions ?? [],
-  set: (value) => { localRule.actions = value; },
+  set: (value) => {
+    localRule.actions = value;
+  },
 });
 
-watch(() => props.rule, (rule) => {
-  submitError.value = '';
-  localRule.id = rule?.id;
-  localRule.name = rule?.name ?? '';
-  localRule.description = rule?.description ?? '';
-  localRule.trigger = rule?.trigger ?? 'contact_created';
-  localRule.conditions = rule?.conditions ? [...rule.conditions] : [];
-  localRule.actions = rule?.actions ? [...rule.actions] : [];
-  localRule.enabled = rule?.enabled ?? true;
-  localRule.priority = rule?.priority ?? 0;
-  localRule.delaySeconds = rule?.delaySeconds ?? 0;
-}, { immediate: true });
+watch(
+  () => props.rule,
+  (rule) => {
+    submitError.value = '';
+    localRule.id = rule?.id;
+    localRule.name = rule?.name ?? '';
+    localRule.description = rule?.description ?? '';
+    localRule.trigger = rule?.trigger ?? 'contact_created';
+    localRule.conditions = rule?.conditions ? [...rule.conditions] : [];
+    localRule.actions = rule?.actions ? [...rule.actions] : [];
+    localRule.enabled = rule?.enabled ?? true;
+    localRule.priority = rule?.priority ?? 0;
+    localRule.delaySeconds = rule?.delaySeconds ?? 0;
+  },
+  { immediate: true }
+);
 
 function submit() {
   if (!localRule.name?.trim()) return;
   if (!localRule.actions?.length) {
-    submitError.value = 'Rule phai co it nhat mot hanh dong hop le.';
+    submitError.value = 'Rule phải có ít nhất một hành động hợp lệ.';
     return;
   }
+
   submitError.value = '';
   emit('save', {
     id: localRule.id,

@@ -4,7 +4,7 @@ import { assignUserAction } from './actions/assign-user-action.js';
 import { updateStatusAction } from './actions/update-status-action.js';
 import { createAppointmentAction } from './actions/create-appointment-action.js';
 import { sendTemplateAction } from './actions/send-template-action.js';
-import type { AutomationAction, AutomationCondition, AutomationTriggerType } from './automation-rule-utils.js';
+import { sanitizeAutomationActions, type AutomationAction, type AutomationCondition, type AutomationTriggerType } from './automation-rule-utils.js';
 
 // Memory storage for active automation timers (debouncing)
 // Key format: `${orgId}:${conversationId}:${ruleId}`
@@ -82,7 +82,7 @@ export async function runAutomationRules(context: AutomationContext): Promise<vo
 async function executeRule(rule: any, context: AutomationContext): Promise<void> {
   try {
     const conditions = Array.isArray(rule.conditions) ? (rule.conditions as unknown as AutomationCondition[]) : [];
-    const actions = Array.isArray(rule.actions) ? (rule.actions as unknown as AutomationAction[]) : [];
+    const actions = sanitizeAutomationActions(rule.actions) as AutomationAction[];
     
     if (!matchesConditions(conditions, context)) return;
     if (actions.length === 0) return;

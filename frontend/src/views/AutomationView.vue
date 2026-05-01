@@ -1,6 +1,5 @@
 <template>
   <div class="automation-page pb-10">
-    <!-- Header Section -->
     <div class="header-section d-flex align-center mb-8 flex-wrap ga-4">
       <div class="header-icon-box mr-2">
         <v-icon size="32" color="primary">mdi-robot-industrial</v-icon>
@@ -17,28 +16,27 @@
         prepend-icon="mdi-plus"
         rounded="lg"
         elevation="4"
-        @click="openCreateRule"
         class="custom-add-btn"
+        @click="openCreateRule"
       >
-        Tạo Rule mới
+        Tạo rule mới
       </v-btn>
     </div>
 
-    <!-- Main Content -->
     <v-card class="main-glass-card" elevation="0">
       <div class="pa-4 pb-0">
         <v-alert
           variant="tonal"
           color="info"
           density="comfortable"
-          text="AI auto-reply hien duoc cau hinh tai AI Studio. Automation chi dung cho trigger, phan luong, trang thai, lich hen va mau tin nhan."
+          text="AI auto-reply hiện được cấu hình tại AI Studio. Automation chỉ dùng cho trigger, phân luồng, trạng thái, lịch hẹn và mẫu tin nhắn."
         />
       </div>
 
       <v-tabs v-model="tab" color="primary" class="custom-tabs px-4">
         <v-tab value="rules" class="text-none">
           <v-icon start>mdi-auto-fix</v-icon>
-          Quy tắc (Rules)
+          Quy tắc
         </v-tab>
         <v-tab value="templates" class="text-none">
           <v-icon start>mdi-message-text-outline</v-icon>
@@ -58,17 +56,19 @@
             hover
             no-data-text="Hệ thống chưa có quy tắc tự động nào"
           >
-            <!-- Name Slot -->
             <template #item.name="{ item }">
               <div class="d-flex flex-column py-2">
                 <span class="font-weight-bold text-subtitle-2">{{ item.name }}</span>
-                <span v-if="item.description" class="text-caption text-medium-emphasis text-truncate" style="max-width: 250px">
+                <span
+                  v-if="item.description"
+                  class="text-caption text-medium-emphasis text-truncate"
+                  style="max-width: 320px"
+                >
                   {{ item.description }}
                 </span>
               </div>
             </template>
 
-            <!-- Trigger Slot -->
             <template #item.trigger="{ item }">
               <v-chip
                 size="small"
@@ -81,7 +81,6 @@
               </v-chip>
             </template>
 
-            <!-- Priority Slot -->
             <template #item.priority="{ item }">
               <div class="d-flex align-center">
                 <v-icon size="14" class="mr-1" color="amber">mdi-star</v-icon>
@@ -89,24 +88,16 @@
               </div>
             </template>
 
-            <!-- Run Count Slot -->
             <template #item.runCount="{ item }">
-              <v-badge
-                :content="item.runCount || '0'"
-                color="info"
-                inline
-                class="run-badge"
-              ></v-badge>
+              <v-badge :content="item.runCount || '0'" color="info" inline class="run-badge" />
             </template>
 
-            <!-- Last Run Slot -->
             <template #item.lastRunAt="{ item }">
               <div class="text-caption">
                 {{ item.lastRunAt ? formatDateTime(item.lastRunAt) : '—' }}
               </div>
             </template>
 
-            <!-- Toggle Slot -->
             <template #item.enabled="{ item }">
               <v-switch
                 :model-value="item.enabled"
@@ -119,7 +110,6 @@
               />
             </template>
 
-            <!-- Actions Slot -->
             <template #item.actions="{ item }">
               <div v-if="canManage" class="d-flex ga-1 justify-end">
                 <v-btn
@@ -211,7 +201,7 @@ const { accounts, fetchAccounts } = useZaloAccounts();
 
 const ruleHeaders = [
   { title: 'Tên rule', key: 'name', align: 'start' as const },
-  { title: 'Trigger', key: 'trigger', width: '150px' },
+  { title: 'Trigger', key: 'trigger', width: '160px' },
   { title: 'Ưu tiên', key: 'priority', width: '100px' },
   { title: 'Đã chạy', key: 'runCount', width: '100px' },
   { title: 'Gần nhất', key: 'lastRunAt', width: '180px' },
@@ -240,7 +230,7 @@ function formatDateTime(value: string) {
     month: '2-digit',
     year: '2-digit',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   });
 }
 
