@@ -569,14 +569,35 @@ const integrationPoints = [
   top: 0;
   left: 0;
   right: 0;
-  z-index: 30;
-  min-height: 104px;
+  z-index: 100;
+  min-height: 90px;
   display: flex;
   align-items: center;
-  background: rgba(248, 250, 252, 0.92);
-  backdrop-filter: blur(18px);
-  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  background: transparent;
+}
+
+.landing-navbar--scrolled {
+  top: 16px;
+  margin: 0 auto;
+  max-width: 1100px;
+  min-height: 72px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  box-shadow: 
+    0 20px 40px rgba(15, 23, 42, 0.08),
+    0 1px 2px rgba(15, 23, 42, 0.05);
+  padding: 0 12px;
+}
+
+.v-theme--dark .landing-navbar--scrolled {
+  background: rgba(15, 23, 42, 0.65);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 24px 48px rgba(0, 0, 0, 0.35),
+    0 1px 2px rgba(255, 255, 255, 0.05);
 }
 
 .landing-main {
@@ -609,20 +630,34 @@ const integrationPoints = [
 }
 
 .brand-mark__icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   display: grid;
   place-items: center;
   color: #fff;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8 60%, #f59e0b);
-  box-shadow: 0 18px 30px rgba(37, 99, 235, 0.22);
-  transition:
-    width 0.25s ease,
-    height 0.25s ease,
-    border-radius 0.25s ease,
-    box-shadow 0.25s ease,
-    transform 0.25s ease;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.brand-mark__icon::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.brand-mark:hover .brand-mark__icon {
+  transform: scale(1.05) rotate(-3deg);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+}
+
+.brand-mark:hover .brand-mark__icon::after {
+  opacity: 1;
 }
 
 .brand-mark__icon--small {
@@ -671,18 +706,23 @@ const integrationPoints = [
 
 .nav-links a {
   flex: 0 0 auto;
-  padding: 10px 14px;
+  padding: 8px 16px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.48);
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  white-space: nowrap;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.nav-links a:hover,
-.landing-footer__links a:hover,
-.closing-link:hover {
-  color: var(--color-text);
-  background: rgba(255, 255, 255, 0.72);
+.nav-links a:hover {
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.v-theme--dark .nav-links a:hover {
+  color: #60a5fa;
+  background: rgba(96, 165, 250, 0.12);
 }
 
 .hero-section {
