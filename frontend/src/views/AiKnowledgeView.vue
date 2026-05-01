@@ -116,15 +116,6 @@
           <v-chip v-if="configScopeId" size="small" color="secondary" variant="outlined">
             {{ configScopeMeta.scopeChannelType === 'facebook' ? 'Fanpage Facebook' : 'Kênh Zalo' }}
           </v-chip>
-          <v-divider vertical class="mx-2" />
-          <v-switch
-            v-model="aiConfig.enabled"
-            color="success"
-            hide-details
-            inset
-            label="Kích hoạt trợ lý AI"
-            class="mt-n1"
-          />
         </div>
       </div>
     </v-card>
@@ -600,9 +591,19 @@
                         Thiết lập chế độ phản hồi, lịch hoạt động, auto follow-up và điều kiện dừng.
                       </p>
                     </div>
-                    <v-chip color="indigo" variant="tonal">
-                      {{ operationsModeLabel }}
-                    </v-chip>
+                    <div class="d-flex align-center ga-3">
+                      <v-switch
+                        v-model="aiConfig.enabled"
+                        color="success"
+                        hide-details
+                        inset
+                        label="Kích hoạt trợ lý AI"
+                        class="mt-0"
+                      />
+                      <v-chip color="indigo" variant="tonal">
+                        {{ operationsModeLabel }}
+                      </v-chip>
+                    </div>
                   </div>
 
                   <v-row dense>
