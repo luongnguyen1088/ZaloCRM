@@ -456,7 +456,7 @@ model AiConfig {
   aiWorkMode            String       @default("always") @map("ai_work_mode")
   autoCreateLeads       Boolean      @default(false) @map("auto_create_leads")
   autoExtractInfo       Boolean      @default(false) @map("auto_extract_info")
-  aiResponseMode        String       @default("auto") @map("ai_response_mode")
+  aiResponseMode        String       @default("hybrid") @map("ai_response_mode")
   autoReplyDelay        Int          @default(0) @map("auto_reply_delay")
   confidenceThreshold   Float        @default(0.8) @map("confidence_threshold")
   savedHumanHours       Float        @default(0) @map("saved_human_hours")

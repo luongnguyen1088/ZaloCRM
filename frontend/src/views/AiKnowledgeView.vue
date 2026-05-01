@@ -1259,7 +1259,7 @@ const aiConfig = ref<any>({
   aiTimezone: 'Asia/Ho_Chi_Minh',
   autoExtractInfo: false,
   autoCreateLeads: false,
-  aiResponseMode: 'auto',
+  aiResponseMode: 'hybrid',
   autoReplyDelay: 0,
   confidenceThreshold: 0.8,
 });

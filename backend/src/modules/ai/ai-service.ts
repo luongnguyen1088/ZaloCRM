@@ -60,7 +60,7 @@ const DEFAULT_AI_CONFIG: Required<AiConfigInput> = {
   autoResumeEnabled: true,
   autoResumeMinutes: 60,
   aiWorkMode: 'always',
-  aiResponseMode: 'auto',
+  aiResponseMode: 'hybrid',
   aiWorkHours: {},
   aiTimezone: 'Asia/Ho_Chi_Minh',
   autoExtractInfo: false,
