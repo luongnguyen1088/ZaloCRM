@@ -1,7 +1,7 @@
 <template>
   <v-dialog
     :model-value="modelValue"
-    max-width="960"
+    max-width="980"
     transition="dialog-bottom-transition"
     @update:model-value="emit('update:modelValue', $event)"
   >
@@ -20,6 +20,25 @@
           density="comfortable"
           text="AI auto-reply đã được chuyển sang AI Studio. Automation chỉ còn dùng cho rule vận hành và mẫu tin nhắn."
         />
+
+        <section v-if="!rule?.id">
+          <div class="d-flex align-center mb-4">
+            <div class="section-number mr-3">0</div>
+            <div class="text-subtitle-1 font-weight-bold">Bắt đầu nhanh với preset</div>
+          </div>
+          <div class="preset-grid">
+            <button
+              v-for="preset in presets"
+              :key="preset.id"
+              type="button"
+              class="preset-card text-left"
+              @click="applyPreset(preset.id)"
+            >
+              <div class="font-weight-bold mb-1">{{ preset.title }}</div>
+              <div class="text-caption text-medium-emphasis">{{ preset.description }}</div>
+            </button>
+          </div>
+        </section>
 
         <v-card class="summary-panel" elevation="0" border>
           <div class="text-caption text-medium-emphasis text-uppercase mb-2">Tóm tắt rule</div>
@@ -115,6 +134,127 @@
             <div v-if="submitError" class="text-caption text-error mt-2">{{ submitError }}</div>
           </div>
         </section>
+
+        <v-divider class="opacity-10" />
+
+        <section>
+          <div class="d-flex align-center mb-4">
+            <div class="section-number mr-3">4</div>
+            <div class="text-subtitle-1 font-weight-bold">Simulator</div>
+          </div>
+          <div class="pl-9">
+            <v-card class="simulator-panel" elevation="0" border>
+              <div class="simulator-grid">
+                <v-select
+                  v-model="simulation.conversationZaloAccountId"
+                  :items="accountItems"
+                  item-title="title"
+                  item-value="value"
+                  label="Tài khoản Zalo"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                />
+                <v-text-field
+                  v-model="simulation.messageContent"
+                  label="Nội dung tin nhắn"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                />
+                <v-select
+                  v-model="simulation.messageContentType"
+                  :items="messageTypeItems"
+                  label="Loại tin nhắn"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                />
+                <v-text-field
+                  v-model="simulation.contactSource"
+                  label="Nguồn contact"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                />
+                <v-select
+                  v-model="simulation.contactStatus"
+                  :items="statusItems"
+                  label="Trạng thái contact"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                />
+                <v-select
+                  v-model="simulation.contactAssignedUserId"
+                  :items="userItems"
+                  item-title="title"
+                  item-value="value"
+                  label="Người phụ trách"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                />
+                <v-text-field
+                  v-model="simulation.contactTags"
+                  label="Tags"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                />
+                <v-text-field
+                  v-model="simulation.contactNotes"
+                  label="Ghi chú contact"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                />
+                <v-text-field
+                  v-model="unreadCountText"
+                  type="number"
+                  label="Số tin chưa đọc"
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                />
+              </div>
+
+              <v-alert
+                class="mt-4"
+                :color="simulationResult.matched ? 'success' : 'warning'"
+                variant="tonal"
+                density="comfortable"
+                :text="simulationResult.matched ? 'Rule sẽ được kích hoạt với dữ liệu mẫu hiện tại.' : 'Rule chưa match với dữ liệu mẫu hiện tại.'"
+              />
+
+              <div v-if="simulationResult.conditionResults.length" class="mt-4 d-flex flex-column ga-2">
+                <div class="text-caption text-medium-emphasis text-uppercase">Kiểm tra điều kiện</div>
+                <div
+                  v-for="condition in simulationResult.conditionResults"
+                  :key="condition.summary"
+                  class="condition-check-row"
+                >
+                  <v-icon :color="condition.passed ? 'success' : 'warning'" size="16">
+                    {{ condition.passed ? 'mdi-check-circle' : 'mdi-alert-circle-outline' }}
+                  </v-icon>
+                  <span class="text-body-2">{{ condition.summary }}</span>
+                </div>
+              </div>
+
+              <div v-if="localRule.actions?.length" class="mt-4 d-flex flex-column ga-2">
+                <div class="text-caption text-medium-emphasis text-uppercase">Các hành động sẽ chạy</div>
+                <div
+                  v-for="(actionSummary, index) in actionSummaries"
+                  :key="`${index}-${actionSummary}`"
+                  class="condition-check-row"
+                >
+                  <v-icon color="primary" size="16">mdi-lightning-bolt</v-icon>
+                  <span class="text-body-2">{{ actionSummary }}</span>
+                </div>
+              </div>
+            </v-card>
+          </div>
+        </section>
       </v-card-text>
 
       <v-divider class="opacity-10" />
@@ -146,7 +286,9 @@ import type { AutomationAction, AutomationCondition, AutomationRule } from '@/co
 import type { MessageTemplate } from '@/composables/use-message-templates';
 import type { ZaloAccount } from '@/composables/use-zalo-accounts';
 import type { OrgUser } from '@/composables/use-users';
-import { summarizeRule } from '@/utils/automation-rule-summary';
+import { summarizeAction, summarizeRule } from '@/utils/automation-rule-summary';
+import { AUTOMATION_PRESETS } from '@/utils/automation-rule-presets';
+import { simulateAutomationRule, type AutomationSimulationInput } from '@/utils/automation-rule-simulator';
 
 const props = defineProps<{
   modelValue: boolean;
@@ -168,6 +310,16 @@ const triggerItems = [
   { title: 'Khi đổi trạng thái contact', value: 'status_changed' },
 ];
 
+const statusItems = [
+  { title: 'Mới', value: 'new' },
+  { title: 'Đã liên hệ', value: 'contacted' },
+  { title: 'Quan tâm', value: 'interested' },
+  { title: 'Chuyển đổi', value: 'converted' },
+  { title: 'Mất', value: 'lost' },
+];
+
+const messageTypeItems = ['text', 'image', 'sticker', 'video', 'voice', 'gif', 'link', 'file'];
+
 const localRule = reactive<Partial<AutomationRule>>({
   name: '',
   description: '',
@@ -178,7 +330,37 @@ const localRule = reactive<Partial<AutomationRule>>({
   priority: 0,
 });
 
+const simulation = reactive<AutomationSimulationInput>({
+  contactSource: '',
+  contactStatus: 'new',
+  contactTags: '',
+  contactNotes: '',
+  contactAssignedUserId: '',
+  messageContent: '',
+  messageContentType: 'text',
+  conversationUnreadCount: 1,
+  conversationZaloAccountId: '',
+});
+
 const submitError = ref('');
+
+const presets = AUTOMATION_PRESETS;
+
+const userItems = computed(() =>
+  props.users
+    .filter((user) => user.isActive)
+    .map((user) => ({
+      title: user.team?.name ? `${user.fullName} • ${user.team.name}` : user.fullName,
+      value: user.id,
+    }))
+);
+
+const accountItems = computed(() =>
+  props.zaloAccounts.map((account) => ({
+    title: account.displayName || account.id,
+    value: account.id,
+  }))
+);
 
 const priorityValue = computed({
   get: () => String(localRule.priority ?? 0),
@@ -191,6 +373,13 @@ const delayValue = computed({
   get: () => String(localRule.delaySeconds ?? 0),
   set: (value: string) => {
     localRule.delaySeconds = Number(value || 0);
+  },
+});
+
+const unreadCountText = computed({
+  get: () => String(simulation.conversationUnreadCount ?? 0),
+  set: (value: string) => {
+    simulation.conversationUnreadCount = Number(value || 0);
   },
 });
 
@@ -216,6 +405,18 @@ const ruleSummary = computed(() =>
   })
 );
 
+const actionSummaries = computed(() =>
+  (localRule.actions ?? []).map((action) =>
+    summarizeAction(action, {
+      templates: props.templates,
+      accounts: props.zaloAccounts,
+      users: props.users,
+    })
+  )
+);
+
+const simulationResult = computed(() => simulateAutomationRule(localRule, simulation));
+
 watch(
   () => props.rule,
   (rule) => {
@@ -233,10 +434,55 @@ watch(
   { immediate: true }
 );
 
+watch(
+  () => props.zaloAccounts,
+  (accounts) => {
+    if (!simulation.conversationZaloAccountId && accounts.length > 0) {
+      simulation.conversationZaloAccountId = accounts[0].id;
+    }
+  },
+  { immediate: true }
+);
+
+function applyPreset(presetId: string) {
+  const preset = presets.find((item) => item.id === presetId);
+  if (!preset) return;
+  const next = preset.build({ templates: props.templates, users: props.users });
+  localRule.name = next.name ?? '';
+  localRule.description = next.description ?? '';
+  localRule.trigger = next.trigger ?? 'contact_created';
+  localRule.conditions = next.conditions ? [...next.conditions] : [];
+  localRule.actions = next.actions ? [...next.actions] : [];
+  localRule.enabled = next.enabled ?? true;
+  localRule.priority = next.priority ?? 0;
+  localRule.delaySeconds = next.delaySeconds ?? 0;
+}
+
+function validateActions(actions: AutomationAction[]) {
+  for (const action of actions) {
+    if (action.type === 'assign_user' && !action.userId) {
+      return 'Hành động "Chuyển cho nhân viên" cần chọn nhân viên cụ thể.';
+    }
+    if (action.type === 'send_template' && !action.templateId) {
+      return 'Hành động "Gửi mẫu tin nhắn" cần chọn một template.';
+    }
+    if (action.type === 'update_status' && !action.status) {
+      return 'Hành động "Cập nhật trạng thái" cần chọn trạng thái.';
+    }
+  }
+  return '';
+}
+
 function submit() {
   if (!localRule.name?.trim()) return;
   if (!localRule.actions?.length) {
     submitError.value = 'Rule phải có ít nhất một hành động hợp lệ.';
+    return;
+  }
+
+  const actionError = validateActions(localRule.actions);
+  if (actionError) {
+    submitError.value = actionError;
     return;
   }
 
@@ -261,10 +507,44 @@ function submit() {
   border: 1px solid var(--color-border) !important;
 }
 
-.summary-panel {
+.summary-panel,
+.simulator-panel {
   padding: 16px 18px;
   background: var(--color-surface-muted) !important;
   border-color: var(--color-border) !important;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  padding-left: 36px;
+}
+
+.preset-card {
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  transition: all 0.2s ease;
+}
+
+.preset-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-primary-soft-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+.simulator-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.condition-check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .section-number {
