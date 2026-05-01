@@ -98,7 +98,7 @@
       <span class="text-body-2 mr-3" v-if="authStore.user">{{ authStore.user.fullName }}</span>
       <NotificationBell />
       <v-btn icon variant="text" to="/zalo-accounts" class="mr-1" title="Kênh kết nối">
-        <v-icon size="small">mdi-cellphone-link</v-icon>
+        <v-icon size="small">mdi-transit-connection-variant</v-icon>
       </v-btn>
       <v-btn icon variant="text" @click="toggleTheme">
         <v-icon>{{ isDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
@@ -216,7 +216,7 @@ const menuGroups = [
     header: 'HỆ THỐNG',
     items: [
       { title: 'Cài đặt', icon: 'mdi-account-cog-outline', path: '/settings' },
-      { title: 'Kênh kết nối', icon: 'mdi-cellphone-link', path: '/zalo-accounts' },
+      { title: 'Kênh kết nối', icon: 'mdi-transit-connection-variant', path: '/zalo-accounts' },
     ]
   }
 ];
