@@ -197,11 +197,10 @@ const menuGroups = [
     ]
   },
   {
-    header: 'CRM & KẾT NỐI',
+    header: 'QUẢN LÝ CRM',
     items: [
       { title: 'Tin nhắn', icon: 'mdi-message-text-outline', path: '/chat' },
       { title: 'Khách hàng', icon: 'mdi-account-group-outline', path: '/contacts' },
-      { title: 'Kênh kết nối', icon: 'mdi-cellphone-link', path: '/zalo-accounts' },
       { title: 'Lịch hẹn', icon: 'mdi-calendar-clock-outline', path: '/appointments' },
     ]
   },
@@ -216,9 +215,10 @@ const menuGroups = [
   {
     header: 'HỆ THỐNG',
     items: [
+      { title: 'Kênh kết nối', icon: 'mdi-cellphone-link', path: '/zalo-accounts' },
       { title: 'Cài đặt & Nhân sự', icon: 'mdi-account-cog-outline', path: '/settings' },
-      { title: 'Nhà phát triển', icon: 'mdi-code-braces', path: '/api-settings' },
       { title: 'Tích hợp', icon: 'mdi-connection', path: '/integrations' },
+      { title: 'Nhà phát triển', icon: 'mdi-code-braces', path: '/api-settings' },
     ]
   }
 ];
