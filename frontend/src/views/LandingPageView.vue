@@ -430,12 +430,6 @@ onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll);
 });
 
-const heroStats = [
-  { value: '1 workspace', label: 'gom chat, CRM và AI vào cùng màn hình' },
-  { value: 'Real-time', label: 'đồng bộ tồn kho, đơn hàng và trạng thái chăm sóc' },
-  { value: '24/7', label: 'AI tiếp nhận ngoài giờ và đề xuất trả lời có ngữ cảnh' },
-];
-
 const liveQueue = [
   {
     name: 'Thảo Vy Fashion',
