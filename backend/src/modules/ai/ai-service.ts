@@ -602,6 +602,14 @@ export async function generateAiOutput(input: {
     system += `\n\nUse the following business knowledge to answer accurately:\n${knowledgeCtx}`;
   }
 
+  // Add Safety/Confidence instruction for replies
+  if (input.type === 'reply_draft') {
+    system += `\n\nCRITICAL: Evaluate if you have enough information in <business_knowledge> to answer accurately. 
+    You MUST start your response with 'CONFIDENCE: [score from 0.0 to 1.0]' followed by a newline, then your reply.
+    - If knowledge is insufficient to answer the customer's question, score < 0.5.
+    - If knowledge is complete and relevant, score > 0.8.`;
+  }
+
   const { text: raw, usage } = await generateText(provider, apiKey, model, system, userPrompt);
 
   if (input.type === 'sentiment') {
@@ -638,7 +646,15 @@ export async function generateAiOutput(input: {
     return normalized;
   }
 
-  const text = raw.trim().replace(/\*\*|__/g, '');
+  let text = raw.trim().replace(/\*\*|__/g, '');
+  let confidence = 1.0;
+
+  // Extract confidence if provided (logic for auto-reply safety)
+  const confidenceMatch = text.match(/^CONFIDENCE:\s*([\d.]+)/i);
+  if (confidenceMatch) {
+    confidence = parseFloat(confidenceMatch[1]);
+    text = text.replace(/^CONFIDENCE:\s*[\d.]+\s*/i, '').trim();
+  }
 
   if (input.type === 'summary') {
     await prisma.conversation.update({
@@ -656,7 +672,7 @@ export async function generateAiOutput(input: {
     messageId: input.messageId,
     type: input.type,
     content: text,
-    confidence: 1.0,
+    confidence,
     metadata: { sources },
   });
   await recordAiTokenUsage({
@@ -670,7 +686,7 @@ export async function generateAiOutput(input: {
     outputText: text,
     metadata: { conversationId: input.conversationId, messageId: input.messageId },
   });
-  return { content: text, confidence: 1.0, sources };
+  return { content: text, confidence, sources };
 }
 
 export async function generateAiOutputStreaming(input: { 
