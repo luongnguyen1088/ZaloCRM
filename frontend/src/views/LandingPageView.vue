@@ -127,7 +127,6 @@
                         </div>
                         <div class="queue-card__score">{{ conversation.score }}</div>
                       </div>
-                      <p>{{ conversation.message }}</p>
                     </div>
                   </section>
 
@@ -140,13 +139,13 @@
                         nhân viên duyệt trước khi gửi.
                       </p>
 
-                      <div class="assistant-bubbles">
-                        <div class="bubble bubble--customer">
-                          Shop còn mẫu mùa hè size M không? Nếu lấy 20 sản phẩm thì giá như thế nào?
+                      <div class="assistant-suggestion">
+                        <div class="suggestion-header">
+                          <v-icon color="primary" size="18">mdi-lightbulb-outline</v-icon>
+                          <span>Insight từ hệ thống</span>
                         </div>
-                        <div class="bubble bubble--assistant">
-                          Còn hàng ở kho HCM. Với đơn từ 20 sản phẩm, hệ thống đang áp dụng mức chiết
-                          khấu 12% và giao nội thành trong ngày.
+                        <div class="suggestion-body">
+                          "Khách hàng hỏi giá sỉ mẫu Summer M. Hệ thống ghi nhận còn 240 sản phẩm tại Kho HCM. Áp dụng bảng giá Đại lý cấp 1 (-15%)."
                         </div>
                       </div>
 
@@ -435,27 +434,17 @@ const liveQueue = [
     name: 'Thảo Vy Fashion',
     channel: 'Zalo OA • Lead sỉ',
     score: '92',
-    message: 'Hỏi bảng giá đại lý và số lượng tối thiểu để nhập đơn đầu tiên.',
   },
   {
     name: 'Minh Anh Boutique',
     channel: 'Facebook • Khách cũ',
     score: '81',
-    message: 'Đã từng mua 3 lần, hiện đang hỏi thêm tồn kho size M tại chi nhánh HCM.',
-  },
-  {
-    name: 'Hoàng Nam Store',
-    channel: 'Zalo OA • Follow-up',
-    score: '74',
-    message: 'Đang chờ xác nhận lịch giao và tình trạng đơn in trong Pancake POS.',
   },
 ];
 
 const stageActivities = [
-  { icon: 'mdi-database-search-outline', title: 'Knowledge sync', meta: 'Tài liệu giá và FAQ đã index' },
-  { icon: 'mdi-store-check-outline', title: 'Kho khả dụng', meta: '2 kho còn hàng cho size M' },
-  { icon: 'mdi-calendar-clock-outline', title: 'Nhắc việc', meta: 'Follow-up lại sau 30 phút' },
-  { icon: 'mdi-account-switch-outline', title: 'Phân công', meta: 'Giao lead cho team wholesale' },
+  { title: 'Đơn hàng đồng bộ', meta: 'Pancake POS • 2 phút trước', icon: 'mdi-sync' },
+  { title: 'Kiểm kho tự động', meta: 'Kho HCM • 5 phút trước', icon: 'mdi-warehouse' },
 ];
 
 const proofItems = [
@@ -1232,7 +1221,6 @@ const integrationPoints = [
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 10px;
 }
 
 .queue-card__name,
@@ -1295,30 +1283,37 @@ const integrationPoints = [
   color: var(--color-text);
 }
 
-.assistant-bubbles {
-  display: grid;
+.assistant-suggestion {
+  margin-top: 20px;
+  background: rgba(37, 99, 235, 0.04);
+  border: 1px dashed rgba(37, 99, 235, 0.2);
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.v-theme--dark .assistant-suggestion {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.suggestion-header {
+  padding: 12px 18px;
+  background: rgba(37, 99, 235, 0.08);
+  display: flex;
+  align-items: center;
   gap: 10px;
-  margin-top: 18px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #2563eb;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
-.bubble {
-  max-width: 92%;
-  padding: 14px 16px;
-  border-radius: 22px;
+.suggestion-body {
+  padding: 18px;
+  font-size: 0.96rem;
   line-height: 1.6;
-  font-size: 0.95rem;
-}
-
-.bubble--customer {
-  background: rgba(148, 163, 184, 0.12);
   color: var(--color-text);
-}
-
-.bubble--assistant {
-  margin-left: auto;
-  background: linear-gradient(135deg, #1d4ed8, #2563eb);
-  color: #fff;
-  box-shadow: 0 18px 28px rgba(37, 99, 235, 0.22);
+  font-weight: 500;
 }
 
 .assistant-footer {
