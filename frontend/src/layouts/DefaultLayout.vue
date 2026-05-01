@@ -197,19 +197,19 @@ const menuGroups = [
     ]
   },
   {
-    header: 'QUẢN LÝ CRM',
-    items: [
-      { title: 'Tin nhắn', icon: 'mdi-message-text-outline', path: '/chat' },
-      { title: 'Khách hàng', icon: 'mdi-account-group-outline', path: '/contacts' },
-      { title: 'Lịch hẹn', icon: 'mdi-calendar-clock-outline', path: '/appointments' },
-    ]
-  },
-  {
     header: 'TRỢ LÝ AI',
     items: [
       { title: 'Đào tạo AI', icon: 'mdi-school-outline', path: '/ai-training' },
       { title: 'Hướng dẫn AI', icon: 'mdi-book-open-page-variant-outline', path: '/ai-guide' },
       { title: 'Automation', icon: 'mdi-robot-outline', path: '/automation' },
+    ]
+  },
+  {
+    header: 'QUẢN LÝ CRM',
+    items: [
+      { title: 'Tin nhắn', icon: 'mdi-message-text-outline', path: '/chat' },
+      { title: 'Khách hàng', icon: 'mdi-account-group-outline', path: '/contacts' },
+      { title: 'Lịch hẹn', icon: 'mdi-calendar-clock-outline', path: '/appointments' },
     ]
   },
   {
