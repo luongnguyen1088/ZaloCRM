@@ -440,6 +440,8 @@ const selectedRoleInfo = computed(() => {
   return roleDetailOptions.find(opt => opt.value === inviteForm.value.role) || roleDetailOptions[0];
 });
 
+const roleOptions = roleDetailOptions.map(opt => ({ label: opt.label, value: opt.value }));
+
 const settingsNavigation = [
   { title: 'Hồ sơ cá nhân', value: 'profile', icon: 'mdi-account-circle-outline' },
   { title: 'Nhân sự & Đội ngũ', value: 'users', icon: 'mdi-account-group-outline' },

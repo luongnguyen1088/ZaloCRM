@@ -3,7 +3,7 @@
     <v-card variant="flat" class="profile-hero-card pa-8 mb-8 rounded-xl d-flex align-center overflow-hidden">
       <div class="hero-bg-accent"></div>
       <v-avatar size="100" class="mr-8 avatar-premium elevation-8">
-        <v-img v-if="authStore.user?.avatar" :src="authStore.user.avatar"></v-img>
+        <v-img v-if="authStore.user?.avatarUrl" :src="authStore.user.avatarUrl"></v-img>
         <span v-else class="text-h3 font-weight-bold text-white">{{ getInitials(authStore.user?.fullName || '') }}</span>
       </v-avatar>
       <div class="z-index-1">
