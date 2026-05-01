@@ -108,7 +108,13 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
         let freePlan = await tx.subscriptionPlan.findFirst({ where: { name: 'Free' } });
         if (!freePlan) {
           freePlan = await tx.subscriptionPlan.create({
-            data: { name: 'Free', priceMonth: 0, maxZaloAcc: 1, maxAiTokens: 500, features: '[]' }
+            data: { 
+              name: 'Free', 
+              priceMonth: 0, 
+              maxZaloAcc: 1, 
+              maxAiTokens: 150000, 
+              features: ['CRM cơ bản', '1 tài khoản Zalo/Facebook', '150,000 Tokens AI (Haiku/Flash)', 'Hỗ trợ cộng đồng'] 
+            }
           });
         }
         const now = new Date();

@@ -11,16 +11,16 @@ const DEFAULT_SUBSCRIPTION_PLANS = [
   {
     name: 'Pro',
     priceMonth: 250000,
-    maxZaloAcc: 3,
+    maxZaloAcc: 5,
     maxAiTokens: 2500000,
-    features: ['Đầy đủ CRM & Automation', '3 tài khoản Zalo/Facebook', '2,500,000 Tokens AI (Haiku/Flash)', 'Ưu tiên hỗ trợ 24/7'],
+    features: ['Đầy đủ CRM & Automation', '5 tài khoản Zalo/Facebook', '2,500,000 Tokens AI (Haiku/Flash)', 'Ưu tiên hỗ trợ 24/7'],
   },
   {
     name: 'Business',
     priceMonth: 650000,
-    maxZaloAcc: 15,
+    maxZaloAcc: 12,
     maxAiTokens: 8000000,
-    features: ['Tính năng Business nâng cao', '15 tài khoản Zalo/Facebook', '8,000,000 Tokens AI', 'Bao gồm 800k Premium Tokens (Sonnet)', 'Quản lý Team & Phân quyền'],
+    features: ['Tính năng Business nâng cao', '12 tài khoản Zalo/Facebook', '8,000,000 Tokens AI', 'Bao gồm 800k Premium Tokens (Sonnet)', 'Quản lý Team & Phân quyền'],
   },
   {
     name: 'Enterprise',

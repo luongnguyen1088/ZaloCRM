@@ -73,8 +73,8 @@ export async function register(
           name: 'Free',
           priceMonth: 0,
           maxZaloAcc: 1,
-          maxAiTokens: 500,
-          features: JSON.stringify(['CRM cơ bản', '1 tài khoản Zalo']),
+          maxAiTokens: 150000,
+          features: ['CRM cơ bản', '1 tài khoản Zalo/Facebook', '150,000 Tokens AI (Haiku/Flash)', 'Hỗ trợ cộng đồng'],
         }
       });
     }
