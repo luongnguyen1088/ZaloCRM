@@ -57,8 +57,14 @@
             no-data-text="Hệ thống chưa có quy tắc tự động nào"
           >
             <template #item.name="{ item }">
-              <div class="d-flex flex-column py-2">
+              <div class="d-flex flex-column py-2 ga-1">
                 <span class="font-weight-bold text-subtitle-2">{{ item.name }}</span>
+                <span
+                  class="text-caption text-medium-emphasis"
+                  style="max-width: 420px; line-height: 1.45;"
+                >
+                  {{ summarizeRule(item) }}
+                </span>
                 <span
                   v-if="item.description"
                   class="text-caption text-medium-emphasis text-truncate"
@@ -156,6 +162,7 @@
       :rule="selectedRule"
       :templates="templates"
       :zalo-accounts="accounts"
+      :users="users"
       :saving="ruleSaving"
       @save="saveRule"
     />
@@ -169,7 +176,9 @@ import TemplateManager from '@/components/automation/TemplateManager.vue';
 import { useAutomationRules, type AutomationRule } from '@/composables/use-automation-rules';
 import { useMessageTemplates } from '@/composables/use-message-templates';
 import { useZaloAccounts } from '@/composables/use-zalo-accounts';
+import { useUsers } from '@/composables/use-users';
 import { useAuthStore } from '@/stores/auth';
+import { summarizeRule as buildRuleSummary } from '@/utils/automation-rule-summary';
 
 const authStore = useAuthStore();
 const canManage = computed(() => authStore.isAdmin);
@@ -198,6 +207,7 @@ const {
 } = useMessageTemplates();
 
 const { accounts, fetchAccounts } = useZaloAccounts();
+const { users, fetchUsers } = useUsers();
 
 const ruleHeaders = [
   { title: 'Tên rule', key: 'name', align: 'start' as const },
@@ -234,6 +244,14 @@ function formatDateTime(value: string) {
   });
 }
 
+function summarizeRule(rule: Partial<AutomationRule>) {
+  return buildRuleSummary(rule, {
+    templates: templates.value,
+    accounts: accounts.value,
+    users: users.value,
+  });
+}
+
 function openCreateRule() {
   selectedRule.value = null;
   showRuleDialog.value = true;
@@ -264,7 +282,7 @@ async function deleteRule(id: string) {
 }
 
 onMounted(async () => {
-  await Promise.all([fetchRules(), fetchTemplates(), fetchAccounts()]);
+  await Promise.all([fetchRules(), fetchTemplates(), fetchAccounts(), fetchUsers()]);
 });
 </script>
 

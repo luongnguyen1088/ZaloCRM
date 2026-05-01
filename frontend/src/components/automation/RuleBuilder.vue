@@ -1,7 +1,7 @@
 <template>
   <v-dialog
     :model-value="modelValue"
-    max-width="900"
+    max-width="960"
     transition="dialog-bottom-transition"
     @update:model-value="emit('update:modelValue', $event)"
   >
@@ -20,6 +20,11 @@
           density="comfortable"
           text="AI auto-reply đã được chuyển sang AI Studio. Automation chỉ còn dùng cho rule vận hành và mẫu tin nhắn."
         />
+
+        <v-card class="summary-panel" elevation="0" border>
+          <div class="text-caption text-medium-emphasis text-uppercase mb-2">Tóm tắt rule</div>
+          <div class="text-body-1 font-weight-medium">{{ ruleSummary }}</div>
+        </v-card>
 
         <section>
           <div class="d-flex align-center mb-4">
@@ -106,7 +111,7 @@
             <div class="text-subtitle-1 font-weight-bold">Hành động thực thi (Thì...)</div>
           </div>
           <div class="pl-9">
-            <ActionEditor v-model="ruleActions" :templates="templates" />
+            <ActionEditor v-model="ruleActions" :templates="templates" :users="users" />
             <div v-if="submitError" class="text-caption text-error mt-2">{{ submitError }}</div>
           </div>
         </section>
@@ -140,12 +145,15 @@ import ActionEditor from './ActionEditor.vue';
 import type { AutomationAction, AutomationCondition, AutomationRule } from '@/composables/use-automation-rules';
 import type { MessageTemplate } from '@/composables/use-message-templates';
 import type { ZaloAccount } from '@/composables/use-zalo-accounts';
+import type { OrgUser } from '@/composables/use-users';
+import { summarizeRule } from '@/utils/automation-rule-summary';
 
 const props = defineProps<{
   modelValue: boolean;
   rule: AutomationRule | null;
   templates: MessageTemplate[];
   zaloAccounts: ZaloAccount[];
+  users: OrgUser[];
   saving: boolean;
 }>();
 
@@ -200,6 +208,14 @@ const ruleActions = computed<AutomationAction[]>({
   },
 });
 
+const ruleSummary = computed(() =>
+  summarizeRule(localRule, {
+    templates: props.templates,
+    accounts: props.zaloAccounts,
+    users: props.users,
+  })
+);
+
 watch(
   () => props.rule,
   (rule) => {
@@ -243,6 +259,12 @@ function submit() {
 .rule-builder-card {
   background: var(--color-surface-elevated) !important;
   border: 1px solid var(--color-border) !important;
+}
+
+.summary-panel {
+  padding: 16px 18px;
+  background: var(--color-surface-muted) !important;
+  border-color: var(--color-border) !important;
 }
 
 .section-number {

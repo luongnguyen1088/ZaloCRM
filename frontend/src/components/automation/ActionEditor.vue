@@ -34,10 +34,13 @@
       <v-divider class="mb-4 opacity-10" />
 
       <div class="action-settings-grid">
-        <v-text-field
+        <v-select
           v-if="action.type === 'assign_user'"
           :model-value="action.userId || ''"
-          label="User ID nhân viên"
+          :items="userItems"
+          item-title="title"
+          item-value="value"
+          label="Chọn nhân viên"
           variant="outlined"
           density="comfortable"
           prepend-inner-icon="mdi-account-arrow-right"
@@ -128,10 +131,12 @@
 import { computed } from 'vue';
 import type { AutomationAction } from '@/composables/use-automation-rules';
 import type { MessageTemplate } from '@/composables/use-message-templates';
+import type { OrgUser } from '@/composables/use-users';
 
 const props = defineProps<{
   modelValue: AutomationAction[];
   templates: MessageTemplate[];
+  users: OrgUser[];
 }>();
 
 const emit = defineEmits<{
@@ -155,6 +160,15 @@ const statusItems = [
 
 const templateItems = computed(() =>
   props.templates.map((template) => ({ title: template.name, value: template.id }))
+);
+
+const userItems = computed(() =>
+  props.users
+    .filter((user) => user.isActive)
+    .map((user) => ({
+      title: user.team?.name ? `${user.fullName} • ${user.team.name}` : user.fullName,
+      value: user.id,
+    }))
 );
 
 function getActionIcon(type: string) {
