@@ -48,7 +48,7 @@ type AiConfigInput = {
 };
 
 const DEFAULT_AI_CONFIG: Required<AiConfigInput> = {
-  enabled: true,
+  enabled: false,
   instructions: null,
   languagePolicy: 'auto',
   followUpEnabled: false,

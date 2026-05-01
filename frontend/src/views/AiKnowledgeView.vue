@@ -1240,7 +1240,7 @@ const { accounts, fetchAccounts } = useZaloAccounts();
 const activeSection = ref<StudioSection>('behavior');
 const items = ref<KnowledgeItem[]>([]);
 const aiConfig = ref<any>({
-  enabled: true,
+  enabled: false,
   instructions: '',
   languagePolicy: 'auto',
   usedTokens: 0,
