@@ -1,7 +1,7 @@
 import { prisma } from '../../shared/database/prisma-client.js';
 import { logger } from '../../shared/utils/logger.js';
 import { aiReplyAction } from '../automation/actions/ai-reply-action.js';
-import { hasMatchingAiReplyRule, type AutomationContext } from '../automation/automation-service.js';
+import type { AutomationContext } from '../automation/automation-service.js';
 import { getAiConfig, isAiInWorkHours } from './ai-service.js';
 
 const activeAutoReplyTimers = new Map<string, NodeJS.Timeout>();
@@ -76,10 +76,9 @@ export async function maybeScheduleBuiltInAiReply(context: AutomationContext) {
   if (context.trigger !== 'message_received' || !context.conversation?.id || !context.conversation.zaloAccountId) return;
 
   try {
-    const [config, inWorkHours, hasLegacyRule, conversation] = await Promise.all([
+    const [config, inWorkHours, conversation] = await Promise.all([
       getAiConfig(context.orgId, context.conversation.zaloAccountId),
       isAiInWorkHours(context.orgId, context.conversation.zaloAccountId),
-      hasMatchingAiReplyRule(context),
       prisma.conversation.findUnique({
         where: { id: context.conversation.id },
         select: { id: true, aiPaused: true },
@@ -89,11 +88,6 @@ export async function maybeScheduleBuiltInAiReply(context: AutomationContext) {
     if (!config.enabled || config.aiResponseMode !== 'auto') return;
     if (!inWorkHours) return;
     if (conversation?.aiPaused) return;
-
-    if (hasLegacyRule) {
-      logger.info(`[ai-auto-reply] Skip built-in auto reply for ${context.conversation.id}: matching automation rule already exists`);
-      return;
-    }
 
     const delayMs = Math.max(0, Number(config.autoReplyDelay ?? 0)) * 1000;
     const timerKey = getTimerKey(context.orgId, context.conversation.id);

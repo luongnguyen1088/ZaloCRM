@@ -26,6 +26,15 @@
 
     <!-- Main Content -->
     <v-card class="main-glass-card" elevation="0">
+      <div class="pa-4 pb-0">
+        <v-alert
+          variant="tonal"
+          color="info"
+          density="comfortable"
+          text="AI auto-reply hien duoc cau hinh tai AI Studio. Automation chi dung cho trigger, phan luong, trang thai, lich hen va mau tin nhan."
+        />
+      </div>
+
       <v-tabs v-model="tab" color="primary" class="custom-tabs px-4">
         <v-tab value="rules" class="text-none">
           <v-icon start>mdi-auto-fix</v-icon>

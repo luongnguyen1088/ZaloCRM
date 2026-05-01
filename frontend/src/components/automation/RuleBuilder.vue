@@ -7,6 +7,13 @@
       </v-card-title>
       
       <v-card-text class="pa-6 pt-2 d-flex flex-column ga-6">
+        <v-alert
+          variant="tonal"
+          color="info"
+          density="comfortable"
+          text="AI auto-reply da duoc chuyen sang AI Studio. Automation chi con dung cho rule van hanh va mau tin nhan."
+        />
+
         <!-- Basic Info Section -->
         <section>
           <div class="d-flex align-center mb-4">
@@ -52,6 +59,7 @@
           </div>
           <div class="pl-9">
             <ActionEditor v-model="ruleActions" :templates="templates" />
+            <div v-if="submitError" class="text-caption text-error mt-2">{{ submitError }}</div>
           </div>
         </section>
       </v-card-text>
@@ -70,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import ConditionEditor from './ConditionEditor.vue';
 import ActionEditor from './ActionEditor.vue';
 import type { AutomationAction, AutomationCondition, AutomationRule } from '@/composables/use-automation-rules';
@@ -105,6 +113,7 @@ const localRule = reactive<Partial<AutomationRule>>({
   enabled: true,
   priority: 0,
 });
+const submitError = ref('');
 
 const priorityValue = computed({
   get: () => String(localRule.priority ?? 0),
@@ -127,6 +136,7 @@ const ruleActions = computed<AutomationAction[]>({
 });
 
 watch(() => props.rule, (rule) => {
+  submitError.value = '';
   localRule.id = rule?.id;
   localRule.name = rule?.name ?? '';
   localRule.description = rule?.description ?? '';
@@ -140,6 +150,11 @@ watch(() => props.rule, (rule) => {
 
 function submit() {
   if (!localRule.name?.trim()) return;
+  if (!localRule.actions?.length) {
+    submitError.value = 'Rule phai co it nhat mot hanh dong hop le.';
+    return;
+  }
+  submitError.value = '';
   emit('save', {
     id: localRule.id,
     name: localRule.name,

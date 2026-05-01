@@ -4,26 +4,11 @@ import { assignUserAction } from './actions/assign-user-action.js';
 import { updateStatusAction } from './actions/update-status-action.js';
 import { createAppointmentAction } from './actions/create-appointment-action.js';
 import { sendTemplateAction } from './actions/send-template-action.js';
-import { aiReplyAction } from './actions/ai-reply-action.js';
+import type { AutomationAction, AutomationCondition, AutomationTriggerType } from './automation-rule-utils.js';
 
 // Memory storage for active automation timers (debouncing)
 // Key format: `${orgId}:${conversationId}:${ruleId}`
 const activeTimers = new Map<string, NodeJS.Timeout>();
-
-export type AutomationTriggerType = 'message_received' | 'contact_created' | 'status_changed';
-
-type AutomationCondition = {
-  field: string;
-  op: 'eq' | 'neq' | 'contains' | 'in' | 'gt' | 'lt' | 'is_empty' | 'is_not_empty';
-  value?: unknown;
-};
-
-type AutomationAction =
-  | { type: 'assign_user'; userId: string }
-  | { type: 'send_template'; templateId: string }
-  | { type: 'update_status'; status: string }
-  | { type: 'create_appointment'; offsetHours?: number; typeLabel?: string; notes?: string }
-  | { type: 'ai_reply'; confidenceThreshold?: number };
 
 export interface AutomationContext {
   trigger: AutomationTriggerType;
@@ -94,26 +79,13 @@ export async function runAutomationRules(context: AutomationContext): Promise<vo
   }
 }
 
-export async function hasMatchingAiReplyRule(context: AutomationContext): Promise<boolean> {
-  const rules = await prisma.automationRule.findMany({
-    where: { orgId: context.orgId, trigger: context.trigger, enabled: true },
-    select: { conditions: true, actions: true },
-  });
-
-  return rules.some((rule) => {
-    const actions = Array.isArray(rule.actions) ? (rule.actions as unknown as AutomationAction[]) : [];
-    const conditions = Array.isArray(rule.conditions) ? (rule.conditions as unknown as AutomationCondition[]) : [];
-    const hasAiReplyAction = actions.some((action) => action?.type === 'ai_reply');
-    return hasAiReplyAction && matchesConditions(conditions, context);
-  });
-}
-
 async function executeRule(rule: any, context: AutomationContext): Promise<void> {
   try {
     const conditions = Array.isArray(rule.conditions) ? (rule.conditions as unknown as AutomationCondition[]) : [];
     const actions = Array.isArray(rule.actions) ? (rule.actions as unknown as AutomationAction[]) : [];
     
     if (!matchesConditions(conditions, context)) return;
+    if (actions.length === 0) return;
 
     for (const action of actions) {
       await executeAction(action, context);
@@ -206,23 +178,5 @@ async function executeAction(action: AutomationAction, context: AutomationContex
       });
     }
     return;
-  }
-
-  if (action.type === 'ai_reply' && context.conversation?.id && context.conversation.zaloAccountId) {
-    const sentMessage = await aiReplyAction({
-      orgId: context.orgId,
-      conversationId: context.conversation.id,
-      zaloAccountId: context.conversation.zaloAccountId,
-      threadId: context.conversation.threadId ?? null,
-      threadType: context.conversation.threadType ?? 'user',
-      confidenceThreshold: action.confidenceThreshold,
-    });
-
-    if (sentMessage) {
-      await prisma.conversation.update({
-        where: { id: context.conversation.id },
-        data: { lastMessageAt: new Date(), isReplied: true, unreadCount: 0 },
-      });
-    }
   }
 }

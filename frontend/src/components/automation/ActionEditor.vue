@@ -10,7 +10,7 @@
           :items="actionOptions"
           item-title="title"
           item-value="value"
-          label="Hành động"
+          label="Hanh dong"
           variant="filled"
           density="comfortable"
           hide-details
@@ -33,7 +33,7 @@
         <v-text-field
           v-if="action.type === 'assign_user'"
           :model-value="action.userId || ''"
-          label="User ID nhân viên"
+          label="User ID nhan vien"
           variant="outlined"
           density="comfortable"
           prepend-inner-icon="mdi-account-arrow-right"
@@ -46,7 +46,7 @@
           :items="templateItems"
           item-title="title"
           item-value="value"
-          label="Chọn mẫu tin nhắn"
+          label="Chon mau tin nhan"
           variant="outlined"
           density="comfortable"
           prepend-inner-icon="mdi-email-outline"
@@ -59,7 +59,7 @@
           :items="statusItems"
           item-title="title"
           item-value="value"
-          label="Trạng thái hội thoại mới"
+          label="Trang thai hoi thoai moi"
           variant="outlined"
           density="comfortable"
           prepend-inner-icon="mdi-tag-outline"
@@ -70,7 +70,7 @@
           <div class="d-flex ga-3 flex-wrap">
             <v-text-field
               :model-value="String(action.offsetHours ?? 24)"
-              label="Số giờ sau khi kích hoạt"
+              label="So gio sau khi kich hoat"
               variant="outlined"
               density="comfortable"
               type="number"
@@ -81,7 +81,7 @@
             />
             <v-text-field
               :model-value="action.typeLabel || ''"
-              label="Loại lịch hẹn (VD: Tư vấn)"
+              label="Loai lich hen"
               variant="outlined"
               density="comfortable"
               class="flex-1-1"
@@ -89,41 +89,6 @@
               prepend-inner-icon="mdi-calendar-check"
               @update:model-value="updateAction(index, 'typeLabel', $event)"
             />
-          </div>
-        </template>
-
-        <template v-if="action.type === 'ai_reply'">
-          <div class="ai-config-box pa-4 rounded-lg">
-            <div class="d-flex align-center mb-4">
-              <v-icon start color="primary">mdi-brain</v-icon>
-              <span class="text-subtitle-2 font-weight-bold">Cấu hình AI Smart Reply</span>
-            </div>
-            <div class="text-caption text-medium-emphasis mb-4">
-              AI sẽ tự động soạn tin nhắn dựa trên Kho tri thức. Nếu độ tin cậy thấp hơn ngưỡng dưới đây, AI sẽ không gửi tin nhắn.
-            </div>
-            <v-slider
-              :model-value="(action.confidenceThreshold ?? 0.8) * 100"
-              thumb-label="always"
-              step="5"
-              min="0"
-              max="100"
-              color="primary"
-              track-color="primary-soft"
-              density="compact"
-              hide-details
-              @update:model-value="updateThreshold(index, $event)"
-            >
-              <template #prepend>
-                <span class="text-caption">0%</span>
-              </template>
-              <template #append>
-                <div class="d-flex align-center ml-2">
-                  <v-chip size="x-small" color="primary" variant="flat" class="font-weight-bold">
-                    {{ Math.round((action.confidenceThreshold ?? 0.8) * 100) }}%
-                  </v-chip>
-                </div>
-              </template>
-            </v-slider>
           </div>
         </template>
       </div>
@@ -139,7 +104,7 @@
         class="add-action-btn"
         @click="addAction"
       >
-        Thêm hành động tiếp theo
+        Them hanh dong tiep theo
       </v-btn>
     </div>
   </div>
@@ -160,19 +125,18 @@ const emit = defineEmits<{
 }>();
 
 const actionOptions = [
-  { title: 'Chuyển cho nhân viên', value: 'assign_user' },
-  { title: 'Gửi mẫu tin nhắn', value: 'send_template' },
-  { title: 'Cập nhật trạng thái', value: 'update_status' },
-  { title: 'Tạo lịch hẹn', value: 'create_appointment' },
-  { title: 'AI Smart Reply (Tự động)', value: 'ai_reply' },
+  { title: 'Chuyen cho nhan vien', value: 'assign_user' },
+  { title: 'Gui mau tin nhan', value: 'send_template' },
+  { title: 'Cap nhat trang thai', value: 'update_status' },
+  { title: 'Tao lich hen', value: 'create_appointment' },
 ];
 
 const statusItems = [
-  { title: 'Mới', value: 'new' },
-  { title: 'Đã liên hệ', value: 'contacted' },
-  { title: 'Quan tâm', value: 'interested' },
-  { title: 'Chuyển đổi', value: 'converted' },
-  { title: 'Mất', value: 'lost' },
+  { title: 'Moi', value: 'new' },
+  { title: 'Da lien he', value: 'contacted' },
+  { title: 'Quan tam', value: 'interested' },
+  { title: 'Chuyen doi', value: 'converted' },
+  { title: 'Mat', value: 'lost' },
 ];
 
 const templateItems = computed(() => props.templates.map((template) => ({ title: template.name, value: template.id })));
@@ -183,7 +147,6 @@ function getActionIcon(type: string) {
     send_template: 'mdi-email-send-outline',
     update_status: 'mdi-tag-sync-outline',
     create_appointment: 'mdi-calendar-plus',
-    ai_reply: 'mdi-auto-fix',
   };
   return icons[type] ?? 'mdi-flash';
 }
@@ -194,7 +157,6 @@ function getActionColor(type: string) {
     send_template: 'success',
     update_status: 'warning',
     create_appointment: 'orange',
-    ai_reply: 'primary',
   };
   return colors[type] || 'grey';
 }
@@ -212,10 +174,6 @@ function updateAction(index: number, key: keyof AutomationAction, value: unknown
 
 function updateNumericAction(index: number, key: keyof AutomationAction, value: unknown) {
   updateAction(index, key, Number(value ?? 0));
-}
-
-function updateThreshold(index: number, value: number) {
-  updateAction(index, 'confidenceThreshold', value / 100);
 }
 
 function removeAction(index: number) {
@@ -248,12 +206,6 @@ function removeAction(index: number) {
 .action-icon-circle.success { background: var(--color-success-soft); color: var(--color-success); }
 .action-icon-circle.warning { background: var(--color-warning-soft); color: var(--color-warning); }
 .action-icon-circle.orange { background: #fff3e0; color: #fb8c00; }
-.action-icon-circle.primary { background: var(--color-primary-soft); color: var(--color-primary); }
-
-.ai-config-box {
-  background: var(--color-surface-muted);
-  border: 1px dashed var(--color-border-strong);
-}
 
 .add-action-btn {
   text-transform: none;
@@ -274,5 +226,3 @@ function removeAction(index: number) {
   opacity: 1;
 }
 </style>
-
-

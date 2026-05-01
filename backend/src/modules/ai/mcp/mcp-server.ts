@@ -7,6 +7,7 @@ import { updateAiConfig, getAiConfig } from "../ai-service.js";
 import { createAiKnowledge } from "../knowledge/knowledge-service.js";
 import { prisma } from "../../../shared/database/prisma-client.js";
 import { logger } from "../../../shared/utils/logger.js";
+import { sanitizeAutomationActions } from "../../automation/automation-rule-utils.js";
 
 /**
  * Creates a new ZaloCRM MCP Server instance for a specific organization.
@@ -121,13 +122,17 @@ export function setupMcpServer(orgId: string): Server {
           return { content: [{ type: "text", text: `Knowledge "${item.title}" added successfully.` }] };
         }
         case "create_automation_rule": {
+          const actions = sanitizeAutomationActions(args!.actions);
+          if (actions.length === 0) {
+            throw new Error("Automation rule must include at least one supported non-AI action");
+          }
           const rule = await prisma.automationRule.create({
             data: {
               orgId,
               name: args!.name as string,
               trigger: args!.trigger as any,
               conditions: args!.conditions as any,
-              actions: args!.actions as any,
+              actions: actions as any,
               enabled: true,
             },
           });

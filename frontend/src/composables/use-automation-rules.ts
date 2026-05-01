@@ -15,7 +15,6 @@ export interface AutomationAction {
   offsetHours?: number;
   typeLabel?: string;
   notes?: string;
-  confidenceThreshold?: number; // For AI replies (0-1)
 }
 
 export interface AutomationRule {
