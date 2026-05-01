@@ -26,8 +26,8 @@
           <div class="nav-actions">
             <v-btn
               v-if="!isAuthenticated"
-              variant="text"
-              class="text-none nav-button d-none d-sm-flex"
+              variant="outlined"
+              class="text-none nav-button--secondary d-none d-sm-flex"
               to="/login"
             >
               Đăng nhập
@@ -35,7 +35,7 @@
             <v-btn
               v-if="!isAuthenticated"
               color="primary"
-              class="text-none nav-cta shimmer-btn"
+              class="text-none nav-button--primary shimmer-btn"
               to="/register"
             >
               Tạo workspace
@@ -43,7 +43,7 @@
             <v-btn
               v-else
               color="primary"
-              class="text-none nav-cta"
+              class="text-none nav-button--primary"
               to="/dashboard"
             >
               Vào dashboard
@@ -629,6 +629,42 @@ const integrationPoints = [
 .v-theme--dark .landing-navbar {
   background: rgba(8, 17, 33, 0.9);
   box-shadow: 0 14px 32px rgba(2, 6, 23, 0.34);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-button--primary,
+.nav-button--secondary {
+  height: 42px !important;
+  padding-inline: 20px !important;
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.nav-button--secondary {
+  border: 1px solid rgba(148, 163, 184, 0.3) !important;
+  color: var(--color-text) !important;
+}
+
+.nav-button--secondary:hover {
+  background: rgba(148, 163, 184, 0.08) !important;
+  border-color: #2563eb !important;
+  color: #2563eb !important;
+}
+
+.nav-button--primary {
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.15) !important;
+}
+
+.nav-button--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 15px 30px rgba(37, 99, 235, 0.25) !important;
 }
 
 .brand-mark {
