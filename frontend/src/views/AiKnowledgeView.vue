@@ -591,17 +591,22 @@
                         Thiết lập chế độ phản hồi, lịch hoạt động, auto follow-up và điều kiện dừng.
                       </p>
                     </div>
-                    <div class="d-flex align-center ga-3">
-                      <v-switch
-                        v-model="aiConfig.enabled"
-                        color="success"
-                        hide-details
-                        inset
-                        label="Kích hoạt trợ lý AI"
-                        class="mt-0"
-                      />
-                      <v-chip color="indigo" variant="tonal">
-                        {{ operationsModeLabel }}
+                    <div class="ai-master-toggle-box" :class="{ 'ai-master-toggle-box--active': aiConfig.enabled }">
+                      <div class="d-flex align-center ga-3">
+                        <v-icon :color="aiConfig.enabled ? 'success' : 'grey-darken-1'" size="24">
+                          {{ aiConfig.enabled ? 'mdi-robot' : 'mdi-robot-off-outline' }}
+                        </v-icon>
+                        <v-switch
+                          v-model="aiConfig.enabled"
+                          color="success"
+                          hide-details
+                          inset
+                          label="Kích hoạt trợ lý AI"
+                          class="mt-0 master-switch"
+                        />
+                      </div>
+                      <v-chip :color="aiConfig.enabled ? 'success' : 'grey'" variant="flat" size="small" class="font-weight-bold">
+                        {{ aiConfig.enabled ? 'ĐANG BẬT' : 'ĐANG TẮT' }}
                       </v-chip>
                     </div>
                   </div>
@@ -2345,6 +2350,31 @@ watch(configScopeId, async () => {
 
 .source-chip:hover {
   transform: scale(1.04);
+}
+
+.ai-master-toggle-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 20px;
+  border-radius: 16px;
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  transition: all 0.3s ease;
+  min-width: 320px;
+}
+
+.ai-master-toggle-box--active {
+  border-color: rgba(var(--v-theme-success), 0.5);
+  background: rgba(var(--v-theme-success), 0.04);
+  box-shadow: 0 4px 15px rgba(var(--v-theme-success), 0.1);
+}
+
+.master-switch :deep(.v-selection-control__label) {
+  font-weight: 700 !important;
+  font-size: 15px !important;
+  color: var(--color-text) !important;
 }
 
 .settings-block {
